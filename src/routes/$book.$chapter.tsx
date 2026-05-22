@@ -170,6 +170,21 @@ function ScriptureReader() {
         bgClass,
       )}
     >
+      {/* Cinematic glow atmosphere (dark mode only) */}
+      {spiritualMode && (
+        <div
+          aria-hidden
+          className="pointer-events-none fixed inset-0 z-0"
+          style={{
+            background:
+              "radial-gradient(60% 40% at 50% 0%, rgba(231,201,122,0.10), transparent 70%)," +
+              "radial-gradient(50% 35% at 85% 30%, rgba(140,110,210,0.09), transparent 75%)," +
+              "radial-gradient(70% 45% at 15% 85%, rgba(110,160,220,0.07), transparent 80%)," +
+              "radial-gradient(100% 60% at 50% 100%, rgba(0,0,0,0.55), transparent 70%)",
+          }}
+        />
+      )}
+
       {/* Top thin progress */}
       <div
         className="fixed inset-x-0 top-0 z-40 h-[3px]"
@@ -177,7 +192,10 @@ function ScriptureReader() {
       >
         <div className="mx-auto h-full w-full max-w-[640px]">
           <div
-            className="h-full rounded-r-full bg-gradient-to-l from-[#e7c97a] via-[#c79356] to-[#7a4a26] transition-[width] duration-150"
+            className={cn(
+              "h-full rounded-r-full transition-[width] duration-150 bg-gradient-to-l from-[#e7c97a] via-[#c79356] to-[#7a4a26]",
+              spiritualMode && "shadow-[0_0_10px_rgba(231,201,122,0.55)]",
+            )}
             style={{ width: `${progress}%` }}
           />
         </div>
