@@ -27,18 +27,18 @@ export function AutoScrollControls({
 }) {
   const [playing, setPlaying] = useState(false);
   const [speedIdx, setSpeedIdx] = useState(0);
-  const [visible, setVisible] = useState(true);
+  const [active, setActive] = useState(true);
   const speed: Speed = SPEEDS[speedIdx];
   const raf = useRef<number | null>(null);
   const last = useRef<number>(0);
   const eased = useRef<number>(0);
   const idleTimer = useRef<number | null>(null);
 
-  // Apple-video-style overlay: show immediately on any interaction, hide after 5s.
+  // Stable visibility: always rendered, dim to a soft idle state after 4s of no interaction.
   const kick = () => {
-    setVisible(true);
+    setActive(true);
     if (idleTimer.current) window.clearTimeout(idleTimer.current);
-    idleTimer.current = window.setTimeout(() => setVisible(false), 5000);
+    idleTimer.current = window.setTimeout(() => setActive(false), 4000);
   };
 
   useEffect(() => {
@@ -46,22 +46,20 @@ export function AutoScrollControls({
     const onAny = () => kick();
     window.addEventListener("pointerdown", onAny, { passive: true });
     window.addEventListener("touchstart", onAny, { passive: true });
-    window.addEventListener("click", onAny, { passive: true });
-    window.addEventListener("keydown", onAny);
+    window.addEventListener("scroll", onAny, { passive: true });
     return () => {
       window.removeEventListener("pointerdown", onAny);
       window.removeEventListener("touchstart", onAny);
-      window.removeEventListener("click", onAny);
-      window.removeEventListener("keydown", onAny);
+      window.removeEventListener("scroll", onAny);
       if (idleTimer.current) window.clearTimeout(idleTimer.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // While playing, keep the controller visible so the user can see speed/pause.
+  // While playing, keep the controller active.
   useEffect(() => {
     if (playing) {
-      setVisible(true);
+      setActive(true);
       if (idleTimer.current) window.clearTimeout(idleTimer.current);
     } else {
       kick();
@@ -110,9 +108,9 @@ export function AutoScrollControls({
           ? // cinematic navy + emerald glass, warm gold hairline border, soft neon green glow
             "bg-gradient-to-b from-[#0b1a2c]/60 to-[#08131f]/55 border-[#e7c97a]/25 text-[#f3e6c4] shadow-[0_18px_40px_-20px_rgba(0,0,0,0.85),0_0_24px_-6px_rgba(62,180,130,0.35),inset_0_1px_0_rgba(255,255,255,0.06)]"
           : "bg-white/60 border-[#c79356]/30 text-[#1f4032] shadow-[0_14px_30px_-16px_rgba(31,94,74,0.4),inset_0_1px_0_rgba(255,255,255,0.9)]",
-        visible
+        active
           ? "opacity-100 translate-y-0"
-          : "opacity-0 translate-y-2 pointer-events-none",
+          : "opacity-60 translate-y-0 pointer-events-auto",
       )}
       role="toolbar"
       aria-label="وضع القراءة"

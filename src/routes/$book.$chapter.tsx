@@ -259,47 +259,20 @@ function ScriptureReader() {
 
   // Palette
   const bgClass = spiritualMode
-    ? "bg-[#070d1a] text-[#e8e2cf]"
+    ? "bg-[#0b1830] text-[#e8e2cf]"
     : "bg-[#f8efdc] text-[#3a2a18]";
   const surfaceClass = spiritualMode
-    ? "bg-[#0e1a2e]/55 border-white/[0.06] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_8px_22px_-16px_rgba(0,0,0,0.7)]"
+    ? "bg-[#11223a]/60 border-white/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_8px_22px_-16px_rgba(0,0,0,0.7)]"
     : "bg-white/70 border-[#efe2c4]";
   const verseCardClass = spiritualMode
-    ? "bg-[#0e1a2e]/55 border-white/[0.06] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_6px_18px_-14px_rgba(0,0,0,0.65)]"
+    ? "bg-[#11223a]/55 border-white/[0.07] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_6px_18px_-14px_rgba(0,0,0,0.6)]"
     : "bg-white/65 border-[#efe2c4]/80 shadow-[0_6px_18px_-14px_rgba(120,80,30,0.30)]";
 
   const totalVerses = verses.data?.length ?? 0;
 
-  // Auto-hide bottom chrome on scroll
-  const [chromeHidden, setChromeHidden] = useState(false);
-  const lastY = useRef(0);
-  const idleT = useRef<number | null>(null);
-  useEffect(() => {
-    const scheduleShow = () => {
-      if (idleT.current) window.clearTimeout(idleT.current);
-      idleT.current = window.setTimeout(() => setChromeHidden(false), 1400);
-    };
-    const onScroll = () => {
-      const y = window.scrollY;
-      const dy = y - lastY.current;
-      if (Math.abs(dy) > 4) {
-        // hide when scrolling down, reveal when scrolling up
-        setChromeHidden(dy > 0 && y > 120);
-        lastY.current = y;
-      }
-      scheduleShow();
-    };
-    const reveal = () => setChromeHidden(false);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("touchstart", reveal, { passive: true });
-    window.addEventListener("click", reveal, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("touchstart", reveal);
-      window.removeEventListener("click", reveal);
-      if (idleT.current) window.clearTimeout(idleT.current);
-    };
-  }, []);
+  // Keep the bottom dock always visible for stable navigation.
+  const chromeHidden = false;
+
 
   return (
     <main
@@ -480,7 +453,7 @@ function ScriptureReader() {
                   saved={saved}
                   spiritualMode={spiritualMode}
                   surfaceClass={verseCardClass}
-                  onTap={() => setActiveVerse((cur) => (cur === id ? null : id))}
+                  onTap={() => setActiveVerse(id)}
                   onToggleSave={() =>
                     toggleSaved({
                       book,
