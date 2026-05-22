@@ -6,14 +6,14 @@ import {
   Headphones,
   HandHeart,
   Radio as RadioIcon,
-
   Church,
   Baby,
   MapPin,
   Check,
-  ChevronLeft,
   Tv,
 } from "lucide-react";
+import splashImage from "@/assets/splash.png";
+
 
 export const Route = createFileRoute("/onboarding")({
   ssr: false,
