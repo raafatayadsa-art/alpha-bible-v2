@@ -51,23 +51,36 @@ function SplashScreen() {
         className="pointer-events-none absolute inset-0 splash-glow"
       />
 
-      {/* Subtle shimmer over button area only */}
+      {/* Glass + glow enhancement layered over the existing button area */}
       <div
         aria-hidden
-        className="pointer-events-none absolute left-1/2 -translate-x-1/2"
-        style={{ bottom: "10.5%", width: "78%", height: "9%" }}
-      >
-        <div className="splash-shimmer h-full w-full rounded-full" />
-      </div>
+        className={[
+          "pointer-events-none absolute left-1/2 -translate-x-1/2 rounded-full",
+          "splash-btn-glass",
+          "transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          pressed ? "splash-btn-pressed" : "",
+        ].join(" ")}
+        style={{ bottom: "9%", width: "82%", height: "11%" }}
+      />
 
-      {/* Invisible tap target over the CTA button */}
+      {/* Interactive tap target over the CTA button */}
       <button
         type="button"
         onClick={enter}
-        aria-label="مرحبًا بك في ألفا"
-        className="absolute left-1/2 -translate-x-1/2 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/70"
+        onPointerDown={() => setPressed(true)}
+        onPointerUp={() => setPressed(false)}
+        onPointerLeave={() => setPressed(false)}
+        onPointerCancel={() => setPressed(false)}
+        aria-label="ابدأ رحلتك الروحية"
+        className={[
+          "absolute left-1/2 -translate-x-1/2 rounded-full",
+          "focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/70",
+          "transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          pressed ? "scale-[0.96]" : "scale-100",
+        ].join(" ")}
         style={{ bottom: "9%", width: "82%", height: "11%" }}
       />
+
 
       {/* Fade-to-home veil */}
       <div
