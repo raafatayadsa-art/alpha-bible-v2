@@ -9,10 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as DiagnosticsRouteImport } from './routes/diagnostics'
 import { Route as BookRouteImport } from './routes/$book'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BookChapterRouteImport } from './routes/$book.$chapter'
 
+const DiagnosticsRoute = DiagnosticsRouteImport.update({
+  id: '/diagnostics',
+  path: '/diagnostics',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BookRoute = BookRouteImport.update({
   id: '/$book',
   path: '/$book',
@@ -32,34 +38,45 @@ const BookChapterRoute = BookChapterRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$book': typeof BookRouteWithChildren
+  '/diagnostics': typeof DiagnosticsRoute
   '/$book/$chapter': typeof BookChapterRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$book': typeof BookRouteWithChildren
+  '/diagnostics': typeof DiagnosticsRoute
   '/$book/$chapter': typeof BookChapterRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$book': typeof BookRouteWithChildren
+  '/diagnostics': typeof DiagnosticsRoute
   '/$book/$chapter': typeof BookChapterRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/$book' | '/$book/$chapter'
+  fullPaths: '/' | '/$book' | '/diagnostics' | '/$book/$chapter'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/$book' | '/$book/$chapter'
-  id: '__root__' | '/' | '/$book' | '/$book/$chapter'
+  to: '/' | '/$book' | '/diagnostics' | '/$book/$chapter'
+  id: '__root__' | '/' | '/$book' | '/diagnostics' | '/$book/$chapter'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BookRoute: typeof BookRouteWithChildren
+  DiagnosticsRoute: typeof DiagnosticsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/diagnostics': {
+      id: '/diagnostics'
+      path: '/diagnostics'
+      fullPath: '/diagnostics'
+      preLoaderRoute: typeof DiagnosticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/$book': {
       id: '/$book'
       path: '/$book'
@@ -97,7 +114,18 @@ const BookRouteWithChildren = BookRoute._addFileChildren(BookRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BookRoute: BookRouteWithChildren,
+  DiagnosticsRoute: DiagnosticsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
