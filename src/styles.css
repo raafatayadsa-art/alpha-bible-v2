@@ -142,3 +142,38 @@
     color: var(--color-foreground);
   }
 }
+
+/* ===== Splash screen motion ===== */
+@keyframes splashFade {
+  from { opacity: 0; transform: scale(1.03); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.animate-splash-fade {
+  animation: splashFade 1800ms ease-out both;
+}
+.splash-parallax {
+  will-change: transform, opacity;
+  transform-origin: center;
+}
+.splash-glow {
+  background:
+    radial-gradient(120% 60% at 50% 0%, rgba(255, 236, 196, 0.22), transparent 60%),
+    radial-gradient(80% 50% at 50% 100%, rgba(255, 220, 160, 0.18), transparent 65%);
+  mix-blend-mode: screen;
+  animation: splashFade 2200ms ease-out both;
+}
+@keyframes splashShimmer {
+  0%   { transform: translateX(-120%); opacity: 0; }
+  20%  { opacity: 0.55; }
+  100% { transform: translateX(120%); opacity: 0; }
+}
+.splash-shimmer {
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgba(255, 245, 215, 0.55) 50%,
+    transparent 80%
+  );
+  animation: splashShimmer 3400ms ease-in-out 1200ms infinite;
+  filter: blur(2px);
+}
