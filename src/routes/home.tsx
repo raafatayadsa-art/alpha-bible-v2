@@ -102,22 +102,22 @@ function HomeScreen() {
 
       <div className="relative mx-auto w-full max-w-[440px] px-4 pb-36 pt-[max(env(safe-area-inset-top),12px)]">
         {/* Top bar */}
-        <header className="flex items-center justify-between gap-3 pt-2">
+        <header className="flex items-center justify-between gap-2 pt-2">
           <Pressable ariaLabel="القائمة">
-            <GlassChip className="h-12 w-12 grid place-items-center">
+            <GlassChip className="h-11 w-11 grid place-items-center">
               <Menu className="h-5 w-5 text-[#3a2a18]" />
             </GlassChip>
           </Pressable>
 
-          <div className="flex items-center gap-1.5">
-            <Sparkles className="h-4 w-4 text-[#c79356]" />
-            <h1 className="font-extrabold text-[16px] text-[#3a2a18]">{greeting} يا {userName}</h1>
-            <span className="text-[15px]">☀️</span>
+          <div className="flex items-center gap-1.5 min-w-0 flex-1 justify-center">
+            <Sparkles className="h-3.5 w-3.5 text-[#c79356] shrink-0" />
+            <h1 className="font-extrabold text-[15px] text-[#3a2a18] whitespace-nowrap [word-break:keep-all]">{greeting} يا {userName}</h1>
+            <span className="text-[14px] shrink-0">☀️</span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <Pressable ariaLabel="الإشعارات">
-              <GlassChip className="relative h-12 w-12 grid place-items-center">
+              <GlassChip className="relative h-11 w-11 grid place-items-center">
                 <Bell className="h-5 w-5 text-[#3a2a18]" />
                 {notifCount > 0 && (
                   <span className="absolute top-1 right-1 grid h-4 min-w-4 px-1 place-items-center rounded-full bg-[#d88a2a] text-[10px] font-bold text-white shadow">
@@ -127,12 +127,13 @@ function HomeScreen() {
               </GlassChip>
             </Pressable>
             <Pressable ariaLabel="بحث">
-              <GlassChip className="h-12 w-12 grid place-items-center">
+              <GlassChip className="h-11 w-11 grid place-items-center">
                 <Search className="h-5 w-5 text-[#3a2a18]" />
               </GlassChip>
             </Pressable>
           </div>
         </header>
+
 
         {/* Hero verse card */}
         <section className="mt-4">
