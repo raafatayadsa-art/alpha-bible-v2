@@ -198,5 +198,12 @@ html, body { font-family: 'Tajawal', 'Segoe UI', system-ui, -apple-system, sans-
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
+/* ===== Skeleton shimmer ===== */
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+
 
 

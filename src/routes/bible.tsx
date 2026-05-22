@@ -1,16 +1,22 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { BookHeart, Bookmark, NotebookPen, Sparkles } from "lucide-react";
+import { BookHeart, Bookmark, NotebookPen, Sparkles, BookOpen, ChevronLeft } from "lucide-react";
 import { booksQueryOptions } from "@/lib/bible";
-import { groupBooks } from "@/lib/bible-books";
+import { groupBooks, displayName } from "@/lib/bible-books";
+import { useCurrentSession } from "@/lib/reading-state";
 import {
   BackButton,
   BottomDock,
   ContinueReadingCard,
   QuickAccessCard,
+  RecentJourney,
   SectionHeader,
   TestamentCard,
+  IconBadge,
+  Pressable,
+  ProgressBar,
 } from "@/components/bible";
+
 
 export const Route = createFileRoute("/bible")({
   ssr: false,
@@ -26,6 +32,8 @@ export const Route = createFileRoute("/bible")({
 function BibleHome() {
   const { data: books } = useQuery(booksQueryOptions());
   const grouped = books ? groupBooks(books) : { old: [], neu: [], other: [] };
+  const session = useCurrentSession();
+
 
   return (
     <main
@@ -105,15 +113,45 @@ function BibleHome() {
 
         <section className="mt-6">
           <SectionHeader title="متابعة القراءة" />
-          <ContinueReadingCard
-            book="إنجيل يوحنا"
-            chapter={3}
-            verse={16}
-            progress={42}
-            to="/books"
-          />
+          {session ? (
+            <Pressable
+              to="/$book/$chapter"
+              params={{ book: session.book, chapter: String(session.chapter) }}
+              ariaLabel={`متابعة قراءة ${session.bookName}`}
+              className="rounded-3xl"
+            >
+              <div className="flex items-center gap-3 rounded-3xl bg-[#fbf3e1] border border-[#efe2c4] p-3 shadow-[0_10px_24px_-16px_rgba(120,80,30,0.35)]">
+                <IconBadge tone="gold" size={52}>
+                  <BookOpen className="h-6 w-6" strokeWidth={1.8} />
+                </IconBadge>
+                <div className="flex-1 min-w-0 text-right">
+                  <p className="text-[10.5px] font-bold text-[#b8893a] tracking-wide">متابعة القراءة</p>
+                  <h3 className="mt-0.5 truncate text-[14px] font-extrabold text-[#3a2a18]">
+                    {displayName(session.bookName || session.book)}
+                  </h3>
+                  <p className="text-[11px] text-[#6a543a]">
+                    الإصحاح {session.chapter}
+                    {session.verse ? ` · الآية ${session.verse}` : ""}
+                  </p>
+                  <div className="mt-2">
+                    <ProgressBar value={session.progressPercent} showLabel />
+                  </div>
+                </div>
+                <ChevronLeft className="h-5 w-5 text-[#b8893a] shrink-0" />
+              </div>
+            </Pressable>
+          ) : (
+            <ContinueReadingCard
+              book="ابدأ رحلتك"
+              chapter={1}
+              progress={0}
+              to="/books"
+            />
+          )}
+          <RecentJourney />
         </section>
       </div>
+
 
       <BottomDock />
     </main>

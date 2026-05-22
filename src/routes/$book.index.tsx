@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Grid3x3, List as ListIcon, ChevronLeft } from "lucide-react";
 import { chaptersQueryOptions } from "@/lib/bible";
 import { displayName } from "@/lib/bible-books";
-import { BackButton, BottomDock, SectionHeader } from "@/components/bible";
+import { BackButton, BottomDock, ChapterGridSkeleton, SectionHeader } from "@/components/bible";
+import { useCurrentSession, useRecentSessions } from "@/lib/reading-state";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/$book/")({
@@ -24,9 +25,18 @@ function ChaptersPage() {
   const { book } = Route.useParams();
   const { data: chapters, isLoading, error } = useQuery(chaptersQueryOptions(book));
   const [mode, setMode] = useState<Mode>("grid");
-  // Demo: pretend chapter 1 is "last read" until we wire user state.
-  const lastRead = 1;
-  const progressMap: Record<number, number> = { 1: 100, 2: 35 };
+  const current = useCurrentSession();
+  const recent = useRecentSessions();
+
+  const lastRead = current && current.book === book ? current.chapter : undefined;
+  const progressMap = useMemo(() => {
+    const m: Record<number, number> = {};
+    for (const r of recent) {
+      if (r.book === book) m[r.chapter] = Math.round(r.progressPercent);
+    }
+    return m;
+  }, [recent, book]);
+
 
   return (
     <main dir="rtl" className="relative min-h-screen w-full overflow-x-hidden bg-[#f4ead8]">
@@ -57,7 +67,7 @@ function ChaptersPage() {
           <SegmentedToggle mode={mode} onChange={setMode} />
         </div>
 
-        {isLoading && <p className="text-center text-[12px] text-[#6a543a]">جارٍ التحميل…</p>}
+        {isLoading && <div className="mt-1"><ChapterGridSkeleton count={20} /></div>}
         {error && (
           <p className="text-center text-[12px] text-red-700/80">
             تعذّر التحميل: {(error as Error).message}

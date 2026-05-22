@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
 import { booksQueryOptions } from "@/lib/bible";
 import { groupBooks, displayName } from "@/lib/bible-books";
-import { BackButton, BookCard, BottomDock, SectionHeader } from "@/components/bible";
+import { BackButton, BookCard, BookGridSkeleton, BottomDock, SectionHeader } from "@/components/bible";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/books")({
@@ -122,9 +122,9 @@ function BooksGrid() {
         <section className="mt-4">
           <SectionHeader
             title={cat === "all" ? "كل الأسفار" : CATEGORIES.find((c) => c.key === cat)!.label}
-            caption={`${filtered.length} سفر`}
+            caption={isLoading ? undefined : `${filtered.length} سفر`}
           />
-          {isLoading && <p className="text-center text-[12px] text-[#6a543a]">جارٍ تحميل الأسفار…</p>}
+          {isLoading && <BookGridSkeleton count={12} />}
           {error && (
             <p className="text-center text-[12px] text-red-700/80">
               تعذّر التحميل: {(error as Error).message}
@@ -147,6 +147,7 @@ function BooksGrid() {
             </div>
           )}
         </section>
+
 
         <div className="mt-8 text-center">
           <Link
