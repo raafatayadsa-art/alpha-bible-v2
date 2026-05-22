@@ -28,7 +28,7 @@ function ChaptersPage() {
   const current = useCurrentSession();
   const recent = useRecentSessions();
 
-  const lastRead = current?.book === book ? current.chapter : undefined;
+  const lastRead = current && current.book === book ? current.chapter : undefined;
   const progressMap = useMemo(() => {
     const m: Record<number, number> = {};
     for (const r of recent) {
