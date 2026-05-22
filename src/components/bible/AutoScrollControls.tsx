@@ -108,9 +108,9 @@ export function AutoScrollControls({
           ? // cinematic navy + emerald glass, warm gold hairline border, soft neon green glow
             "bg-gradient-to-b from-[#0b1a2c]/60 to-[#08131f]/55 border-[#e7c97a]/25 text-[#f3e6c4] shadow-[0_18px_40px_-20px_rgba(0,0,0,0.85),0_0_24px_-6px_rgba(62,180,130,0.35),inset_0_1px_0_rgba(255,255,255,0.06)]"
           : "bg-white/60 border-[#c79356]/30 text-[#1f4032] shadow-[0_14px_30px_-16px_rgba(31,94,74,0.4),inset_0_1px_0_rgba(255,255,255,0.9)]",
-        visible
+        active
           ? "opacity-100 translate-y-0"
-          : "opacity-0 translate-y-2 pointer-events-none",
+          : "opacity-60 translate-y-0 pointer-events-auto",
       )}
       role="toolbar"
       aria-label="وضع القراءة"
