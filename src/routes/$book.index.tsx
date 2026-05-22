@@ -78,8 +78,7 @@ function ChaptersPage() {
             title="الإصحاحات"
             caption={chapters ? `${chapters.length} إصحاح` : undefined}
           />
-          <SegmentedToggle mode={mode} onChange={setMode} />
-        </div>
+          <SegmentedToggle mode={mode} onChange={setModePersist} />
 
         {isLoading && <div className="mt-1"><ChapterGridSkeleton count={20} /></div>}
         {error && (
