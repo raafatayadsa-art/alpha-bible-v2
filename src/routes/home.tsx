@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { Menu, Bell, Search, Sparkles, Share2, Bookmark, ChevronLeft, SkipBack, SkipForward, Play, Pause, Home as HomeIcon, HandHeart, Users, User as UserIcon } from "lucide-react";
 import logoBible from "@/assets/home/logo-bible.png";
+import { supabase } from "@/integrations/supabase/client";
+
 
 import heroImg from "@/assets/home/hero.png";
 import iconBible from "@/assets/home/icon-bible.png";
@@ -86,6 +88,37 @@ function HomeScreen() {
   const [playing, setPlaying] = useState(false);
   const [notifCount] = useState(1);
   const dockVisible = useHideOnScroll();
+  const [verse, setVerse] = useState<{ text: string; reference: string } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data: dc } = await supabase.from("daily_content").select("*").limit(1).maybeSingle();
+        if (!cancelled && dc) {
+          const text = (dc as any).verse_text ?? (dc as any).text ?? (dc as any).content ?? (dc as any).body;
+          const reference =
+            (dc as any).verse_reference ?? (dc as any).reference ?? (dc as any).title ?? "";
+          if (text) { setVerse({ text: String(text), reference: String(reference || "") }); return; }
+        }
+      } catch { /* fallback below */ }
+      try {
+        const { data: bv } = await supabase
+          .from("bible_verses")
+          .select("book_name,chapter_number,verse_number,verse_text")
+          .limit(1)
+          .maybeSingle();
+        if (!cancelled && bv) {
+          setVerse({
+            text: (bv as any).verse_text,
+            reference: `${(bv as any).book_name} ${(bv as any).chapter_number}:${(bv as any).verse_number}`,
+          });
+        }
+      } catch { /* ignore */ }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
 
   const quickCards = [
     { key: "bible", icon: iconBible, title: "اكمل القراءة", sub: "تابع حيث توقفت\nفي الكتاب المقدس", to: "/books" },
@@ -155,6 +188,21 @@ function HomeScreen() {
         <section className="mt-4">
           <div className="relative overflow-hidden rounded-[28px] shadow-[0_20px_40px_-18px_rgba(120,80,30,0.45)]">
             <img src={heroImg} alt="آية اليوم" className="block w-full h-auto select-none pointer-events-none" draggable={false} />
+            {/* dynamic verse overlay — covers baked verse text */}
+            <div className="absolute inset-x-0 top-[22%] bottom-[26%] flex flex-col items-center justify-center px-6 text-center pointer-events-none">
+              <p
+                className="text-white font-extrabold leading-[1.6] text-[15px] [text-shadow:0_2px_8px_rgba(60,30,5,0.55)] line-clamp-4"
+                style={{ wordBreak: "keep-all" }}
+              >
+                {verse ? `"${verse.text}"` : "لا توجد آية اليوم"}
+              </p>
+              {verse?.reference && (
+                <p className="mt-2 text-[12px] font-bold text-[#fde7b8] [text-shadow:0_1px_4px_rgba(60,30,5,0.6)]">
+                  {verse.reference}
+                </p>
+              )}
+            </div>
+
             {/* invisible interactive overlays positioned on baked buttons */}
             <button
               aria-label="مشاركة"
