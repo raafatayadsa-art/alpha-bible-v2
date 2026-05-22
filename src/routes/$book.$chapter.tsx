@@ -529,21 +529,6 @@ function ScriptureReader() {
         </nav>
       </div>
 
-      {/* Floating "Aa" font controls trigger (bottom-right above dock) */}
-      <button
-        type="button"
-        aria-label="إعدادات النص"
-        onClick={() => setTypeOpen(true)}
-        className={cn(
-          "fixed right-3 bottom-[164px] z-40 grid h-11 w-11 place-items-center rounded-full border backdrop-blur-xl active:scale-90 transition-transform",
-          spiritualMode
-            ? "bg-[#0e1a2e]/70 border-white/10 text-[#f3e6c4] shadow-[0_8px_24px_-12px_rgba(231,201,122,0.35)]"
-            : "bg-white/85 border-[#efe2c4] text-[#3a2a18] shadow-[0_8px_24px_-12px_rgba(120,80,30,0.4)]",
-        )}
-      >
-        <span className="font-arabic-serif text-[15px] font-extrabold">Aa</span>
-      </button>
-
       {/* Typography sheet */}
       {typeOpen && (
         <TypographySheet
@@ -563,11 +548,12 @@ function ScriptureReader() {
       <AutoScrollControls
         spiritualMode={spiritualMode}
         onToggleSpiritual={() => setSpiritualMode((s) => !s)}
-        bottomClass="bottom-[108px]"
+        bottomClass="bottom-[96px]"
+        hidden={chromeHidden}
       />
 
       {/* Persistent global navigation */}
-      <BottomDock />
+      <BottomDock hidden={chromeHidden} />
 
       <MeaningSheet data={sheet} onClose={() => setSheet(null)} />
     </main>
