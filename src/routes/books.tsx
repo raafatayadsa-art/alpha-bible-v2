@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
 import { booksQueryOptions } from "@/lib/bible";
 import { groupBooks, displayName } from "@/lib/bible-books";
-import { BackButton, BookCard, BottomDock, SectionHeader } from "@/components/bible";
+import { BackButton, BookCard, BookGridSkeleton, BottomDock, SectionHeader } from "@/components/bible";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/books")({
