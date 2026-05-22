@@ -92,8 +92,10 @@ export function MeaningSheet({
       >
         <div
           className={cn(
-            "mx-2 overflow-hidden rounded-t-[28px] border border-white/70 bg-[#fbf3e1]/95 backdrop-blur-2xl",
-            "shadow-[0_-20px_50px_-20px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.8)]",
+            "mx-2 overflow-hidden rounded-t-[28px] border backdrop-blur-3xl",
+            // Emerald transparent glass — clearly separated from beige reader & navy dark mode
+            "bg-gradient-to-b from-[#0f3a2c]/72 to-[#0a2620]/78 border-[#7af0b8]/30 text-[#eaf6ec]",
+            "shadow-[0_-24px_60px_-20px_rgba(0,0,0,0.7),0_0_28px_-6px_rgba(62,180,130,0.45),inset_0_1px_0_rgba(255,255,255,0.07)]",
             "transition-[max-height] duration-300",
           )}
           style={{ maxHeight: expanded ? "92vh" : "70vh" }}
@@ -103,23 +105,23 @@ export function MeaningSheet({
             onTouchStart={onTouchStart}
             onTouchEnd={onTouchEnd}
           >
-            <span className="h-1.5 w-12 rounded-full bg-[#c79356]/40" />
+            <span className="h-1.5 w-12 rounded-full bg-[#7af0b8]/50" />
           </div>
 
           <header className="flex items-center justify-between gap-3 px-4 pb-3" dir="rtl">
             <div className="min-w-0">
-              <h3 className="font-arabic-serif text-[20px] font-bold text-[#3a2a18] truncate">
+              <h3 className="font-arabic-serif text-[20px] font-bold text-[#f4f9ee] truncate">
                 {data?.word}
               </h3>
               {data?.kind && (
-                <p className="text-[11px] font-bold text-[#b8893a]">{data.kind}</p>
+                <p className="text-[11px] font-bold text-[#e7c97a]">{data.kind}</p>
               )}
             </div>
             <button
               type="button"
               onClick={onClose}
               aria-label="إغلاق"
-              className="grid h-9 w-9 place-items-center rounded-full bg-white/80 border border-[#efe2c4] text-[#3a2a18] active:scale-90 transition-transform"
+              className="grid h-9 w-9 place-items-center rounded-full bg-white/10 border border-[#7af0b8]/30 text-[#eaf6ec] active:scale-90 transition-transform"
             >
               <X className="h-4 w-4" />
             </button>
@@ -138,8 +140,8 @@ export function MeaningSheet({
                     className={cn(
                       "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11.5px] font-bold transition-colors",
                       active
-                        ? "bg-gradient-to-br from-[#e7c97a] to-[#a87a35] border-transparent text-white shadow-[0_6px_14px_-8px_rgba(120,80,20,0.5)]"
-                        : "bg-white/70 border-[#efe2c4] text-[#3a2a18]",
+                        ? "bg-gradient-to-br from-[#7af0b8] to-[#1f8a64] border-[#7af0b8]/50 text-[#08231b] shadow-[0_6px_14px_-8px_rgba(62,180,130,0.7)]"
+                        : "bg-white/8 border-[#7af0b8]/20 text-[#eaf6ec]",
                     )}
                   >
                     <Icon className="h-3.5 w-3.5" />
@@ -168,8 +170,8 @@ export function MeaningSheet({
                     key={i}
                     className="rounded-2xl bg-white/70 border border-[#efe2c4] p-3"
                   >
-                    <p className="text-[11px] font-bold text-[#b8893a]">{v.reference}</p>
-                    <p className="mt-1 font-arabic-serif text-[14px] leading-relaxed text-[#3a2a18]">
+                    <p className="text-[11px] font-bold text-[#e7c97a]">{v.reference}</p>
+                    <p className="mt-1 font-arabic-serif text-[14px] leading-relaxed text-[#eaf6ec]">
                       {v.text}
                     </p>
                   </div>
@@ -185,10 +187,10 @@ export function MeaningSheet({
                     className="flex items-center justify-between rounded-2xl bg-white/70 border border-[#efe2c4] p-3"
                   >
                     <div>
-                      <p className="text-[13px] font-bold text-[#3a2a18]">{p.name}</p>
-                      {p.role && <p className="text-[11px] text-[#6a543a]">{p.role}</p>}
+                      <p className="text-[13px] font-bold text-[#eaf6ec]">{p.name}</p>
+                      {p.role && <p className="text-[11px] text-[#cfe4d5]">{p.role}</p>}
                     </div>
-                    <Users className="h-4 w-4 text-[#b8893a]" />
+                    <Users className="h-4 w-4 text-[#e7c97a]" />
                   </div>
                 ))}
                 {!(data?.relatedPeople?.length) && <Empty label="لا توجد أشخاص مرتبطون بعد." />}
@@ -199,8 +201,8 @@ export function MeaningSheet({
                 {(data?.timeline ?? []).map((t, i) => (
                   <li key={i} className="relative">
                     <span className="absolute -start-[7px] top-1.5 h-3 w-3 rounded-full bg-[#c79356] ring-2 ring-[#fbf3e1]" />
-                    {t.year && <p className="text-[11px] font-bold text-[#b8893a]">{t.year}</p>}
-                    <p className="text-[13px] text-[#3a2a18]">{t.event}</p>
+                    {t.year && <p className="text-[11px] font-bold text-[#e7c97a]">{t.year}</p>}
+                    <p className="text-[13px] text-[#eaf6ec]">{t.event}</p>
                   </li>
                 ))}
                 {!(data?.timeline?.length) && <Empty label="لا يوجد تسلسل زمني بعد." />}
@@ -236,8 +238,8 @@ function OverviewBlock({ data }: { data: MeaningSheetData | null }) {
     <div className="space-y-2.5">
       {items.map((it) => (
         <div key={it.label} className="rounded-2xl bg-white/70 border border-[#efe2c4] p-3">
-          <p className="text-[11px] font-bold text-[#b8893a]">{it.label}</p>
-          <p className="mt-1 text-[13.5px] leading-relaxed text-[#3a2a18]">{it.value}</p>
+          <p className="text-[11px] font-bold text-[#e7c97a]">{it.label}</p>
+          <p className="mt-1 text-[13.5px] leading-relaxed text-[#eaf6ec]">{it.value}</p>
         </div>
       ))}
     </div>
@@ -247,8 +249,8 @@ function OverviewBlock({ data }: { data: MeaningSheetData | null }) {
 function TextBlock({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="rounded-2xl bg-white/70 border border-[#efe2c4] p-4">
-      <p className="text-[11px] font-bold text-[#b8893a]">{title}</p>
-      <p className="mt-1.5 text-[14px] leading-relaxed text-[#3a2a18]">{children}</p>
+      <p className="text-[11px] font-bold text-[#e7c97a]">{title}</p>
+      <p className="mt-1.5 text-[14px] leading-relaxed text-[#eaf6ec]">{children}</p>
     </div>
   );
 }
@@ -257,7 +259,7 @@ function Empty({ label }: { label: string }) {
   return (
     <div className="grid place-items-center py-10 text-center">
       <Sparkles className="h-5 w-5 text-[#c79356]" />
-      <p className="mt-2 text-[12px] text-[#6a543a]">{label}</p>
+      <p className="mt-2 text-[12px] text-[#cfe4d5]">{label}</p>
     </div>
   );
 }

@@ -6,7 +6,6 @@ import {
   BookmarkCheck,
   Home as HomeIcon,
   Search,
-  Settings2,
   Type as TypeIcon,
   ChevronUp,
   ChevronDown,
@@ -178,7 +177,7 @@ function ScriptureReader() {
     };
   }, [book, chapter]);
 
-  // Track which verse is currently visible (top half of viewport).
+  // Track currently visible verse and auto-highlight it (immersive auto-scroll focus).
   useEffect(() => {
     if (!verses.data?.length) return;
     const els = Array.from(
@@ -192,14 +191,18 @@ function ScriptureReader() {
           .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
         if (visible) {
           const n = Number((visible.target as HTMLElement).dataset.verseNum);
-          if (n) visibleVerseRef.current = n;
+          if (n) {
+            visibleVerseRef.current = n;
+            const id = verseKey(book, ch, n);
+            setActiveVerse((cur) => (cur === id ? cur : id));
+          }
         }
       },
-      { rootMargin: "-15% 0px -65% 0px", threshold: 0.01 },
+      { rootMargin: "-30% 0px -55% 0px", threshold: 0.01 },
     );
     els.forEach((el) => io.observe(el));
     return () => io.disconnect();
-  }, [verses.data]);
+  }, [verses.data, book, ch]);
 
   // Persist reading session (throttled) + restore scroll on first load.
   const restoredRef = useRef(false);
@@ -321,19 +324,33 @@ function ScriptureReader() {
         />
       )}
 
-      {/* Cinematic glow atmosphere (dark mode only) */}
+      {/* Cinematic dark cloud atmosphere — layered navy haze + soft spiritual bloom */}
       {spiritualMode && (
-        <div
-          aria-hidden
-          className="pointer-events-none fixed inset-0 z-0"
-          style={{
-            background:
-              "radial-gradient(60% 40% at 50% 0%, rgba(231,201,122,0.10), transparent 70%)," +
-              "radial-gradient(50% 35% at 85% 30%, rgba(140,110,210,0.07), transparent 75%)," +
-              "radial-gradient(70% 45% at 15% 85%, rgba(110,160,220,0.06), transparent 80%)," +
-              "radial-gradient(100% 60% at 50% 100%, rgba(0,0,0,0.55), transparent 70%)",
-          }}
-        />
+        <>
+          <div
+            aria-hidden
+            className="pointer-events-none fixed inset-0 z-0"
+            style={{
+              background:
+                "radial-gradient(70% 45% at 50% -5%, rgba(231,201,122,0.13), transparent 70%)," +
+                "radial-gradient(55% 40% at 85% 25%, rgba(140,110,210,0.09), transparent 75%)," +
+                "radial-gradient(70% 45% at 15% 80%, rgba(62,180,130,0.08), transparent 80%)," +
+                "radial-gradient(60% 35% at 50% 50%, rgba(110,160,220,0.05), transparent 75%)," +
+                "radial-gradient(120% 70% at 50% 110%, rgba(0,0,0,0.65), transparent 65%)",
+            }}
+          />
+          {/* drifting cloud diffusion layer */}
+          <div
+            aria-hidden
+            className="pointer-events-none fixed inset-0 z-0 mix-blend-screen opacity-[0.18] animate-[abFog_28s_ease-in-out_infinite_alternate]"
+            style={{
+              background:
+                "radial-gradient(40% 30% at 30% 40%, rgba(180,200,230,0.35), transparent 70%)," +
+                "radial-gradient(35% 25% at 70% 65%, rgba(160,180,220,0.30), transparent 70%)",
+              filter: "blur(40px)",
+            }}
+          />
+        </>
       )}
 
       {/* Top thin progress */}
@@ -544,12 +561,11 @@ function ScriptureReader() {
         />
       )}
 
-      {/* Auto-scroll above the dock */}
+      {/* Auto-scroll above the dock — manages its own 5s visibility overlay */}
       <AutoScrollControls
         spiritualMode={spiritualMode}
         onToggleSpiritual={() => setSpiritualMode((s) => !s)}
         bottomClass="bottom-[96px]"
-        hidden={chromeHidden}
       />
 
       {/* Persistent global navigation */}
@@ -592,11 +608,11 @@ function VerseCard({
       data-verse-num={num}
       onClick={onTap}
       className={cn(
-        "group relative cursor-pointer rounded-2xl border px-3.5 py-3 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        "group relative cursor-pointer rounded-2xl border px-3.5 py-3 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
         surfaceClass,
         isActive && (spiritualMode
-          ? "scale-[1.012] ring-1 ring-[#e7c97a]/40 shadow-[0_0_24px_-6px_rgba(231,201,122,0.45)]"
-          : "scale-[1.012] ring-1 ring-[#c79356]/50 shadow-[0_10px_24px_-14px_rgba(120,80,30,0.5)]"),
+          ? "scale-[1.015] border-[#7af0b8]/35 ring-1 ring-[#7af0b8]/30 shadow-[0_0_28px_-4px_rgba(122,240,184,0.40),0_0_60px_-20px_rgba(62,180,130,0.45)]"
+          : "scale-[1.012] ring-1 ring-[#3eb482]/45 shadow-[0_10px_24px_-14px_rgba(31,110,84,0.45)]"),
       )}
     >
       <div className="flex items-start gap-2.5">
@@ -695,19 +711,31 @@ function VerticalProgress({
     >
       <div
         className={cn(
-          "relative rounded-full border backdrop-blur-xl px-1 py-2.5",
+          "relative rounded-full border backdrop-blur-xl px-1 py-3",
           spiritualMode
-            ? "bg-[#0c1828]/40 border-white/[0.06] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+            ? "bg-[#0a1626]/45 border-[#3eb482]/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_0_18px_-6px_rgba(62,180,130,0.35)]"
             : "bg-white/55 border-white/70 shadow-[0_8px_18px_-14px_rgba(31,94,74,0.30),inset_0_1px_0_rgba(255,255,255,0.85)]",
         )}
       >
-        {/* ultra-thin track */}
+        {/* tall ultra-thin rail (~70vh) */}
         <div
           className={cn(
-            "relative h-44 w-[2px] rounded-full overflow-visible mx-auto",
-            spiritualMode ? "bg-white/8" : "bg-[#1f5e4a]/12",
+            "relative w-[2px] rounded-full overflow-visible mx-auto",
+            spiritualMode ? "bg-white/10" : "bg-[#1f5e4a]/12",
           )}
+          style={{ height: "min(70vh, 520px)" }}
         >
+          {/* neon green filled progress */}
+          <div
+            className={cn(
+              "absolute inset-x-0 top-0 rounded-full transition-[height] duration-200 ease-out",
+              spiritualMode
+                ? "bg-gradient-to-b from-[#7af0b8] via-[#3eb482] to-[#1f8a64] shadow-[0_0_8px_rgba(62,180,130,0.7)]"
+                : "bg-gradient-to-b from-[#3eb482] to-[#1f6e54]",
+            )}
+            style={{ height: `${Math.max(0, Math.min(100, progress))}%` }}
+          />
+
           {/* sparse markers */}
           {markers.map((c) => {
             const i = chapters.indexOf(c);
@@ -726,23 +754,23 @@ function VerticalProgress({
                 <span
                   className={cn(
                     "block h-[3px] w-[3px] rounded-full",
-                    spiritualMode ? "bg-white/30" : "bg-[#1f5e4a]/30",
+                    spiritualMode ? "bg-white/40" : "bg-[#1f5e4a]/30",
                   )}
                 />
               </Link>
             );
           })}
 
-          {/* active reading position — only clearly visible marker */}
+          {/* active reading position — neon green dot */}
           <div
             className="absolute -translate-x-1/2 left-1/2 transition-[top] duration-200 ease-out"
             style={{ top: `${Math.max(0, Math.min(100, progress))}%` }}
           >
             <span
               className={cn(
-                "block h-2 w-2 rounded-full bg-gradient-to-br from-[#3e8a6e] to-[#1f5e4a]",
+                "block h-2.5 w-2.5 rounded-full bg-gradient-to-br from-[#7af0b8] to-[#1f8a64]",
                 spiritualMode
-                  ? "shadow-[0_0_10px_rgba(62,138,110,0.85),0_0_22px_rgba(62,138,110,0.35)] ring-1 ring-[#3e8a6e]/40"
+                  ? "shadow-[0_0_14px_rgba(122,240,184,0.95),0_0_28px_rgba(62,180,130,0.55)] ring-1 ring-[#7af0b8]/55"
                   : "shadow-[0_0_8px_rgba(62,138,110,0.55)] ring-2 ring-white/80",
               )}
             />
@@ -782,39 +810,36 @@ function TypographySheet({
         type="button"
         aria-label="إغلاق"
         onClick={onClose}
-        className="fixed inset-0 z-40 bg-black/20"
+        className="fixed inset-0 z-40 bg-transparent"
       />
       <div
         dir="rtl"
         className={cn(
-          "fixed inset-x-0 bottom-0 z-50 mx-auto w-full max-w-[440px] rounded-t-3xl border-t p-5 pb-7 backdrop-blur-2xl animate-in slide-in-from-bottom duration-300",
+          "fixed left-1/2 -translate-x-1/2 z-50 w-[min(92vw,340px)] rounded-3xl border p-3 backdrop-blur-3xl animate-in fade-in zoom-in-95 duration-300",
+          "bottom-[150px]",
           spiritualMode
-            ? "bg-[#0c1828]/95 border-white/[0.08] text-[#e8e2cf] shadow-[0_-20px_50px_-20px_rgba(0,0,0,0.85),0_0_30px_-12px_rgba(231,201,122,0.25)]"
-            : "bg-[#fbf3e1]/97 border-white/70 text-[#3a2a18] shadow-[0_-18px_40px_-18px_rgba(120,80,30,0.45)]",
+            ? "bg-[#0b1a2c]/55 border-[#e7c97a]/22 text-[#e8e2cf] shadow-[0_24px_60px_-20px_rgba(0,0,0,0.85),0_0_28px_-10px_rgba(231,201,122,0.30),inset_0_1px_0_rgba(255,255,255,0.06)]"
+            : "bg-white/55 border-white/70 text-[#3a2a18] shadow-[0_20px_50px_-18px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.85)]",
         )}
         role="dialog"
         aria-label="إعدادات النص"
       >
-        <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-current opacity-20" />
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-[13px] font-extrabold tracking-wide">إعدادات القراءة</p>
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={onReset}
-              aria-label="إعادة ضبط"
-              className={cn(
-                "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10.5px] font-bold active:scale-95 transition-transform",
-                spiritualMode
-                  ? "bg-white/5 border-white/10 text-[#f3e6c4]"
-                  : "bg-white/80 border-[#efe2c4] text-[#3a2a18]",
-              )}
-            >
-              <RotateCcw className="h-3 w-3" />
-              إعادة ضبط
-            </button>
-            <Settings2 className="h-3.5 w-3.5 opacity-60 ms-1" />
-          </div>
+        <div className="flex items-center justify-between mb-2 px-0.5">
+          <p className="text-[11.5px] font-extrabold tracking-wide opacity-90">إعدادات القراءة</p>
+          <button
+            type="button"
+            onClick={onReset}
+            aria-label="إعادة ضبط"
+            className={cn(
+              "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold active:scale-95 transition-transform",
+              spiritualMode
+                ? "bg-white/5 border-white/10 text-[#f3e6c4]"
+                : "bg-white/70 border-[#efe2c4] text-[#3a2a18]",
+            )}
+          >
+            <RotateCcw className="h-2.5 w-2.5" />
+            ضبط
+          </button>
         </div>
 
         <SliderRow
@@ -828,7 +853,7 @@ function TypographySheet({
           spiritualMode={spiritualMode}
         />
         <SliderRow
-          label="المسافة بين السطور"
+          label="السطور"
           value={lineHeight}
           min={1.6}
           max={2.8}
@@ -838,7 +863,7 @@ function TypographySheet({
           spiritualMode={spiritualMode}
         />
         <SliderRow
-          label="عرض القراءة"
+          label="العرض"
           value={readingWidth}
           min={420}
           max={800}
@@ -847,11 +872,6 @@ function TypographySheet({
           display={`${readingWidth}px`}
           spiritualMode={spiritualMode}
         />
-
-        <div className="mt-3 flex items-center justify-between gap-2 text-[10px] opacity-70">
-          <span className="font-arabic-serif">Aa</span>
-          <span className="font-arabic-serif text-[16px]">Aa</span>
-        </div>
       </div>
     </>
   );
@@ -879,33 +899,39 @@ function SliderRow({
   return (
     <div
       className={cn(
-        "mb-3 rounded-2xl border px-3.5 py-2.5",
+        "mb-2 rounded-2xl border px-2.5 py-1.5",
         spiritualMode
           ? "bg-white/[0.04] border-white/[0.08]"
           : "bg-white/55 border-[#efe2c4]",
       )}
     >
-      <div className="flex items-center justify-between mb-1.5">
-        <p className="text-[12px] font-bold">{label}</p>
-        <div className="flex items-center gap-1.5">
+      <div className="flex items-center justify-between mb-1">
+        <p className="text-[11px] font-bold opacity-80">{label}</p>
+        <div className="flex items-center gap-1">
           <button
             type="button"
             aria-label="تقليل"
             onClick={() => onChange(Math.max(min, +(value - step).toFixed(2)))}
-            className="grid h-6 w-6 place-items-center rounded-full bg-white/80 border border-[#efe2c4] text-[#3a2a18] active:scale-90 transition-transform"
+            className={cn(
+              "grid h-5 w-5 place-items-center rounded-full border active:scale-90 transition-transform",
+              spiritualMode ? "bg-white/10 border-white/15 text-[#f3e6c4]" : "bg-white/80 border-[#efe2c4] text-[#3a2a18]",
+            )}
           >
-            <ChevronDown className="h-3 w-3" />
+            <ChevronDown className="h-2.5 w-2.5" />
           </button>
-          <span className="min-w-[44px] text-center text-[11px] font-bold tabular-nums">
+          <span className="min-w-[40px] text-center text-[10.5px] font-bold tabular-nums">
             {display}
           </span>
           <button
             type="button"
             aria-label="زيادة"
             onClick={() => onChange(Math.min(max, +(value + step).toFixed(2)))}
-            className="grid h-6 w-6 place-items-center rounded-full bg-white/80 border border-[#efe2c4] text-[#3a2a18] active:scale-90 transition-transform"
+            className={cn(
+              "grid h-5 w-5 place-items-center rounded-full border active:scale-90 transition-transform",
+              spiritualMode ? "bg-white/10 border-white/15 text-[#f3e6c4]" : "bg-white/80 border-[#efe2c4] text-[#3a2a18]",
+            )}
           >
-            <ChevronUp className="h-3 w-3" />
+            <ChevronUp className="h-2.5 w-2.5" />
           </button>
         </div>
       </div>
@@ -917,7 +943,7 @@ function SliderRow({
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
         aria-label={label}
-        className="w-full accent-[#c79356]"
+        className="w-full h-1 accent-[#3eb482]"
       />
     </div>
   );
