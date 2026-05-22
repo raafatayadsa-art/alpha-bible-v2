@@ -713,19 +713,31 @@ function VerticalProgress({
     >
       <div
         className={cn(
-          "relative rounded-full border backdrop-blur-xl px-1 py-2.5",
+          "relative rounded-full border backdrop-blur-xl px-1 py-3",
           spiritualMode
-            ? "bg-[#0c1828]/40 border-white/[0.06] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+            ? "bg-[#0a1626]/45 border-[#3eb482]/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_0_18px_-6px_rgba(62,180,130,0.35)]"
             : "bg-white/55 border-white/70 shadow-[0_8px_18px_-14px_rgba(31,94,74,0.30),inset_0_1px_0_rgba(255,255,255,0.85)]",
         )}
       >
-        {/* ultra-thin track */}
+        {/* tall ultra-thin rail (~70vh) */}
         <div
           className={cn(
-            "relative h-44 w-[2px] rounded-full overflow-visible mx-auto",
-            spiritualMode ? "bg-white/8" : "bg-[#1f5e4a]/12",
+            "relative w-[2px] rounded-full overflow-visible mx-auto",
+            spiritualMode ? "bg-white/10" : "bg-[#1f5e4a]/12",
           )}
+          style={{ height: "min(70vh, 520px)" }}
         >
+          {/* neon green filled progress */}
+          <div
+            className={cn(
+              "absolute inset-x-0 top-0 rounded-full transition-[height] duration-200 ease-out",
+              spiritualMode
+                ? "bg-gradient-to-b from-[#7af0b8] via-[#3eb482] to-[#1f8a64] shadow-[0_0_8px_rgba(62,180,130,0.7)]"
+                : "bg-gradient-to-b from-[#3eb482] to-[#1f6e54]",
+            )}
+            style={{ height: `${Math.max(0, Math.min(100, progress))}%` }}
+          />
+
           {/* sparse markers */}
           {markers.map((c) => {
             const i = chapters.indexOf(c);
@@ -744,23 +756,23 @@ function VerticalProgress({
                 <span
                   className={cn(
                     "block h-[3px] w-[3px] rounded-full",
-                    spiritualMode ? "bg-white/30" : "bg-[#1f5e4a]/30",
+                    spiritualMode ? "bg-white/40" : "bg-[#1f5e4a]/30",
                   )}
                 />
               </Link>
             );
           })}
 
-          {/* active reading position — only clearly visible marker */}
+          {/* active reading position — neon green dot */}
           <div
             className="absolute -translate-x-1/2 left-1/2 transition-[top] duration-200 ease-out"
             style={{ top: `${Math.max(0, Math.min(100, progress))}%` }}
           >
             <span
               className={cn(
-                "block h-2 w-2 rounded-full bg-gradient-to-br from-[#3e8a6e] to-[#1f5e4a]",
+                "block h-2.5 w-2.5 rounded-full bg-gradient-to-br from-[#7af0b8] to-[#1f8a64]",
                 spiritualMode
-                  ? "shadow-[0_0_10px_rgba(62,138,110,0.85),0_0_22px_rgba(62,138,110,0.35)] ring-1 ring-[#3e8a6e]/40"
+                  ? "shadow-[0_0_14px_rgba(122,240,184,0.95),0_0_28px_rgba(62,180,130,0.55)] ring-1 ring-[#7af0b8]/55"
                   : "shadow-[0_0_8px_rgba(62,138,110,0.55)] ring-2 ring-white/80",
               )}
             />
