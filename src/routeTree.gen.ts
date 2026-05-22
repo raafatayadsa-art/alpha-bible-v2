@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as HomeRouteImport } from './routes/home'
 import { Route as DiagnosticsRouteImport } from './routes/diagnostics'
 import { Route as BooksRouteImport } from './routes/books'
 import { Route as BookRouteImport } from './routes/$book'
@@ -20,6 +21,11 @@ import { Route as BookChapterRouteImport } from './routes/$book.$chapter'
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HomeRoute = HomeRouteImport.update({
+  id: '/home',
+  path: '/home',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DiagnosticsRoute = DiagnosticsRouteImport.update({
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/$book': typeof BookRouteWithChildren
   '/books': typeof BooksRoute
   '/diagnostics': typeof DiagnosticsRoute
+  '/home': typeof HomeRoute
   '/onboarding': typeof OnboardingRoute
   '/$book/$chapter': typeof BookChapterRoute
   '/$book/': typeof BookIndexRoute
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/books': typeof BooksRoute
   '/diagnostics': typeof DiagnosticsRoute
+  '/home': typeof HomeRoute
   '/onboarding': typeof OnboardingRoute
   '/$book/$chapter': typeof BookChapterRoute
   '/$book': typeof BookIndexRoute
@@ -76,6 +84,7 @@ export interface FileRoutesById {
   '/$book': typeof BookRouteWithChildren
   '/books': typeof BooksRoute
   '/diagnostics': typeof DiagnosticsRoute
+  '/home': typeof HomeRoute
   '/onboarding': typeof OnboardingRoute
   '/$book/$chapter': typeof BookChapterRoute
   '/$book/': typeof BookIndexRoute
@@ -87,6 +96,7 @@ export interface FileRouteTypes {
     | '/$book'
     | '/books'
     | '/diagnostics'
+    | '/home'
     | '/onboarding'
     | '/$book/$chapter'
     | '/$book/'
@@ -95,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/books'
     | '/diagnostics'
+    | '/home'
     | '/onboarding'
     | '/$book/$chapter'
     | '/$book'
@@ -104,6 +115,7 @@ export interface FileRouteTypes {
     | '/$book'
     | '/books'
     | '/diagnostics'
+    | '/home'
     | '/onboarding'
     | '/$book/$chapter'
     | '/$book/'
@@ -114,6 +126,7 @@ export interface RootRouteChildren {
   BookRoute: typeof BookRouteWithChildren
   BooksRoute: typeof BooksRoute
   DiagnosticsRoute: typeof DiagnosticsRoute
+  HomeRoute: typeof HomeRoute
   OnboardingRoute: typeof OnboardingRoute
 }
 
@@ -124,6 +137,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/diagnostics': {
@@ -188,6 +208,7 @@ const rootRouteChildren: RootRouteChildren = {
   BookRoute: BookRouteWithChildren,
   BooksRoute: BooksRoute,
   DiagnosticsRoute: DiagnosticsRoute,
+  HomeRoute: HomeRoute,
   OnboardingRoute: OnboardingRoute,
 }
 export const routeTree = rootRouteImport
