@@ -37,7 +37,7 @@ function OnboardingScreen() {
       localStorage.setItem("alpha.interests", JSON.stringify([...selected]));
     } catch {}
     setLeaving(true);
-    setTimeout(() => navigate({ to: "/books" }), 350);
+    setTimeout(() => navigate({ to: "/home" }), 350);
   };
 
   return (
