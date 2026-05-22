@@ -369,7 +369,7 @@ function ScriptureReader() {
         {/* Header / Toolbar */}
         <header className="flex items-center justify-between gap-2 pt-3">
           <div className="flex items-center gap-1.5">
-            <BackButton />
+            <BackButton compact tone={spiritualMode ? "dark" : "light"} />
             <Link
               to="/bible"
               aria-label="الرئيسية للكتاب المقدس"
