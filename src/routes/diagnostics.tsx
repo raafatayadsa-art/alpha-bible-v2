@@ -20,9 +20,6 @@ function Diagnostics() {
   const [sampleVerse, setSampleVerse] = useState<BibleVerse | null>(null);
   const [lastError, setLastError] = useState<string | null>(null);
   const [lastQueryResult, setLastQueryResult] = useState<string | null>(null);
-  const [selectedChapter, setSelectedChapter] = useState<number | null>(null);
-  const [sampleVerse, setSampleVerse] = useState<BibleVerse | null>(null);
-  const [lastError, setLastError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
