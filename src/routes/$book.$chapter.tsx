@@ -692,61 +692,73 @@ function VerticalProgress({
     return chapters.slice(start, end);
   }, [chapters, current]);
 
+  // sparse markers: first, last, current
+  const markers = useMemo(() => {
+    if (!chapters.length) return [] as number[];
+    const set = new Set<number>([chapters[0], chapters[chapters.length - 1], current]);
+    return chapters.filter((c) => set.has(c));
+  }, [chapters, current]);
+
   return (
     <div
-      className="fixed left-2 top-1/2 z-40 -translate-y-1/2 select-none"
+      className="fixed left-2 top-1/2 z-30 -translate-y-1/2 select-none"
       style={{ paddingTop: "env(safe-area-inset-top)" }}
       aria-hidden
     >
       <div
         className={cn(
-          "flex flex-col items-center gap-1.5 rounded-full border px-1.5 py-2 backdrop-blur-xl",
+          "relative rounded-full border backdrop-blur-xl px-1 py-2.5",
           spiritualMode
-            ? "bg-[#0c1828]/70 border-[#e7c97a]/20 shadow-[0_0_20px_-6px_rgba(231,201,122,0.4),inset_0_1px_0_rgba(255,255,255,0.05)]"
-            : "bg-white/85 border-[#e7c97a]/45 shadow-[0_8px_20px_-12px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.85)]",
+            ? "bg-[#0c1828]/40 border-white/[0.06] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+            : "bg-white/55 border-white/70 shadow-[0_8px_18px_-14px_rgba(31,94,74,0.30),inset_0_1px_0_rgba(255,255,255,0.85)]",
         )}
       >
-        {/* progress fill */}
+        {/* ultra-thin track */}
         <div
           className={cn(
-            "relative h-40 w-1.5 rounded-full overflow-hidden",
-            spiritualMode ? "bg-white/10" : "bg-[#efe2c4]",
+            "relative h-44 w-[2px] rounded-full overflow-visible mx-auto",
+            spiritualMode ? "bg-white/8" : "bg-[#1f5e4a]/12",
           )}
         >
-          <div
-            className={cn(
-              "absolute inset-x-0 top-0 rounded-full bg-gradient-to-b from-[#e7c97a] via-[#c79356] to-[#7a4a26]",
-              spiritualMode && "shadow-[0_0_10px_rgba(231,201,122,0.75)]",
-            )}
-            style={{
-              height: `${Math.max(2, progress)}%`,
-              transition: "height 120ms linear",
-            }}
-          />
-        </div>
-        {/* chapter dots */}
-        <div className="mt-1 flex flex-col items-center gap-1">
-          {windowed.map((c) => {
+          {/* sparse markers */}
+          {markers.map((c) => {
+            const i = chapters.indexOf(c);
+            const top = chapters.length > 1 ? (i / (chapters.length - 1)) * 100 : 0;
             const active = c === current;
+            if (active) return null;
             return (
               <Link
                 key={c}
                 to="/$book/$chapter"
                 params={{ book, chapter: String(c) }}
                 aria-label={`الإصحاح ${c}`}
-                className="group block"
+                className="absolute -translate-x-1/2 left-1/2"
+                style={{ top: `${top}%` }}
               >
                 <span
                   className={cn(
-                    "block rounded-full transition-all duration-200",
-                    active
-                      ? "h-2.5 w-2.5 bg-gradient-to-br from-[#e7c97a] to-[#a87a35] ring-2 ring-[#fbf3e1] shadow-[0_0_10px_rgba(231,201,122,0.85)]"
-                      : "h-1.5 w-1.5 bg-[#a78bd9]/55 group-hover:bg-[#6a4ab5]",
+                    "block h-[3px] w-[3px] rounded-full",
+                    spiritualMode ? "bg-white/30" : "bg-[#1f5e4a]/30",
                   )}
                 />
               </Link>
             );
           })}
+
+          {/* active reading position — only clearly visible marker */}
+          <div
+            className="absolute -translate-x-1/2 left-1/2 transition-[top] duration-200 ease-out"
+            style={{ top: `${Math.max(0, Math.min(100, progress))}%` }}
+          >
+            <span
+              className={cn(
+                "block h-2 w-2 rounded-full bg-gradient-to-br from-[#3e8a6e] to-[#1f5e4a]",
+                spiritualMode
+                  ? "shadow-[0_0_10px_rgba(62,138,110,0.85),0_0_22px_rgba(62,138,110,0.35)] ring-1 ring-[#3e8a6e]/40"
+                  : "shadow-[0_0_8px_rgba(62,138,110,0.55)] ring-2 ring-white/80",
+              )}
+            />
+          </div>
         </div>
       </div>
     </div>
