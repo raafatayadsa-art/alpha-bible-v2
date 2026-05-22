@@ -587,6 +587,7 @@ function VerseCard({
   onToggleSave,
   onSelectWord,
   dictIndex,
+  seenWords,
   showRef,
   onOpenRef,
 }: {
@@ -600,6 +601,8 @@ function VerseCard({
   onToggleSave: () => void;
   onSelectWord: (w: string) => void;
   dictIndex: DictionaryIndex;
+  /** Shared per-chapter set of normalized words already highlighted (mutated). */
+  seenWords: Set<string>;
   showRef: boolean;
   onOpenRef: () => void;
 }) {
