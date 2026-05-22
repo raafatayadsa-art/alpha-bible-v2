@@ -88,6 +88,37 @@ function HomeScreen() {
   const [playing, setPlaying] = useState(false);
   const [notifCount] = useState(1);
   const dockVisible = useHideOnScroll();
+  const [verse, setVerse] = useState<{ text: string; reference: string } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data: dc } = await supabase.from("daily_content").select("*").limit(1).maybeSingle();
+        if (!cancelled && dc) {
+          const text = (dc as any).verse_text ?? (dc as any).text ?? (dc as any).content ?? (dc as any).body;
+          const reference =
+            (dc as any).verse_reference ?? (dc as any).reference ?? (dc as any).title ?? "";
+          if (text) { setVerse({ text: String(text), reference: String(reference || "") }); return; }
+        }
+      } catch { /* fallback below */ }
+      try {
+        const { data: bv } = await supabase
+          .from("bible_verses")
+          .select("book_name,chapter_number,verse_number,verse_text")
+          .limit(1)
+          .maybeSingle();
+        if (!cancelled && bv) {
+          setVerse({
+            text: (bv as any).verse_text,
+            reference: `${(bv as any).book_name} ${(bv as any).chapter_number}:${(bv as any).verse_number}`,
+          });
+        }
+      } catch { /* ignore */ }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
 
   const quickCards = [
     { key: "bible", icon: iconBible, title: "اكمل القراءة", sub: "تابع حيث توقفت\nفي الكتاب المقدس", to: "/books" },
