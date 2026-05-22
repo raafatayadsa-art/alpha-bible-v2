@@ -21,10 +21,24 @@ export const Route = createFileRoute("/$book/")({
 
 type Mode = "grid" | "list";
 
+const MODE_KEY = "ab:chapter:view-mode";
+
 function ChaptersPage() {
   const { book } = Route.useParams();
   const { data: chapters, isLoading, error } = useQuery(chaptersQueryOptions(book));
-  const [mode, setMode] = useState<Mode>("grid");
+  const [mode, setMode] = useState<Mode>(() => {
+    if (typeof window === "undefined") return "grid";
+    try {
+      const v = window.localStorage.getItem(MODE_KEY);
+      return v === "list" || v === "grid" ? v : "grid";
+    } catch {
+      return "grid";
+    }
+  });
+  const setModePersist = (m: Mode) => {
+    setMode(m);
+    try { window.localStorage.setItem(MODE_KEY, m); } catch { /* ignore */ }
+  };
   const current = useCurrentSession();
   const recent = useRecentSessions();
 
