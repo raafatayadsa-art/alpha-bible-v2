@@ -285,30 +285,36 @@ function HomeScreen() {
 }
 
 function DockItem({
-  icon: Icon, label, active, raised, to, color,
+  icon: Icon, label, active, raised, to,
 }: { icon: any; label: string; active?: boolean; raised?: boolean; to?: string; color?: string }) {
+  const goldColor = "#b8893a";
   const inner = (
-    <div className="flex w-full flex-col items-center justify-end gap-1">
+    <div className="flex w-full flex-col items-center justify-end gap-1.5">
       {raised ? (
-        <div className="-mt-7 grid h-14 w-14 place-items-center rounded-full bg-gradient-to-br from-[#e7c97a] to-[#a8782a] text-white shadow-[0_10px_24px_-4px_rgba(200,140,40,0.65),0_0_0_4px_rgba(255,234,190,0.8)]">
-          <Icon className="h-7 w-7" strokeWidth={2.2} />
+        <div
+          className="-mt-7 grid h-14 w-14 place-items-center rounded-full"
+          style={{
+            filter: "drop-shadow(0 0 14px rgba(231,201,122,0.55)) drop-shadow(0 6px 10px rgba(168,120,42,0.25))",
+          }}
+        >
+          <Icon className="h-8 w-8" strokeWidth={1.8} style={{ color: goldColor }} />
         </div>
       ) : (
         <Icon
           className="h-6 w-6"
-          strokeWidth={2.2}
-          style={{ color: active ? "#d96b2a" : (color || "#3a2a18") }}
+          strokeWidth={1.8}
+          style={{ color: goldColor, opacity: active ? 1 : 0.95 }}
         />
       )}
       <span
-        className="text-[10px] font-bold leading-none whitespace-nowrap [word-break:keep-all]"
-        style={{ color: active ? "#d96b2a" : "#3a2a18" }}
+        className="text-[11px] font-bold leading-none whitespace-nowrap [word-break:keep-all]"
+        style={{ color: goldColor }}
       >
         {label}
       </span>
     </div>
   );
-  const cls = "flex items-end justify-center py-1 active:scale-95 transition-transform";
+  const cls = "flex items-end justify-center py-1 transition-transform duration-150 ease-out active:scale-[0.96] active:opacity-80";
   if (to) return <Link to={to as any} className={cls}>{inner}</Link>;
   return <button type="button" className={cls}>{inner}</button>;
 }
