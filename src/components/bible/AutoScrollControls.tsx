@@ -71,23 +71,43 @@ export function AutoScrollControls({
       if (raf.current) cancelAnimationFrame(raf.current);
       raf.current = null;
       eased.current = 0;
+      try { delete (document.documentElement.dataset as any).autoscroll; } catch { /* ignore */ }
       return;
     }
+    document.documentElement.dataset.autoscroll = "1";
     last.current = performance.now();
+    let acc = 0;
+    // Track the last position we applied so this loop never moves the page upward.
+    let lastY = scrollContainer ? scrollContainer.scrollTop : window.scrollY;
     const step = (t: number) => {
       const dt = Math.min(64, t - last.current);
       last.current = t;
-      const target = speed * 28;
+      const target = speed * 28; // px/sec
       const k = 1 - Math.exp(-dt / 280);
       eased.current += (target - eased.current) * k;
-      const px = (eased.current * dt) / 1000;
-      if (scrollContainer) scrollContainer.scrollBy({ top: px });
-      else window.scrollBy({ top: px });
+      acc += (eased.current * dt) / 1000;
+      // If something else (user, layout) moved the page up, adopt that as the new baseline.
+      const currentY = scrollContainer ? scrollContainer.scrollTop : window.scrollY;
+      if (currentY < lastY - 2) {
+        lastY = currentY;
+        acc = 0;
+      } else if (currentY > lastY) {
+        lastY = currentY;
+      }
+      if (acc >= 1) {
+        const delta = Math.floor(acc);
+        acc -= delta;
+        const nextY = lastY + delta; // clamp: never less than current baseline
+        if (scrollContainer) scrollContainer.scrollTo({ top: nextY });
+        else window.scrollTo({ top: nextY });
+        lastY = nextY;
+      }
       raf.current = requestAnimationFrame(step);
     };
     raf.current = requestAnimationFrame(step);
     return () => {
       if (raf.current) cancelAnimationFrame(raf.current);
+      try { delete (document.documentElement.dataset as any).autoscroll; } catch { /* ignore */ }
     };
   }, [playing, speed, scrollContainer]);
 
