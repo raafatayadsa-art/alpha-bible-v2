@@ -1,12 +1,14 @@
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { Bookmark, BookmarkCheck } from "lucide-react";
-import { Pressable, PlaceholderArt } from "./primitives";
+import { PlaceholderArt } from "./primitives";
 
 export function BookCard({
   name,
   chaptersCount,
-  to,
+  bookParam,
   tone = "gold",
+
   defaultSaved,
   onToggleSave,
 }: {
