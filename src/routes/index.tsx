@@ -1,86 +1,78 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { booksQueryOptions } from "@/lib/bible";
-import { groupBooks, displayName } from "@/lib/bible-books";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import splashImage from "@/assets/splash.png";
 
 export const Route = createFileRoute("/")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "الكتاب المقدس — Alpha Bible" },
-      { name: "description", content: "اقرأ الكتاب المقدس — اختر سفراً للبدء." },
+      { title: "ألفا — البيت الرقمي للأقباط الأرثوذكس" },
+      { name: "description", content: "مرحبًا بك في ألفا — ابدأ رحلتك الروحية." },
     ],
   }),
-  component: BooksIndex,
+  component: SplashScreen,
 });
 
-function BookGrid({ books }: { books: string[] }) {
-  return (
-    <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
-      {books.map((b) => (
-        <li key={b}>
-          <Link
-            to="/$book"
-            params={{ book: b }}
-            className="block rounded-md border border-border bg-card px-4 py-3 font-serif text-lg text-card-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-          >
-            {displayName(b)}
-          </Link>
-        </li>
-      ))}
-    </ul>
-  );
-}
+function SplashScreen() {
+  const navigate = useNavigate();
+  const [leaving, setLeaving] = useState(false);
 
-function Section({ title, books }: { title: string; books: string[] }) {
-  if (!books.length) return null;
-  return (
-    <section className="mb-10">
-      <h2 className="mb-4 font-serif text-2xl text-foreground">
-        <span className="text-muted-foreground">·</span> {title}
-      </h2>
-      <BookGrid books={books} />
-    </section>
-  );
-}
-
-function BooksIndex() {
-  const { data: books, isLoading, error } = useQuery(booksQueryOptions());
-
-  const grouped = books ? groupBooks(books) : null;
+  const enter = () => {
+    if (leaving) return;
+    setLeaving(true);
+    setTimeout(() => navigate({ to: "/books" }), 550);
+  };
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-12" dir="rtl">
-      <header className="mb-12 text-center">
-        <h1 className="font-serif text-5xl tracking-tight text-foreground">الكتاب المقدس</h1>
-        <p className="mt-3 text-sm uppercase tracking-[0.3em] text-muted-foreground">Alpha Bible</p>
-      </header>
+    <div
+      dir="rtl"
+      className="relative h-screen w-screen overflow-hidden bg-[#f4ead8]"
+    >
+      {/* Background artwork — exact uploaded image, untouched */}
+      <img
+        src={splashImage}
+        alt="Alpha — The Coptic Orthodox Digital Home"
+        className={[
+          "absolute inset-0 h-full w-full object-cover object-center",
+          "transition-opacity duration-[1600ms] ease-out",
+          "splash-parallax",
+          leaving ? "opacity-0" : "opacity-100 animate-splash-fade",
+        ].join(" ")}
+        draggable={false}
+      />
 
-      {isLoading && (
-        <p className="text-center text-muted-foreground">جارٍ تحميل الأسفار…</p>
-      )}
-      {error && (
-        <p className="text-center text-destructive">
-          تعذّر تحميل الأسفار: {(error as Error).message}
-        </p>
-      )}
-      {!isLoading && !error && books && books.length === 0 && (
-        <p className="text-center text-muted-foreground">لا توجد أسفار متاحة.</p>
-      )}
+      {/* Soft warm glow overlay (does not alter artwork colors) */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 splash-glow"
+      />
 
-      {grouped && (
-        <>
-          <Section title="العهد القديم" books={grouped.old} />
-          <Section title="العهد الجديد" books={grouped.neu} />
-          <Section title="أخرى" books={grouped.other} />
-        </>
-      )}
-
-      <div className="mt-12 text-center">
-        <Link to="/diagnostics" className="text-xs uppercase tracking-[0.3em] text-muted-foreground hover:text-foreground">
-          Diagnostics
-        </Link>
+      {/* Subtle shimmer over button area only */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute left-1/2 -translate-x-1/2"
+        style={{ bottom: "10.5%", width: "78%", height: "9%" }}
+      >
+        <div className="splash-shimmer h-full w-full rounded-full" />
       </div>
-    </main>
+
+      {/* Invisible tap target over the CTA button */}
+      <button
+        type="button"
+        onClick={enter}
+        aria-label="مرحبًا بك في ألفا"
+        className="absolute left-1/2 -translate-x-1/2 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/70"
+        style={{ bottom: "9%", width: "82%", height: "11%" }}
+      />
+
+      {/* Fade-to-home veil */}
+      <div
+        aria-hidden
+        className={[
+          "pointer-events-none absolute inset-0 bg-[#f4ead8] transition-opacity duration-500",
+          leaving ? "opacity-100" : "opacity-0",
+        ].join(" ")}
+      />
+    </div>
   );
 }
