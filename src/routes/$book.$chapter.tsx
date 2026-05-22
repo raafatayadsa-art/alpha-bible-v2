@@ -535,7 +535,11 @@ function ScriptureReader() {
                       text: v?.verse_text ?? "",
                     })
                   }
-                  onSelectWord={(w, k) => setSheet(GLOSSARY[w] ?? { word: w, kind: k })}
+                  onSelectWord={(w) => {
+                    const e = dictIndex.map.get(normalizeAr(w));
+                    if (e) setSheet(entryToSheet(e));
+                  }}
+                  dictIndex={dictIndex}
                   showRef={showRef}
                   onOpenRef={() =>
                     setSheet({
