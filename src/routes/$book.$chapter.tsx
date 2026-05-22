@@ -231,13 +231,17 @@ function ScriptureReader() {
     if (!verses.data?.length) return;
     if (restoredRef.current) return;
     restoredRef.current = true;
-    // Restore scroll if the saved session matches this book/chapter
+    // Restore scroll if the saved session matches this book/chapter — but never while auto-scroll is running.
     try {
+      if (document.documentElement.dataset.autoscroll === "1") return;
       const raw = localStorage.getItem("ab:reading:current");
       if (raw) {
         const s = JSON.parse(raw) as { book: string; chapter: number; scrollY: number };
         if (s && s.book === book && s.chapter === ch && s.scrollY > 0) {
-          requestAnimationFrame(() => window.scrollTo(0, s.scrollY));
+          requestAnimationFrame(() => {
+            if (document.documentElement.dataset.autoscroll === "1") return;
+            window.scrollTo(0, s.scrollY);
+          });
         }
       }
     } catch {
