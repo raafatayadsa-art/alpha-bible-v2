@@ -168,7 +168,7 @@ export function MeaningSheet({
                 {(data?.relatedVerses ?? []).map((v, i) => (
                   <div
                     key={i}
-                    className="rounded-2xl bg-white/70 border border-[#efe2c4] p-3"
+                    className="rounded-2xl bg-white/[0.06] border border-[#7af0b8]/20 p-3"
                   >
                     <p className="text-[11px] font-bold text-[#e7c97a]">{v.reference}</p>
                     <p className="mt-1 font-arabic-serif text-[14px] leading-relaxed text-[#eaf6ec]">
@@ -184,7 +184,7 @@ export function MeaningSheet({
                 {(data?.relatedPeople ?? []).map((p, i) => (
                   <div
                     key={i}
-                    className="flex items-center justify-between rounded-2xl bg-white/70 border border-[#efe2c4] p-3"
+                    className="flex items-center justify-between rounded-2xl bg-white/[0.06] border border-[#7af0b8]/20 p-3"
                   >
                     <div>
                       <p className="text-[13px] font-bold text-[#eaf6ec]">{p.name}</p>
