@@ -67,7 +67,7 @@ function ChaptersPage() {
           <SegmentedToggle mode={mode} onChange={setMode} />
         </div>
 
-        {isLoading && <p className="text-center text-[12px] text-[#6a543a]">جارٍ التحميل…</p>}
+        {isLoading && <div className="mt-1"><ChapterGridSkeleton count={20} /></div>}
         {error && (
           <p className="text-center text-[12px] text-red-700/80">
             تعذّر التحميل: {(error as Error).message}
