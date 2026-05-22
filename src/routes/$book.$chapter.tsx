@@ -1003,29 +1003,34 @@ function SliderRow({
 
 /* ---------------- Verse renderer ---------------- */
 
+/**
+ * Splits a verse into Arabic-letter runs vs the rest, then wraps each run that
+ * normalizes to a word in the dictionary index in a `HighlightedWord` button.
+ * Tashkeel and alef variants are normalized so matches survive Arabic spelling.
+ */
 function renderVerse(
   text: string,
-  onSelect: (w: string, kind?: string) => void,
+  dictIndex: DictionaryIndex,
+  onSelect: (w: string) => void,
 ): React.ReactNode {
   if (!text) return null;
-  const words = [...HIGHLIGHT_WORDS].sort((a, b) => b.length - a.length);
-  if (!words.length) return text;
-  const pattern = new RegExp(`(${words.map((w) => escapeReg(w)).join("|")})`, "g");
-  const parts = text.split(pattern);
+  if (!dictIndex.map.size) return text;
+  // Split into Arabic-letter runs (group 1) and the surrounding glue (group 0/even indices).
+  const parts = text.split(/([\u0600-\u06FF\u0750-\u077F]+)/g);
   return parts.map((p, i) => {
-    if (words.includes(p)) {
-      const meta = GLOSSARY[p];
-      const kind = (meta?.kindHint ?? "concept") as Kind;
-      return (
-        <HighlightedWord key={i} kind={kind} onSelect={() => onSelect(p, meta?.kind)}>
-          {p}
-        </HighlightedWord>
-      );
+    if (!p) return null;
+    if (i % 2 === 1) {
+      // Arabic word run
+      const key = normalizeAr(p);
+      if (key && dictIndex.map.has(key)) {
+        return (
+          <HighlightedWord key={i} onSelect={() => onSelect(p)}>
+            {p}
+          </HighlightedWord>
+        );
+      }
     }
     return <span key={i}>{p}</span>;
   });
 }
 
-function escapeReg(s: string) {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
