@@ -8,13 +8,12 @@ export function BookCard({
   chaptersCount,
   bookParam,
   tone = "gold",
-
   defaultSaved,
   onToggleSave,
 }: {
   name: string;
   chaptersCount?: number;
-  to?: string;
+  bookParam: string;
   tone?: "gold" | "purple" | "ivory";
   defaultSaved?: boolean;
   onToggleSave?: (saved: boolean) => void;
@@ -22,7 +21,12 @@ export function BookCard({
   const [saved, setSaved] = useState(!!defaultSaved);
   return (
     <div className="relative">
-      <Pressable to={to} ariaLabel={name} className="rounded-2xl">
+      <Link
+        to="/$book"
+        params={{ book: bookParam }}
+        aria-label={name}
+        className="block rounded-2xl transition-transform duration-200 active:scale-[0.97] focus:outline-none"
+      >
         <div className="rounded-2xl bg-[#fbf3e1] border border-[#efe2c4] p-2.5 text-right shadow-[0_8px_18px_-14px_rgba(120,80,30,0.4)]">
           <PlaceholderArt
             tone={tone}
@@ -38,7 +42,8 @@ export function BookCard({
             </p>
           )}
         </div>
-      </Pressable>
+      </Link>
+
       <button
         type="button"
         aria-label={saved ? "إزالة من المحفوظات" : "حفظ السفر"}
