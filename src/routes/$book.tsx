@@ -3,6 +3,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { chaptersQueryOptions, DEFAULT_LANGUAGE, DEFAULT_TRANSLATION } from "@/lib/bible";
 
 export const Route = createFileRoute("/$book")({
+  ssr: false,
   head: ({ params }) => ({
     meta: [
       { title: `${params.book} — الكتاب المقدس` },
