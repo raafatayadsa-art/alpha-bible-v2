@@ -51,19 +51,17 @@ function SplashScreen() {
         className="pointer-events-none absolute inset-0 splash-glow"
       />
 
-      {/* Glass + glow enhancement layered over the existing button area */}
+      {/* Transient press-only glow pulse (invisible at rest) */}
       <div
         aria-hidden
         className={[
           "pointer-events-none absolute left-1/2 -translate-x-1/2 rounded-full",
-          "splash-btn-glass",
-          "transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-          pressed ? "splash-btn-pressed" : "",
+          pressed ? "splash-btn-pulse" : "opacity-0",
         ].join(" ")}
         style={{ bottom: "9%", width: "82%", height: "11%" }}
       />
 
-      {/* Interactive tap target over the CTA button */}
+      {/* Invisible interactive tap target aligned with the original button in the artwork */}
       <button
         type="button"
         onClick={enter}
@@ -73,13 +71,14 @@ function SplashScreen() {
         onPointerCancel={() => setPressed(false)}
         aria-label="ابدأ رحلتك الروحية"
         className={[
-          "absolute left-1/2 -translate-x-1/2 rounded-full",
-          "focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/70",
+          "absolute left-1/2 -translate-x-1/2 rounded-full bg-transparent",
+          "focus:outline-none",
           "transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
           pressed ? "scale-[0.96]" : "scale-100",
         ].join(" ")}
         style={{ bottom: "9%", width: "82%", height: "11%" }}
       />
+
 
 
       {/* Fade-to-home veil */}
