@@ -812,39 +812,36 @@ function TypographySheet({
         type="button"
         aria-label="إغلاق"
         onClick={onClose}
-        className="fixed inset-0 z-40 bg-black/20"
+        className="fixed inset-0 z-40 bg-transparent"
       />
       <div
         dir="rtl"
         className={cn(
-          "fixed inset-x-0 bottom-0 z-50 mx-auto w-full max-w-[440px] rounded-t-3xl border-t p-5 pb-7 backdrop-blur-2xl animate-in slide-in-from-bottom duration-300",
+          "fixed left-1/2 -translate-x-1/2 z-50 w-[min(92vw,340px)] rounded-3xl border p-3 backdrop-blur-3xl animate-in fade-in zoom-in-95 duration-300",
+          "bottom-[150px]",
           spiritualMode
-            ? "bg-[#0c1828]/95 border-white/[0.08] text-[#e8e2cf] shadow-[0_-20px_50px_-20px_rgba(0,0,0,0.85),0_0_30px_-12px_rgba(231,201,122,0.25)]"
-            : "bg-[#fbf3e1]/97 border-white/70 text-[#3a2a18] shadow-[0_-18px_40px_-18px_rgba(120,80,30,0.45)]",
+            ? "bg-[#0b1a2c]/55 border-[#e7c97a]/22 text-[#e8e2cf] shadow-[0_24px_60px_-20px_rgba(0,0,0,0.85),0_0_28px_-10px_rgba(231,201,122,0.30),inset_0_1px_0_rgba(255,255,255,0.06)]"
+            : "bg-white/55 border-white/70 text-[#3a2a18] shadow-[0_20px_50px_-18px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.85)]",
         )}
         role="dialog"
         aria-label="إعدادات النص"
       >
-        <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-current opacity-20" />
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-[13px] font-extrabold tracking-wide">إعدادات القراءة</p>
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={onReset}
-              aria-label="إعادة ضبط"
-              className={cn(
-                "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10.5px] font-bold active:scale-95 transition-transform",
-                spiritualMode
-                  ? "bg-white/5 border-white/10 text-[#f3e6c4]"
-                  : "bg-white/80 border-[#efe2c4] text-[#3a2a18]",
-              )}
-            >
-              <RotateCcw className="h-3 w-3" />
-              إعادة ضبط
-            </button>
-            <Settings2 className="h-3.5 w-3.5 opacity-60 ms-1" />
-          </div>
+        <div className="flex items-center justify-between mb-2 px-0.5">
+          <p className="text-[11.5px] font-extrabold tracking-wide opacity-90">إعدادات القراءة</p>
+          <button
+            type="button"
+            onClick={onReset}
+            aria-label="إعادة ضبط"
+            className={cn(
+              "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold active:scale-95 transition-transform",
+              spiritualMode
+                ? "bg-white/5 border-white/10 text-[#f3e6c4]"
+                : "bg-white/70 border-[#efe2c4] text-[#3a2a18]",
+            )}
+          >
+            <RotateCcw className="h-2.5 w-2.5" />
+            ضبط
+          </button>
         </div>
 
         <SliderRow
@@ -858,7 +855,7 @@ function TypographySheet({
           spiritualMode={spiritualMode}
         />
         <SliderRow
-          label="المسافة بين السطور"
+          label="السطور"
           value={lineHeight}
           min={1.6}
           max={2.8}
@@ -868,7 +865,7 @@ function TypographySheet({
           spiritualMode={spiritualMode}
         />
         <SliderRow
-          label="عرض القراءة"
+          label="العرض"
           value={readingWidth}
           min={420}
           max={800}
@@ -877,11 +874,6 @@ function TypographySheet({
           display={`${readingWidth}px`}
           spiritualMode={spiritualMode}
         />
-
-        <div className="mt-3 flex items-center justify-between gap-2 text-[10px] opacity-70">
-          <span className="font-arabic-serif">Aa</span>
-          <span className="font-arabic-serif text-[16px]">Aa</span>
-        </div>
       </div>
     </>
   );
