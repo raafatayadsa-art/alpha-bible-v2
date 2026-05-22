@@ -3,6 +3,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { booksQueryOptions, DEFAULT_LANGUAGE, DEFAULT_TRANSLATION } from "@/lib/bible";
 
 export const Route = createFileRoute("/")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "الكتاب المقدس — Alpha Bible" },

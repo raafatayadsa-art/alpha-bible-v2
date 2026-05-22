@@ -8,6 +8,7 @@ import {
 } from "@/lib/bible";
 
 export const Route = createFileRoute("/$book/$chapter")({
+  ssr: false,
   head: ({ params }) => ({
     meta: [
       { title: `${params.book} ${params.chapter} — الكتاب المقدس` },
