@@ -177,3 +177,86 @@
   animation: splashShimmer 3400ms ease-in-out 1200ms infinite;
   filter: blur(2px);
 }
+
+/* ===== Layered cinematic splash ===== */
+@keyframes splashBgIn {
+  from { opacity: 0; transform: scale(1.06); }
+  to   { opacity: 1; transform: scale(1.02); }
+}
+@keyframes splashBgDrift {
+  0%   { transform: scale(1.02) translateY(0); }
+  50%  { transform: scale(1.03) translateY(-0.6%); }
+  100% { transform: scale(1.02) translateY(0); }
+}
+.splash-bg-parallax {
+  animation:
+    splashBgIn 1800ms ease-out both,
+    splashBgDrift 14s ease-in-out 1800ms infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes churchDescend {
+  0%   { opacity: 0; transform: translateY(-32px) scale(0.985); filter: blur(8px); }
+  60%  { opacity: 1; filter: blur(1.5px); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+.splash-church {
+  animation: churchDescend 1900ms cubic-bezier(0.22, 0.61, 0.36, 1) 200ms both;
+  will-change: transform, opacity, filter;
+}
+
+@keyframes logoRise {
+  0%   { opacity: 0; transform: translate(-50%, 8px) scale(0.92); filter: drop-shadow(0 0 0 rgba(230,180,80,0)); }
+  100% { opacity: 1; transform: translate(-50%, 0)   scale(1);    filter: drop-shadow(0 0 14px rgba(230,180,80,0.45)); }
+}
+.splash-logo {
+  animation: logoRise 1600ms cubic-bezier(0.22, 0.61, 0.36, 1) 900ms both;
+  will-change: transform, opacity, filter;
+}
+
+@keyframes frameFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.splash-frame {
+  animation: frameFade 1600ms ease-out 600ms both;
+  filter: drop-shadow(0 0 10px rgba(230,180,80,0.25));
+}
+
+@keyframes buttonRise {
+  from { opacity: 0; transform: translate(-50%, 28px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+.splash-button-wrap {
+  animation: buttonRise 1200ms cubic-bezier(0.22, 0.61, 0.36, 1) 1400ms both;
+}
+
+@keyframes splashRays {
+  0%   { opacity: 0.35; transform: translateY(0) scale(1); }
+  50%  { opacity: 0.55; transform: translateY(-1%) scale(1.02); }
+  100% { opacity: 0.35; transform: translateY(0) scale(1); }
+}
+.splash-rays {
+  background:
+    radial-gradient(60% 40% at 50% 18%, rgba(255, 240, 200, 0.55), transparent 70%),
+    conic-gradient(from 230deg at 50% 22%,
+      transparent 0deg,
+      rgba(255, 235, 190, 0.18) 30deg,
+      transparent 60deg,
+      rgba(255, 235, 190, 0.14) 90deg,
+      transparent 120deg,
+      rgba(255, 235, 190, 0.18) 150deg,
+      transparent 180deg);
+  mix-blend-mode: screen;
+  animation: splashRays 7s ease-in-out infinite, splashFade 2200ms ease-out both;
+}
+
+@keyframes goldPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(230, 180, 80, 0.55); }
+  70%  { box-shadow: 0 0 0 22px rgba(230, 180, 80, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(230, 180, 80, 0); }
+}
+.splash-button-pulse {
+  animation: goldPulse 700ms ease-out;
+}
+
