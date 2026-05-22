@@ -33,7 +33,7 @@ export function BottomDock({ className = "" }: { className?: string }) {
               raised
               label="الكتاب المقدس"
               to="/bible"
-              active={isActive("/bible") || isActive("/books") || /^\/[^/]+(\/\d+)?$/.test(pathname) === false ? false : true}
+              active={isActive("/bible") || isActive("/books") || pathname.split("/").length >= 2}
             />
             <DockItem icon={Users} label="المجتمع" />
             <DockItem icon={UserIcon} label="الملف الشخصي" />
