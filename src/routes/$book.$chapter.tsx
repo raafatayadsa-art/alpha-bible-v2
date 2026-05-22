@@ -40,7 +40,7 @@ function ChapterReader() {
 
       <header className="mb-10 text-center">
         <h1 className="font-serif text-4xl text-foreground">
-          {book} <span className="text-muted-foreground">·</span> {chapter}
+          {displayName(book)} <span className="text-muted-foreground">·</span> {chapter}
         </h1>
       </header>
 
