@@ -140,8 +140,8 @@ export function MeaningSheet({
                     className={cn(
                       "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11.5px] font-bold transition-colors",
                       active
-                        ? "bg-gradient-to-br from-[#e7c97a] to-[#a87a35] border-transparent text-white shadow-[0_6px_14px_-8px_rgba(120,80,20,0.5)]"
-                        : "bg-white/70 border-[#efe2c4] text-[#3a2a18]",
+                        ? "bg-gradient-to-br from-[#7af0b8] to-[#1f8a64] border-[#7af0b8]/50 text-[#08231b] shadow-[0_6px_14px_-8px_rgba(62,180,130,0.7)]"
+                        : "bg-white/8 border-[#7af0b8]/20 text-[#eaf6ec]",
                     )}
                   >
                     <Icon className="h-3.5 w-3.5" />
