@@ -501,7 +501,7 @@ function ScriptureReader() {
                   }
                 />
               );
-            })}
+            }); })()}
           </article>
         )}
 
