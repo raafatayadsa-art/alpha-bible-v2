@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { Menu, Bell, Search, Sparkles, Share2, Bookmark, ChevronLeft, SkipBack, SkipForward, Play, Pause, Home as HomeIcon, HandHeart, Users, User as UserIcon, BookMarked } from "lucide-react";
+import { Menu, Bell, Search, Sparkles, Share2, Bookmark, ChevronLeft, SkipBack, SkipForward, Play, Pause, Home as HomeIcon, HandHeart, Users, User as UserIcon } from "lucide-react";
+import logoBible from "@/assets/home/logo-bible.png";
 
 import heroImg from "@/assets/home/hero.png";
 import iconBible from "@/assets/home/icon-bible.png";
@@ -273,7 +274,7 @@ function HomeScreen() {
               {/* RTL order: الرئيسية (right) ... الملف الشخصي (left) */}
               <DockItem icon={HomeIcon} label="الرئيسية" active to="/home" color="#d96b2a" />
               <DockItem icon={HandHeart} label="الصلاة" color="#3a6fb5" />
-              <DockItem icon={BookMarked} label="الكتاب المقدس" raised to="/books" />
+              <DockItem label="الكتاب المقدس" raised to="/books" />
               <DockItem icon={Users} label="المجتمع" color="#6a4ab5" />
               <DockItem icon={UserIcon} label="الملف الشخصي" color="#6a4ab5" />
             </div>
@@ -286,26 +287,27 @@ function HomeScreen() {
 
 function DockItem({
   icon: Icon, label, active, raised, to,
-}: { icon: any; label: string; active?: boolean; raised?: boolean; to?: string; color?: string }) {
+}: { icon?: any; label: string; active?: boolean; raised?: boolean; to?: string; color?: string }) {
   const goldColor = "#b8893a";
   const inner = (
     <div className="flex w-full flex-col items-center justify-end gap-1.5">
       {raised ? (
         <div
-          className="-mt-7 grid h-14 w-14 place-items-center rounded-full"
+          className="-mt-8 grid h-16 w-16 place-items-center"
           style={{
-            filter: "drop-shadow(0 0 14px rgba(231,201,122,0.55)) drop-shadow(0 6px 10px rgba(168,120,42,0.25))",
+            filter: "drop-shadow(0 0 12px rgba(231,201,122,0.45)) drop-shadow(0 6px 10px rgba(168,120,42,0.20))",
           }}
         >
-          <Icon className="h-8 w-8" strokeWidth={1.8} style={{ color: goldColor }} />
+          <img src={logoBible} alt="الكتاب المقدس" className="h-full w-full object-contain" draggable={false} />
         </div>
-      ) : (
+      ) : Icon ? (
         <Icon
           className="h-6 w-6"
           strokeWidth={1.8}
           style={{ color: goldColor, opacity: active ? 1 : 0.95 }}
         />
-      )}
+      ) : null}
+
       <span
         className="text-[11px] font-bold leading-none whitespace-nowrap [word-break:keep-all]"
         style={{ color: goldColor }}
