@@ -317,13 +317,32 @@ function ScriptureReader() {
                 {group.map((v, i) => {
                   const id = v?.ID ?? `${ch}-${v?.verse_number ?? `${gi}-${i}`}`;
                   const showRef = (gi * 4 + i) > 0 && (gi * 4 + i) % 7 === 3;
+                  const isActive = activeVerse === String(id);
                   return (
-                    <p key={id} className="mb-2 last:mb-0">
+                    <p
+                      key={id}
+                      onClick={() =>
+                        setActiveVerse((cur) => (cur === String(id) ? null : String(id)))
+                      }
+                      className={cn(
+                        "mb-2 last:mb-0 cursor-pointer rounded-xl px-2 py-1.5 -mx-2 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                        isActive && (spiritualMode
+                          ? "bg-[#13243d]/70 scale-[1.012] shadow-[0_0_24px_-6px_rgba(231,201,122,0.35),inset_0_1px_0_rgba(255,255,255,0.05)] ring-1 ring-[#e7c97a]/25"
+                          : "bg-white/80 scale-[1.012] shadow-[0_8px_22px_-14px_rgba(120,80,30,0.45)] ring-1 ring-[#c79356]/30"),
+                      )}
+                    >
                       <span
                         className={cn(
-                          "me-1 inline-block min-w-[1.4em] text-[10.5px] font-bold align-super tabular-nums",
-                          spiritualMode ? "text-[#c79356]" : "text-[#b8893a]",
+                          "me-1 inline-block min-w-[1.4em] text-[10.5px] font-bold align-super tabular-nums transition-colors",
+                          spiritualMode
+                            ? isActive ? "text-[#f0d78c]" : "text-[#c79356]"
+                            : "text-[#b8893a]",
                         )}
+                        style={
+                          spiritualMode && isActive
+                            ? { textShadow: "0 0 8px rgba(231,201,122,0.7)" }
+                            : undefined
+                        }
                       >
                         {v?.verse_number ?? ""}
                       </span>
