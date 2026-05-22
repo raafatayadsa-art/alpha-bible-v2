@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as DiagnosticsRouteImport } from './routes/diagnostics'
 import { Route as BooksRouteImport } from './routes/books'
 import { Route as BookRouteImport } from './routes/$book'
@@ -16,6 +17,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as BookIndexRouteImport } from './routes/$book.index'
 import { Route as BookChapterRouteImport } from './routes/$book.$chapter'
 
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DiagnosticsRoute = DiagnosticsRouteImport.update({
   id: '/diagnostics',
   path: '/diagnostics',
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/$book': typeof BookRouteWithChildren
   '/books': typeof BooksRoute
   '/diagnostics': typeof DiagnosticsRoute
+  '/onboarding': typeof OnboardingRoute
   '/$book/$chapter': typeof BookChapterRoute
   '/$book/': typeof BookIndexRoute
 }
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/books': typeof BooksRoute
   '/diagnostics': typeof DiagnosticsRoute
+  '/onboarding': typeof OnboardingRoute
   '/$book/$chapter': typeof BookChapterRoute
   '/$book': typeof BookIndexRoute
 }
@@ -68,6 +76,7 @@ export interface FileRoutesById {
   '/$book': typeof BookRouteWithChildren
   '/books': typeof BooksRoute
   '/diagnostics': typeof DiagnosticsRoute
+  '/onboarding': typeof OnboardingRoute
   '/$book/$chapter': typeof BookChapterRoute
   '/$book/': typeof BookIndexRoute
 }
@@ -78,16 +87,24 @@ export interface FileRouteTypes {
     | '/$book'
     | '/books'
     | '/diagnostics'
+    | '/onboarding'
     | '/$book/$chapter'
     | '/$book/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/books' | '/diagnostics' | '/$book/$chapter' | '/$book'
+  to:
+    | '/'
+    | '/books'
+    | '/diagnostics'
+    | '/onboarding'
+    | '/$book/$chapter'
+    | '/$book'
   id:
     | '__root__'
     | '/'
     | '/$book'
     | '/books'
     | '/diagnostics'
+    | '/onboarding'
     | '/$book/$chapter'
     | '/$book/'
   fileRoutesById: FileRoutesById
@@ -97,10 +114,18 @@ export interface RootRouteChildren {
   BookRoute: typeof BookRouteWithChildren
   BooksRoute: typeof BooksRoute
   DiagnosticsRoute: typeof DiagnosticsRoute
+  OnboardingRoute: typeof OnboardingRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/diagnostics': {
       id: '/diagnostics'
       path: '/diagnostics'
@@ -163,7 +188,18 @@ const rootRouteChildren: RootRouteChildren = {
   BookRoute: BookRouteWithChildren,
   BooksRoute: BooksRoute,
   DiagnosticsRoute: DiagnosticsRoute,
+  OnboardingRoute: OnboardingRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
