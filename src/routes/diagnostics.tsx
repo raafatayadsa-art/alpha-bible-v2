@@ -13,8 +13,13 @@ export const Route = createFileRoute("/diagnostics")({
 function Diagnostics() {
   const [status, setStatus] = useState<"checking" | "ok" | "error">("checking");
   const [booksCount, setBooksCount] = useState<number | null>(null);
+  const [chaptersCount, setChaptersCount] = useState<number | null>(null);
   const [versesCount, setVersesCount] = useState<number | null>(null);
   const [selectedBook, setSelectedBook] = useState<string | null>(null);
+  const [selectedChapter, setSelectedChapter] = useState<number | null>(null);
+  const [sampleVerse, setSampleVerse] = useState<BibleVerse | null>(null);
+  const [lastError, setLastError] = useState<string | null>(null);
+  const [lastQueryResult, setLastQueryResult] = useState<string | null>(null);
   const [selectedChapter, setSelectedChapter] = useState<number | null>(null);
   const [sampleVerse, setSampleVerse] = useState<BibleVerse | null>(null);
   const [lastError, setLastError] = useState<string | null>(null);
