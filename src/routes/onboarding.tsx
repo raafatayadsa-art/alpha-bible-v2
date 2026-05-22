@@ -29,11 +29,11 @@ function OnboardingScreen() {
       <img
         src={interestsImage}
         alt="اختر اهتماماتك"
-        className="absolute inset-0 h-full w-full object-cover object-center"
+        className="absolute inset-0 h-full w-full object-cover object-bottom"
         draggable={false}
       />
 
-      {/* Invisible tap target over the gold "تابع" button in the artwork */}
+      {/* Invisible tap target over the gold CTA button at the bottom of the artwork */}
       <button
         type="button"
         onClick={go}
@@ -41,14 +41,16 @@ function OnboardingScreen() {
         onPointerUp={() => setPressed(false)}
         onPointerLeave={() => setPressed(false)}
         onPointerCancel={() => setPressed(false)}
-        aria-label="تابع"
+        aria-label="ابدأ رحلتك"
         className={[
           "absolute left-1/2 -translate-x-1/2 rounded-full bg-transparent",
           "transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
           pressed ? "scale-[0.97]" : "scale-100",
         ].join(" ")}
-        style={{ bottom: "13%", width: "82%", height: "7%" }}
+        style={{ bottom: "0", width: "90%", height: "9%" }}
       />
+
+
 
       <div
         aria-hidden
