@@ -487,6 +487,7 @@ function ScriptureReader() {
                     if (e) setSheet(entryToSheet(e));
                   }}
                   dictIndex={dictIndex}
+                  seenWords={seenWords}
                   showRef={showRef}
                   onOpenRef={() =>
                     setSheet({
