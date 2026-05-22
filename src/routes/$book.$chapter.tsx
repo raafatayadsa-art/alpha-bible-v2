@@ -587,7 +587,7 @@ function TypographyPanel({
         className={cn(
           "fixed left-1/2 top-[64px] z-50 w-[88%] max-w-[360px] -translate-x-1/2 rounded-3xl border p-4 backdrop-blur-2xl shadow-[0_18px_40px_-18px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.8)]",
           spiritualMode
-            ? "bg-[#1a1410]/90 border-white/10 text-[#f3e6c4]"
+            ? "bg-[#0c1828]/90 border-white/[0.08] text-[#e8e2cf] shadow-[0_20px_50px_-20px_rgba(0,0,0,0.85),0_0_30px_-12px_rgba(231,201,122,0.25),inset_0_1px_0_rgba(255,255,255,0.05)]"
             : "bg-[#fbf3e1]/95 border-white/70 text-[#3a2a18]",
         )}
         role="dialog"
