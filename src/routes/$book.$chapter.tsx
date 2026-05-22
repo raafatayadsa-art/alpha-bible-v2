@@ -104,6 +104,7 @@ function ScriptureReader() {
   const [sheet, setSheet] = useState<MeaningSheetData | null>(null);
   const [progress, setProgress] = useState(0);
   const [typeOpen, setTypeOpen] = useState(false);
+  const [activeVerse, setActiveVerse] = useState<string | null>(null);
 
   // Typography controls
   const [fontSize, setFontSize] = useState(19); // px
@@ -139,14 +140,15 @@ function ScriptureReader() {
     return () => window.removeEventListener("scroll", onScroll);
   }, [book, chapter]);
 
+  // Deep-navy cinematic dark palette; warm gold glow; subtle purple accents.
   const bgClass = spiritualMode
-    ? "bg-[#1a1410] text-[#f3e6c4]"
+    ? "bg-[#070d1a] text-[#e8e2cf]"
     : "bg-[#f8efdc] text-[#3a2a18]";
   const surfaceClass = spiritualMode
-    ? "bg-white/[0.04] border-white/10"
+    ? "bg-[#0e1a2e]/55 border-white/[0.06] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_8px_22px_-16px_rgba(0,0,0,0.7)]"
     : "bg-white/70 border-[#efe2c4]";
   const subSurfaceClass = spiritualMode
-    ? "bg-white/[0.025] border-white/[0.06]"
+    ? "bg-[#0c1828]/45 border-white/[0.05] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
     : "bg-white/40 border-[#efe2c4]/60";
 
   const totalVerses = verses.data?.length ?? 0;
@@ -168,6 +170,21 @@ function ScriptureReader() {
         bgClass,
       )}
     >
+      {/* Cinematic glow atmosphere (dark mode only) */}
+      {spiritualMode && (
+        <div
+          aria-hidden
+          className="pointer-events-none fixed inset-0 z-0"
+          style={{
+            background:
+              "radial-gradient(60% 40% at 50% 0%, rgba(231,201,122,0.10), transparent 70%)," +
+              "radial-gradient(50% 35% at 85% 30%, rgba(140,110,210,0.09), transparent 75%)," +
+              "radial-gradient(70% 45% at 15% 85%, rgba(110,160,220,0.07), transparent 80%)," +
+              "radial-gradient(100% 60% at 50% 100%, rgba(0,0,0,0.55), transparent 70%)",
+          }}
+        />
+      )}
+
       {/* Top thin progress */}
       <div
         className="fixed inset-x-0 top-0 z-40 h-[3px]"
@@ -175,7 +192,10 @@ function ScriptureReader() {
       >
         <div className="mx-auto h-full w-full max-w-[640px]">
           <div
-            className="h-full rounded-r-full bg-gradient-to-l from-[#e7c97a] via-[#c79356] to-[#7a4a26] transition-[width] duration-150"
+            className={cn(
+              "h-full rounded-r-full transition-[width] duration-150 bg-gradient-to-l from-[#e7c97a] via-[#c79356] to-[#7a4a26]",
+              spiritualMode && "shadow-[0_0_10px_rgba(231,201,122,0.55)]",
+            )}
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -297,13 +317,32 @@ function ScriptureReader() {
                 {group.map((v, i) => {
                   const id = v?.ID ?? `${ch}-${v?.verse_number ?? `${gi}-${i}`}`;
                   const showRef = (gi * 4 + i) > 0 && (gi * 4 + i) % 7 === 3;
+                  const isActive = activeVerse === String(id);
                   return (
-                    <p key={id} className="mb-2 last:mb-0">
+                    <p
+                      key={id}
+                      onClick={() =>
+                        setActiveVerse((cur) => (cur === String(id) ? null : String(id)))
+                      }
+                      className={cn(
+                        "mb-2 last:mb-0 cursor-pointer rounded-xl px-2 py-1.5 -mx-2 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                        isActive && (spiritualMode
+                          ? "bg-[#13243d]/70 scale-[1.012] shadow-[0_0_24px_-6px_rgba(231,201,122,0.35),inset_0_1px_0_rgba(255,255,255,0.05)] ring-1 ring-[#e7c97a]/25"
+                          : "bg-white/80 scale-[1.012] shadow-[0_8px_22px_-14px_rgba(120,80,30,0.45)] ring-1 ring-[#c79356]/30"),
+                      )}
+                    >
                       <span
                         className={cn(
-                          "me-1 inline-block min-w-[1.4em] text-[10.5px] font-bold align-super tabular-nums",
-                          spiritualMode ? "text-[#c79356]" : "text-[#b8893a]",
+                          "me-1 inline-block min-w-[1.4em] text-[10.5px] font-bold align-super tabular-nums transition-colors",
+                          spiritualMode
+                            ? isActive ? "text-[#f0d78c]" : "text-[#c79356]"
+                            : "text-[#b8893a]",
                         )}
+                        style={
+                          spiritualMode && isActive
+                            ? { textShadow: "0 0 8px rgba(231,201,122,0.7)" }
+                            : undefined
+                        }
                       >
                         {v?.verse_number ?? ""}
                       </span>
@@ -466,14 +505,22 @@ function VerticalProgress({
         className={cn(
           "flex flex-col items-center gap-1.5 rounded-full border px-1.5 py-2 backdrop-blur-xl",
           spiritualMode
-            ? "bg-white/[0.05] border-white/10"
+            ? "bg-[#0c1828]/55 border-white/[0.07] shadow-[0_0_18px_-6px_rgba(231,201,122,0.25),inset_0_1px_0_rgba(255,255,255,0.04)]"
             : "bg-[#fbf3e1]/70 border-white/70 shadow-[0_8px_18px_-12px_rgba(120,80,30,0.35),inset_0_1px_0_rgba(255,255,255,0.7)]",
         )}
       >
         {/* progress fill */}
-        <div className="relative h-40 w-1 rounded-full bg-[#ecdcb6]/60 overflow-hidden">
+        <div
+          className={cn(
+            "relative h-40 w-1 rounded-full overflow-hidden",
+            spiritualMode ? "bg-white/[0.06]" : "bg-[#ecdcb6]/60",
+          )}
+        >
           <div
-            className="absolute inset-x-0 top-0 rounded-full bg-gradient-to-b from-[#e7c97a] via-[#c79356] to-[#7a4a26] transition-[height] duration-300"
+            className={cn(
+              "absolute inset-x-0 top-0 rounded-full bg-gradient-to-b from-[#e7c97a] via-[#c79356] to-[#7a4a26] transition-[height] duration-300",
+              spiritualMode && "shadow-[0_0_8px_rgba(231,201,122,0.6)]",
+            )}
             style={{ height: `${Math.max(2, progress)}%` }}
           />
         </div>
@@ -540,7 +587,7 @@ function TypographyPanel({
         className={cn(
           "fixed left-1/2 top-[64px] z-50 w-[88%] max-w-[360px] -translate-x-1/2 rounded-3xl border p-4 backdrop-blur-2xl shadow-[0_18px_40px_-18px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.8)]",
           spiritualMode
-            ? "bg-[#1a1410]/90 border-white/10 text-[#f3e6c4]"
+            ? "bg-[#0c1828]/90 border-white/[0.08] text-[#e8e2cf] shadow-[0_20px_50px_-20px_rgba(0,0,0,0.85),0_0_30px_-12px_rgba(231,201,122,0.25),inset_0_1px_0_rgba(255,255,255,0.05)]"
             : "bg-[#fbf3e1]/95 border-white/70 text-[#3a2a18]",
         )}
         role="dialog"
