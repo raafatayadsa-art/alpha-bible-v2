@@ -214,3 +214,33 @@ html, body { font-family: 'Tajawal', 'Segoe UI', system-ui, -apple-system, sans-
   50%  { transform: translate3d(2%, -1%, 0) scale(1.04); }
   100% { transform: translate3d(-2%, 1%, 0) scale(1.02); }
 }
+
+/* ===== Dictionary word highlight (clickable) ===== */
+.dictionary-highlight {
+  color: #1f7a5c;
+  background: rgba(47, 180, 130, 0.12);
+  border-bottom: 1px solid rgba(31, 122, 92, 0.45);
+  border-radius: 3px;
+  padding: 0 2px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, text-shadow 0.2s ease;
+}
+.dictionary-highlight:hover,
+.dictionary-highlight:focus-visible {
+  background: rgba(47, 180, 130, 0.22);
+  color: #155f47;
+  outline: none;
+}
+.dark-reader .dictionary-highlight,
+.reader-spiritual .dictionary-highlight {
+  color: #7fffd4;
+  background: rgba(20, 180, 130, 0.12);
+  border-bottom: 1px solid rgba(127, 255, 212, 0.7);
+  text-shadow: 0 0 8px rgba(127, 255, 212, 0.35);
+}
+.dark-reader .dictionary-highlight:hover,
+.reader-spiritual .dictionary-highlight:hover {
+  background: rgba(20, 180, 130, 0.2);
+  color: #b6ffe6;
+}
