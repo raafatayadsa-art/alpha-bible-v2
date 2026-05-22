@@ -89,18 +89,6 @@ function Diagnostics() {
         <Row k="Supabase URL" v={SUPABASE_URL} />
         <Row k="Connection status" v={status} />
         <Row k="Total books" v={booksCount} />
-        <Row k="Total verses" v={versesCount} />
-        <Row k="Selected book" v={selectedBook} />
-        <Row k="Selected chapter" v={selectedChapter} />
-        <Row k="Last fetch error" v={lastError} />
-        <Row
-          k="Sample first verse"
-          v={
-            sampleVerse
-              ? `${sampleVerse.book_name} ${sampleVerse.chapter_number}:${sampleVerse.verse_number} — ${sampleVerse.verse_text}`
-              : null
-          }
-        <Row k="Total books" v={booksCount} />
         <Row k="Total chapters (selected book)" v={chaptersCount} />
         <Row k="Total verses" v={versesCount} />
         <Row k="Selected book" v={selectedBook} />
