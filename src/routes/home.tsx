@@ -274,7 +274,7 @@ function HomeScreen() {
               {/* RTL order: الرئيسية (right) ... الملف الشخصي (left) */}
               <DockItem icon={HomeIcon} label="الرئيسية" active to="/home" color="#d96b2a" />
               <DockItem icon={HandHeart} label="الصلاة" color="#3a6fb5" />
-              <DockItem icon={BookMarked} label="الكتاب المقدس" raised to="/books" />
+              <DockItem label="الكتاب المقدس" raised to="/books" />
               <DockItem icon={Users} label="المجتمع" color="#6a4ab5" />
               <DockItem icon={UserIcon} label="الملف الشخصي" color="#6a4ab5" />
             </div>
