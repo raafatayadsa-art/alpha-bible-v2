@@ -14,11 +14,6 @@ import playerImg from "@/assets/home/player.png";
 import churchChalice from "@/assets/home/church-chalice.png";
 import churchPeople from "@/assets/home/church-people.png";
 import churchBell from "@/assets/home/church-bell.png";
-import navProfile from "@/assets/home/nav-profile.png";
-import navCommunity from "@/assets/home/nav-community.png";
-import navBible from "@/assets/home/nav-bible.png";
-import navPrayer from "@/assets/home/nav-prayer.png";
-import navHome from "@/assets/home/nav-home.png";
 
 export const Route = createFileRoute("/home")({
   ssr: false,
