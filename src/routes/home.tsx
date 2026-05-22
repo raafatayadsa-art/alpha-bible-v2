@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { Menu, Bell, Search, Sparkles, Share2, Bookmark, ChevronLeft, SkipBack, SkipForward, Play, Pause, Home as HomeIcon, BookOpen, HandHeart, Users, User as UserIcon, BookMarked } from "lucide-react";
+import { Menu, Bell, Search, Sparkles, Share2, Bookmark, ChevronLeft, SkipBack, SkipForward, Play, Pause, Home as HomeIcon, HandHeart, Users, User as UserIcon, BookMarked } from "lucide-react";
 
 import heroImg from "@/assets/home/hero.png";
 import iconBible from "@/assets/home/icon-bible.png";
