@@ -220,8 +220,32 @@ export function IconBadge({
   );
 }
 
-export function BackButton({ to, label = "رجوع" }: { to?: string; label?: string }) {
-  const inner = (
+export function BackButton({
+  to,
+  label = "رجوع",
+  compact = false,
+  tone = "light",
+}: {
+  to?: string;
+  label?: string;
+  compact?: boolean;
+  tone?: "light" | "dark";
+}) {
+  const inner = compact ? (
+    <span
+      aria-label={label}
+      className={cn(
+        "inline-grid h-9 w-9 place-items-center rounded-full border backdrop-blur-xl active:scale-90 transition-transform",
+        tone === "dark"
+          ? "bg-[#0e1a2e]/55 border-white/10 text-[#f3e6c4]"
+          : "bg-white/70 border-[#efe2c4] text-[#3a2a18]",
+      )}
+    >
+      <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <path d="M7 4l6 6-6 6" />
+      </svg>
+    </span>
+  ) : (
     <span className="inline-flex items-center gap-1.5 rounded-full bg-white/80 border border-[#efe2c4] px-3 py-1.5 text-[12px] font-bold text-[#3a2a18] shadow-[0_6px_14px_-10px_rgba(120,80,30,0.35)]">
       <span aria-hidden>→</span>
       {label}
@@ -229,7 +253,7 @@ export function BackButton({ to, label = "رجوع" }: { to?: string; label?: st
   );
   if (to) {
     return (
-      <Link to={to as any} className="inline-block active:scale-95 transition-transform">
+      <Link to={to as any} aria-label={label} className="inline-block active:scale-95 transition-transform">
         {inner}
       </Link>
     );
@@ -237,6 +261,7 @@ export function BackButton({ to, label = "رجوع" }: { to?: string; label?: st
   return (
     <button
       type="button"
+      aria-label={label}
       onClick={() => history.back()}
       className="inline-block active:scale-95 transition-transform"
     >
