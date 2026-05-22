@@ -10,6 +10,7 @@ import {
   Type as TypeIcon,
   ChevronUp,
   ChevronDown,
+  RotateCcw,
 } from "lucide-react";
 import { chaptersQueryOptions, versesQueryOptions } from "@/lib/bible";
 import { displayName } from "@/lib/bible-books";
@@ -20,8 +21,15 @@ import {
   HighlightedWord,
   MeaningSheet,
   ReferenceIndicator,
+  VerseSkeleton,
   type MeaningSheetData,
 } from "@/components/bible";
+import {
+  updateSession,
+  useSavedVerses,
+  useTypographyPrefs,
+  verseKey,
+} from "@/lib/reading-state";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/$book/$chapter")({
@@ -99,68 +107,165 @@ function ScriptureReader() {
   const verses = useQuery(versesQueryOptions(book, ch));
   const chapters = useQuery(chaptersQueryOptions(book));
 
-  const [saved, setSaved] = useState(false);
   const [spiritualMode, setSpiritualMode] = useState(false);
   const [sheet, setSheet] = useState<MeaningSheetData | null>(null);
   const [progress, setProgress] = useState(0);
   const [typeOpen, setTypeOpen] = useState(false);
   const [activeVerse, setActiveVerse] = useState<string | null>(null);
 
-  // Typography controls
-  const [fontSize, setFontSize] = useState(19); // px
-  const [lineHeight, setLineHeight] = useState(2.15);
-  const [readingWidth, setReadingWidth] = useState(640); // px
+  // Persistent typography prefs
+  const { prefs, setPrefs, reset: resetPrefs } = useTypographyPrefs();
+  const { fontSize, lineHeight, readingWidth } = prefs;
+  const setFontSize = (n: number) => setPrefs({ ...prefs, fontSize: n });
+  const setLineHeight = (n: number) => setPrefs({ ...prefs, lineHeight: n });
+  const setReadingWidth = (n: number) => setPrefs({ ...prefs, readingWidth: n });
+
+  // Saved verses
+  const { isSaved, toggle: toggleSaved } = useSavedVerses();
 
   const articleRef = useRef<HTMLElement>(null);
+  const rafRef = useRef<number | null>(null);
+  const targetProgress = useRef(0);
+  const currentProgress = useRef(0);
+  const visibleVerseRef = useRef<number | undefined>(undefined);
+  const lastSavedAt = useRef(0);
 
   const list = chapters.data ?? [];
   const idx = list.indexOf(ch);
   const prev = idx > 0 ? list[idx - 1] : null;
   const next = idx >= 0 && idx < list.length - 1 ? list[idx + 1] : null;
 
+  const bookName = displayName(book);
+
   const isNT = useMemo(() => {
-    const name = displayName(book);
     return [
       "متى", "مرقس", "لوقا", "يوحنا", "أعمال", "رؤيا", "رومية", "كورنثوس", "غلاطية", "أفسس",
       "فيلبي", "كولوسي", "تسالونيكي", "تيموثاوس", "تيطس", "فليمون", "العبرانيين", "يعقوب",
       "بطرس", "يهوذا", "رسالة", "إنجيل",
-    ].some((k) => name.includes(k));
-  }, [book]);
+    ].some((k) => bookName.includes(k));
+  }, [bookName]);
 
-  // Top + side progress driven by scroll position
+  // Smooth scroll-driven progress: rAF + EMA easing toward target.
   useEffect(() => {
     const onScroll = () => {
       const doc = document.documentElement;
       const max = doc.scrollHeight - window.innerHeight;
-      const pct = max > 0 ? (window.scrollY / max) * 100 : 0;
-      setProgress(pct);
+      const pct = max > 0 ? Math.max(0, Math.min(100, (window.scrollY / max) * 100)) : 0;
+      targetProgress.current = pct;
+      if (rafRef.current == null) {
+        const tick = () => {
+          const diff = targetProgress.current - currentProgress.current;
+          currentProgress.current += diff * 0.18; // smooth easing
+          const done = Math.abs(diff) < 0.05;
+          if (done) {
+            currentProgress.current = targetProgress.current;
+            setProgress(currentProgress.current);
+            rafRef.current = null;
+            return;
+          }
+          setProgress(currentProgress.current);
+          rafRef.current = requestAnimationFrame(tick);
+        };
+        rafRef.current = requestAnimationFrame(tick);
+      }
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    };
   }, [book, chapter]);
 
-  // Deep-navy cinematic dark palette; warm gold glow; subtle purple accents.
+  // Track which verse is currently visible (top half of viewport).
+  useEffect(() => {
+    if (!verses.data?.length) return;
+    const els = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-verse-num]"),
+    );
+    if (!els.length) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+        if (visible) {
+          const n = Number((visible.target as HTMLElement).dataset.verseNum);
+          if (n) visibleVerseRef.current = n;
+        }
+      },
+      { rootMargin: "-15% 0px -65% 0px", threshold: 0.01 },
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, [verses.data]);
+
+  // Persist reading session (throttled) + restore scroll on first load.
+  const restoredRef = useRef(false);
+  useEffect(() => {
+    if (!verses.data?.length) return;
+    if (restoredRef.current) return;
+    restoredRef.current = true;
+    // Restore scroll if the saved session matches this book/chapter
+    try {
+      const raw = localStorage.getItem("ab:reading:current");
+      if (raw) {
+        const s = JSON.parse(raw) as { book: string; chapter: number; scrollY: number };
+        if (s && s.book === book && s.chapter === ch && s.scrollY > 0) {
+          requestAnimationFrame(() => window.scrollTo(0, s.scrollY));
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [verses.data, book, ch]);
+
+  useEffect(() => {
+    if (!verses.data?.length) return;
+    const save = () => {
+      const now = Date.now();
+      if (now - lastSavedAt.current < 1200) return;
+      lastSavedAt.current = now;
+      updateSession({
+        book,
+        bookName,
+        chapter: ch,
+        verse: visibleVerseRef.current,
+        progressPercent: targetProgress.current,
+        scrollY: window.scrollY,
+        lastOpenedAt: now,
+      });
+    };
+    save();
+    const onScroll = () => save();
+    const onHide = () => {
+      lastSavedAt.current = 0;
+      save();
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("visibilitychange", onHide);
+    window.addEventListener("pagehide", onHide);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("visibilitychange", onHide);
+      window.removeEventListener("pagehide", onHide);
+      onHide();
+    };
+  }, [verses.data, book, bookName, ch]);
+
+  // Palette
   const bgClass = spiritualMode
     ? "bg-[#070d1a] text-[#e8e2cf]"
     : "bg-[#f8efdc] text-[#3a2a18]";
   const surfaceClass = spiritualMode
     ? "bg-[#0e1a2e]/55 border-white/[0.06] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_8px_22px_-16px_rgba(0,0,0,0.7)]"
     : "bg-white/70 border-[#efe2c4]";
-  const subSurfaceClass = spiritualMode
-    ? "bg-[#0c1828]/45 border-white/[0.05] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
-    : "bg-white/40 border-[#efe2c4]/60";
+  const verseCardClass = spiritualMode
+    ? "bg-[#0e1a2e]/55 border-white/[0.06] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_6px_18px_-14px_rgba(0,0,0,0.7)]"
+    : "bg-white/70 border-[#efe2c4] shadow-[0_4px_12px_-10px_rgba(120,80,30,0.30)]";
 
   const totalVerses = verses.data?.length ?? 0;
-
-  // Group verses into very soft "stanzas" of 4 for eye tracking.
-  const groups = useMemo(() => {
-    const items = verses.data ?? [];
-    const out: typeof items[] = [];
-    const size = 4;
-    for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
-    return out;
-  }, [verses.data]);
 
   return (
     <main
@@ -193,7 +298,7 @@ function ScriptureReader() {
         <div className="mx-auto h-full w-full max-w-[640px]">
           <div
             className={cn(
-              "h-full rounded-r-full transition-[width] duration-150 bg-gradient-to-l from-[#e7c97a] via-[#c79356] to-[#7a4a26]",
+              "h-full rounded-r-full bg-gradient-to-l from-[#e7c97a] via-[#c79356] to-[#7a4a26]",
               spiritualMode && "shadow-[0_0_10px_rgba(231,201,122,0.55)]",
             )}
             style={{ width: `${progress}%` }}
@@ -245,20 +350,13 @@ function ScriptureReader() {
                 spiritualMode ? "text-[#f3e6c4]" : "text-[#3a2a18]",
               )}
             >
-              {displayName(book)} <span className="opacity-60">·</span> {chapter}
+              {bookName} <span className="opacity-60">·</span> {chapter}
             </h1>
           </div>
 
           <div className="flex items-center gap-1">
             <ToolbarBtn label="بحث" surfaceClass={surfaceClass}>
               <Search className="h-4 w-4" />
-            </ToolbarBtn>
-            <ToolbarBtn
-              label={saved ? "إزالة من المحفوظات" : "حفظ"}
-              surfaceClass={surfaceClass}
-              onClick={() => setSaved((s) => !s)}
-            >
-              {saved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
             </ToolbarBtn>
             <ToolbarBtn
               label="إعدادات النص"
@@ -281,94 +379,68 @@ function ScriptureReader() {
             الإصحاح {ch}
             {list.length ? ` من ${list.length}` : ""}
           </p>
-          <p className="text-[11px] font-bold tabular-nums opacity-80">{totalVerses} آية</p>
+          <p className="text-[11px] font-bold tabular-nums opacity-80">
+            {totalVerses ? `${totalVerses} آية` : ""}
+          </p>
         </div>
 
         {/* Loading / error */}
-        {verses.isLoading && (
-          <p className="mt-12 text-center text-[12px] opacity-70">جاري تحميل الآيات...</p>
-        )}
+        {verses.isLoading && <VerseSkeleton count={6} />}
         {verses.error && (
           <p className="mt-12 text-center text-[12px] text-red-500">
             تعذّر التحميل: {(verses.error as Error)?.message ?? "خطأ غير معروف"}
           </p>
         )}
-        {!verses.isLoading && !verses.error && totalVerses === 0 && (
-          <p className="mt-12 text-center text-[12px] opacity-70">لا توجد آيات</p>
-        )}
 
-        {totalVerses > 0 && (
+        {!verses.isLoading && !verses.error && totalVerses > 0 && (
           <article
             ref={articleRef}
             className={cn(
-              "mt-5 font-arabic-serif tracking-[0.2px] transition-[font-size,line-height] duration-200",
+              "mt-5 font-arabic-serif tracking-[0.2px] transition-[font-size,line-height] duration-200 space-y-2",
               spiritualMode ? "text-[#f3e6c4]" : "text-[#3a2a18]",
             )}
             style={{ fontSize: `${fontSize}px`, lineHeight, wordSpacing: "0.06em" }}
           >
-            {groups.map((group, gi) => (
-              <section
-                key={gi}
-                className={cn(
-                  "mb-3 rounded-2xl border px-3.5 py-3 transition-colors",
-                  subSurfaceClass,
-                )}
-              >
-                {group.map((v, i) => {
-                  const id = v?.ID ?? `${ch}-${v?.verse_number ?? `${gi}-${i}`}`;
-                  const showRef = (gi * 4 + i) > 0 && (gi * 4 + i) % 7 === 3;
-                  const isActive = activeVerse === String(id);
-                  return (
-                    <p
-                      key={id}
-                      onClick={() =>
-                        setActiveVerse((cur) => (cur === String(id) ? null : String(id)))
-                      }
-                      className={cn(
-                        "mb-2 last:mb-0 cursor-pointer rounded-xl px-2 py-1.5 -mx-2 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                        isActive && (spiritualMode
-                          ? "bg-[#13243d]/70 scale-[1.012] shadow-[0_0_24px_-6px_rgba(231,201,122,0.35),inset_0_1px_0_rgba(255,255,255,0.05)] ring-1 ring-[#e7c97a]/25"
-                          : "bg-white/80 scale-[1.012] shadow-[0_8px_22px_-14px_rgba(120,80,30,0.45)] ring-1 ring-[#c79356]/30"),
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          "me-1 inline-block min-w-[1.4em] text-[10.5px] font-bold align-super tabular-nums transition-colors",
-                          spiritualMode
-                            ? isActive ? "text-[#f0d78c]" : "text-[#c79356]"
-                            : "text-[#b8893a]",
-                        )}
-                        style={
-                          spiritualMode && isActive
-                            ? { textShadow: "0 0 8px rgba(231,201,122,0.7)" }
-                            : undefined
-                        }
-                      >
-                        {v?.verse_number ?? ""}
-                      </span>
-                      {renderVerse(v?.verse_text ?? "", (w, k) =>
-                        setSheet(GLOSSARY[w] ?? { word: w, kind: k }),
-                      )}
-                      {showRef && (
-                        <ReferenceIndicator
-                          count={2}
-                          onClick={() =>
-                            setSheet({
-                              word: `${displayName(book)} ${ch}:${v?.verse_number}`,
-                              kind: "مراجع متقاطعة",
-                              relatedVerses: [
-                                { reference: "مزمور 23:1", text: "الرب راعيّ فلا يعوزني شيء." },
-                                { reference: "يوحنا 14:6", text: "أنا هو الطريق والحق والحياة." },
-                              ],
-                            })
-                          }
-                        />
-                      )}
-                    </p>
-                  );
-                })}
-              </section>
-            ))}
+            {verses.data!.map((v, i) => {
+              const num = v?.verse_number ?? i + 1;
+              const id = verseKey(book, ch, num);
+              const isActive = activeVerse === id;
+              const saved = isSaved(id);
+              const showRef = i > 0 && i % 7 === 3;
+              return (
+                <VerseCard
+                  key={id}
+                  num={num}
+                  text={v?.verse_text ?? ""}
+                  isActive={isActive}
+                  saved={saved}
+                  spiritualMode={spiritualMode}
+                  surfaceClass={verseCardClass}
+                  onTap={() => setActiveVerse((cur) => (cur === id ? null : id))}
+                  onToggleSave={() =>
+                    toggleSaved({
+                      book,
+                      bookName,
+                      chapter: ch,
+                      verse: num,
+                      text: v?.verse_text ?? "",
+                    })
+                  }
+                  onSelectWord={(w, k) => setSheet(GLOSSARY[w] ?? { word: w, kind: k })}
+                  showRef={showRef}
+                  onOpenRef={() =>
+                    setSheet({
+                      word: `${bookName} ${ch}:${num}`,
+                      kind: "مراجع متقاطعة",
+                      relatedVerses: [
+                        { reference: "مزمور 23:1", text: "الرب راعيّ فلا يعوزني شيء." },
+                        { reference: "يوحنا 14:6", text: "أنا هو الطريق والحق والحياة." },
+                      ],
+                    })
+                  }
+                />
+              );
+            })}
           </article>
         )}
 
@@ -410,15 +482,31 @@ function ScriptureReader() {
         </nav>
       </div>
 
-      {/* Typography popover */}
+      {/* Floating "Aa" font controls trigger (bottom-right above dock) */}
+      <button
+        type="button"
+        aria-label="إعدادات النص"
+        onClick={() => setTypeOpen(true)}
+        className={cn(
+          "fixed right-3 bottom-[164px] z-40 grid h-11 w-11 place-items-center rounded-full border backdrop-blur-xl active:scale-90 transition-transform",
+          spiritualMode
+            ? "bg-[#0e1a2e]/70 border-white/10 text-[#f3e6c4] shadow-[0_8px_24px_-12px_rgba(231,201,122,0.35)]"
+            : "bg-white/85 border-[#efe2c4] text-[#3a2a18] shadow-[0_8px_24px_-12px_rgba(120,80,30,0.4)]",
+        )}
+      >
+        <span className="font-arabic-serif text-[15px] font-extrabold">Aa</span>
+      </button>
+
+      {/* Typography sheet */}
       {typeOpen && (
-        <TypographyPanel
+        <TypographySheet
           fontSize={fontSize}
           setFontSize={setFontSize}
           lineHeight={lineHeight}
           setLineHeight={setLineHeight}
           readingWidth={readingWidth}
           setReadingWidth={setReadingWidth}
+          onReset={resetPrefs}
           onClose={() => setTypeOpen(false)}
           spiritualMode={spiritualMode}
         />
@@ -436,6 +524,85 @@ function ScriptureReader() {
 
       <MeaningSheet data={sheet} onClose={() => setSheet(null)} />
     </main>
+  );
+}
+
+/* ---------------- Verse Card ---------------- */
+
+function VerseCard({
+  num,
+  text,
+  isActive,
+  saved,
+  spiritualMode,
+  surfaceClass,
+  onTap,
+  onToggleSave,
+  onSelectWord,
+  showRef,
+  onOpenRef,
+}: {
+  num: number;
+  text: string;
+  isActive: boolean;
+  saved: boolean;
+  spiritualMode: boolean;
+  surfaceClass: string;
+  onTap: () => void;
+  onToggleSave: () => void;
+  onSelectWord: (w: string, k?: string) => void;
+  showRef: boolean;
+  onOpenRef: () => void;
+}) {
+  return (
+    <div
+      data-verse-num={num}
+      onClick={onTap}
+      className={cn(
+        "group relative cursor-pointer rounded-2xl border px-3.5 py-3 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        surfaceClass,
+        isActive && (spiritualMode
+          ? "scale-[1.012] ring-1 ring-[#e7c97a]/40 shadow-[0_0_24px_-6px_rgba(231,201,122,0.45)]"
+          : "scale-[1.012] ring-1 ring-[#c79356]/50 shadow-[0_10px_24px_-14px_rgba(120,80,30,0.5)]"),
+      )}
+    >
+      <div className="flex items-start gap-2.5">
+        <span
+          className={cn(
+            "shrink-0 mt-0.5 grid min-h-[26px] min-w-[26px] place-items-center rounded-full px-1.5 text-[12px] font-extrabold tabular-nums font-arabic-serif",
+            spiritualMode
+              ? "bg-gradient-to-br from-[#e7c97a]/25 to-[#a87a35]/15 text-[#f0d78c] ring-1 ring-[#e7c97a]/35"
+              : "bg-gradient-to-br from-[#fff1c7] to-[#e7c07a] text-[#7a4a26] ring-1 ring-[#c79356]/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]",
+          )}
+        >
+          {num}
+        </span>
+        <p className="flex-1 min-w-0">
+          {renderVerse(text, onSelectWord)}
+          {showRef && <ReferenceIndicator count={2} onClick={(e?: any) => { e?.stopPropagation?.(); onOpenRef(); }} />}
+        </p>
+        <button
+          type="button"
+          aria-label={saved ? "إزالة من المحفوظات" : "حفظ الآية"}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleSave();
+          }}
+          className={cn(
+            "shrink-0 grid h-7 w-7 place-items-center rounded-full border transition-all active:scale-90",
+            saved
+              ? spiritualMode
+                ? "bg-[#e7c97a]/20 border-[#e7c97a]/45 text-[#f0d78c]"
+                : "bg-gradient-to-br from-[#fff1c7] to-[#e7c07a] border-transparent text-[#7a4a26]"
+              : spiritualMode
+                ? "bg-white/5 border-white/10 text-[#c79356] opacity-70 group-hover:opacity-100"
+                : "bg-white/70 border-[#efe2c4] text-[#b8893a] opacity-70 group-hover:opacity-100",
+          )}
+        >
+          {saved ? <BookmarkCheck className="h-3.5 w-3.5" /> : <Bookmark className="h-3.5 w-3.5" />}
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -482,15 +649,14 @@ function VerticalProgress({
   book: string;
   spiritualMode: boolean;
 }) {
-  // Show up to 12 markers around the current chapter.
-  const window = useMemo(() => {
+  const windowed = useMemo(() => {
     if (!chapters.length) return [] as number[];
     const max = 12;
     if (chapters.length <= max) return chapters;
     const i = Math.max(0, chapters.indexOf(current));
     const half = Math.floor(max / 2);
     let start = Math.max(0, i - half);
-    let end = Math.min(chapters.length, start + max);
+    const end = Math.min(chapters.length, start + max);
     start = Math.max(0, end - max);
     return chapters.slice(start, end);
   }, [chapters, current]);
@@ -505,28 +671,31 @@ function VerticalProgress({
         className={cn(
           "flex flex-col items-center gap-1.5 rounded-full border px-1.5 py-2 backdrop-blur-xl",
           spiritualMode
-            ? "bg-[#0c1828]/55 border-white/[0.07] shadow-[0_0_18px_-6px_rgba(231,201,122,0.25),inset_0_1px_0_rgba(255,255,255,0.04)]"
-            : "bg-[#fbf3e1]/70 border-white/70 shadow-[0_8px_18px_-12px_rgba(120,80,30,0.35),inset_0_1px_0_rgba(255,255,255,0.7)]",
+            ? "bg-[#0c1828]/70 border-[#e7c97a]/20 shadow-[0_0_20px_-6px_rgba(231,201,122,0.4),inset_0_1px_0_rgba(255,255,255,0.05)]"
+            : "bg-white/85 border-[#e7c97a]/45 shadow-[0_8px_20px_-12px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.85)]",
         )}
       >
         {/* progress fill */}
         <div
           className={cn(
-            "relative h-40 w-1 rounded-full overflow-hidden",
-            spiritualMode ? "bg-white/[0.06]" : "bg-[#ecdcb6]/60",
+            "relative h-40 w-1.5 rounded-full overflow-hidden",
+            spiritualMode ? "bg-white/10" : "bg-[#efe2c4]",
           )}
         >
           <div
             className={cn(
-              "absolute inset-x-0 top-0 rounded-full bg-gradient-to-b from-[#e7c97a] via-[#c79356] to-[#7a4a26] transition-[height] duration-300",
-              spiritualMode && "shadow-[0_0_8px_rgba(231,201,122,0.6)]",
+              "absolute inset-x-0 top-0 rounded-full bg-gradient-to-b from-[#e7c97a] via-[#c79356] to-[#7a4a26]",
+              spiritualMode && "shadow-[0_0_10px_rgba(231,201,122,0.75)]",
             )}
-            style={{ height: `${Math.max(2, progress)}%` }}
+            style={{
+              height: `${Math.max(2, progress)}%`,
+              transition: "height 120ms linear",
+            }}
           />
         </div>
         {/* chapter dots */}
         <div className="mt-1 flex flex-col items-center gap-1">
-          {window.map((c) => {
+          {windowed.map((c) => {
             const active = c === current;
             return (
               <Link
@@ -540,8 +709,8 @@ function VerticalProgress({
                   className={cn(
                     "block rounded-full transition-all duration-200",
                     active
-                      ? "h-2.5 w-2.5 bg-gradient-to-br from-[#e7c97a] to-[#a87a35] ring-2 ring-[#fbf3e1] shadow-[0_0_8px_rgba(231,201,122,0.7)]"
-                      : "h-1.5 w-1.5 bg-[#c79356]/40 group-hover:bg-[#c79356]",
+                      ? "h-2.5 w-2.5 bg-gradient-to-br from-[#e7c97a] to-[#a87a35] ring-2 ring-[#fbf3e1] shadow-[0_0_10px_rgba(231,201,122,0.85)]"
+                      : "h-1.5 w-1.5 bg-[#a78bd9]/55 group-hover:bg-[#6a4ab5]",
                   )}
                 />
               </Link>
@@ -553,15 +722,16 @@ function VerticalProgress({
   );
 }
 
-/* ---------------- Typography panel ---------------- */
+/* ---------------- Typography Sheet ---------------- */
 
-function TypographyPanel({
+function TypographySheet({
   fontSize,
   setFontSize,
   lineHeight,
   setLineHeight,
   readingWidth,
   setReadingWidth,
+  onReset,
   onClose,
   spiritualMode,
 }: {
@@ -571,6 +741,7 @@ function TypographyPanel({
   setLineHeight: (n: number) => void;
   readingWidth: number;
   setReadingWidth: (n: number) => void;
+  onReset: () => void;
   onClose: () => void;
   spiritualMode: boolean;
 }) {
@@ -580,85 +751,143 @@ function TypographyPanel({
         type="button"
         aria-label="إغلاق"
         onClick={onClose}
-        className="fixed inset-0 z-40 bg-transparent"
+        className="fixed inset-0 z-40 bg-black/20"
       />
       <div
         dir="rtl"
         className={cn(
-          "fixed left-1/2 top-[64px] z-50 w-[88%] max-w-[360px] -translate-x-1/2 rounded-3xl border p-4 backdrop-blur-2xl shadow-[0_18px_40px_-18px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.8)]",
+          "fixed inset-x-0 bottom-0 z-50 mx-auto w-full max-w-[440px] rounded-t-3xl border-t p-5 pb-7 backdrop-blur-2xl animate-in slide-in-from-bottom duration-300",
           spiritualMode
-            ? "bg-[#0c1828]/90 border-white/[0.08] text-[#e8e2cf] shadow-[0_20px_50px_-20px_rgba(0,0,0,0.85),0_0_30px_-12px_rgba(231,201,122,0.25),inset_0_1px_0_rgba(255,255,255,0.05)]"
-            : "bg-[#fbf3e1]/95 border-white/70 text-[#3a2a18]",
+            ? "bg-[#0c1828]/95 border-white/[0.08] text-[#e8e2cf] shadow-[0_-20px_50px_-20px_rgba(0,0,0,0.85),0_0_30px_-12px_rgba(231,201,122,0.25)]"
+            : "bg-[#fbf3e1]/97 border-white/70 text-[#3a2a18] shadow-[0_-18px_40px_-18px_rgba(120,80,30,0.45)]",
         )}
         role="dialog"
         aria-label="إعدادات النص"
       >
+        <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-current opacity-20" />
         <div className="flex items-center justify-between mb-3">
-          <p className="text-[12px] font-extrabold tracking-wide">إعدادات القراءة</p>
-          <Settings2 className="h-3.5 w-3.5 opacity-60" />
+          <p className="text-[13px] font-extrabold tracking-wide">إعدادات القراءة</p>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={onReset}
+              aria-label="إعادة ضبط"
+              className={cn(
+                "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10.5px] font-bold active:scale-95 transition-transform",
+                spiritualMode
+                  ? "bg-white/5 border-white/10 text-[#f3e6c4]"
+                  : "bg-white/80 border-[#efe2c4] text-[#3a2a18]",
+              )}
+            >
+              <RotateCcw className="h-3 w-3" />
+              إعادة ضبط
+            </button>
+            <Settings2 className="h-3.5 w-3.5 opacity-60 ms-1" />
+          </div>
         </div>
 
-        <Stepper
+        <SliderRow
           label="حجم الخط"
-          value={`${fontSize}`}
-          onDec={() => setFontSize(Math.max(14, fontSize - 1))}
-          onInc={() => setFontSize(Math.min(28, fontSize + 1))}
+          value={fontSize}
+          min={14}
+          max={28}
+          step={1}
+          onChange={setFontSize}
+          display={`${fontSize}px`}
+          spiritualMode={spiritualMode}
         />
-        <Stepper
+        <SliderRow
           label="المسافة بين السطور"
-          value={lineHeight.toFixed(2)}
-          onDec={() => setLineHeight(Math.max(1.6, +(lineHeight - 0.1).toFixed(2)))}
-          onInc={() => setLineHeight(Math.min(2.8, +(lineHeight + 0.1).toFixed(2)))}
+          value={lineHeight}
+          min={1.6}
+          max={2.8}
+          step={0.05}
+          onChange={(v) => setLineHeight(+v.toFixed(2))}
+          display={lineHeight.toFixed(2)}
+          spiritualMode={spiritualMode}
         />
-        <Stepper
+        <SliderRow
           label="عرض القراءة"
-          value={`${readingWidth}px`}
-          onDec={() => setReadingWidth(Math.max(420, readingWidth - 40))}
-          onInc={() => setReadingWidth(Math.min(800, readingWidth + 40))}
+          value={readingWidth}
+          min={420}
+          max={800}
+          step={20}
+          onChange={setReadingWidth}
+          display={`${readingWidth}px`}
+          spiritualMode={spiritualMode}
         />
 
-        <div className="mt-2 flex items-center justify-between gap-2 text-[10px] opacity-70">
-          <span>Aa</span>
-          <span className="text-[14px]">Aa</span>
+        <div className="mt-3 flex items-center justify-between gap-2 text-[10px] opacity-70">
+          <span className="font-arabic-serif">Aa</span>
+          <span className="font-arabic-serif text-[16px]">Aa</span>
         </div>
       </div>
     </>
   );
 }
 
-function Stepper({
+function SliderRow({
   label,
   value,
-  onDec,
-  onInc,
+  min,
+  max,
+  step,
+  onChange,
+  display,
+  spiritualMode,
 }: {
   label: string;
-  value: string;
-  onDec: () => void;
-  onInc: () => void;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  onChange: (n: number) => void;
+  display: string;
+  spiritualMode: boolean;
 }) {
   return (
-    <div className="mb-2.5 flex items-center justify-between gap-2 rounded-2xl bg-white/40 dark:bg-white/[0.04] border border-white/60 px-3 py-2">
-      <p className="text-[12px] font-bold">{label}</p>
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={onDec}
-          aria-label="تقليل"
-          className="grid h-7 w-7 place-items-center rounded-full bg-white/80 border border-[#efe2c4] text-[#3a2a18] active:scale-90 transition-transform"
-        >
-          <ChevronDown className="h-3.5 w-3.5" />
-        </button>
-        <span className="min-w-[44px] text-center text-[11px] font-bold tabular-nums">{value}</span>
-        <button
-          type="button"
-          onClick={onInc}
-          aria-label="زيادة"
-          className="grid h-7 w-7 place-items-center rounded-full bg-white/80 border border-[#efe2c4] text-[#3a2a18] active:scale-90 transition-transform"
-        >
-          <ChevronUp className="h-3.5 w-3.5" />
-        </button>
+    <div
+      className={cn(
+        "mb-3 rounded-2xl border px-3.5 py-2.5",
+        spiritualMode
+          ? "bg-white/[0.04] border-white/[0.08]"
+          : "bg-white/55 border-[#efe2c4]",
+      )}
+    >
+      <div className="flex items-center justify-between mb-1.5">
+        <p className="text-[12px] font-bold">{label}</p>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            aria-label="تقليل"
+            onClick={() => onChange(Math.max(min, +(value - step).toFixed(2)))}
+            className="grid h-6 w-6 place-items-center rounded-full bg-white/80 border border-[#efe2c4] text-[#3a2a18] active:scale-90 transition-transform"
+          >
+            <ChevronDown className="h-3 w-3" />
+          </button>
+          <span className="min-w-[44px] text-center text-[11px] font-bold tabular-nums">
+            {display}
+          </span>
+          <button
+            type="button"
+            aria-label="زيادة"
+            onClick={() => onChange(Math.min(max, +(value + step).toFixed(2)))}
+            className="grid h-6 w-6 place-items-center rounded-full bg-white/80 border border-[#efe2c4] text-[#3a2a18] active:scale-90 transition-transform"
+          >
+            <ChevronUp className="h-3 w-3" />
+          </button>
+        </div>
       </div>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(parseFloat(e.target.value))}
+        aria-label={label}
+        className="w-full accent-[#c79356]"
+      />
     </div>
   );
 }
