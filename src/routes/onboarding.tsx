@@ -73,19 +73,13 @@ function OnboardingScreen() {
               className="relative rounded-2xl bg-transparent transition-transform duration-200 active:scale-[0.97] focus:outline-none"
             >
               {isSelected && (
-                <>
-                  <span
-                    aria-hidden
-                    className="pointer-events-none absolute inset-0 rounded-2xl ring-2 ring-[#a8782a] ring-offset-0"
-                    style={{ boxShadow: "0 0 0 2px rgba(168,120,42,0.35) inset" }}
-                  />
-                  <span
-                    aria-hidden
-                    className="pointer-events-none absolute -top-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-[#e7c97a] to-[#a8782a] shadow-md ring-2 ring-white"
-                  >
-                    <Check className="h-4 w-4 text-white" strokeWidth={3} />
-                  </span>
-                </>
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute top-2 left-2 flex h-6 w-6 items-center justify-center rounded-full"
+                  style={{ background: "#b8893a" }}
+                >
+                  <Check className="h-3.5 w-3.5 text-white" strokeWidth={3} />
+                </span>
               )}
             </button>
           );
