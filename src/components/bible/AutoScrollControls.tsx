@@ -17,31 +17,37 @@ export function AutoScrollControls({
   onToggleSpiritual,
   scrollContainer,
   bottomClass = "bottom-24",
+  visible,
 }: {
   spiritualMode: boolean;
   onToggleSpiritual: () => void;
   scrollContainer?: HTMLElement | null;
   bottomClass?: string;
-  /** kept for backwards-compat; no longer used (controller manages its own visibility) */
+  /** When provided, visibility is controlled by the parent (synchronized chrome). */
+  visible?: boolean;
+  /** legacy, unused */
   hidden?: boolean;
 }) {
   const [playing, setPlaying] = useState(false);
   const [speedIdx, setSpeedIdx] = useState(0);
-  const [active, setActive] = useState(true);
+  const [internalActive, setInternalActive] = useState(true);
   const speed: Speed = SPEEDS[speedIdx];
   const raf = useRef<number | null>(null);
   const last = useRef<number>(0);
   const eased = useRef<number>(0);
   const idleTimer = useRef<number | null>(null);
+  const controlled = visible !== undefined;
+  const active = controlled ? (visible || playing) : internalActive;
 
-  // Stable visibility: always rendered, dim to a soft idle state after 4s of no interaction.
+  // Fallback (uncontrolled) visibility: dim after idle.
   const kick = () => {
-    setActive(true);
+    setInternalActive(true);
     if (idleTimer.current) window.clearTimeout(idleTimer.current);
-    idleTimer.current = window.setTimeout(() => setActive(false), 4000);
+    idleTimer.current = window.setTimeout(() => setInternalActive(false), 4000);
   };
 
   useEffect(() => {
+    if (controlled) return;
     kick();
     const onAny = () => kick();
     window.addEventListener("pointerdown", onAny, { passive: true });
@@ -54,18 +60,19 @@ export function AutoScrollControls({
       if (idleTimer.current) window.clearTimeout(idleTimer.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [controlled]);
 
-  // While playing, keep the controller active.
   useEffect(() => {
+    if (controlled) return;
     if (playing) {
-      setActive(true);
+      setInternalActive(true);
       if (idleTimer.current) window.clearTimeout(idleTimer.current);
     } else {
       kick();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playing, speedIdx, spiritualMode]);
+  }, [playing, speedIdx, spiritualMode, controlled]);
+
 
   useEffect(() => {
     if (!playing) {
