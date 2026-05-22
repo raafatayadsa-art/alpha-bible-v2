@@ -15,7 +15,7 @@ async function fetchAllColumn<T>(column: string): Promise<T[]> {
       .range(from, from + PAGE - 1);
     if (error) throw error;
     if (!data || data.length === 0) break;
-    for (const row of data) all.push((row as Record<string, unknown>)[column] as T);
+    for (const row of data) all.push((row as unknown as Record<string, T>)[column]);
     if (data.length < PAGE) break;
     from += PAGE;
   }
