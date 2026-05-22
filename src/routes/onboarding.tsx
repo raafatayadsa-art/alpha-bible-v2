@@ -70,15 +70,19 @@ function OnboardingScreen() {
               onClick={() => toggle(i)}
               aria-pressed={isSelected}
               aria-label={`اهتمام ${i + 1}`}
-              className="relative rounded-2xl bg-transparent transition-transform duration-200 active:scale-[0.97] focus:outline-none"
+              className={[
+                "relative rounded-2xl bg-transparent transition-all duration-200 ease-out active:scale-[0.97] focus:outline-none",
+                isSelected
+                  ? "ring-2 ring-[#b8893a] shadow-[0_0_0_4px_rgba(184,137,58,0.18),inset_0_0_18px_rgba(255,220,160,0.25)]"
+                  : "ring-0 shadow-none",
+              ].join(" ")}
             >
               {isSelected && (
                 <span
                   aria-hidden
-                  className="pointer-events-none absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full"
-                  style={{ background: "#b8893a" }}
+                  className="pointer-events-none absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#b8893a]/90 shadow-sm"
                 >
-                  <Check className="h-3.5 w-3.5 text-white" strokeWidth={3} />
+                  <Check className="h-2.5 w-2.5 text-white" strokeWidth={3.5} />
                 </span>
               )}
             </button>
