@@ -8,16 +8,9 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
 });
 
 export type BibleVerse = {
-  id: string | number;
-  book: string;
-  chapter: number;
-  verse: number;
-  text: string;
-  translation: string;
-  testament: string;
-  book_order: number;
-  chapter_order: number;
-  verse_order: number;
-  language: string;
-  created_at: string;
+  ID: number;
+  book_name: string;
+  chapter_number: number;
+  verse_number: number;
+  verse_text: string;
 };
