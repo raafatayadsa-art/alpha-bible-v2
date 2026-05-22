@@ -192,7 +192,7 @@
     0 0 28px rgba(232, 196, 110, 0.35);
 }
 .splash-btn-pressed {
-  transform: translateX(50%) scale(0.96);
+  transform: translateX(-50%) scale(0.96);
   animation: splashBtnPulse 520ms ease-out;
 }
 @keyframes splashBtnPulse {
