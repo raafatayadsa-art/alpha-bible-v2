@@ -262,10 +262,41 @@ function ScriptureReader() {
     ? "bg-[#0e1a2e]/55 border-white/[0.06] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_8px_22px_-16px_rgba(0,0,0,0.7)]"
     : "bg-white/70 border-[#efe2c4]";
   const verseCardClass = spiritualMode
-    ? "bg-[#0e1a2e]/55 border-white/[0.06] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_6px_18px_-14px_rgba(0,0,0,0.7)]"
-    : "bg-white/70 border-[#efe2c4] shadow-[0_4px_12px_-10px_rgba(120,80,30,0.30)]";
+    ? "bg-[#0e1a2e]/55 border-white/[0.06] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_6px_18px_-14px_rgba(0,0,0,0.65)]"
+    : "bg-white/65 border-[#efe2c4]/80 shadow-[0_6px_18px_-14px_rgba(120,80,30,0.30)]";
 
   const totalVerses = verses.data?.length ?? 0;
+
+  // Auto-hide bottom chrome on scroll
+  const [chromeHidden, setChromeHidden] = useState(false);
+  const lastY = useRef(0);
+  const idleT = useRef<number | null>(null);
+  useEffect(() => {
+    const scheduleShow = () => {
+      if (idleT.current) window.clearTimeout(idleT.current);
+      idleT.current = window.setTimeout(() => setChromeHidden(false), 1400);
+    };
+    const onScroll = () => {
+      const y = window.scrollY;
+      const dy = y - lastY.current;
+      if (Math.abs(dy) > 4) {
+        // hide when scrolling down, reveal when scrolling up
+        setChromeHidden(dy > 0 && y > 120);
+        lastY.current = y;
+      }
+      scheduleShow();
+    };
+    const reveal = () => setChromeHidden(false);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("touchstart", reveal, { passive: true });
+    window.addEventListener("click", reveal, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("touchstart", reveal);
+      window.removeEventListener("click", reveal);
+      if (idleT.current) window.clearTimeout(idleT.current);
+    };
+  }, []);
 
   return (
     <main
@@ -275,6 +306,21 @@ function ScriptureReader() {
         bgClass,
       )}
     >
+      {/* Soft cloud atmosphere — light mode parchment haze */}
+      {!spiritualMode && (
+        <div
+          aria-hidden
+          className="pointer-events-none fixed inset-0 z-0"
+          style={{
+            background:
+              "radial-gradient(80% 40% at 50% -5%, rgba(255,240,205,0.55), transparent 70%)," +
+              "radial-gradient(60% 35% at 15% 25%, rgba(255,230,180,0.32), transparent 75%)," +
+              "radial-gradient(55% 35% at 85% 60%, rgba(214,168,98,0.16), transparent 75%)," +
+              "radial-gradient(90% 40% at 50% 105%, rgba(168,120,42,0.10), transparent 70%)",
+          }}
+        />
+      )}
+
       {/* Cinematic glow atmosphere (dark mode only) */}
       {spiritualMode && (
         <div
@@ -283,8 +329,8 @@ function ScriptureReader() {
           style={{
             background:
               "radial-gradient(60% 40% at 50% 0%, rgba(231,201,122,0.10), transparent 70%)," +
-              "radial-gradient(50% 35% at 85% 30%, rgba(140,110,210,0.09), transparent 75%)," +
-              "radial-gradient(70% 45% at 15% 85%, rgba(110,160,220,0.07), transparent 80%)," +
+              "radial-gradient(50% 35% at 85% 30%, rgba(140,110,210,0.07), transparent 75%)," +
+              "radial-gradient(70% 45% at 15% 85%, rgba(110,160,220,0.06), transparent 80%)," +
               "radial-gradient(100% 60% at 50% 100%, rgba(0,0,0,0.55), transparent 70%)",
           }}
         />
@@ -292,21 +338,21 @@ function ScriptureReader() {
 
       {/* Top thin progress */}
       <div
-        className="fixed inset-x-0 top-0 z-40 h-[3px]"
+        className="fixed inset-x-0 top-0 z-40 h-[2px]"
         style={{ paddingTop: "max(env(safe-area-inset-top), 0px)" }}
       >
         <div className="mx-auto h-full w-full max-w-[640px]">
           <div
             className={cn(
-              "h-full rounded-r-full bg-gradient-to-l from-[#e7c97a] via-[#c79356] to-[#7a4a26]",
-              spiritualMode && "shadow-[0_0_10px_rgba(231,201,122,0.55)]",
+              "h-full rounded-r-full bg-gradient-to-l from-[#3e8a6e] via-[#2f7359] to-[#1f5e4a]",
+              spiritualMode && "shadow-[0_0_10px_rgba(62,138,110,0.55)]",
             )}
             style={{ width: `${progress}%` }}
           />
         </div>
       </div>
 
-      {/* LEFT — vertical reading progress with chapter markers */}
+      {/* LEFT — elegant vertical reading rail */}
       <VerticalProgress
         progress={progress}
         chapters={list}
@@ -314,6 +360,7 @@ function ScriptureReader() {
         book={book}
         spiritualMode={spiritualMode}
       />
+
 
       <div
         className="relative mx-auto w-full px-4 pt-[max(env(safe-area-inset-top),12px)] pb-44 transition-[max-width] duration-300"
