@@ -58,7 +58,7 @@ function SplashScreen() {
           "pointer-events-none absolute left-1/2 -translate-x-1/2 rounded-full",
           pressed ? "splash-btn-pulse" : "opacity-0",
         ].join(" ")}
-        style={{ bottom: "9%", width: "82%", height: "11%" }}
+        style={{ bottom: "55px", width: "70%", height: "58px" }}
       />
 
       {/* Invisible interactive tap target aligned with the original button in the artwork */}
@@ -76,8 +76,9 @@ function SplashScreen() {
           "transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
           pressed ? "scale-[0.96]" : "scale-100",
         ].join(" ")}
-        style={{ bottom: "9%", width: "82%", height: "11%" }}
+        style={{ bottom: "55px", width: "70%", height: "58px" }}
       />
+
 
 
 
