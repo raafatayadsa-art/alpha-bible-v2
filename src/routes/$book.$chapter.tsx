@@ -608,11 +608,11 @@ function VerseCard({
       data-verse-num={num}
       onClick={onTap}
       className={cn(
-        "group relative cursor-pointer rounded-2xl border px-3.5 py-3 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        "group relative cursor-pointer rounded-2xl border px-3.5 py-3 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
         surfaceClass,
         isActive && (spiritualMode
-          ? "scale-[1.012] ring-1 ring-[#e7c97a]/40 shadow-[0_0_24px_-6px_rgba(231,201,122,0.45)]"
-          : "scale-[1.012] ring-1 ring-[#c79356]/50 shadow-[0_10px_24px_-14px_rgba(120,80,30,0.5)]"),
+          ? "scale-[1.015] border-[#7af0b8]/35 ring-1 ring-[#7af0b8]/30 shadow-[0_0_28px_-4px_rgba(122,240,184,0.40),0_0_60px_-20px_rgba(62,180,130,0.45)]"
+          : "scale-[1.012] ring-1 ring-[#3eb482]/45 shadow-[0_10px_24px_-14px_rgba(31,110,84,0.45)]"),
       )}
     >
       <div className="flex items-start gap-2.5">
