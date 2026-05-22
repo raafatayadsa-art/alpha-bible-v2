@@ -1,16 +1,32 @@
 import { queryOptions } from "@tanstack/react-query";
 import { supabase, type BibleVerse } from "@/integrations/supabase/client";
 
+const PAGE = 1000;
+
+async function fetchAllColumn<T>(column: string): Promise<T[]> {
+  const all: T[] = [];
+  let from = 0;
+  // Page through every row; Supabase caps each response at 1000.
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const { data, error } = await supabase
+      .from("bible_verses")
+      .select(column)
+      .range(from, from + PAGE - 1);
+    if (error) throw error;
+    if (!data || data.length === 0) break;
+    for (const row of data) all.push((row as unknown as Record<string, T>)[column]);
+    if (data.length < PAGE) break;
+    from += PAGE;
+  }
+  return all;
+}
+
 export async function fetchBooks(): Promise<string[]> {
-  const { data, error } = await supabase
-    .from("bible_verses")
-    .select("book_name")
-    .order("book_name", { ascending: true });
-  if (error) throw error;
+  const all = await fetchAllColumn<string>("book_name");
   const seen = new Set<string>();
   const out: string[] = [];
-  for (const row of data ?? []) {
-    const b = (row as { book_name: string }).book_name;
+  for (const b of all) {
     if (!seen.has(b)) {
       seen.add(b);
       out.push(b);
@@ -24,7 +40,8 @@ export async function fetchChapters(book: string): Promise<number[]> {
     .from("bible_verses")
     .select("chapter_number")
     .eq("book_name", book)
-    .order("chapter_number", { ascending: true });
+    .order("chapter_number", { ascending: true })
+    .limit(10000);
   if (error) throw error;
   const seen = new Set<number>();
   const out: number[] = [];
@@ -44,7 +61,8 @@ export async function fetchVerses(book: string, chapter: number): Promise<BibleV
     .select("ID, book_name, chapter_number, verse_number, verse_text")
     .eq("book_name", book)
     .eq("chapter_number", chapter)
-    .order("verse_number", { ascending: true });
+    .order("verse_number", { ascending: true })
+    .limit(10000);
   if (error) throw error;
   return (data ?? []) as BibleVerse[];
 }
