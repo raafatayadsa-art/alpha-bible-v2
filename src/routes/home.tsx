@@ -287,26 +287,27 @@ function HomeScreen() {
 
 function DockItem({
   icon: Icon, label, active, raised, to,
-}: { icon: any; label: string; active?: boolean; raised?: boolean; to?: string; color?: string }) {
+}: { icon?: any; label: string; active?: boolean; raised?: boolean; to?: string; color?: string }) {
   const goldColor = "#b8893a";
   const inner = (
     <div className="flex w-full flex-col items-center justify-end gap-1.5">
       {raised ? (
         <div
-          className="-mt-7 grid h-14 w-14 place-items-center rounded-full"
+          className="-mt-8 grid h-16 w-16 place-items-center"
           style={{
-            filter: "drop-shadow(0 0 14px rgba(231,201,122,0.55)) drop-shadow(0 6px 10px rgba(168,120,42,0.25))",
+            filter: "drop-shadow(0 0 12px rgba(231,201,122,0.45)) drop-shadow(0 6px 10px rgba(168,120,42,0.20))",
           }}
         >
-          <Icon className="h-8 w-8" strokeWidth={1.8} style={{ color: goldColor }} />
+          <img src={logoBible} alt="الكتاب المقدس" className="h-full w-full object-contain" draggable={false} />
         </div>
-      ) : (
+      ) : Icon ? (
         <Icon
           className="h-6 w-6"
           strokeWidth={1.8}
           style={{ color: goldColor, opacity: active ? 1 : 0.95 }}
         />
-      )}
+      ) : null}
+
       <span
         className="text-[11px] font-bold leading-none whitespace-nowrap [word-break:keep-all]"
         style={{ color: goldColor }}
