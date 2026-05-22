@@ -188,6 +188,21 @@ function HomeScreen() {
         <section className="mt-4">
           <div className="relative overflow-hidden rounded-[28px] shadow-[0_20px_40px_-18px_rgba(120,80,30,0.45)]">
             <img src={heroImg} alt="آية اليوم" className="block w-full h-auto select-none pointer-events-none" draggable={false} />
+            {/* dynamic verse overlay — covers baked verse text */}
+            <div className="absolute inset-x-0 top-[22%] bottom-[26%] flex flex-col items-center justify-center px-6 text-center pointer-events-none">
+              <p
+                className="text-white font-extrabold leading-[1.6] text-[15px] [text-shadow:0_2px_8px_rgba(60,30,5,0.55)] line-clamp-4"
+                style={{ wordBreak: "keep-all" }}
+              >
+                {verse ? `"${verse.text}"` : "لا توجد آية اليوم"}
+              </p>
+              {verse?.reference && (
+                <p className="mt-2 text-[12px] font-bold text-[#fde7b8] [text-shadow:0_1px_4px_rgba(60,30,5,0.6)]">
+                  {verse.reference}
+                </p>
+              )}
+            </div>
+
             {/* invisible interactive overlays positioned on baked buttons */}
             <button
               aria-label="مشاركة"
