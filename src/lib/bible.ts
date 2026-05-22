@@ -56,15 +56,20 @@ export async function fetchChapters(book: string): Promise<number[]> {
 }
 
 export async function fetchVerses(book: string, chapter: number): Promise<BibleVerse[]> {
-  const { data, error } = await supabase
-    .from("bible_verses")
-    .select("ID, book_name, chapter_number, verse_number, verse_text")
-    .eq("book_name", book)
-    .eq("chapter_number", chapter)
-    .order("verse_number", { ascending: true })
-    .limit(10000);
-  if (error) throw error;
-  return (data ?? []) as BibleVerse[];
+  try {
+    const { data, error } = await supabase
+      .from("bible_verses")
+      .select("*")
+      .eq("book_name", book)
+      .eq("chapter_number", chapter)
+      .order("verse_number", { ascending: true })
+      .limit(10000);
+    if (error) throw error;
+    return (data ?? []) as BibleVerse[];
+  } catch (e) {
+    console.error("fetchVerses failed", { book, chapter, error: e });
+    throw e;
+  }
 }
 
 export const booksQueryOptions = () =>
