@@ -9,10 +9,6 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/books")({
   ssr: false,
-  validateSearch: (s: Record<string, unknown>) => {
-    const t = s.t;
-    return { t: t === "ot" || t === "nt" ? (t as "ot" | "nt") : undefined };
-  },
   head: () => ({
     meta: [
       { title: "الأسفار — الكتاب المقدس" },
@@ -21,7 +17,6 @@ export const Route = createFileRoute("/books")({
   }),
   component: BooksGrid,
 });
-
 
 type Category = "all" | "ot" | "nt" | "gospels" | "letters" | "prophets" | "wisdom";
 
@@ -58,10 +53,8 @@ function matchesCategory(book: string, cat: Category, ot: string[], nt: string[]
 
 function BooksGrid() {
   const { data: books, isLoading, error } = useQuery(booksQueryOptions());
-  const { t } = Route.useSearch();
-  const [cat, setCat] = useState<Category>(t === "ot" ? "ot" : t === "nt" ? "nt" : "all");
+  const [cat, setCat] = useState<Category>("all");
   const [q, setQ] = useState("");
-
 
   const grouped = useMemo(() => (books ? groupBooks(books) : { old: [], neu: [], other: [] }), [books]);
 

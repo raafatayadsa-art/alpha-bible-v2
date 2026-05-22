@@ -70,7 +70,6 @@ function BibleHome() {
             count={grouped.old.length || 39}
             tone="gold"
             to="/books"
-            testament="ot"
           />
           <TestamentCard
             title="العهد الجديد"
@@ -78,10 +77,8 @@ function BibleHome() {
             count={grouped.neu.length || 27}
             tone="purple"
             to="/books"
-            testament="nt"
           />
         </section>
-
 
         <section className="mt-6">
           <SectionHeader title="وصول سريع" caption="ابدأ من حيث تشاء" />
@@ -91,10 +88,8 @@ function BibleHome() {
               title="المزامير"
               subtitle="تأملات وتسبيح يومي"
               tone="purple"
-              to="/$book/$chapter"
-              params={{ book: "المزامير", chapter: "1" }}
+              to="/books"
             />
-
             <QuickAccessCard
               icon={Sparkles}
               title="صلوات ذكية"

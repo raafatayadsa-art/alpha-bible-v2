@@ -25,7 +25,6 @@ export function Pressable({
   onClick,
   to,
   params,
-  search,
   className = "",
   ariaLabel,
   as = "auto",
@@ -34,7 +33,6 @@ export function Pressable({
   onClick?: () => void;
   to?: string;
   params?: Record<string, string>;
-  search?: Record<string, any>;
   className?: string;
   ariaLabel?: string;
   as?: "auto" | "div";
@@ -45,7 +43,7 @@ export function Pressable({
   );
   if (to) {
     return (
-      <Link to={to as any} params={params as any} search={search as any} aria-label={ariaLabel} className={base}>
+      <Link to={to as any} params={params as any} aria-label={ariaLabel} className={base}>
         {children}
       </Link>
     );
@@ -59,7 +57,6 @@ export function Pressable({
     </button>
   );
 }
-
 
 export function GlassSurface({
   children,
