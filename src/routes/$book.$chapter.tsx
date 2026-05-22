@@ -901,33 +901,39 @@ function SliderRow({
   return (
     <div
       className={cn(
-        "mb-3 rounded-2xl border px-3.5 py-2.5",
+        "mb-2 rounded-2xl border px-2.5 py-1.5",
         spiritualMode
           ? "bg-white/[0.04] border-white/[0.08]"
           : "bg-white/55 border-[#efe2c4]",
       )}
     >
-      <div className="flex items-center justify-between mb-1.5">
-        <p className="text-[12px] font-bold">{label}</p>
-        <div className="flex items-center gap-1.5">
+      <div className="flex items-center justify-between mb-1">
+        <p className="text-[11px] font-bold opacity-80">{label}</p>
+        <div className="flex items-center gap-1">
           <button
             type="button"
             aria-label="تقليل"
             onClick={() => onChange(Math.max(min, +(value - step).toFixed(2)))}
-            className="grid h-6 w-6 place-items-center rounded-full bg-white/80 border border-[#efe2c4] text-[#3a2a18] active:scale-90 transition-transform"
+            className={cn(
+              "grid h-5 w-5 place-items-center rounded-full border active:scale-90 transition-transform",
+              spiritualMode ? "bg-white/10 border-white/15 text-[#f3e6c4]" : "bg-white/80 border-[#efe2c4] text-[#3a2a18]",
+            )}
           >
-            <ChevronDown className="h-3 w-3" />
+            <ChevronDown className="h-2.5 w-2.5" />
           </button>
-          <span className="min-w-[44px] text-center text-[11px] font-bold tabular-nums">
+          <span className="min-w-[40px] text-center text-[10.5px] font-bold tabular-nums">
             {display}
           </span>
           <button
             type="button"
             aria-label="زيادة"
             onClick={() => onChange(Math.min(max, +(value + step).toFixed(2)))}
-            className="grid h-6 w-6 place-items-center rounded-full bg-white/80 border border-[#efe2c4] text-[#3a2a18] active:scale-90 transition-transform"
+            className={cn(
+              "grid h-5 w-5 place-items-center rounded-full border active:scale-90 transition-transform",
+              spiritualMode ? "bg-white/10 border-white/15 text-[#f3e6c4]" : "bg-white/80 border-[#efe2c4] text-[#3a2a18]",
+            )}
           >
-            <ChevronUp className="h-3 w-3" />
+            <ChevronUp className="h-2.5 w-2.5" />
           </button>
         </div>
       </div>
@@ -939,7 +945,7 @@ function SliderRow({
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
         aria-label={label}
-        className="w-full accent-[#c79356]"
+        className="w-full h-1 accent-[#3eb482]"
       />
     </div>
   );
