@@ -42,20 +42,26 @@ function ChapterReader() {
         </h1>
       </header>
 
-      {verses.isLoading && <p className="text-center text-muted-foreground">جارٍ تحميل الآيات…</p>}
-      {verses.error && (
-        <p className="text-center text-destructive">تعذّر التحميل: {(verses.error as Error).message}</p>
+      {verses.isLoading && (
+        <p className="text-center text-muted-foreground">جاري تحميل الآيات...</p>
       )}
-      {!verses.isLoading && !verses.error && verses.data && verses.data.length === 0 && (
-        <p className="text-center text-muted-foreground">لا توجد آيات لهذا الإصحاح.</p>
+      {verses.error && (
+        <p className="text-center text-destructive">
+          تعذّر التحميل: {(verses.error as Error)?.message ?? "خطأ غير معروف"}
+        </p>
+      )}
+      {!verses.isLoading && !verses.error && (verses.data?.length ?? 0) === 0 && (
+        <p className="text-center text-muted-foreground">لا توجد آيات</p>
       )}
 
-      {verses.data && (
+      {(verses.data?.length ?? 0) > 0 && (
         <article className="space-y-4 font-serif text-2xl leading-loose text-foreground">
-          {verses.data.map((v) => (
-            <p key={v.ID}>
-              <sup className="mx-1 align-super text-xs text-muted-foreground">{v.verse_number}</sup>
-              {v.verse_text}
+          {verses.data?.map((v, i) => (
+            <p key={v?.ID ?? `${ch}-${v?.verse_number ?? i}`}>
+              <sup className="mx-1 align-super text-xs text-muted-foreground">
+                {v?.verse_number ?? ""}
+              </sup>
+              {v?.verse_text ?? ""}
             </p>
           ))}
         </article>
