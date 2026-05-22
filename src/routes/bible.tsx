@@ -5,6 +5,7 @@ import { booksQueryOptions } from "@/lib/bible";
 import { groupBooks } from "@/lib/bible-books";
 import {
   BackButton,
+  BottomDock,
   ContinueReadingCard,
   QuickAccessCard,
   SectionHeader,
@@ -113,6 +114,8 @@ function BibleHome() {
           />
         </section>
       </div>
+
+      <BottomDock />
     </main>
   );
 }

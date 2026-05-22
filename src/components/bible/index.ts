@@ -7,3 +7,4 @@ export * from "./HighlightedWord";
 export * from "./ReferenceIndicator";
 export * from "./MeaningSheet";
 export * from "./AutoScrollControls";
+export * from "./BottomDock";
