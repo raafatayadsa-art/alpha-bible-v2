@@ -92,8 +92,10 @@ export function MeaningSheet({
       >
         <div
           className={cn(
-            "mx-2 overflow-hidden rounded-t-[28px] border border-white/70 bg-[#fbf3e1]/95 backdrop-blur-2xl",
-            "shadow-[0_-20px_50px_-20px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.8)]",
+            "mx-2 overflow-hidden rounded-t-[28px] border backdrop-blur-3xl",
+            // Emerald transparent glass — clearly separated from beige reader & navy dark mode
+            "bg-gradient-to-b from-[#0f3a2c]/72 to-[#0a2620]/78 border-[#7af0b8]/30 text-[#eaf6ec]",
+            "shadow-[0_-24px_60px_-20px_rgba(0,0,0,0.7),0_0_28px_-6px_rgba(62,180,130,0.45),inset_0_1px_0_rgba(255,255,255,0.07)]",
             "transition-[max-height] duration-300",
           )}
           style={{ maxHeight: expanded ? "92vh" : "70vh" }}
@@ -103,7 +105,7 @@ export function MeaningSheet({
             onTouchStart={onTouchStart}
             onTouchEnd={onTouchEnd}
           >
-            <span className="h-1.5 w-12 rounded-full bg-[#c79356]/40" />
+            <span className="h-1.5 w-12 rounded-full bg-[#7af0b8]/50" />
           </div>
 
           <header className="flex items-center justify-between gap-3 px-4 pb-3" dir="rtl">
