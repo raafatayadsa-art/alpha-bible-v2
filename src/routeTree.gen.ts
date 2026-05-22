@@ -9,38 +9,64 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as BookRouteImport } from './routes/$book'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BookChapterRouteImport } from './routes/$book.$chapter'
 
+const BookRoute = BookRouteImport.update({
+  id: '/$book',
+  path: '/$book',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BookChapterRoute = BookChapterRouteImport.update({
+  id: '/$chapter',
+  path: '/$chapter',
+  getParentRoute: () => BookRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/$book': typeof BookRouteWithChildren
+  '/$book/$chapter': typeof BookChapterRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$book': typeof BookRouteWithChildren
+  '/$book/$chapter': typeof BookChapterRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/$book': typeof BookRouteWithChildren
+  '/$book/$chapter': typeof BookChapterRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/$book' | '/$book/$chapter'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/$book' | '/$book/$chapter'
+  id: '__root__' | '/' | '/$book' | '/$book/$chapter'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BookRoute: typeof BookRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/$book': {
+      id: '/$book'
+      path: '/$book'
+      fullPath: '/$book'
+      preLoaderRoute: typeof BookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +74,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$book/$chapter': {
+      id: '/$book/$chapter'
+      path: '/$chapter'
+      fullPath: '/$book/$chapter'
+      preLoaderRoute: typeof BookChapterRouteImport
+      parentRoute: typeof BookRoute
+    }
   }
 }
 
+interface BookRouteChildren {
+  BookChapterRoute: typeof BookChapterRoute
+}
+
+const BookRouteChildren: BookRouteChildren = {
+  BookChapterRoute: BookChapterRoute,
+}
+
+const BookRouteWithChildren = BookRoute._addFileChildren(BookRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BookRoute: BookRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
