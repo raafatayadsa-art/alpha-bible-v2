@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as DiagnosticsRouteImport } from './routes/diagnostics'
 import { Route as BookRouteImport } from './routes/$book'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BookIndexRouteImport } from './routes/$book.index'
 import { Route as BookChapterRouteImport } from './routes/$book.$chapter'
 
 const DiagnosticsRoute = DiagnosticsRouteImport.update({
@@ -29,6 +30,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BookIndexRoute = BookIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BookRoute,
+} as any)
 const BookChapterRoute = BookChapterRouteImport.update({
   id: '/$chapter',
   path: '/$chapter',
@@ -40,12 +46,13 @@ export interface FileRoutesByFullPath {
   '/$book': typeof BookRouteWithChildren
   '/diagnostics': typeof DiagnosticsRoute
   '/$book/$chapter': typeof BookChapterRoute
+  '/$book/': typeof BookIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/$book': typeof BookRouteWithChildren
   '/diagnostics': typeof DiagnosticsRoute
   '/$book/$chapter': typeof BookChapterRoute
+  '/$book': typeof BookIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +60,20 @@ export interface FileRoutesById {
   '/$book': typeof BookRouteWithChildren
   '/diagnostics': typeof DiagnosticsRoute
   '/$book/$chapter': typeof BookChapterRoute
+  '/$book/': typeof BookIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/$book' | '/diagnostics' | '/$book/$chapter'
+  fullPaths: '/' | '/$book' | '/diagnostics' | '/$book/$chapter' | '/$book/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/$book' | '/diagnostics' | '/$book/$chapter'
-  id: '__root__' | '/' | '/$book' | '/diagnostics' | '/$book/$chapter'
+  to: '/' | '/diagnostics' | '/$book/$chapter' | '/$book'
+  id:
+    | '__root__'
+    | '/'
+    | '/$book'
+    | '/diagnostics'
+    | '/$book/$chapter'
+    | '/$book/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -91,6 +105,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$book/': {
+      id: '/$book/'
+      path: '/'
+      fullPath: '/$book/'
+      preLoaderRoute: typeof BookIndexRouteImport
+      parentRoute: typeof BookRoute
+    }
     '/$book/$chapter': {
       id: '/$book/$chapter'
       path: '/$chapter'
@@ -103,10 +124,12 @@ declare module '@tanstack/react-router' {
 
 interface BookRouteChildren {
   BookChapterRoute: typeof BookChapterRoute
+  BookIndexRoute: typeof BookIndexRoute
 }
 
 const BookRouteChildren: BookRouteChildren = {
   BookChapterRoute: BookChapterRoute,
+  BookIndexRoute: BookIndexRoute,
 }
 
 const BookRouteWithChildren = BookRoute._addFileChildren(BookRouteChildren)
@@ -119,3 +142,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
