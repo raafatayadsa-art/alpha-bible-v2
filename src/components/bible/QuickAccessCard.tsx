@@ -7,6 +7,7 @@ export function QuickAccessCard({
   subtitle,
   tone = "gold",
   to,
+  params,
   onClick,
 }: {
   icon: LucideIcon;
@@ -14,10 +15,11 @@ export function QuickAccessCard({
   subtitle?: string;
   tone?: "gold" | "purple" | "ivory";
   to?: string;
+  params?: Record<string, string>;
   onClick?: () => void;
 }) {
   return (
-    <Pressable to={to} onClick={onClick} ariaLabel={title} className="rounded-3xl">
+    <Pressable to={to} params={params} onClick={onClick} ariaLabel={title} className="rounded-3xl">
       <div className="h-full rounded-3xl bg-[#fbf3e1] border border-[#efe2c4] shadow-[0_10px_24px_-16px_rgba(120,80,30,0.4),inset_0_1px_0_rgba(255,255,255,0.75)] p-3 text-right">
         <IconBadge tone={tone} size={42}>
           <Icon className="h-5 w-5" strokeWidth={1.8} />
@@ -34,3 +36,4 @@ export function QuickAccessCard({
     </Pressable>
   );
 }
+

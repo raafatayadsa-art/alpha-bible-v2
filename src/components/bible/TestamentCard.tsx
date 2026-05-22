@@ -7,15 +7,23 @@ export function TestamentCard({
   count,
   tone = "gold",
   to,
+  testament,
 }: {
   title: string;
   subtitle: string;
   count: number;
   tone?: "gold" | "purple";
   to?: string;
+  /** Optional filter passed to /books via search params */
+  testament?: "ot" | "nt";
 }) {
   return (
-    <Pressable to={to} ariaLabel={title} className="rounded-[28px]">
+    <Pressable
+      to={to}
+      search={testament ? { t: testament } : undefined}
+      ariaLabel={title}
+      className="rounded-[28px]"
+    >
       <GlassSurface tone={tone === "purple" ? "purple" : "warm"} className="overflow-hidden p-0">
         <div className="relative">
           <PlaceholderArt
@@ -46,3 +54,4 @@ export function TestamentCard({
     </Pressable>
   );
 }
+

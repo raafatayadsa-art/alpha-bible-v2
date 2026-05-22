@@ -5,7 +5,7 @@ import logoBible from "@/assets/home/logo-bible.png";
 import { supabase } from "@/integrations/supabase/client";
 
 
-import heroImg from "@/assets/home/hero.png";
+
 import iconBible from "@/assets/home/icon-bible.png";
 import iconHymn from "@/assets/home/icon-hymn.png";
 import iconPrayer from "@/assets/home/icon-prayer.png";
@@ -121,13 +121,14 @@ function HomeScreen() {
 
 
   const quickCards = [
-    { key: "bible", icon: iconBible, title: "اكمل القراءة", sub: "تابع حيث توقفت\nفي الكتاب المقدس", to: "/books" },
+    { key: "bible", icon: iconBible, title: "القطمارس", sub: "قراءات اليوم\nالروحية", to: "/bible" },
     { key: "hymn", icon: iconHymn, title: "ترنيمة اليوم", sub: "استمع لترنيمة مختارة\nكل يوم" },
     { key: "prayer", icon: iconPrayer, title: "طلبات الصلاة", sub: "قدم طلبك وصل\nمن أجل الآخرين" },
-    { key: "meeting", icon: iconMeeting, title: "اجتماع اليوم", sub: "لا تفوت اجتماع\nكنيستك اليوم" },
+    { key: "meeting", icon: iconMeeting, title: "كنيستك معاك", sub: "اجتماعات اليوم\nوأخبار خدمتك" },
     { key: "calendar", icon: iconCalendar, title: "المناسبات", sub: "اكتشف المناسبات\nالقادمة" },
     { key: "meditation", icon: iconMeditation, title: "التأمل اليومي", sub: "لحظات من التأمل\nوالقرب من الله" },
   ];
+
 
   const church = [
     { key: "mass", img: churchChalice, title: "قداس الأحد", time: "الأحد 12 مايو · 8:00 ص", place: "كنيسة مارمرقس" },
@@ -184,40 +185,72 @@ function HomeScreen() {
         </header>
 
 
-        {/* Hero verse card */}
+        {/* Dynamic Verse Container — clean glass card, no baked artwork */}
         <section className="mt-4">
-          <div className="relative overflow-hidden rounded-[28px] shadow-[0_20px_40px_-18px_rgba(120,80,30,0.45)]">
-            <img src={heroImg} alt="آية اليوم" className="block w-full h-auto select-none pointer-events-none" draggable={false} />
-            {/* dynamic verse overlay — covers baked verse text */}
-            <div className="absolute inset-x-0 top-[22%] bottom-[26%] flex flex-col items-center justify-center px-6 text-center pointer-events-none">
+          <div className="relative overflow-hidden rounded-[28px] border border-[#efe2c4] bg-gradient-to-br from-[#fff6df] via-[#fbeec9] to-[#f0dcaa] shadow-[0_20px_40px_-22px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.85)]">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 opacity-70"
+              style={{
+                background:
+                  "radial-gradient(60% 50% at 20% 0%, rgba(255,255,255,0.55), transparent 70%)," +
+                  "radial-gradient(50% 60% at 100% 100%, rgba(168,120,42,0.22), transparent 75%)",
+              }}
+            />
+            <div className="relative px-5 py-5 text-center">
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-white/65 border border-white/80 px-2.5 py-0.5 backdrop-blur-md">
+                <Sparkles className="h-3 w-3 text-[#a87a35]" />
+                <span className="text-[10.5px] font-extrabold tracking-wide text-[#7a4a26]">آية اليوم</span>
+              </div>
+
               <p
-                className="text-white font-extrabold leading-[1.6] text-[15px] [text-shadow:0_2px_8px_rgba(60,30,5,0.55)] line-clamp-4"
-                style={{ wordBreak: "keep-all" }}
+                className="mt-3 font-arabic-serif font-extrabold text-[#3a2a18] leading-[1.85]"
+                style={{
+                  fontSize: "clamp(14px, 4.2vw, 17px)",
+                  wordBreak: "keep-all",
+                  overflowWrap: "normal",
+                }}
               >
-                {verse ? `"${verse.text}"` : "لا توجد آية اليوم"}
+                {verse ? `\u201C${verse.text}\u201D` : "لحظة سكون مع كلمة اليوم..."}
               </p>
+
               {verse?.reference && (
-                <p className="mt-2 text-[12px] font-bold text-[#fde7b8] [text-shadow:0_1px_4px_rgba(60,30,5,0.6)]">
+                <p className="mt-2.5 text-[11.5px] font-extrabold tracking-wide text-[#a87a35]">
                   {verse.reference}
                 </p>
               )}
-            </div>
 
-            {/* invisible interactive overlays positioned on baked buttons */}
-            <button
-              aria-label="مشاركة"
-              className="absolute bottom-[6%] right-[4%] w-[28%] h-[16%] rounded-full active:scale-95 transition-transform"
-              onClick={() => navigator.share?.({ title: "آية اليوم", text: "ربنا هو ملجأنا وقوتنا" }).catch(() => {})}
-            />
-            <button
-              aria-label="حفظ الآية"
-              className={"absolute bottom-[6%] left-[4%] w-[28%] h-[16%] rounded-full active:scale-95 transition-transform " + (saved ? "ring-2 ring-[#c79356]" : "")}
-              onClick={() => setSaved((s) => !s)}
-            />
-            {/* hidden labels for a11y */}
-            <span className="sr-only"><Share2 /><Bookmark /></span>
+              <div className="mt-4 flex items-center justify-center gap-2">
+                <button
+                  type="button"
+                  aria-label="مشاركة"
+                  onClick={() =>
+                    navigator.share?.({ title: "آية اليوم", text: verse?.text ?? "" }).catch(() => {})
+                  }
+                  className="inline-flex items-center gap-1.5 rounded-full bg-white/80 border border-white/85 px-3.5 py-1.5 text-[11.5px] font-bold text-[#3a2a18] shadow-[0_6px_14px_-10px_rgba(120,80,30,0.45)] active:scale-95 transition-transform"
+                >
+                  <Share2 className="h-3.5 w-3.5" />
+                  مشاركة
+                </button>
+                <button
+                  type="button"
+                  aria-label={saved ? "إزالة الحفظ" : "حفظ الآية"}
+                  onClick={() => setSaved((s) => !s)}
+                  className={
+                    "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[11.5px] font-bold active:scale-95 transition-transform " +
+                    (saved
+                      ? "bg-gradient-to-br from-[#fff1c7] to-[#e7c07a] border-transparent text-[#7a4a26] shadow-[0_6px_14px_-8px_rgba(120,80,20,0.5)]"
+                      : "bg-white/80 border-white/85 text-[#3a2a18] shadow-[0_6px_14px_-10px_rgba(120,80,30,0.45)]")
+                  }
+                >
+                  <Bookmark className={"h-3.5 w-3.5 " + (saved ? "fill-[#7a4a26]" : "")} />
+                  {saved ? "محفوظة" : "حفظ"}
+                </button>
+              </div>
+            </div>
           </div>
         </section>
+
 
         {/* Quick access grid 3x2 */}
         <section className="mt-4 grid grid-cols-3 gap-2.5">
@@ -322,7 +355,7 @@ function HomeScreen() {
               {/* RTL order: الرئيسية (right) ... الملف الشخصي (left) */}
               <DockItem icon={HomeIcon} label="الرئيسية" active to="/home" color="#d96b2a" />
               <DockItem icon={HandHeart} label="الصلاة" color="#3a6fb5" />
-              <DockItem label="الكتاب المقدس" raised to="/books" />
+              <DockItem label="الكتاب المقدس" raised to="/bible" />
               <DockItem icon={Users} label="المجتمع" color="#6a4ab5" />
               <DockItem icon={UserIcon} label="الملف الشخصي" color="#6a4ab5" />
             </div>
