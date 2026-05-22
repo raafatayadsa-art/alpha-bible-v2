@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { booksQueryOptions } from "@/lib/bible";
-import { groupBooks } from "@/lib/bible-books";
+import { groupBooks, displayName } from "@/lib/bible-books";
 
 export const Route = createFileRoute("/")({
   ssr: false,
@@ -24,7 +24,7 @@ function BookGrid({ books }: { books: string[] }) {
             params={{ book: b }}
             className="block rounded-md border border-border bg-card px-4 py-3 font-serif text-lg text-card-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
           >
-            {b}
+            {displayName(b)}
           </Link>
         </li>
       ))}

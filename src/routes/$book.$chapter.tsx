@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { chaptersQueryOptions, versesQueryOptions } from "@/lib/bible";
+import { displayName } from "@/lib/bible-books";
 
 export const Route = createFileRoute("/$book/$chapter")({
   ssr: false,
@@ -39,7 +40,7 @@ function ChapterReader() {
 
       <header className="mb-10 text-center">
         <h1 className="font-serif text-4xl text-foreground">
-          {book} <span className="text-muted-foreground">·</span> {chapter}
+          {displayName(book)} <span className="text-muted-foreground">·</span> {chapter}
         </h1>
       </header>
 

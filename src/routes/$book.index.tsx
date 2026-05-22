@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { chaptersQueryOptions } from "@/lib/bible";
+import { displayName } from "@/lib/bible-books";
 
 export const Route = createFileRoute("/$book/")({
   ssr: false,
@@ -27,7 +28,7 @@ function ChaptersPage() {
           → رجوع إلى الأسفار
         </Link>
       </div>
-      <h1 className="mb-8 font-serif text-4xl text-foreground">{book}</h1>
+      <h1 className="mb-8 font-serif text-4xl text-foreground">{displayName(book)}</h1>
 
       {isLoading && <p className="text-muted-foreground">جارٍ تحميل الإصحاحات…</p>}
       {error && <p className="text-destructive">تعذّر التحميل: {(error as Error).message}</p>}
