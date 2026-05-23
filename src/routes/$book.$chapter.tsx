@@ -310,7 +310,7 @@ function ScriptureReader() {
 
   // Palette
   const bgClass = spiritualMode
-    ? "bg-[#0b1830] text-[#e8e2cf]"
+    ? "bg-[#08131f] text-[#f3ead0]"
     : "bg-[#f8efdc] text-[#3a2a18]";
   const surfaceClass = spiritualMode
     ? "bg-[#11223a]/60 border-white/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_8px_22px_-16px_rgba(0,0,0,0.7)]"
@@ -378,22 +378,21 @@ function ScriptureReader() {
             className="pointer-events-none fixed inset-0 z-0"
             style={{
               background:
-                "radial-gradient(70% 45% at 50% -5%, rgba(231,201,122,0.13), transparent 70%)," +
-                "radial-gradient(55% 40% at 85% 25%, rgba(140,110,210,0.09), transparent 75%)," +
-                "radial-gradient(70% 45% at 15% 80%, rgba(62,180,130,0.08), transparent 80%)," +
-                "radial-gradient(60% 35% at 50% 50%, rgba(110,160,220,0.05), transparent 75%)," +
-                "radial-gradient(120% 70% at 50% 110%, rgba(0,0,0,0.65), transparent 65%)",
+                "radial-gradient(75% 45% at 50% -10%, rgba(110,150,200,0.10), transparent 70%)," +
+                "radial-gradient(55% 40% at 88% 22%, rgba(231,201,122,0.06), transparent 75%)," +
+                "radial-gradient(65% 45% at 12% 78%, rgba(62,180,130,0.05), transparent 80%)," +
+                "radial-gradient(120% 70% at 50% 115%, rgba(0,0,0,0.55), transparent 65%)",
             }}
           />
-          {/* drifting cloud diffusion layer */}
+          {/* drifting cloud diffusion layer — subtle cinematic navy haze */}
           <div
             aria-hidden
-            className="pointer-events-none fixed inset-0 z-0 mix-blend-screen opacity-[0.18] animate-[abFog_28s_ease-in-out_infinite_alternate]"
+            className="pointer-events-none fixed inset-0 z-0 mix-blend-screen opacity-[0.10] animate-[abFog_32s_ease-in-out_infinite_alternate]"
             style={{
               background:
-                "radial-gradient(40% 30% at 30% 40%, rgba(180,200,230,0.35), transparent 70%)," +
-                "radial-gradient(35% 25% at 70% 65%, rgba(160,180,220,0.30), transparent 70%)",
-              filter: "blur(40px)",
+                "radial-gradient(45% 30% at 28% 38%, rgba(170,195,230,0.30), transparent 70%)," +
+                "radial-gradient(40% 28% at 72% 68%, rgba(150,175,215,0.24), transparent 70%)",
+              filter: "blur(50px)",
             }}
           />
         </>
@@ -618,7 +617,7 @@ function ScriptureReader() {
       />
 
       {/* Persistent global navigation */}
-      <BottomDock hidden={chromeHidden} />
+      <BottomDock hidden={chromeHidden} spiritualMode={spiritualMode} />
 
       <MeaningSheet data={sheet} onClose={() => setSheet(null)} />
     </main>
