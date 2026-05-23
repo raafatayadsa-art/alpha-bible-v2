@@ -91,10 +91,10 @@ export function MeaningSheet({
       >
         <div
           className={cn(
-            "mx-2 overflow-hidden rounded-t-[28px] border backdrop-blur-3xl",
-            // Emerald transparent glass — clearly separated from beige reader & navy dark mode
-            "bg-gradient-to-b from-[#0f3a2c]/72 to-[#0a2620]/78 border-[#7af0b8]/30 text-[#eaf6ec]",
-            "shadow-[0_-24px_60px_-20px_rgba(0,0,0,0.7),0_0_28px_-6px_rgba(62,180,130,0.45),inset_0_1px_0_rgba(255,255,255,0.07)]",
+            "mx-2 overflow-hidden rounded-t-[28px] border backdrop-blur-[40px] backdrop-saturate-150",
+            // Lighter airy emerald glass — high blur, low opacity
+            "bg-gradient-to-b from-[#1f5a44]/30 to-[#0f3a2c]/35 border-[#7af0b8]/25 text-[#eaf6ec]",
+            "shadow-[0_-24px_60px_-20px_rgba(0,0,0,0.45),0_0_28px_-10px_rgba(122,240,184,0.35),inset_0_1px_0_rgba(255,255,255,0.12)]",
             "transition-[max-height] duration-300",
           )}
           style={{ maxHeight: expanded ? "92vh" : "70vh" }}
