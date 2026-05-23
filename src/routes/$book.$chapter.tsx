@@ -1121,13 +1121,13 @@ function renderVerse(
       for (let k = i; k <= lastPartI; k++) surface += parts[k] ?? "";
       const entry = matchedEntry[i]!;
       const matchedNorm = normalizeAr(surface);
-      const wordNorm = normalizeAr(entry.word ?? "");
-      const titleNorm = normalizeAr(entry.titleNormalized ?? "");
+      const wordNorm = normalizeAr(entry.term ?? "");
+      const titleNorm = normalizeAr(entry.normalizedTerm ?? "");
       const sourceField =
         matchedNorm && matchedNorm === wordNorm
-          ? "المصطلح"
+          ? "term"
           : matchedNorm && matchedNorm === titleNorm
-            ? "title_normalized"
+            ? "normalized_term"
             : "phrase";
       out.push(
         <HighlightedWord
@@ -1136,7 +1136,7 @@ function renderVerse(
             // eslint-disable-next-line no-console
             console.log(
               "Matched dictionary term:",
-              entry.word || entry.titleNormalized || "",
+              entry.term || entry.normalizedTerm || "",
               "From:",
               sourceField,
               { id: entry.id, surface },
