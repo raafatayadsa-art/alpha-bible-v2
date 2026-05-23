@@ -1127,7 +1127,18 @@ function renderVerse(
       for (let k = i; k <= lastPartI; k++) surface += parts[k] ?? "";
       const entry = matchedEntry[i]!;
       out.push(
-        <HighlightedWord key={i} onSelect={() => onSelect(entry)}>
+        <HighlightedWord
+          key={i}
+          onSelect={() => {
+            // eslint-disable-next-line no-console
+            console.log("[dictionary] click", {
+              surface,
+              id: entry.id,
+              term: entry.word,
+            });
+            onSelect(entry);
+          }}
+        >
           {surface}
         </HighlightedWord>,
       );
