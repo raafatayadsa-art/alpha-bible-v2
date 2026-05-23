@@ -507,7 +507,7 @@ function ScriptureReader() {
             )}
             style={{ fontSize: `${fontSize}px`, lineHeight, wordSpacing: "0.06em" }}
           >
-            {(() => { const _dictKey = `${dictIndex.map.size}:${dictIndex.phrases.size}:${book}:${ch}`; const seenWords = new Set<string>(); return verses.data!.map((v, i) => {
+            {(() => { const _dictKey = `${dictIndex.map.size}:${dictIndex.stems.size}:${dictIndex.phrases.size}:${dictIndex.phraseStems.size}:${HMR_EPOCH}:${book}:${ch}`; const seenWords = new Set<string>(); return verses.data!.map((v, i) => {
               const num = v?.verse_number ?? i + 1;
               const id = verseKey(book, ch, num);
               const isActive = activeVerse === id;
