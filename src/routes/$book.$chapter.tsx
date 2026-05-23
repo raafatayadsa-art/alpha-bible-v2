@@ -709,6 +709,33 @@ function VerseCard({
   );
 }
 
+/**
+ * Memoized highlight layer. Re-renders only when the inputs that actually
+ * affect the highlighted output change: verse text, dictionary index identity,
+ * theme (spiritualMode), or the module HMR epoch. `seenWords` is a mutable
+ * per-chapter set used for de-duplication and is intentionally excluded from
+ * the dep list — the parent rebuilds it whenever the chapter or dict changes.
+ */
+const VerseHighlighted = memo(function VerseHighlighted({
+  text,
+  dictIndex,
+  seenWords,
+  onSelectWord,
+  spiritualMode,
+}: {
+  text: string;
+  dictIndex: DictionaryIndex;
+  seenWords: Set<string>;
+  onSelectWord: (entry: DictionaryEntry) => void;
+  spiritualMode: boolean;
+}) {
+  return useMemo(
+    () => renderVerse(text, dictIndex, seenWords, onSelectWord),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [text, dictIndex, spiritualMode, HMR_EPOCH, onSelectWord],
+  );
+});
+
 /* ---------------- Toolbar button ---------------- */
 
 function ToolbarBtn({
