@@ -1126,16 +1126,27 @@ function renderVerse(
       let surface = "";
       for (let k = i; k <= lastPartI; k++) surface += parts[k] ?? "";
       const entry = matchedEntry[i]!;
+      const matchedNorm = normalizeAr(surface);
+      const wordNorm = normalizeAr(entry.word ?? "");
+      const titleNorm = normalizeAr(entry.titleNormalized ?? "");
+      const sourceField =
+        matchedNorm && matchedNorm === wordNorm
+          ? "المصطلح"
+          : matchedNorm && matchedNorm === titleNorm
+            ? "title_normalized"
+            : "phrase";
       out.push(
         <HighlightedWord
           key={i}
           onSelect={() => {
             // eslint-disable-next-line no-console
-            console.log("[dictionary] click", {
-              surface,
-              id: entry.id,
-              term: entry.word,
-            });
+            console.log(
+              "Matched dictionary term:",
+              entry.word || entry.titleNormalized || "",
+              "From:",
+              sourceField,
+              { id: entry.id, surface },
+            );
             onSelect(entry);
           }}
         >
