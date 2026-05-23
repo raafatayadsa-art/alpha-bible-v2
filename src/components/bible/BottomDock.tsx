@@ -37,23 +37,22 @@ export function BottomDock({
         <div
           className={cn(
             "relative rounded-[26px] border backdrop-blur-2xl",
-            spiritualMode
-              ? "bg-gradient-to-b from-[#0b1a2c]/75 to-[#08131f]/70 border-[#e7c97a]/22 shadow-[0_-12px_36px_-16px_rgba(0,0,0,0.85),0_0_28px_-10px_rgba(62,180,130,0.30),inset_0_1px_0_rgba(255,255,255,0.06)]"
-              : "bg-[#fbf3e1]/80 border-white/70 shadow-[0_-10px_30px_-12px_rgba(120,80,30,0.30),inset_0_1px_0_rgba(255,255,255,0.8)]",
+            // Unified dark navy/emerald glass — matches auto-scroll controller
+            "bg-gradient-to-b from-[#0b1a2c]/75 to-[#08131f]/70 border-white/10",
+            "shadow-[0_-12px_36px_-16px_rgba(0,0,0,0.85),0_0_28px_-10px_rgba(62,180,130,0.30),inset_0_1px_0_rgba(255,255,255,0.06)]",
           )}
         >
-          <div className="grid grid-cols-5 items-end px-3 pt-2 pb-1.5">
-            <DockItem icon={HomeIcon} label="الرئيسية" to="/home" active={isActive("/home")} spiritualMode={spiritualMode} />
-            <DockItem icon={HandHeart} label="الصلاة" spiritualMode={spiritualMode} />
+          <div className="grid grid-cols-5 items-end px-3 pt-2 pb-1.5 gap-1">
+            <DockItem icon={HomeIcon} label="الرئيسية" to="/home" active={isActive("/home")} />
+            <DockItem icon={HandHeart} label="الصلاة" />
             <DockItem
               raised
               label="الكتاب المقدس"
               to="/bible"
               active={isActive("/bible") || isActive("/books") || pathname.split("/").length >= 2}
-              spiritualMode={spiritualMode}
             />
-            <DockItem icon={Users} label="المجتمع" spiritualMode={spiritualMode} />
-            <DockItem icon={UserIcon} label="الملف الشخصي" spiritualMode={spiritualMode} />
+            <DockItem icon={Users} label="المجتمع" />
+            <DockItem icon={UserIcon} label="الملف الشخصي" />
           </div>
         </div>
       </div>
