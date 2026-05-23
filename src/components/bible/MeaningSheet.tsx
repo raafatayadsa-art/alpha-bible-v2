@@ -137,10 +137,10 @@ export function MeaningSheet({
                     type="button"
                     onClick={() => setTab(t.key)}
                     className={cn(
-                      "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11.5px] font-bold transition-colors",
+                      "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11.5px] font-bold transition-all duration-200",
                       active
-                        ? "bg-gradient-to-br from-[#7af0b8] to-[#1f8a64] border-[#a8ffd1]/70 text-[#08231b] shadow-[0_0_18px_-2px_rgba(122,240,184,0.75),0_6px_14px_-8px_rgba(62,180,130,0.8)]"
-                        : "bg-[#0a2a20]/45 border-[#7af0b8]/25 text-[#eaf6ec]",
+                        ? "bg-gradient-to-br from-[#9affcc] via-[#5ee6a4] to-[#1f8a64] border-[#caffe2] text-[#04190f] ring-1 ring-[#a8ffd1]/60 shadow-[0_0_22px_-2px_rgba(122,240,184,0.9),0_0_44px_-10px_rgba(94,230,164,0.55),inset_0_1px_0_rgba(255,255,255,0.55)] scale-[1.02]"
+                        : "bg-[#0a2a20]/55 border-[#7af0b8]/30 text-[#d6ecdc] hover:text-[#eaf6ec] hover:border-[#7af0b8]/50",
                     )}
                   >
                     <Icon className="h-3.5 w-3.5" />
