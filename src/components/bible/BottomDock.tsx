@@ -110,7 +110,7 @@ function DockItem({
           className="mt-0.5 h-1 w-1 rounded-full"
           style={{
             background: dotColor,
-            boxShadow: spiritualMode ? "0 0 6px rgba(122,240,184,0.7)" : undefined,
+            boxShadow: "0 0 6px rgba(122,240,184,0.7)",
           }}
           aria-hidden
         />
