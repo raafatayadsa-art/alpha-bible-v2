@@ -166,8 +166,8 @@ export type DictionaryIndex = {
 
 /**
  * Allowlist of التصنيف values eligible for verse highlighting.
- * Anything else (verbs, generic words, ordinals, descriptions) is excluded
- * even if it exists in the dictionary table.
+ * Currently DISABLED — kept for reference. Entries are eligible as long as
+ * they have a valid المصطلح / title_normalized term.
  */
 const ALLOWED_CATEGORIES = new Set(
   [
@@ -185,11 +185,13 @@ const ALLOWED_CATEGORIES = new Set(
   ].map((s) => normalizeAr(s)),
 );
 
-function isHighlightable(e: DictionaryEntry): boolean {
-  const c = normalizeAr(e.category ?? "");
-  if (!c) return false;
-  return ALLOWED_CATEGORIES.has(c);
+function isHighlightable(_e: DictionaryEntry): boolean {
+  // Category filter intentionally relaxed — see ALLOWED_CATEGORIES above.
+  // Any entry with a valid term is allowed; STOPWORDS + length checks below
+  // still prevent generic single-letter / particle highlights.
+  return true;
 }
+
 
 export function buildDictionaryIndex(entries: DictionaryEntry[]): DictionaryIndex {
   const map = new Map<string, DictionaryEntry>();
