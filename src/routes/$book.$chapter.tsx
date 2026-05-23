@@ -483,7 +483,8 @@ function ScriptureReader() {
                     })
                   }
                   onSelectWord={(w) => {
-                    const e = dictIndex.map.get(normalizeAr(w));
+                    const key = normalizeAr(w);
+                    const e = dictIndex.phrases.get(key) ?? dictIndex.map.get(key);
                     if (e) setSheet(entryToSheet(e));
                   }}
                   dictIndex={dictIndex}
