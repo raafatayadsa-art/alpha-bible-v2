@@ -675,7 +675,13 @@ function VerseCard({
           {num}
         </span>
         <p className="flex-1 min-w-0">
-          {renderVerse(text, dictIndex, seenWords, onSelectWord)}
+          <VerseHighlighted
+            text={text}
+            dictIndex={dictIndex}
+            seenWords={seenWords}
+            onSelectWord={onSelectWord}
+            spiritualMode={spiritualMode}
+          />
           {showRef && <ReferenceIndicator count={2} onClick={(e?: any) => { e?.stopPropagation?.(); onOpenRef(); }} />}
         </p>
         <button
