@@ -963,63 +963,71 @@ function SliderRow({
 function renderVerse(
   text: string,
   dictIndex: DictionaryIndex,
-  seenWords: Set<string>,
-  onSelect: (w: string) => void,
+  seenWords: Set<string>, // de-dup keys: `entry:<id>` so all variants share one slot
+  onSelect: (entry: DictionaryEntry) => void,
 ): React.ReactNode {
   if (!text) return null;
-  if (!dictIndex.map.size && !dictIndex.phrases.size) return text;
+  if (
+    !dictIndex.map.size &&
+    !dictIndex.stems.size &&
+    !dictIndex.phrases.size &&
+    !dictIndex.phraseStems.size
+  )
+    return text;
 
-  // Split into alternating runs: even = non-Arabic (whitespace/punct), odd = Arabic word.
   const parts = text.split(/([\u0600-\u06FF\u0750-\u077F]+)/g);
 
-  // Index of Arabic-word parts within `parts` (odd indices) for phrase lookahead.
   const wordIdx: number[] = [];
   for (let i = 0; i < parts.length; i++) if (i % 2 === 1 && parts[i]) wordIdx.push(i);
 
-  // For each word-position, decide how many consecutive words (1..maxPhraseTokens)
-  // it consumes for a match. Greedy longest-match, left-to-right.
-  const consumed = new Array<number>(parts.length).fill(0); // span in word-positions
-  const matchedEntryKey = new Array<string | null>(parts.length).fill(null);
+  // Pre-compute normalized + stem for every word position.
+  const norms: string[] = [];
+  const stems: string[] = [];
+  for (const i of wordIdx) {
+    norms.push(normalizeAr(parts[i]));
+    stems.push(stemAr(parts[i]));
+  }
+
+  const consumed = new Array<number>(parts.length).fill(0);
+  const matchedEntry = new Array<DictionaryEntry | null>(parts.length).fill(null);
 
   const maxSpan = Math.max(1, dictIndex.maxPhraseTokens || 1);
   let w = 0;
   while (w < wordIdx.length) {
     const startPartI = wordIdx[w];
     let bestSpan = 0;
-    let bestKey: string | null = null;
+    let bestEntry: DictionaryEntry | null = null;
 
-    // Try longest phrase first.
     const upper = Math.min(maxSpan, wordIdx.length - w);
     for (let span = upper; span >= 2; span--) {
-      const norms: string[] = [];
-      for (let k = 0; k < span; k++) norms.push(normalizeAr(parts[wordIdx[w + k]]));
-      const key = norms.join(" ");
-      if (dictIndex.phrases.has(key)) {
-        bestSpan = span;
-        bestKey = key;
-        break;
-      }
+      const normKey = norms.slice(w, w + span).join(" ");
+      const stemKey = stems.slice(w, w + span).join(" ");
+      const e = dictIndex.phrases.get(normKey) ?? dictIndex.phraseStems.get(stemKey);
+      if (e) { bestSpan = span; bestEntry = e; break; }
     }
-    // Fall back to single-token exact match.
     if (!bestSpan) {
-      const key = normalizeAr(parts[startPartI]);
-      if (key && dictIndex.map.has(key)) {
-        bestSpan = 1;
-        bestKey = key;
-      }
+      const n = norms[w];
+      const s = stems[w];
+      const e =
+        (n && dictIndex.map.get(n)) ||
+        (s && dictIndex.stems.get(s)) ||
+        undefined;
+      if (e) { bestSpan = 1; bestEntry = e; }
     }
 
-    if (bestSpan && bestKey && !seenWords.has(bestKey)) {
-      seenWords.add(bestKey);
-      consumed[startPartI] = bestSpan;
-      matchedEntryKey[startPartI] = bestKey;
+    if (bestSpan && bestEntry) {
+      const dedupKey = `entry:${bestEntry.id}`;
+      if (!seenWords.has(dedupKey)) {
+        seenWords.add(dedupKey);
+        consumed[startPartI] = bestSpan;
+        matchedEntry[startPartI] = bestEntry;
+      }
       w += bestSpan;
     } else {
       w += 1;
     }
   }
 
-  // Render, honoring consumed spans.
   const out: React.ReactNode[] = [];
   let i = 0;
   while (i < parts.length) {
@@ -1027,15 +1035,13 @@ function renderVerse(
     if (!p) { i++; continue; }
     if (i % 2 === 1 && consumed[i] > 0) {
       const span = consumed[i];
-      // Collect surface text from this word through the (span-1) following words,
-      // including the in-between non-Arabic separators.
       const wPos = wordIdx.indexOf(i);
       const lastPartI = wordIdx[wPos + span - 1];
       let surface = "";
       for (let k = i; k <= lastPartI; k++) surface += parts[k] ?? "";
-      const entryWord = matchedEntryKey[i]!; // normalized key — onSelect re-resolves entry
+      const entry = matchedEntry[i]!;
       out.push(
-        <HighlightedWord key={i} onSelect={() => onSelect(entryWord)}>
+        <HighlightedWord key={i} onSelect={() => onSelect(entry)}>
           {surface}
         </HighlightedWord>,
       );
