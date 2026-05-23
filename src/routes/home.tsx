@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 
 import heroImg from "@/assets/home/hero.png";
+import churchHeavenly from "@/assets/home/heavenly-church.png";
 import iconBible from "@/assets/home/icon-bible.png";
 import iconHymn from "@/assets/home/icon-hymn.png";
 import iconPrayer from "@/assets/home/icon-prayer.png";
@@ -184,38 +185,107 @@ function HomeScreen() {
         </header>
 
 
-        {/* Hero verse card */}
+        {/* Hero verse card — heavenly cinematic, text-first, church emerges from below */}
         <section className="mt-4">
-          <div className="relative overflow-hidden rounded-[28px] shadow-[0_20px_40px_-18px_rgba(120,80,30,0.45)]">
-            <img src={heroImg} alt="آية اليوم" className="block w-full h-auto select-none pointer-events-none" draggable={false} />
-            {/* dynamic verse overlay — covers baked verse text */}
-            <div className="absolute inset-x-0 top-[22%] bottom-[26%] flex flex-col items-center justify-center px-6 text-center pointer-events-none">
+          <div
+            className="relative overflow-hidden rounded-[28px] border border-white/70 bg-gradient-to-b from-[#fff8e8] via-[#fbeed1] to-[#f1d9a3] shadow-[0_24px_50px_-22px_rgba(120,80,30,0.55),inset_0_1px_0_rgba(255,255,255,0.85)]"
+          >
+            {/* warm light rays from top-right */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0"
+              style={{
+                background:
+                  "radial-gradient(120% 60% at 85% -10%, rgba(255,232,170,0.85), transparent 60%)," +
+                  "radial-gradient(80% 50% at 15% 0%, rgba(255,245,220,0.55), transparent 70%)," +
+                  "radial-gradient(140% 70% at 50% 110%, rgba(180,120,50,0.18), transparent 60%)",
+              }}
+            />
+
+            {/* Verse text zone — dedicated, clean, readable */}
+            <div className="relative px-6 pt-7 pb-3 text-center">
+              <div className="mx-auto mb-3 inline-flex items-center gap-1.5 rounded-full border border-[#c79356]/35 bg-white/55 px-3 py-1 backdrop-blur-md">
+                <Sparkles className="h-3 w-3 text-[#b8893a]" />
+                <span className="text-[10px] font-bold tracking-wide text-[#7a4a26]">آية اليوم</span>
+              </div>
               <p
-                className="text-white font-extrabold leading-[1.6] text-[15px] [text-shadow:0_2px_8px_rgba(60,30,5,0.55)] line-clamp-4"
+                className="mx-auto max-w-[34ch] font-extrabold text-[#2a1c0e] leading-[1.85] text-[15.5px]"
                 style={{ wordBreak: "keep-all" }}
               >
                 {verse ? `"${verse.text}"` : "لا توجد آية اليوم"}
               </p>
               {verse?.reference && (
-                <p className="mt-2 text-[12px] font-bold text-[#fde7b8] [text-shadow:0_1px_4px_rgba(60,30,5,0.6)]">
+                <p className="mt-2.5 text-[11.5px] font-bold tracking-wide text-[#7a4a26]">
                   {verse.reference}
                 </p>
               )}
             </div>
 
-            {/* invisible interactive overlays positioned on baked buttons */}
-            <button
-              aria-label="مشاركة"
-              className="absolute bottom-[6%] right-[4%] w-[28%] h-[16%] rounded-full active:scale-95 transition-transform"
-              onClick={() => navigator.share?.({ title: "آية اليوم", text: "ربنا هو ملجأنا وقوتنا" }).catch(() => {})}
-            />
-            <button
-              aria-label="حفظ الآية"
-              className={"absolute bottom-[6%] left-[4%] w-[28%] h-[16%] rounded-full active:scale-95 transition-transform " + (saved ? "ring-2 ring-[#c79356]" : "")}
-              onClick={() => setSaved((s) => !s)}
-            />
-            {/* hidden labels for a11y */}
-            <span className="sr-only"><Share2 /><Bookmark /></span>
+            {/* Artwork stage — church emerges softly from lower part */}
+            <div className="relative mt-1 h-[180px] overflow-hidden">
+              {/* soft horizon mist behind */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-x-0 bottom-0 h-[60%]"
+                style={{
+                  background:
+                    "radial-gradient(70% 90% at 50% 100%, rgba(255,236,190,0.85), transparent 75%)",
+                }}
+              />
+              <img
+                src={churchHeavenly}
+                alt=""
+                draggable={false}
+                className="absolute left-1/2 bottom-[-14%] w-[78%] -translate-x-1/2 select-none pointer-events-none object-contain drop-shadow-[0_18px_24px_rgba(120,80,30,0.35)]"
+                style={{ maskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%)", WebkitMaskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%)" }}
+              />
+              {/* warm dome glow */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute left-1/2 top-2 h-24 w-40 -translate-x-1/2 rounded-full blur-2xl"
+                style={{ background: "radial-gradient(closest-side, rgba(255,210,120,0.55), transparent 70%)" }}
+              />
+              {/* drifting light rays */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 mix-blend-screen opacity-60"
+                style={{
+                  background:
+                    "linear-gradient(200deg, rgba(255,235,180,0.35) 0%, transparent 35%)",
+                }}
+              />
+            </div>
+
+            {/* Footer controls — luxury glass */}
+            <div className="relative flex items-center justify-between px-4 pb-3.5 pt-1">
+              <button
+                aria-label="حفظ الآية"
+                onClick={() => setSaved((s) => !s)}
+                className={
+                  "grid h-9 w-9 place-items-center rounded-full border backdrop-blur-md transition-all active:scale-[0.94] " +
+                  (saved
+                    ? "border-[#c79356]/60 bg-gradient-to-br from-[#fde3a8] to-[#d9a55a] text-white shadow-[0_8px_18px_-8px_rgba(168,120,42,0.65)]"
+                    : "border-white/70 bg-white/60 text-[#7a4a26] shadow-[0_6px_14px_-8px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.9)]")
+                }
+              >
+                <Bookmark className={"h-4 w-4 " + (saved ? "fill-white" : "")} />
+              </button>
+
+              {/* carousel indicators */}
+              <div className="flex items-center gap-1.5" aria-hidden>
+                <span className="h-1.5 w-5 rounded-full bg-gradient-to-r from-[#c79356] to-[#7a4a26] shadow-[0_0_6px_rgba(199,147,86,0.55)]" />
+                <span className="h-1.5 w-1.5 rounded-full bg-[#c79356]/35" />
+                <span className="h-1.5 w-1.5 rounded-full bg-[#c79356]/35" />
+              </div>
+
+              <button
+                aria-label="مشاركة"
+                onClick={() => navigator.share?.({ title: "آية اليوم", text: verse?.text ?? "" }).catch(() => {})}
+                className="grid h-9 w-9 place-items-center rounded-full border border-white/70 bg-white/60 text-[#7a4a26] backdrop-blur-md shadow-[0_6px_14px_-8px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.9)] transition-all active:scale-[0.94]"
+              >
+                <Share2 className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         </section>
 
