@@ -33,14 +33,14 @@ export function MeaningSheet({
   onClose: () => void;
 }) {
   const open = !!data;
-  const [tab, setTab] = useState<Tab>("overview");
+  const [tab, setTab] = useState<Tab>("meaning");
   const [expanded, setExpanded] = useState(false);
   const dragStart = useRef<number | null>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (open) {
-      setTab("overview");
+      setTab("meaning");
       setExpanded(false);
     }
   }, [open, data?.word]);
