@@ -121,14 +121,21 @@ async function fetchDictionary(): Promise<DictionaryEntry[]> {
     .select("*");
   if (error) throw error;
   return (data ?? [])
-    .map((row: any) => ({
-      id: row.id,
-      word: row["المصطلح"] ?? row.word ?? "",
-      category: row["التصنيف"] ?? row.category,
-      meaning: row["المعنى والأصل"] ?? row.meaning,
-      description: row["الوصف والتفاصيل"] ?? row.description,
-      relatedVersesRaw: row["الشواهد الكتابية"] ?? row.related_verses,
-    }))
+    .map((row: any) => {
+      // Highlight source: ONLY المصطلح or title_normalized.
+      // keywords / description / related verses are content-only — never matched.
+      const term =
+        ((row["المصطلح"] ?? "") as string).toString().trim() ||
+        ((row.title_normalized ?? "") as string).toString().trim();
+      return {
+        id: row.id,
+        word: term,
+        category: row["التصنيف"] ?? row.category,
+        meaning: row["المعنى والأصل"] ?? row.meaning,
+        description: row["الوصف والتفاصيل"] ?? row.description,
+        relatedVersesRaw: row["الشواهد الكتابية"] ?? row.related_verses,
+      } as DictionaryEntry;
+    })
     .filter((e) => e.word && e.word.trim().length > 1);
 }
 
