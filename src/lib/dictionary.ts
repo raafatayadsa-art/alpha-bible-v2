@@ -164,6 +164,33 @@ export type DictionaryIndex = {
   maxPhraseTokens: number;
 };
 
+/**
+ * Allowlist of التصنيف values eligible for verse highlighting.
+ * Anything else (verbs, generic words, ordinals, descriptions) is excluded
+ * even if it exists in the dictionary table.
+ */
+const ALLOWED_CATEGORIES = new Set(
+  [
+    "شخص",
+    "مدينة",
+    "مكان",
+    "قبيلة",
+    "شعب",
+    "مصطلح",
+    "مفهوم روحي",
+    "رمز",
+    "أداة مقدسة",
+    "حيوان رمزي",
+    "موقع كتابي",
+  ].map((s) => normalizeAr(s)),
+);
+
+function isHighlightable(e: DictionaryEntry): boolean {
+  const c = normalizeAr(e.category ?? "");
+  if (!c) return false;
+  return ALLOWED_CATEGORIES.has(c);
+}
+
 export function buildDictionaryIndex(entries: DictionaryEntry[]): DictionaryIndex {
   const map = new Map<string, DictionaryEntry>();
   const stems = new Map<string, DictionaryEntry>();
@@ -172,6 +199,9 @@ export function buildDictionaryIndex(entries: DictionaryEntry[]): DictionaryInde
   let maxPhraseTokens = 1;
 
   for (const e of entries) {
+    // Strict entity filter — only allowed التصنيف values can highlight.
+    if (!isHighlightable(e)) continue;
+
     const toks = tokenizeAr(e.word);
     if (toks.length === 0) continue;
 
@@ -180,7 +210,6 @@ export function buildDictionaryIndex(entries: DictionaryEntry[]): DictionaryInde
       if (STOPWORDS.has(t.norm)) continue;
       if (t.norm.length < 2) continue;
       if (!map.has(t.norm)) map.set(t.norm, e);
-      // Only register a stem if it's distinct, >= 3 chars, and not a stopword.
       if (t.stem && t.stem !== t.norm && t.stem.length >= 3 && !STOPWORDS.has(t.stem)) {
         if (!stems.has(t.stem)) stems.set(t.stem, e);
       }
