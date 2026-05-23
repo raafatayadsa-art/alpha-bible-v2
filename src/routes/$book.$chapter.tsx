@@ -132,6 +132,16 @@ function ScriptureReader() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [dict.data, dict.dataUpdatedAt, HMR_EPOCH],
   );
+  useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log("[dictionary] index built:", {
+      words: dictIndex.map.size,
+      stems: dictIndex.stems.size,
+      phrases: dictIndex.phrases.size,
+      phraseStems: dictIndex.phraseStems.size,
+    });
+  }, [dictIndex]);
+
 
 
   // Persistent typography prefs
