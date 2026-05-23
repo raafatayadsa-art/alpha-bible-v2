@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 
 import heroImg from "@/assets/home/hero.png";
+import churchHeavenly from "@/assets/home/heavenly-church.png";
 import iconBible from "@/assets/home/icon-bible.png";
 import iconHymn from "@/assets/home/icon-hymn.png";
 import iconPrayer from "@/assets/home/icon-prayer.png";
