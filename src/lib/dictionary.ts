@@ -3,7 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type DictionaryEntry = {
   id: number;
+  /** Display title — sourced from المصطلح only. Empty string if missing. */
   word: string;
+  /** Raw value of title_normalized column, used as an extra match source. */
+  titleNormalized?: string;
   category?: string;
   meaning?: string;
   description?: string;
