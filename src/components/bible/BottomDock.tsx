@@ -75,17 +75,13 @@ function DockItem({
   to?: string;
   spiritualMode?: boolean;
 }) {
-  const iconColor = spiritualMode
-    ? (active ? "#f0d78c" : "#e8e2cf")
-    : "#b8893a";
-  const labelColor = spiritualMode
-    ? (active ? "#f0d78c" : "rgba(232,226,207,0.78)")
-    : (active ? "#7a4a26" : "#3a2a18");
-  const dotColor = spiritualMode ? "#7af0b8" : "#c79356";
+  // Unified dark-glass palette to match auto-scroll controller
+  const iconColor = active ? "#f0d78c" : "#e8e2cf";
+  const labelColor = active ? "#f0d78c" : "rgba(232,226,207,0.78)";
+  const dotColor = "#7af0b8";
 
-  const raisedFilter = spiritualMode
-    ? "drop-shadow(0 0 14px rgba(122,240,184,0.45)) drop-shadow(0 0 10px rgba(231,201,122,0.35)) drop-shadow(0 6px 10px rgba(0,0,0,0.55))"
-    : "drop-shadow(0 0 12px rgba(231,201,122,0.45)) drop-shadow(0 6px 10px rgba(168,120,42,0.20))";
+  const raisedFilter =
+    "drop-shadow(0 0 14px rgba(122,240,184,0.45)) drop-shadow(0 0 10px rgba(231,201,122,0.35)) drop-shadow(0 6px 10px rgba(0,0,0,0.55))";
 
   const inner = (
     <div className="flex w-full flex-col items-center justify-end gap-1">
