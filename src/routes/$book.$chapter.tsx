@@ -71,7 +71,8 @@ function entryToSheet(e: DictionaryEntry): MeaningSheetData {
   const verses = parseRelatedVerses(e.relatedVersesRaw);
 
   const base: MeaningSheetData = {
-    word: e.word,
+    // Overlay title comes ONLY from المصطلح. If empty, show nothing — no fallback.
+    word: (e.word ?? "").trim(),
     kind: e.category,
     meaning: meaning || desc || undefined,
     relatedVerses: verses.length ? verses : undefined,
@@ -1126,16 +1127,27 @@ function renderVerse(
       let surface = "";
       for (let k = i; k <= lastPartI; k++) surface += parts[k] ?? "";
       const entry = matchedEntry[i]!;
+      const matchedNorm = normalizeAr(surface);
+      const wordNorm = normalizeAr(entry.word ?? "");
+      const titleNorm = normalizeAr(entry.titleNormalized ?? "");
+      const sourceField =
+        matchedNorm && matchedNorm === wordNorm
+          ? "المصطلح"
+          : matchedNorm && matchedNorm === titleNorm
+            ? "title_normalized"
+            : "phrase";
       out.push(
         <HighlightedWord
           key={i}
           onSelect={() => {
             // eslint-disable-next-line no-console
-            console.log("[dictionary] click", {
-              surface,
-              id: entry.id,
-              term: entry.word,
-            });
+            console.log(
+              "Matched dictionary term:",
+              entry.word || entry.titleNormalized || "",
+              "From:",
+              sourceField,
+              { id: entry.id, surface },
+            );
             onSelect(entry);
           }}
         >
