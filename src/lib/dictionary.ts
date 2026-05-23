@@ -203,7 +203,6 @@ export function buildDictionaryIndex(entries: DictionaryEntry[]): DictionaryInde
   let maxPhraseTokens = 1;
 
   for (const e of entries) {
-    // Strict entity filter — only allowed التصنيف values can highlight.
     if (!isHighlightable(e)) continue;
 
     const toks = tokenizeAr(e.word);
@@ -214,14 +213,11 @@ export function buildDictionaryIndex(entries: DictionaryEntry[]): DictionaryInde
       if (STOPWORDS.has(t.norm)) continue;
       if (t.norm.length < 2) continue;
       if (!map.has(t.norm)) map.set(t.norm, e);
-      if (t.stem && t.stem !== t.norm && t.stem.length >= 3 && !STOPWORDS.has(t.stem)) {
-        if (!stems.has(t.stem)) stems.set(t.stem, e);
-      }
+      // Stem matching INTENTIONALLY DISABLED — exact normalized match only.
     } else {
       const normKey = toks.map((t) => t.norm).join(" ");
-      const stemKey = toks.map((t) => t.stem).join(" ");
       if (!phrases.has(normKey)) phrases.set(normKey, e);
-      if (stemKey !== normKey && !phraseStems.has(stemKey)) phraseStems.set(stemKey, e);
+      // Phrase-stem matching INTENTIONALLY DISABLED — exact phrase only.
       if (toks.length > maxPhraseTokens) maxPhraseTokens = toks.length;
     }
   }
