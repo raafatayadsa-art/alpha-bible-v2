@@ -113,10 +113,15 @@ function ScriptureReader() {
 
   // Dictionary words from Supabase (dictionary_entries) — drives highlight + meaning sheet.
   const dict = useDictionary();
+  // HMR epoch — bumps every time this module (or dictionary.ts) hot-reloads
+  // in the dev editor, forcing the index + verse cards to rebuild without
+  // requiring a full page reload or jumping to Preview.
   const dictIndex = useMemo<DictionaryIndex>(
     () => buildDictionaryIndex(dict.data ?? []),
-    [dict.data],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [dict.data, dict.dataUpdatedAt, HMR_EPOCH],
   );
+
 
   // Persistent typography prefs
   const { prefs, setPrefs, reset: resetPrefs } = useTypographyPrefs();
