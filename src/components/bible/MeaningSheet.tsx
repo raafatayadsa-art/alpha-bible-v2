@@ -15,15 +15,14 @@ export type MeaningSheetData = {
   mapLabel?: string;
 };
 
-type Tab = "overview" | "verses" | "map" | "timeline" | "people" | "meaning";
+type Tab = "meaning" | "verses" | "people" | "map" | "timeline";
 
 const tabs: { key: Tab; label: string; icon: typeof X }[] = [
-  { key: "overview", label: "نظرة عامة", icon: Layers },
   { key: "meaning", label: "المعنى", icon: Sparkles },
   { key: "verses", label: "الآيات", icon: BookOpen },
-  { key: "people", label: "أشخاص", icon: Users },
-  { key: "timeline", label: "تسلسل", icon: Clock },
-  { key: "map", label: "خريطة", icon: MapPin },
+  { key: "people", label: "الأشخاص", icon: Users },
+  { key: "map", label: "الخريطة", icon: MapPin },
+  { key: "timeline", label: "الخط الزمني", icon: Clock },
 ];
 
 export function MeaningSheet({
