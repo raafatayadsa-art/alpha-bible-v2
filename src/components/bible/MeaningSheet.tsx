@@ -73,7 +73,7 @@ export function MeaningSheet({
         onClick={onClose}
         aria-hidden
         className={cn(
-          "fixed inset-0 z-[60] bg-black/20 backdrop-blur-[3px] transition-opacity duration-300",
+          "fixed inset-0 z-[60] bg-[#06251c]/25 backdrop-blur-[5px] transition-opacity duration-300",
           open ? "opacity-100" : "opacity-0 pointer-events-none",
         )}
       />
@@ -91,10 +91,10 @@ export function MeaningSheet({
       >
         <div
           className={cn(
-            "mx-2 overflow-hidden rounded-t-[28px] border backdrop-blur-[40px] backdrop-saturate-150",
-            // Lighter airy emerald glass — high blur, low opacity
-            "bg-gradient-to-b from-[#1f5a44]/30 to-[#0f3a2c]/35 border-[#7af0b8]/25 text-[#eaf6ec]",
-            "shadow-[0_-24px_60px_-20px_rgba(0,0,0,0.45),0_0_28px_-10px_rgba(122,240,184,0.35),inset_0_1px_0_rgba(255,255,255,0.12)]",
+            "mx-2 overflow-hidden rounded-t-[28px] border backdrop-blur-[22px] backdrop-saturate-150",
+            // Balanced emerald glass — richer tint, medium blur, layered depth
+            "bg-gradient-to-b from-[#0f3d2e]/72 via-[#0c3326]/70 to-[#07261c]/78 border-[#7af0b8]/35 text-[#eaf6ec]",
+            "shadow-[0_-28px_70px_-18px_rgba(0,0,0,0.6),0_0_36px_-12px_rgba(122,240,184,0.45),inset_0_1px_0_rgba(255,255,255,0.14),inset_0_0_40px_-20px_rgba(122,240,184,0.18)]",
             "transition-[max-height] duration-300",
           )}
           style={{ maxHeight: expanded ? "92vh" : "70vh" }}
@@ -139,8 +139,8 @@ export function MeaningSheet({
                     className={cn(
                       "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11.5px] font-bold transition-colors",
                       active
-                        ? "bg-gradient-to-br from-[#7af0b8] to-[#1f8a64] border-[#7af0b8]/50 text-[#08231b] shadow-[0_6px_14px_-8px_rgba(62,180,130,0.7)]"
-                        : "bg-white/8 border-[#7af0b8]/20 text-[#eaf6ec]",
+                        ? "bg-gradient-to-br from-[#7af0b8] to-[#1f8a64] border-[#a8ffd1]/70 text-[#08231b] shadow-[0_0_18px_-2px_rgba(122,240,184,0.75),0_6px_14px_-8px_rgba(62,180,130,0.8)]"
+                        : "bg-[#0a2a20]/45 border-[#7af0b8]/25 text-[#eaf6ec]",
                     )}
                   >
                     <Icon className="h-3.5 w-3.5" />
@@ -167,7 +167,7 @@ export function MeaningSheet({
                 {(data?.relatedVerses ?? []).map((v, i) => (
                   <div
                     key={i}
-                    className="rounded-2xl bg-white/[0.04] border border-white/15 p-3"
+                    className="rounded-2xl bg-[#0a2a20]/45 border border-[#7af0b8]/20 p-3"
                   >
                     <p className="text-[11px] font-bold text-[#e7c97a]">{v.reference}</p>
                     <p className="mt-1 font-arabic-serif text-[14px] leading-relaxed text-[#eaf6ec]">
@@ -183,7 +183,7 @@ export function MeaningSheet({
                 {(data?.relatedPeople ?? []).map((p, i) => (
                   <div
                     key={i}
-                    className="flex items-center justify-between rounded-2xl bg-white/[0.04] border border-white/15 p-3"
+                    className="flex items-center justify-between rounded-2xl bg-[#0a2a20]/45 border border-[#7af0b8]/20 p-3"
                   >
                     <div>
                       <p className="text-[13px] font-bold text-[#eaf6ec]">{p.name}</p>
@@ -236,7 +236,7 @@ function OverviewBlock({ data }: { data: MeaningSheetData | null }) {
   return (
     <div className="space-y-2.5">
       {items.map((it) => (
-        <div key={it.label} className="rounded-2xl bg-white/[0.04] border border-white/15 p-3">
+        <div key={it.label} className="rounded-2xl bg-[#0a2a20]/45 border border-[#7af0b8]/20 p-3">
           <p className="text-[11px] font-bold text-[#e7c97a]">{it.label}</p>
           <p className="mt-1 text-[13.5px] leading-relaxed text-[#eaf6ec]">{it.value}</p>
         </div>
@@ -247,7 +247,7 @@ function OverviewBlock({ data }: { data: MeaningSheetData | null }) {
 
 function TextBlock({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl bg-white/[0.04] border border-white/15 p-4">
+    <div className="rounded-2xl bg-[#0a2a20]/45 border border-[#7af0b8]/20 p-4">
       <p className="text-[11px] font-bold text-[#e7c97a]">{title}</p>
       <p className="mt-1.5 text-[14px] leading-relaxed text-[#eaf6ec]">{children}</p>
     </div>
