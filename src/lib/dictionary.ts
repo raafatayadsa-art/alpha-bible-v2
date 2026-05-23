@@ -76,10 +76,16 @@ export function useDictionary() {
   return useQuery({
     queryKey: ["dictionary_entries"],
     queryFn: fetchDictionary,
-    staleTime: 1000 * 60 * 60,
-    gcTime: 1000 * 60 * 60,
+    // Keep matching live in editor preview: short stale time + refetch on mount
+    // so HMR / route remounts re-pull entries instead of serving an empty cache.
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
+    retry: 2,
   });
 }
+
 
 export type DictionaryIndex = {
   /** normalized single-token word -> entry */

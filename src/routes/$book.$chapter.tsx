@@ -457,7 +457,7 @@ function ScriptureReader() {
             )}
             style={{ fontSize: `${fontSize}px`, lineHeight, wordSpacing: "0.06em" }}
           >
-            {(() => { const seenWords = new Set<string>(); return verses.data!.map((v, i) => {
+            {(() => { const _dictKey = `${dictIndex.map.size}:${dictIndex.phrases.size}:${book}:${ch}`; const seenWords = new Set<string>(); return verses.data!.map((v, i) => {
               const num = v?.verse_number ?? i + 1;
               const id = verseKey(book, ch, num);
               const isActive = activeVerse === id;
@@ -465,7 +465,7 @@ function ScriptureReader() {
               const showRef = i > 0 && i % 7 === 3;
               return (
                 <VerseCard
-                  key={id}
+                  key={`${id}::${_dictKey}`}
                   num={num}
                   text={v?.verse_text ?? ""}
                   isActive={isActive}
