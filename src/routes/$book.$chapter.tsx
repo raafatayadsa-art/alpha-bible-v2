@@ -1090,17 +1090,14 @@ function renderVerse(
     const upper = Math.min(maxSpan, wordIdx.length - w);
     for (let span = upper; span >= 2; span--) {
       const normKey = norms.slice(w, w + span).join(" ");
-      const stemKey = stems.slice(w, w + span).join(" ");
-      const e = dictIndex.phrases.get(normKey) ?? dictIndex.phraseStems.get(stemKey);
+      // Exact normalized phrase match only — stems disabled.
+      const e = dictIndex.phrases.get(normKey);
       if (e) { bestSpan = span; bestEntry = e; break; }
     }
     if (!bestSpan) {
       const n = norms[w];
-      const s = stems[w];
-      const e =
-        (n && dictIndex.map.get(n)) ||
-        (s && dictIndex.stems.get(s)) ||
-        undefined;
+      // Exact normalized whole-word match only — stems disabled.
+      const e = n ? dictIndex.map.get(n) : undefined;
       if (e) { bestSpan = 1; bestEntry = e; }
     }
 
@@ -1130,7 +1127,18 @@ function renderVerse(
       for (let k = i; k <= lastPartI; k++) surface += parts[k] ?? "";
       const entry = matchedEntry[i]!;
       out.push(
-        <HighlightedWord key={i} onSelect={() => onSelect(entry)}>
+        <HighlightedWord
+          key={i}
+          onSelect={() => {
+            // eslint-disable-next-line no-console
+            console.log("[dictionary] click", {
+              surface,
+              id: entry.id,
+              term: entry.word,
+            });
+            onSelect(entry);
+          }}
+        >
           {surface}
         </HighlightedWord>,
       );

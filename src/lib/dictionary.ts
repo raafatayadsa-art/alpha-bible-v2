@@ -33,16 +33,15 @@ export function classifyEntry(category?: string): EntryKind {
   return "other";
 }
 
-/** Strip tashkeel + unify alef/yaa/taa-marbuta so matches survive Arabic variants. */
+/**
+ * Strict normalization: ONLY tashkeel + tatweel removal and alef variants.
+ * No yaa / hamza-seat / taa-marbuta folding — those caused false matches.
+ */
 export function normalizeAr(s: string): string {
   if (!s) return "";
   return s
     .replace(/[\u064B-\u0652\u0670\u0640]/g, "") // tashkeel + tatweel
-    .replace(/[أإآٱا]/g, "ا")
-    .replace(/ى/g, "ي")
-    .replace(/ؤ/g, "و")
-    .replace(/ئ/g, "ي")
-    .replace(/ة/g, "ه")
+    .replace(/[أإآٱ]/g, "ا") // alef variants only
     .replace(/[^\u0600-\u06FF\s]/g, "") // strip punctuation
     .trim();
 }
@@ -204,7 +203,6 @@ export function buildDictionaryIndex(entries: DictionaryEntry[]): DictionaryInde
   let maxPhraseTokens = 1;
 
   for (const e of entries) {
-    // Strict entity filter — only allowed التصنيف values can highlight.
     if (!isHighlightable(e)) continue;
 
     const toks = tokenizeAr(e.word);
@@ -215,14 +213,11 @@ export function buildDictionaryIndex(entries: DictionaryEntry[]): DictionaryInde
       if (STOPWORDS.has(t.norm)) continue;
       if (t.norm.length < 2) continue;
       if (!map.has(t.norm)) map.set(t.norm, e);
-      if (t.stem && t.stem !== t.norm && t.stem.length >= 3 && !STOPWORDS.has(t.stem)) {
-        if (!stems.has(t.stem)) stems.set(t.stem, e);
-      }
+      // Stem matching INTENTIONALLY DISABLED — exact normalized match only.
     } else {
       const normKey = toks.map((t) => t.norm).join(" ");
-      const stemKey = toks.map((t) => t.stem).join(" ");
       if (!phrases.has(normKey)) phrases.set(normKey, e);
-      if (stemKey !== normKey && !phraseStems.has(stemKey)) phraseStems.set(stemKey, e);
+      // Phrase-stem matching INTENTIONALLY DISABLED — exact phrase only.
       if (toks.length > maxPhraseTokens) maxPhraseTokens = toks.length;
     }
   }
