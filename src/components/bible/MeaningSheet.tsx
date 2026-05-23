@@ -15,15 +15,14 @@ export type MeaningSheetData = {
   mapLabel?: string;
 };
 
-type Tab = "overview" | "verses" | "map" | "timeline" | "people" | "meaning";
+type Tab = "meaning" | "verses" | "people" | "map" | "timeline";
 
 const tabs: { key: Tab; label: string; icon: typeof X }[] = [
-  { key: "overview", label: "نظرة عامة", icon: Layers },
   { key: "meaning", label: "المعنى", icon: Sparkles },
   { key: "verses", label: "الآيات", icon: BookOpen },
-  { key: "people", label: "أشخاص", icon: Users },
-  { key: "timeline", label: "تسلسل", icon: Clock },
-  { key: "map", label: "خريطة", icon: MapPin },
+  { key: "people", label: "الأشخاص", icon: Users },
+  { key: "map", label: "الخريطة", icon: MapPin },
+  { key: "timeline", label: "الخط الزمني", icon: Clock },
 ];
 
 export function MeaningSheet({
@@ -34,14 +33,14 @@ export function MeaningSheet({
   onClose: () => void;
 }) {
   const open = !!data;
-  const [tab, setTab] = useState<Tab>("overview");
+  const [tab, setTab] = useState<Tab>("meaning");
   const [expanded, setExpanded] = useState(false);
   const dragStart = useRef<number | null>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (open) {
-      setTab("overview");
+      setTab("meaning");
       setExpanded(false);
     }
   }, [open, data?.word]);
@@ -74,7 +73,7 @@ export function MeaningSheet({
         onClick={onClose}
         aria-hidden
         className={cn(
-          "fixed inset-0 z-[60] bg-black/35 backdrop-blur-[2px] transition-opacity duration-300",
+          "fixed inset-0 z-[60] bg-black/20 backdrop-blur-[3px] transition-opacity duration-300",
           open ? "opacity-100" : "opacity-0 pointer-events-none",
         )}
       />
@@ -92,10 +91,10 @@ export function MeaningSheet({
       >
         <div
           className={cn(
-            "mx-2 overflow-hidden rounded-t-[28px] border backdrop-blur-3xl",
-            // Emerald transparent glass — clearly separated from beige reader & navy dark mode
-            "bg-gradient-to-b from-[#0f3a2c]/72 to-[#0a2620]/78 border-[#7af0b8]/30 text-[#eaf6ec]",
-            "shadow-[0_-24px_60px_-20px_rgba(0,0,0,0.7),0_0_28px_-6px_rgba(62,180,130,0.45),inset_0_1px_0_rgba(255,255,255,0.07)]",
+            "mx-2 overflow-hidden rounded-t-[28px] border backdrop-blur-[40px] backdrop-saturate-150",
+            // Lighter airy emerald glass — high blur, low opacity
+            "bg-gradient-to-b from-[#1f5a44]/30 to-[#0f3a2c]/35 border-[#7af0b8]/25 text-[#eaf6ec]",
+            "shadow-[0_-24px_60px_-20px_rgba(0,0,0,0.45),0_0_28px_-10px_rgba(122,240,184,0.35),inset_0_1px_0_rgba(255,255,255,0.12)]",
             "transition-[max-height] duration-300",
           )}
           style={{ maxHeight: expanded ? "92vh" : "70vh" }}
@@ -157,7 +156,7 @@ export function MeaningSheet({
             className="overflow-y-auto px-4 pt-2 pb-6"
             style={{ maxHeight: expanded ? "calc(92vh - 140px)" : "calc(70vh - 140px)" }}
           >
-            {tab === "overview" && <OverviewBlock data={data} />}
+            
             {tab === "meaning" && (
               <TextBlock title="المعنى والأصل">
                 {data?.meaning || data?.origin || "لا توجد تفاصيل بعد."}
@@ -168,7 +167,7 @@ export function MeaningSheet({
                 {(data?.relatedVerses ?? []).map((v, i) => (
                   <div
                     key={i}
-                    className="rounded-2xl bg-white/[0.06] border border-[#7af0b8]/20 p-3"
+                    className="rounded-2xl bg-white/[0.04] border border-white/15 p-3"
                   >
                     <p className="text-[11px] font-bold text-[#e7c97a]">{v.reference}</p>
                     <p className="mt-1 font-arabic-serif text-[14px] leading-relaxed text-[#eaf6ec]">
@@ -184,7 +183,7 @@ export function MeaningSheet({
                 {(data?.relatedPeople ?? []).map((p, i) => (
                   <div
                     key={i}
-                    className="flex items-center justify-between rounded-2xl bg-white/[0.06] border border-[#7af0b8]/20 p-3"
+                    className="flex items-center justify-between rounded-2xl bg-white/[0.04] border border-white/15 p-3"
                   >
                     <div>
                       <p className="text-[13px] font-bold text-[#eaf6ec]">{p.name}</p>
@@ -237,7 +236,7 @@ function OverviewBlock({ data }: { data: MeaningSheetData | null }) {
   return (
     <div className="space-y-2.5">
       {items.map((it) => (
-        <div key={it.label} className="rounded-2xl bg-white/[0.06] border border-[#7af0b8]/20 p-3">
+        <div key={it.label} className="rounded-2xl bg-white/[0.04] border border-white/15 p-3">
           <p className="text-[11px] font-bold text-[#e7c97a]">{it.label}</p>
           <p className="mt-1 text-[13.5px] leading-relaxed text-[#eaf6ec]">{it.value}</p>
         </div>
@@ -248,7 +247,7 @@ function OverviewBlock({ data }: { data: MeaningSheetData | null }) {
 
 function TextBlock({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl bg-white/[0.06] border border-[#7af0b8]/20 p-4">
+    <div className="rounded-2xl bg-white/[0.04] border border-white/15 p-4">
       <p className="text-[11px] font-bold text-[#e7c97a]">{title}</p>
       <p className="mt-1.5 text-[14px] leading-relaxed text-[#eaf6ec]">{children}</p>
     </div>
