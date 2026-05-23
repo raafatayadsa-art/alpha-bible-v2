@@ -71,7 +71,8 @@ function entryToSheet(e: DictionaryEntry): MeaningSheetData {
   const verses = parseRelatedVerses(e.relatedVersesRaw);
 
   const base: MeaningSheetData = {
-    word: e.word,
+    // Overlay title comes ONLY from المصطلح. If empty, show nothing — no fallback.
+    word: (e.word ?? "").trim(),
     kind: e.category,
     meaning: meaning || desc || undefined,
     relatedVerses: verses.length ? verses : undefined,
