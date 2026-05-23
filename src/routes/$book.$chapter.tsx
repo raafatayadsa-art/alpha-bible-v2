@@ -465,7 +465,7 @@ function ScriptureReader() {
               const showRef = i > 0 && i % 7 === 3;
               return (
                 <VerseCard
-                  key={id}
+                  key={`${id}::${_dictKey}`}
                   num={num}
                   text={v?.verse_text ?? ""}
                   isActive={isActive}
