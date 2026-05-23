@@ -483,7 +483,8 @@ function ScriptureReader() {
                     })
                   }
                   onSelectWord={(w) => {
-                    const e = dictIndex.map.get(normalizeAr(w));
+                    const key = normalizeAr(w);
+                    const e = dictIndex.phrases.get(key) ?? dictIndex.map.get(key);
                     if (e) setSheet(entryToSheet(e));
                   }}
                   dictIndex={dictIndex}
@@ -966,22 +967,85 @@ function renderVerse(
   onSelect: (w: string) => void,
 ): React.ReactNode {
   if (!text) return null;
-  if (!dictIndex.map.size) return text;
+  if (!dictIndex.map.size && !dictIndex.phrases.size) return text;
+
+  // Split into alternating runs: even = non-Arabic (whitespace/punct), odd = Arabic word.
   const parts = text.split(/([\u0600-\u06FF\u0750-\u077F]+)/g);
-  return parts.map((p, i) => {
-    if (!p) return null;
-    if (i % 2 === 1) {
-      const key = normalizeAr(p);
-      if (key && dictIndex.map.has(key) && !seenWords.has(key)) {
-        seenWords.add(key);
-        return (
-          <HighlightedWord key={i} onSelect={() => onSelect(p)}>
-            {p}
-          </HighlightedWord>
-        );
+
+  // Index of Arabic-word parts within `parts` (odd indices) for phrase lookahead.
+  const wordIdx: number[] = [];
+  for (let i = 0; i < parts.length; i++) if (i % 2 === 1 && parts[i]) wordIdx.push(i);
+
+  // For each word-position, decide how many consecutive words (1..maxPhraseTokens)
+  // it consumes for a match. Greedy longest-match, left-to-right.
+  const consumed = new Array<number>(parts.length).fill(0); // span in word-positions
+  const matchedEntryKey = new Array<string | null>(parts.length).fill(null);
+
+  const maxSpan = Math.max(1, dictIndex.maxPhraseTokens || 1);
+  let w = 0;
+  while (w < wordIdx.length) {
+    const startPartI = wordIdx[w];
+    let bestSpan = 0;
+    let bestKey: string | null = null;
+
+    // Try longest phrase first.
+    const upper = Math.min(maxSpan, wordIdx.length - w);
+    for (let span = upper; span >= 2; span--) {
+      const norms: string[] = [];
+      for (let k = 0; k < span; k++) norms.push(normalizeAr(parts[wordIdx[w + k]]));
+      const key = norms.join(" ");
+      if (dictIndex.phrases.has(key)) {
+        bestSpan = span;
+        bestKey = key;
+        break;
       }
     }
-    return <span key={i}>{p}</span>;
-  });
+    // Fall back to single-token exact match.
+    if (!bestSpan) {
+      const key = normalizeAr(parts[startPartI]);
+      if (key && dictIndex.map.has(key)) {
+        bestSpan = 1;
+        bestKey = key;
+      }
+    }
+
+    if (bestSpan && bestKey && !seenWords.has(bestKey)) {
+      seenWords.add(bestKey);
+      consumed[startPartI] = bestSpan;
+      matchedEntryKey[startPartI] = bestKey;
+      w += bestSpan;
+    } else {
+      w += 1;
+    }
+  }
+
+  // Render, honoring consumed spans.
+  const out: React.ReactNode[] = [];
+  let i = 0;
+  while (i < parts.length) {
+    const p = parts[i];
+    if (!p) { i++; continue; }
+    if (i % 2 === 1 && consumed[i] > 0) {
+      const span = consumed[i];
+      // Collect surface text from this word through the (span-1) following words,
+      // including the in-between non-Arabic separators.
+      const wPos = wordIdx.indexOf(i);
+      const lastPartI = wordIdx[wPos + span - 1];
+      let surface = "";
+      for (let k = i; k <= lastPartI; k++) surface += parts[k] ?? "";
+      const entryWord = matchedEntryKey[i]!; // normalized key — onSelect re-resolves entry
+      out.push(
+        <HighlightedWord key={i} onSelect={() => onSelect(entryWord)}>
+          {surface}
+        </HighlightedWord>,
+      );
+      i = lastPartI + 1;
+    } else {
+      out.push(<span key={i}>{p}</span>);
+      i++;
+    }
+  }
+  return out;
 }
+
 
