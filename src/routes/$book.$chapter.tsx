@@ -40,6 +40,17 @@ import {
   type DictionaryIndex,
 } from "@/lib/dictionary";
 
+/**
+ * HMR_EPOCH — bumps on every hot-module reload of this file (and indirectly
+ * any time the dev editor evaluates a change). Used as a memo dependency so
+ * the dictionary index + highlighted verses rebuild live in the editor
+ * without needing to open Preview or reload the page.
+ */
+const HMR_EPOCH: number = Date.now();
+if (import.meta.hot) {
+  import.meta.hot.accept();
+}
+
 function parseRelatedVerses(raw?: string): { reference: string; text: string }[] {
   if (!raw) return [];
   // Accept newline / "،" / "," / ";" / "؛" separated refs (text optional after " - ").
@@ -113,10 +124,15 @@ function ScriptureReader() {
 
   // Dictionary words from Supabase (dictionary_entries) — drives highlight + meaning sheet.
   const dict = useDictionary();
+  // HMR epoch — bumps every time this module (or dictionary.ts) hot-reloads
+  // in the dev editor, forcing the index + verse cards to rebuild without
+  // requiring a full page reload or jumping to Preview.
   const dictIndex = useMemo<DictionaryIndex>(
     () => buildDictionaryIndex(dict.data ?? []),
-    [dict.data],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [dict.data, dict.dataUpdatedAt, HMR_EPOCH],
   );
+
 
   // Persistent typography prefs
   const { prefs, setPrefs, reset: resetPrefs } = useTypographyPrefs();
@@ -491,7 +507,7 @@ function ScriptureReader() {
             )}
             style={{ fontSize: `${fontSize}px`, lineHeight, wordSpacing: "0.06em" }}
           >
-            {(() => { const _dictKey = `${dictIndex.map.size}:${dictIndex.phrases.size}:${book}:${ch}`; const seenWords = new Set<string>(); return verses.data!.map((v, i) => {
+            {(() => { const _dictKey = `${dictIndex.map.size}:${dictIndex.stems.size}:${dictIndex.phrases.size}:${dictIndex.phraseStems.size}:${HMR_EPOCH}:${book}:${ch}`; const seenWords = new Set<string>(); return verses.data!.map((v, i) => {
               const num = v?.verse_number ?? i + 1;
               const id = verseKey(book, ch, num);
               const isActive = activeVerse === id;
