@@ -33,16 +33,15 @@ export function classifyEntry(category?: string): EntryKind {
   return "other";
 }
 
-/** Strip tashkeel + unify alef/yaa/taa-marbuta so matches survive Arabic variants. */
+/**
+ * Strict normalization: ONLY tashkeel + tatweel removal and alef variants.
+ * No yaa / hamza-seat / taa-marbuta folding — those caused false matches.
+ */
 export function normalizeAr(s: string): string {
   if (!s) return "";
   return s
     .replace(/[\u064B-\u0652\u0670\u0640]/g, "") // tashkeel + tatweel
-    .replace(/[أإآٱا]/g, "ا")
-    .replace(/ى/g, "ي")
-    .replace(/ؤ/g, "و")
-    .replace(/ئ/g, "ي")
-    .replace(/ة/g, "ه")
+    .replace(/[أإآٱ]/g, "ا") // alef variants only
     .replace(/[^\u0600-\u06FF\s]/g, "") // strip punctuation
     .trim();
 }
