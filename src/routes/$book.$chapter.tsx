@@ -1134,24 +1134,18 @@ function renderVerse(
     const upper = Math.min(maxSpan, wordIdx.length - w);
     for (let span = upper; span >= 2; span--) {
       const normKey = norms.slice(w, w + span).join(" ");
-      // Exact normalized phrase match only — stems disabled.
-      const e = dictIndex.phrases.get(normKey);
+      const e = lookupEntry(dictIndex, normKey);
       if (e) { bestSpan = span; bestEntry = e; break; }
     }
     if (!bestSpan) {
       const n = norms[w];
-      // Exact normalized whole-word match only — stems disabled.
-      const e = n ? dictIndex.map.get(n) : undefined;
+      const e = n ? lookupEntry(dictIndex, n) : undefined;
       if (e) { bestSpan = 1; bestEntry = e; }
     }
 
     if (bestSpan && bestEntry) {
-      const dedupKey = `entry:${bestEntry.id}`;
-      if (!seenWords.has(dedupKey)) {
-        seenWords.add(dedupKey);
-        consumed[startPartI] = bestSpan;
-        matchedEntry[startPartI] = bestEntry;
-      }
+      consumed[startPartI] = bestSpan;
+      matchedEntry[startPartI] = bestEntry;
       w += bestSpan;
     } else {
       w += 1;
