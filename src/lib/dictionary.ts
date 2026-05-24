@@ -352,5 +352,11 @@ export function buildDictionaryIndex(entries: DictionaryEntry[]): DictionaryInde
 }
 
 export function lookupEntry(idx: DictionaryIndex, key: string): DictionaryEntry | undefined {
-  return idx.phrases.get(key) ?? idx.map.get(key);
+  const direct = idx.phrases.get(key) ?? idx.map.get(key);
+  if (direct) return direct;
+  const stripped = stripArPrefix(key);
+  if (stripped && stripped !== key) {
+    return idx.phrases.get(stripped) ?? idx.map.get(stripped);
+  }
+  return undefined;
 }
