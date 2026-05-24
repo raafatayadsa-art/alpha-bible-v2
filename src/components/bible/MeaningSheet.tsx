@@ -28,22 +28,24 @@ const tabs: { key: Tab; label: string; icon: typeof X }[] = [
 export function MeaningSheet({
   data,
   onClose,
+  initialTab,
 }: {
   data: MeaningSheetData | null;
   onClose: () => void;
+  initialTab?: Tab;
 }) {
   const open = !!data;
-  const [tab, setTab] = useState<Tab>("meaning");
+  const [tab, setTab] = useState<Tab>(initialTab ?? "meaning");
   const [expanded, setExpanded] = useState(false);
   const dragStart = useRef<number | null>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (open) {
-      setTab("meaning");
+      setTab(initialTab ?? "meaning");
       setExpanded(false);
     }
-  }, [open, data?.word]);
+  }, [open, data?.word, initialTab]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
