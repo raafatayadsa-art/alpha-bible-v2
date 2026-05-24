@@ -1182,7 +1182,7 @@ function renderVerse(
               sourceField,
               { id: entry.id, surface },
             );
-            onSelect(entry);
+            onSelect(entry, matchedNorm);
           }}
         >
           {surface}
