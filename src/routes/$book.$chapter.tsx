@@ -67,14 +67,18 @@ function parseRelatedVerses(raw?: string): { reference: string; text: string }[]
 function entryToSheet(e: DictionaryEntry): MeaningSheetData {
   const kind = classifyEntry(e.category);
   const shortMeaning = (e.shortMeaning || "").trim();
+  const meaningAlt = (e.meaning || "").trim();
+  const explanation = (e.explanation || "").trim();
   const fullDesc = (e.fullDescription || "").trim();
   const verses = parseRelatedVerses(e.bibleReferencesRaw);
 
+  // Fallback chain per spec: short_meaning -> meaning -> explanation.
+  const primaryMeaning = shortMeaning || meaningAlt || explanation || undefined;
+
   const base: MeaningSheetData = {
-    // Overlay title = term. If empty, show nothing — no fallback.
     word: (e.term ?? "").trim(),
     kind: e.category,
-    meaning: shortMeaning || undefined,
+    meaning: primaryMeaning,
     origin: fullDesc || undefined,
     relatedVerses: verses.length ? verses : undefined,
   };
