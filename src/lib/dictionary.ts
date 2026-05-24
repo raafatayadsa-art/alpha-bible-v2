@@ -119,24 +119,22 @@ function isAllowedCategory(category?: string): boolean {
 }
 
 async function fetchDictionary(): Promise<DictionaryEntry[]> {
-  // Data source: alpha_dictionary. Exact-match lookup uses `word_normalized`.
-  const { data, error } = await (supabase as any).from("alpha_dictionary").select("*");
+  // Source: alpha_dictionary. Columns used: word, word_normalized, meaning.
+  // word_normalized is SEARCH-ONLY — never shown to the user.
+  const { data, error } = await (supabase as any)
+    .from("alpha_dictionary")
+    .select("id, word, word_normalized, meaning, category");
   if (error) throw error;
   const rows = (data ?? [])
     .map((row: any) => {
-      const word = ((row.word ?? row.term ?? "") as string).toString().trim();
+      const word = ((row.word ?? "") as string).toString().trim();
       const wordNormalized = ((row.word_normalized ?? "") as string).toString().trim();
       return {
         id: row.id,
         term: word,
         normalizedTerm: wordNormalized || undefined,
         category: row.category ?? undefined,
-        shortMeaning: row.short_meaning ?? undefined,
         meaning: row.meaning ?? undefined,
-        explanation: row.explanation ?? undefined,
-        fullDescription: row.full_description ?? undefined,
-        bibleReferencesRaw: row.bible_references ?? undefined,
-        keywords: row.keywords ?? undefined,
       } as DictionaryEntry;
     })
     .filter(
@@ -159,6 +157,86 @@ export function useDictionary() {
     refetchOnWindowFocus: true,
     retry: 2,
   });
+}
+
+/* ---------------- Deep dictionary (alpha_dictionary_deep) ----------------
+ * Column mapping:
+ *   title    → long-form headword (matched against the tapped word, normalized)
+ *   content  → long-form description shown in the meaning sheet's details area
+ */
+export type DeepEntry = { title: string; content: string };
+export type DeepDictionaryIndex = Map<string, DeepEntry>;
+
+async function fetchDeepDictionary(): Promise<DeepEntry[]> {
+  const { data, error } = await (supabase as any)
+    .from("alpha_dictionary_deep")
+    .select("title, content");
+  if (error) throw error;
+  return (data ?? [])
+    .map((row: any) => ({
+      title: ((row.title ?? "") as string).toString().trim(),
+      content: ((row.content ?? "") as string).toString().trim(),
+    }))
+    .filter((e: DeepEntry) => e.title && e.content);
+}
+
+export function useDeepDictionary() {
+  return useQuery({
+    queryKey: ["alpha_dictionary_deep"],
+    queryFn: fetchDeepDictionary,
+    staleTime: 60_000,
+    gcTime: 10 * 60_000,
+    retry: 2,
+  });
+}
+
+export function buildDeepIndex(entries: DeepEntry[]): DeepDictionaryIndex {
+  const m = new Map<string, DeepEntry>();
+  for (const e of entries) {
+    const key = normalizeAr(e.title);
+    if (key && !m.has(key)) m.set(key, e);
+  }
+  return m;
+}
+
+export function lookupDeep(idx: DeepDictionaryIndex, word: string): DeepEntry | undefined {
+  return idx.get(normalizeAr(word));
+}
+
+/* ---------------- Bible book abbreviations (bible_book_abbreviations) ----
+ * Column mapping:
+ *   book          → full book name
+ *   abbreviation  → short display abbreviation
+ */
+export type BookAbbrev = { book: string; abbreviation: string };
+
+async function fetchBookAbbreviations(): Promise<BookAbbrev[]> {
+  const { data, error } = await (supabase as any)
+    .from("bible_book_abbreviations")
+    .select("book, abbreviation");
+  if (error) throw error;
+  return (data ?? [])
+    .map((row: any) => ({
+      book: ((row.book ?? "") as string).toString().trim(),
+      abbreviation: ((row.abbreviation ?? "") as string).toString().trim(),
+    }))
+    .filter((r: BookAbbrev) => r.book && r.abbreviation);
+}
+
+export function useBookAbbreviations() {
+  return useQuery({
+    queryKey: ["bible_book_abbreviations"],
+    queryFn: fetchBookAbbreviations,
+    staleTime: 5 * 60_000,
+    gcTime: 30 * 60_000,
+    retry: 2,
+  });
+}
+
+export function buildAbbrevMap(rows: BookAbbrev[]): Map<string, string> {
+  const m = new Map<string, string>();
+  for (const r of rows) m.set(r.book, r.abbreviation);
+  return m;
 }
 
 export type DictionaryIndex = {
