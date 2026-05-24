@@ -75,6 +75,7 @@ function entryToSheet(e: DictionaryEntry): MeaningSheetData {
     kind: e.category,
     // Short meaning only — never long descriptions.
     meaning: shortMeaning || undefined,
+    fullMeaning: (e.fullMeaning || "").trim() || undefined,
     relatedVerses: verses.length ? verses : undefined,
   };
 
