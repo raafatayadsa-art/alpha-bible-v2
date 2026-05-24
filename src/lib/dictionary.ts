@@ -18,6 +18,7 @@ export type DictionaryEntry = {
   normalizedTerm?: string;
   category?: string;
   shortMeaning?: string;
+  fullMeaning?: string;
   fullDescription?: string;
   bibleReferencesRaw?: string;
   keywords?: string;
