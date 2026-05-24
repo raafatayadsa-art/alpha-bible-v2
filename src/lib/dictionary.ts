@@ -2,27 +2,25 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 /**
- * Small dictionary entry — schema mapped from `alpha_dictionary`.
+ * Dictionary entry — standardized English schema.
+ * Source columns (dictionary_entries):
+ *   term, normalized_term, category, short_meaning,
+ *   full_description, bible_references, keywords
  *
- * Column mapping (alpha_dictionary):
- *   word              → term            (display title; original Arabic)
- *   word_normalized   → normalizedTerm  (SEARCH-ONLY key; never displayed)
- *   meaning           → meaning         (short meaning shown in the sheet)
- *
- * Long-form content lives in `alpha_dictionary_deep` (title, content) and is
- * fetched separately via useDeepDictionary().
+ * Highlighting uses ONLY `term` and `normalized_term` (exact match after
+ * Arabic normalization). `keywords` is search-only, never used for matching.
  */
 export type DictionaryEntry = {
   id: number;
-  /** Display title — sourced from `word`. */
+  /** Display title — sourced from `term`. */
   term: string;
-  /** Search key — sourced from `word_normalized`. Never display this. */
+  /** Optional extra exact-match source. */
   normalizedTerm?: string;
   category?: string;
-  /** Short meaning — sourced from `meaning`. */
-  meaning?: string;
-  // Legacy fields kept only for type back-compat; not populated by alpha_dictionary.
   shortMeaning?: string;
+  /** Fallback when shortMeaning is empty. */
+  meaning?: string;
+  /** Second fallback when both shortMeaning and meaning are empty. */
   explanation?: string;
   fullDescription?: string;
   bibleReferencesRaw?: string;
@@ -119,22 +117,24 @@ function isAllowedCategory(category?: string): boolean {
 }
 
 async function fetchDictionary(): Promise<DictionaryEntry[]> {
-  // Source: alpha_dictionary. Columns used: word, word_normalized, meaning.
-  // word_normalized is SEARCH-ONLY — never shown to the user.
-  const { data, error } = await (supabase as any)
-    .from("alpha_dictionary")
-    .select("id, word, word_normalized, meaning, category");
+  // Data source: alpha_dictionary. Exact-match lookup uses `word_normalized`.
+  const { data, error } = await (supabase as any).from("alpha_dictionary").select("*");
   if (error) throw error;
   const rows = (data ?? [])
     .map((row: any) => {
-      const word = ((row.word ?? "") as string).toString().trim();
+      const word = ((row.word ?? row.term ?? "") as string).toString().trim();
       const wordNormalized = ((row.word_normalized ?? "") as string).toString().trim();
       return {
         id: row.id,
         term: word,
         normalizedTerm: wordNormalized || undefined,
         category: row.category ?? undefined,
+        shortMeaning: row.short_meaning ?? undefined,
         meaning: row.meaning ?? undefined,
+        explanation: row.explanation ?? undefined,
+        fullDescription: row.full_description ?? undefined,
+        bibleReferencesRaw: row.bible_references ?? undefined,
+        keywords: row.keywords ?? undefined,
       } as DictionaryEntry;
     })
     .filter(
@@ -157,158 +157,6 @@ export function useDictionary() {
     refetchOnWindowFocus: true,
     retry: 2,
   });
-}
-
-/* ---------------- Deep dictionary (alpha_dictionary_deep) ----------------
- * Persons / places / detailed entries.
- * Column mapping:
- *   word       → headword (matched against the tapped word, normalized)
- *   meaning    → long-form details shown in persons/places tab
- *   reference  → related Bible references (raw text, parsed for verses tab)
- */
-export type DeepEntry = {
-  word: string;
-  meaning: string;
-  reference?: string;
-};
-export type DeepDictionaryIndex = Map<string, DeepEntry>;
-
-async function fetchDeepDictionary(): Promise<DeepEntry[]> {
-  const { data, error } = await (supabase as any)
-    .from("alpha_dictionary_deep")
-    .select("word, meaning, reference");
-  if (error) throw error;
-  return (data ?? [])
-    .map((row: any) => ({
-      word: ((row.word ?? "") as string).toString().trim(),
-      meaning: ((row.meaning ?? "") as string).toString().trim(),
-      reference: ((row.reference ?? "") as string).toString().trim() || undefined,
-    }))
-    .filter((e: DeepEntry) => e.word && e.meaning);
-}
-
-export function useDeepDictionary() {
-  return useQuery({
-    queryKey: ["alpha_dictionary_deep"],
-    queryFn: fetchDeepDictionary,
-    staleTime: 60_000,
-    gcTime: 10 * 60_000,
-    retry: 2,
-  });
-}
-
-export function buildDeepIndex(entries: DeepEntry[]): DeepDictionaryIndex {
-  const m = new Map<string, DeepEntry>();
-  for (const e of entries) {
-    const key = normalizeAr(e.word);
-    if (key && !m.has(key)) m.set(key, e);
-  }
-  return m;
-}
-
-export function lookupDeep(idx: DeepDictionaryIndex, word: string): DeepEntry | undefined {
-  return idx.get(normalizeAr(word));
-}
-
-/* ---------------- Bible encyclopedia (bible_encyclopedia) -----------------
- * Long-form encyclopedia entries.
- * Column mapping:
- *   title                → headword (matched against the tapped word, normalized)
- *   content              → encyclopedic details
- *   scripture_references → related Bible references (raw text)
- *   keywords             → extra search aliases (normalized, search-only)
- */
-export type EncyclopediaEntry = {
-  title: string;
-  content: string;
-  scriptureReferences?: string;
-  keywords?: string;
-};
-export type EncyclopediaIndex = Map<string, EncyclopediaEntry>;
-
-async function fetchEncyclopedia(): Promise<EncyclopediaEntry[]> {
-  const { data, error } = await (supabase as any)
-    .from("bible_encyclopedia")
-    .select("title, content, scripture_references, keywords");
-  if (error) throw error;
-  return (data ?? [])
-    .map((row: any) => ({
-      title: ((row.title ?? "") as string).toString().trim(),
-      content: ((row.content ?? "") as string).toString().trim(),
-      scriptureReferences:
-        ((row.scripture_references ?? "") as string).toString().trim() || undefined,
-      keywords: ((row.keywords ?? "") as string).toString().trim() || undefined,
-    }))
-    .filter((e: EncyclopediaEntry) => e.title && e.content);
-}
-
-export function useEncyclopedia() {
-  return useQuery({
-    queryKey: ["bible_encyclopedia"],
-    queryFn: fetchEncyclopedia,
-    staleTime: 60_000,
-    gcTime: 10 * 60_000,
-    retry: 2,
-  });
-}
-
-export function buildEncyclopediaIndex(entries: EncyclopediaEntry[]): EncyclopediaIndex {
-  const m = new Map<string, EncyclopediaEntry>();
-  for (const e of entries) {
-    const titleKey = normalizeAr(e.title);
-    if (titleKey && !m.has(titleKey)) m.set(titleKey, e);
-    // keywords are search-only aliases (never displayed)
-    if (e.keywords) {
-      for (const kw of e.keywords.split(/[،,;؛\n]/g)) {
-        const k = normalizeAr(kw);
-        if (k && !m.has(k)) m.set(k, e);
-      }
-    }
-  }
-  return m;
-}
-
-export function lookupEncyclopedia(
-  idx: EncyclopediaIndex,
-  word: string,
-): EncyclopediaEntry | undefined {
-  return idx.get(normalizeAr(word));
-}
-
-/* ---------------- Bible book abbreviations (bible_book_abbreviations) ----
- * Column mapping:
- *   book          → full book name
- *   abbreviation  → short display abbreviation
- */
-export type BookAbbrev = { book: string; abbreviation: string };
-
-async function fetchBookAbbreviations(): Promise<BookAbbrev[]> {
-  const { data, error } = await (supabase as any)
-    .from("bible_book_abbreviations")
-    .select("book, abbreviation");
-  if (error) throw error;
-  return (data ?? [])
-    .map((row: any) => ({
-      book: ((row.book ?? "") as string).toString().trim(),
-      abbreviation: ((row.abbreviation ?? "") as string).toString().trim(),
-    }))
-    .filter((r: BookAbbrev) => r.book && r.abbreviation);
-}
-
-export function useBookAbbreviations() {
-  return useQuery({
-    queryKey: ["bible_book_abbreviations"],
-    queryFn: fetchBookAbbreviations,
-    staleTime: 5 * 60_000,
-    gcTime: 30 * 60_000,
-    retry: 2,
-  });
-}
-
-export function buildAbbrevMap(rows: BookAbbrev[]): Map<string, string> {
-  const m = new Map<string, string>();
-  for (const r of rows) m.set(r.book, r.abbreviation);
-  return m;
 }
 
 export type DictionaryIndex = {

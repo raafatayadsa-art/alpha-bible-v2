@@ -32,22 +32,12 @@ import {
 import { cn } from "@/lib/utils";
 import {
   useDictionary,
-  useDeepDictionary,
-  useEncyclopedia,
-  useBookAbbreviations,
   buildDictionaryIndex,
-  buildDeepIndex,
-  buildEncyclopediaIndex,
-  buildAbbrevMap,
-  lookupDeep,
-  lookupEncyclopedia,
   normalizeAr,
   stemAr,
   classifyEntry,
   type DictionaryEntry,
   type DictionaryIndex,
-  type DeepDictionaryIndex,
-  type EncyclopediaIndex,
 } from "@/lib/dictionary";
 
 /**
@@ -74,75 +64,36 @@ function parseRelatedVerses(raw?: string): { reference: string; text: string }[]
     });
 }
 
-function entryToSheet(
-  e: DictionaryEntry,
-  displayWord?: string,
-  deepIndex?: DeepDictionaryIndex,
-  encIndex?: EncyclopediaIndex,
-  abbrevMap?: Map<string, string>,
-): MeaningSheetData {
+function entryToSheet(e: DictionaryEntry, displayWord?: string): MeaningSheetData {
   const kind = classifyEntry(e.category);
-  const meaning = (e.meaning || "").trim();
+  const shortMeaning = (e.shortMeaning || "").trim();
+  const meaningAlt = (e.meaning || "").trim();
+  const explanation = (e.explanation || "").trim();
+  const fullDesc = (e.fullDescription || "").trim();
+  const verses = parseRelatedVerses(e.bibleReferencesRaw);
 
-  // Title = original tapped word (Arabic). Never show the normalized form.
+  // Fallback chain per spec: short_meaning -> meaning -> explanation.
+  const primaryMeaning = shortMeaning || meaningAlt || explanation || undefined;
+
+  // Title = original tapped word (Arabic, as it appears in the verse).
+  // Never show the normalized form to the user.
   const title = (displayWord || e.term || "").trim();
-
-  // Persons/places details → alpha_dictionary_deep (matched by normalized word).
-  const deep = deepIndex
-    ? lookupDeep(deepIndex, title) ?? lookupDeep(deepIndex, e.term || "")
-    : undefined;
-
-  // Encyclopedia details → bible_encyclopedia (matched by normalized title).
-  const enc = encIndex
-    ? lookupEncyclopedia(encIndex, title) ?? lookupEncyclopedia(encIndex, e.term || "")
-    : undefined;
-
-  // Verses tab — merge references from deep + encyclopedia, apply book
-  // abbreviations to displayed reference labels only.
-  const refsRaw = [enc?.scriptureReferences, deep?.reference]
-    .filter(Boolean)
-    .join("\n");
-  const relatedVerses = parseRelatedVerses(refsRaw).map((v) => ({
-    reference: applyAbbreviation(v.reference, abbrevMap),
-    text: v.text,
-  }));
 
   const base: MeaningSheetData = {
     word: title,
     kind: e.category,
-    // meaning tab → short meaning from alpha_dictionary
-    meaning: meaning || undefined,
-    // encyclopedia/details → bible_encyclopedia.content (fallback: deep details)
-    origin: enc?.content || deep?.meaning || undefined,
-    relatedVerses: relatedVerses.length ? relatedVerses : undefined,
+    meaning: primaryMeaning,
+    origin: fullDesc || undefined,
+    relatedVerses: verses.length ? verses : undefined,
   };
 
   if (kind === "place") {
     return { ...base, mapLabel: title };
   }
   if (kind === "person") {
-    return {
-      ...base,
-      // persons tab → alpha_dictionary_deep.meaning surfaced as role text
-      relatedPeople: title
-        ? [{ name: title, role: deep?.meaning || e.category }]
-        : undefined,
-    };
+    return { ...base, relatedPeople: title ? [{ name: title, role: e.category }] : undefined };
   }
   return base;
-}
-
-function applyAbbreviation(reference: string, abbrevMap?: Map<string, string>): string {
-  if (!abbrevMap || !abbrevMap.size || !reference) return reference;
-  // Match the longest book-name prefix and replace with its abbreviation.
-  let best: string | undefined;
-  for (const book of abbrevMap.keys()) {
-    if (reference.startsWith(book) && (!best || book.length > best.length)) {
-      best = book;
-    }
-  }
-  if (!best) return reference;
-  return abbrevMap.get(best)! + reference.slice(best.length);
 }
 
 
@@ -173,42 +124,25 @@ function ScriptureReader() {
   const [typeOpen, setTypeOpen] = useState(false);
   const [activeVerse, setActiveVerse] = useState<string | null>(null);
 
-  // Dictionary words from Supabase (alpha_dictionary) — drives highlight + meaning sheet.
+  // Dictionary words from Supabase (dictionary_entries) — drives highlight + meaning sheet.
   const dict = useDictionary();
-  // Deep details (alpha_dictionary_deep) — long-form description by normalized title.
-  const deep = useDeepDictionary();
-  // Encyclopedia (bible_encyclopedia) — title/content/scripture_references/keywords.
-  const enc = useEncyclopedia();
-  // Book abbreviations (bible_book_abbreviations) — book → short label.
-  const abbrev = useBookAbbreviations();
-
+  // HMR epoch — bumps every time this module (or dictionary.ts) hot-reloads
+  // in the dev editor, forcing the index + verse cards to rebuild without
+  // requiring a full page reload or jumping to Preview.
   const dictIndex = useMemo<DictionaryIndex>(
     () => buildDictionaryIndex(dict.data ?? []),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [dict.data, dict.dataUpdatedAt, HMR_EPOCH],
   );
-  const deepIndex = useMemo<DeepDictionaryIndex>(
-    () => buildDeepIndex(deep.data ?? []),
-    [deep.data, deep.dataUpdatedAt],
-  );
-  const encIndex = useMemo<EncyclopediaIndex>(
-    () => buildEncyclopediaIndex(enc.data ?? []),
-    [enc.data, enc.dataUpdatedAt],
-  );
-  const abbrevMap = useMemo(
-    () => buildAbbrevMap(abbrev.data ?? []),
-    [abbrev.data, abbrev.dataUpdatedAt],
-  );
   useEffect(() => {
     // eslint-disable-next-line no-console
     console.log("[dictionary] index built:", {
       words: dictIndex.map.size,
+      stems: dictIndex.stems.size,
       phrases: dictIndex.phrases.size,
-      deep: deepIndex.size,
-      encyclopedia: encIndex.size,
-      abbrev: abbrevMap.size,
+      phraseStems: dictIndex.phraseStems.size,
     });
-  }, [dictIndex, deepIndex, encIndex, abbrevMap]);
+  }, [dictIndex]);
 
 
 
@@ -609,7 +543,7 @@ function ScriptureReader() {
                       text: v?.verse_text ?? "",
                     })
                   }
-                  onSelectWord={(entry, surface) => setSheet(entryToSheet(entry, surface, deepIndex, encIndex, abbrevMap))}
+                  onSelectWord={(entry, surface) => setSheet(entryToSheet(entry, surface))}
                   dictIndex={dictIndex}
                   seenWords={seenWords}
                   showRef={showRef}
