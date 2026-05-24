@@ -70,27 +70,28 @@ function parseRelatedVerses(raw?: string): { reference: string; text: string }[]
     });
 }
 
-function entryToSheet(e: DictionaryEntry, displayWord?: string): MeaningSheetData {
+function entryToSheet(
+  e: DictionaryEntry,
+  displayWord?: string,
+  deepIndex?: DeepDictionaryIndex,
+): MeaningSheetData {
   const kind = classifyEntry(e.category);
-  const shortMeaning = (e.shortMeaning || "").trim();
-  const meaningAlt = (e.meaning || "").trim();
-  const explanation = (e.explanation || "").trim();
-  const fullDesc = (e.fullDescription || "").trim();
-  const verses = parseRelatedVerses(e.bibleReferencesRaw);
-
-  // Fallback chain per spec: short_meaning -> meaning -> explanation.
-  const primaryMeaning = shortMeaning || meaningAlt || explanation || undefined;
+  const meaning = (e.meaning || "").trim();
 
   // Title = original tapped word (Arabic, as it appears in the verse).
   // Never show the normalized form to the user.
   const title = (displayWord || e.term || "").trim();
 
+  // Long-form details from alpha_dictionary_deep (matched by normalized title).
+  const deep = deepIndex
+    ? lookupDeep(deepIndex, title) ?? lookupDeep(deepIndex, e.term || "")
+    : undefined;
+
   const base: MeaningSheetData = {
     word: title,
     kind: e.category,
-    meaning: primaryMeaning,
-    origin: fullDesc || undefined,
-    relatedVerses: verses.length ? verses : undefined,
+    meaning: meaning || undefined,
+    origin: deep?.content || undefined,
   };
 
   if (kind === "place") {
