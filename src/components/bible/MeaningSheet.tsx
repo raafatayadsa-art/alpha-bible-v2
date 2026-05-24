@@ -22,6 +22,7 @@ export type MeaningSheetData = {
   word: string;
   kind?: string;
   meaning?: string;
+  fullMeaning?: string;
   origin?: string;
   firstAppearance?: string;
   spiritualRole?: string;
