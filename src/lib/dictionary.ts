@@ -93,24 +93,57 @@ const GENERIC_BLACKLIST = new Set(
   ].map(normalizeAr),
 );
 
-function mapRow(row: any, defaultCategory?: string): DictionaryEntry {
+function mapRow(
+  row: any,
+  source: NonNullable<DictionaryEntry["source"]>,
+  defaultCategory?: string,
+): DictionaryEntry {
   const word = ((row.word ?? row.term ?? row.title ?? row.name ?? "") as string).toString().trim();
   const wordNormalized = ((row.word_normalized ?? row.normalized_term ?? row.normalized ?? "") as string)
     .toString()
     .trim();
+  const shortMeaning = row.short_meaning ?? row.summary ?? row.meaning ?? undefined;
+  const fullDescription = row.full_description ?? row.description ?? row.explanation ?? row.content ?? undefined;
+
+  // Decide if this entry counts as "non-obvious / explanatory" for highlighting.
+  let highlightable = false;
+  if (source === "alpha_dictionary" || source === "alpha_dictionary_deep") {
+    const explanation = (row.explanation ?? "").toString().trim();
+    const meaning = (shortMeaning ?? "").toString().trim();
+    const meaningNorm = normalizeAr(meaning);
+    const wordNorm = wordNormalized || normalizeAr(word);
+
+    // Length / content heuristics: an entry is "explanatory" if it has a real
+    // explanation paragraph OR a meaning that is substantially longer than a
+    // single-word synonym.
+    const hasExplanation = explanation.length >= 12;
+    const hasRichMeaning = meaning.length >= 28; // a true definition, not a synonym
+    const trivialSynonym = meaningNorm && wordNorm && meaningNorm === wordNorm;
+
+    highlightable =
+      (hasExplanation || hasRichMeaning) &&
+      !trivialSynonym &&
+      wordNorm.length >= 3;
+  }
+
   return {
     id: row.id,
     term: word,
     normalizedTerm: wordNormalized || undefined,
     category: row.category ?? row.kind ?? defaultCategory,
-    shortMeaning: row.short_meaning ?? row.summary ?? row.meaning ?? undefined,
-    fullDescription: row.full_description ?? row.description ?? row.content ?? undefined,
-    bibleReferencesRaw: row.bible_references ?? row.references ?? undefined,
+    shortMeaning,
+    fullDescription,
+    bibleReferencesRaw: row.bible_references ?? row.scripture_refs ?? row.references ?? undefined,
     keywords: row.keywords ?? undefined,
+    source,
+    highlightable,
   } as DictionaryEntry;
 }
 
-async function fetchTable(table: string, defaultCategory?: string): Promise<DictionaryEntry[]> {
+async function fetchTable(
+  table: NonNullable<DictionaryEntry["source"]>,
+  defaultCategory?: string,
+): Promise<DictionaryEntry[]> {
   const { data, error } = await (supabase as any).from(table).select("*");
   if (error) {
     // eslint-disable-next-line no-console
@@ -118,7 +151,7 @@ async function fetchTable(table: string, defaultCategory?: string): Promise<Dict
     return [];
   }
   const rows = (data ?? [])
-    .map((r: any) => mapRow(r, defaultCategory))
+    .map((r: any) => mapRow(r, table, defaultCategory))
     .filter(
       (e: DictionaryEntry) =>
         (e.term && e.term.trim().length > 1) ||
@@ -130,11 +163,8 @@ async function fetchTable(table: string, defaultCategory?: string): Promise<Dict
 }
 
 async function fetchDictionary(): Promise<DictionaryEntry[]> {
-  // Priority order (earlier sources win on duplicate normalized keys):
-  //   1. bible_names_dictionary  — biblical names (آدم، موسى، إبراهيم) → person
-  //   2. bible_encyclopedia      — general encyclopedia
-  //   3. alpha_dictionary        — primary dictionary
-  //   4. alpha_dictionary_deep   — deep fallback
+  // Order is for popup lookup priority. Highlight eligibility is decided
+  // per-entry via `highlightable` + the names exclusion in the index builder.
   const [names, encyclopedia, primary, deep] = await Promise.all([
     fetchTable("bible_names_dictionary", "شخص"),
     fetchTable("bible_encyclopedia"),
@@ -171,17 +201,38 @@ export function buildDictionaryIndex(entries: DictionaryEntry[]): DictionaryInde
   const phrases = new Map<string, DictionaryEntry>();
   let maxPhraseTokens = 1;
 
+  // Build name exclusion set: any normalized surface that appears in
+  // bible_names_dictionary is treated as a name and is NEVER highlighted,
+  // even if it also exists in alpha_dictionary.
+  const nameSet = new Set<string>();
+  for (const e of entries) {
+    if (e.source !== "bible_names_dictionary") continue;
+    for (const surface of [e.term, e.normalizedTerm]) {
+      if (!surface) continue;
+      const toks = tokenizeAr(surface);
+      if (toks.length === 1) nameSet.add(toks[0].norm);
+      else nameSet.add(toks.map((t) => t.norm).join(" "));
+    }
+  }
+
   const registerSurface = (surface: string, e: DictionaryEntry) => {
+    // Highlight ONLY entries that are explicitly flagged as non-obvious /
+    // explanatory. This is a general rule applied to the whole Bible — no
+    // fixed word list, no example-only matching.
+    if (!e.highlightable) return;
+
     const toks = tokenizeAr(surface);
     if (toks.length === 0) return;
     if (toks.length === 1) {
       const t = toks[0];
       if (STOPWORDS.has(t.norm)) return;
       if (GENERIC_BLACKLIST.has(t.norm)) return;
-      if (t.norm.length < 2) return;
+      if (nameSet.has(t.norm)) return;
+      if (t.norm.length < 3) return;
       if (!map.has(t.norm)) map.set(t.norm, e);
     } else {
       const normKey = toks.map((t) => t.norm).join(" ");
+      if (nameSet.has(normKey)) return;
       if (!phrases.has(normKey)) phrases.set(normKey, e);
       if (toks.length > maxPhraseTokens) maxPhraseTokens = toks.length;
     }
