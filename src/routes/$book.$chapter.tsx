@@ -661,7 +661,7 @@ function ScriptureReader() {
       {/* Persistent global navigation */}
       <BottomDock hidden={chromeHidden} spiritualMode={spiritualMode} />
 
-      <MeaningSheet data={sheet} onClose={() => setSheet(null)} />
+      <MeaningSheet data={sheet?.data ?? null} initialTab={sheet?.initialTab} onClose={() => setSheet(null)} />
     </main>
   );
 }
