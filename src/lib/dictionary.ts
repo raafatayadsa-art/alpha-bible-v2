@@ -167,13 +167,14 @@ export function buildDictionaryIndex(entries: DictionaryEntry[]): DictionaryInde
   let maxPhraseTokens = 1;
 
   const registerSurface = (surface: string, e: DictionaryEntry) => {
+    if (!isAllowedCategory(e.category)) return;
     const toks = tokenizeAr(surface);
     if (toks.length === 0) return;
     if (toks.length === 1) {
       const t = toks[0];
       if (STOPWORDS.has(t.norm)) return;
       if (GENERIC_BLACKLIST.has(t.norm)) return;
-      if (t.norm.length < 2) return;
+      if (t.norm.length < 3) return; // single short tokens are almost always particles
       if (!map.has(t.norm)) map.set(t.norm, e);
     } else {
       const normKey = toks.map((t) => t.norm).join(" ");
