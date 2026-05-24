@@ -22,6 +22,7 @@ export type MeaningSheetData = {
   word: string;
   kind?: string;
   meaning?: string;
+  fullMeaning?: string;
   origin?: string;
   firstAppearance?: string;
   spiritualRole?: string;
@@ -54,6 +55,7 @@ export function MeaningSheet({
   const open = !!data;
   const [tab, setTab] = useState<Tab>("meaning");
   const [expanded, setExpanded] = useState(false);
+  const [showFull, setShowFull] = useState(false);
   const dragStart = useRef<number | null>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
   const abbrev = useBookAbbreviations();
@@ -62,6 +64,7 @@ export function MeaningSheet({
     if (open) {
       setTab(data?.defaultTab ?? "meaning");
       setExpanded(false);
+      setShowFull(false);
     }
   }, [open, data?.word, data?.defaultTab]);
 
@@ -176,9 +179,20 @@ export function MeaningSheet({
             style={{ maxHeight: expanded ? "calc(92vh - 140px)" : "calc(70vh - 140px)" }}
           >
             {tab === "meaning" && (
-              <TextBlock title="المعنى">
-                {data?.meaning || "لا توجد تفاصيل بعد."}
-              </TextBlock>
+              <div className="space-y-3">
+                <TextBlock title="المعنى">
+                  {data?.meaning || "لا توجد تفاصيل بعد."}
+                </TextBlock>
+                {data?.fullMeaning && (
+                  <button
+                    type="button"
+                    onClick={() => setShowFull(true)}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-[#7af0b8]/50 bg-[#0a2a20]/60 px-4 py-2 text-[12.5px] font-bold text-[#e7c97a] hover:border-[#7af0b8]/80 active:scale-95 transition-all"
+                  >
+                    المزيد
+                  </button>
+                )}
+              </div>
             )}
 
             {tab === "people" && (
@@ -255,6 +269,79 @@ export function MeaningSheet({
                     {data?.mapLabel ?? "خريطة الموقع — قريباً"}
                   </p>
                 </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Full meaning overlay */}
+      <div
+        onClick={() => setShowFull(false)}
+        aria-hidden
+        className={cn(
+          "fixed inset-0 z-[70] bg-[#06251c]/60 backdrop-blur-[6px] transition-opacity duration-300",
+          showFull && open ? "opacity-100" : "opacity-0 pointer-events-none",
+        )}
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={`${data?.word ?? ""} — تفاصيل كاملة`}
+        className={cn(
+          "fixed inset-x-0 bottom-0 z-[71] mx-auto w-full max-w-[480px]",
+          "transition-transform duration-[320ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform",
+          showFull && open ? "translate-y-0" : "translate-y-full",
+        )}
+        style={{ paddingBottom: "max(env(safe-area-inset-bottom), 8px)" }}
+      >
+        <div
+          className={cn(
+            "mx-2 overflow-hidden rounded-t-[28px] border backdrop-blur-[22px] backdrop-saturate-150",
+            "bg-gradient-to-b from-[#0f3d2e]/85 via-[#0c3326]/82 to-[#07261c]/88 border-[#7af0b8]/35 text-[#eaf6ec]",
+            "shadow-[0_-28px_70px_-18px_rgba(0,0,0,0.65),0_0_36px_-12px_rgba(122,240,184,0.45),inset_0_1px_0_rgba(255,255,255,0.14)]",
+          )}
+          style={{ maxHeight: "92vh" }}
+        >
+          <div className="grid place-items-center pt-2 pb-1">
+            <span className="h-1.5 w-12 rounded-full bg-[#7af0b8]/50" />
+          </div>
+          <header className="flex items-center justify-between gap-3 px-4 pb-3" dir="rtl">
+            <h3 className="font-arabic-serif text-[20px] font-bold text-[#f4f9ee] truncate">
+              {data?.word}
+            </h3>
+            <button
+              type="button"
+              onClick={() => setShowFull(false)}
+              aria-label="إغلاق"
+              className="grid h-9 w-9 place-items-center rounded-full bg-white/10 border border-[#7af0b8]/30 text-[#eaf6ec] active:scale-90 transition-transform"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </header>
+          <div
+            dir="rtl"
+            className="overflow-y-auto px-4 pb-6 space-y-3"
+            style={{ maxHeight: "calc(92vh - 90px)" }}
+          >
+            {data?.fullMeaning && (
+              <TextBlock title="الشرح الكامل">{data.fullMeaning}</TextBlock>
+            )}
+            {data?.relatedVerses && data.relatedVerses.length > 0 && (
+              <div className="space-y-2.5">
+                <p className="text-[11px] font-bold text-[#e7c97a] px-1">الشواهد الكتابية</p>
+                {data.relatedVerses.map((v, i) => (
+                  <RelatedVerseRow
+                    key={i}
+                    raw={v.reference}
+                    fallbackText={v.text}
+                    maps={abbrev.data ?? null}
+                    onNavigate={() => {
+                      setShowFull(false);
+                      onClose();
+                    }}
+                  />
+                ))}
               </div>
             )}
           </div>
