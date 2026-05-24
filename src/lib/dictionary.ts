@@ -139,6 +139,11 @@ function isAllowedCategory(category?: string): boolean {
 
 async function fetchDictionary(): Promise<DictionaryEntry[]> {
   // Data source: alpha_dictionary. Exact-match lookup uses `word_normalized`.
+  const supabaseUrl =
+    (import.meta as any)?.env?.VITE_SUPABASE_URL ?? (supabase as any)?.supabaseUrl ?? "(unknown)";
+  // eslint-disable-next-line no-console
+  console.log("[alpha_dictionary] source:", { url: supabaseUrl, table: "public.alpha_dictionary" });
+
   const { data, error } = await (supabase as any).from("alpha_dictionary").select("*");
   if (error) throw error;
   const rows = (data ?? [])
@@ -166,7 +171,14 @@ async function fetchDictionary(): Promise<DictionaryEntry[]> {
         (e.normalizedTerm && e.normalizedTerm.trim().length > 1),
     );
   // eslint-disable-next-line no-console
-  console.log("[alpha_dictionary] loaded entries:", (data ?? []).length, "valid terms:", rows.length);
+  console.log(
+    "[alpha_dictionary] loaded entries:",
+    (data ?? []).length,
+    "valid terms:",
+    rows.length,
+    "from",
+    `${supabaseUrl}/rest/v1/alpha_dictionary`,
+  );
   return rows;
 }
 
