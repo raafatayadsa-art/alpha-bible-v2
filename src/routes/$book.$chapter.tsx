@@ -32,12 +32,18 @@ import {
 import { cn } from "@/lib/utils";
 import {
   useDictionary,
+  useDeepDictionary,
+  useBookAbbreviations,
   buildDictionaryIndex,
+  buildDeepIndex,
+  buildAbbrevMap,
+  lookupDeep,
   normalizeAr,
   stemAr,
   classifyEntry,
   type DictionaryEntry,
   type DictionaryIndex,
+  type DeepDictionaryIndex,
 } from "@/lib/dictionary";
 
 /**
@@ -64,27 +70,28 @@ function parseRelatedVerses(raw?: string): { reference: string; text: string }[]
     });
 }
 
-function entryToSheet(e: DictionaryEntry, displayWord?: string): MeaningSheetData {
+function entryToSheet(
+  e: DictionaryEntry,
+  displayWord?: string,
+  deepIndex?: DeepDictionaryIndex,
+): MeaningSheetData {
   const kind = classifyEntry(e.category);
-  const shortMeaning = (e.shortMeaning || "").trim();
-  const meaningAlt = (e.meaning || "").trim();
-  const explanation = (e.explanation || "").trim();
-  const fullDesc = (e.fullDescription || "").trim();
-  const verses = parseRelatedVerses(e.bibleReferencesRaw);
-
-  // Fallback chain per spec: short_meaning -> meaning -> explanation.
-  const primaryMeaning = shortMeaning || meaningAlt || explanation || undefined;
+  const meaning = (e.meaning || "").trim();
 
   // Title = original tapped word (Arabic, as it appears in the verse).
   // Never show the normalized form to the user.
   const title = (displayWord || e.term || "").trim();
 
+  // Long-form details from alpha_dictionary_deep (matched by normalized title).
+  const deep = deepIndex
+    ? lookupDeep(deepIndex, title) ?? lookupDeep(deepIndex, e.term || "")
+    : undefined;
+
   const base: MeaningSheetData = {
     word: title,
     kind: e.category,
-    meaning: primaryMeaning,
-    origin: fullDesc || undefined,
-    relatedVerses: verses.length ? verses : undefined,
+    meaning: meaning || undefined,
+    origin: deep?.content || undefined,
   };
 
   if (kind === "place") {
@@ -124,15 +131,25 @@ function ScriptureReader() {
   const [typeOpen, setTypeOpen] = useState(false);
   const [activeVerse, setActiveVerse] = useState<string | null>(null);
 
-  // Dictionary words from Supabase (dictionary_entries) — drives highlight + meaning sheet.
+  // Dictionary words from Supabase (alpha_dictionary) — drives highlight + meaning sheet.
   const dict = useDictionary();
-  // HMR epoch — bumps every time this module (or dictionary.ts) hot-reloads
-  // in the dev editor, forcing the index + verse cards to rebuild without
-  // requiring a full page reload or jumping to Preview.
+  // Deep details (alpha_dictionary_deep) — long-form description by normalized title.
+  const deep = useDeepDictionary();
+  // Book abbreviations (bible_book_abbreviations) — book → short label.
+  const abbrev = useBookAbbreviations();
+
   const dictIndex = useMemo<DictionaryIndex>(
     () => buildDictionaryIndex(dict.data ?? []),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [dict.data, dict.dataUpdatedAt, HMR_EPOCH],
+  );
+  const deepIndex = useMemo<DeepDictionaryIndex>(
+    () => buildDeepIndex(deep.data ?? []),
+    [deep.data, deep.dataUpdatedAt],
+  );
+  const abbrevMap = useMemo(
+    () => buildAbbrevMap(abbrev.data ?? []),
+    [abbrev.data, abbrev.dataUpdatedAt],
   );
   useEffect(() => {
     // eslint-disable-next-line no-console
@@ -141,8 +158,10 @@ function ScriptureReader() {
       stems: dictIndex.stems.size,
       phrases: dictIndex.phrases.size,
       phraseStems: dictIndex.phraseStems.size,
+      deep: deepIndex.size,
+      abbrev: abbrevMap.size,
     });
-  }, [dictIndex]);
+  }, [dictIndex, deepIndex, abbrevMap]);
 
 
 
@@ -543,7 +562,7 @@ function ScriptureReader() {
                       text: v?.verse_text ?? "",
                     })
                   }
-                  onSelectWord={(entry, surface) => setSheet(entryToSheet(entry, surface))}
+                  onSelectWord={(entry, surface) => setSheet(entryToSheet(entry, surface, deepIndex))}
                   dictIndex={dictIndex}
                   seenWords={seenWords}
                   showRef={showRef}
