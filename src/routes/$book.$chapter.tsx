@@ -36,6 +36,7 @@ import {
   normalizeAr,
   stemAr,
   classifyEntry,
+  fetchDeepByNormalized,
   type DictionaryEntry,
   type DictionaryIndex,
 } from "@/lib/dictionary";
