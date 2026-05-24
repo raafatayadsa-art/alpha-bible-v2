@@ -578,7 +578,14 @@ function ScriptureReader() {
                       text: v?.verse_text ?? "",
                     })
                   }
-                  onSelectWord={(entry) => setSheet(entryToSheet(entry))}
+                  onSelectWord={(entry) => {
+                    // Show the base sheet immediately, then upgrade if deep entry exists.
+                    const base = entryToSheet(entry);
+                    setSheet(base);
+                    buildSheetForEntry(entry)
+                      .then((upgraded) => setSheet(upgraded))
+                      .catch(() => {/* keep base */});
+                  }}
                   dictIndex={dictIndex}
                   seenWords={seenWords}
                   showRef={showRef}
