@@ -188,32 +188,65 @@ export function useDictionary() {
   });
 }
 
+export type SourceKey = "alpha" | "name" | "encyclopedia" | "deep";
+
 export type DictionaryIndex = {
   map: Map<string, DictionaryEntry>;
   stems: Map<string, DictionaryEntry>; // unused, kept for API compat
   phrases: Map<string, DictionaryEntry>;
   phraseStems: Map<string, DictionaryEntry>; // unused, kept for API compat
   maxPhraseTokens: number;
+  /** Per-source lookup maps — used to route data into the correct sheet tab. */
+  bySource: Record<SourceKey, { words: Map<string, DictionaryEntry>; phrases: Map<string, DictionaryEntry> }>;
 };
+
+function sourceKeyOf(source?: DictionaryEntry["source"]): SourceKey | null {
+  if (source === "alpha_dictionary") return "alpha";
+  if (source === "bible_names_dictionary") return "name";
+  if (source === "bible_encyclopedia") return "encyclopedia";
+  if (source === "alpha_dictionary_deep") return "deep";
+  return null;
+}
 
 export function buildDictionaryIndex(entries: DictionaryEntry[]): DictionaryIndex {
   const map = new Map<string, DictionaryEntry>();
   const phrases = new Map<string, DictionaryEntry>();
   let maxPhraseTokens = 1;
 
-  // Build name exclusion set: any normalized surface that appears in
-  // bible_names_dictionary is treated as a name and is NEVER highlighted,
-  // even if it also exists in alpha_dictionary.
-  const nameSet = new Set<string>();
+  const bySource: DictionaryIndex["bySource"] = {
+    alpha: { words: new Map(), phrases: new Map() },
+    name: { words: new Map(), phrases: new Map() },
+    encyclopedia: { words: new Map(), phrases: new Map() },
+    deep: { words: new Map(), phrases: new Map() },
+  };
+
+  // Populate per-source maps with EVERY entry (regardless of highlightable)
+  // so tab routing can pull names/encyclopedia even when highlight came from alpha.
   for (const e of entries) {
-    if (e.source !== "bible_names_dictionary") continue;
+    const sk = sourceKeyOf(e.source);
+    if (!sk) continue;
     for (const surface of [e.term, e.normalizedTerm]) {
       if (!surface) continue;
       const toks = tokenizeAr(surface);
-      if (toks.length === 1) nameSet.add(toks[0].norm);
-      else nameSet.add(toks.map((t) => t.norm).join(" "));
+      if (toks.length === 0) continue;
+      if (toks.length === 1) {
+        const n = toks[0].norm;
+        if (n.length < 2) continue;
+        if (!bySource[sk].words.has(n)) bySource[sk].words.set(n, e);
+      } else {
+        const k = toks.map((t) => t.norm).join(" ");
+        if (!bySource[sk].phrases.has(k)) bySource[sk].phrases.set(k, e);
+      }
     }
   }
+
+  // Highlight-eligibility set: a normalized surface is highlightable only if
+  // it appears in bible_names_dictionary (names are NEVER highlighted) — used
+  // as an exclusion below.
+  const nameSet = new Set<string>([
+    ...bySource.name.words.keys(),
+    ...bySource.name.phrases.keys(),
+  ]);
 
   const registerSurface = (surface: string, e: DictionaryEntry) => {
     // Highlight ONLY entries that are explicitly flagged as non-obvious /
@@ -248,9 +281,26 @@ export function buildDictionaryIndex(entries: DictionaryEntry[]): DictionaryInde
     phrases,
     phraseStems: new Map(),
     maxPhraseTokens,
+    bySource,
   };
 }
 
 export function lookupEntry(idx: DictionaryIndex, key: string): DictionaryEntry | undefined {
   return idx.phrases.get(key) ?? idx.map.get(key);
 }
+
+/** Look up the same normalized key across every source. Used for tab routing. */
+export function lookupAllSources(
+  idx: DictionaryIndex,
+  key: string,
+): Record<SourceKey, DictionaryEntry | undefined> {
+  const get = (sk: SourceKey) =>
+    idx.bySource[sk].phrases.get(key) ?? idx.bySource[sk].words.get(key);
+  return {
+    alpha: get("alpha"),
+    name: get("name"),
+    encyclopedia: get("encyclopedia"),
+    deep: get("deep"),
+  };
+}
+
