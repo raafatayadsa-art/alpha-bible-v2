@@ -2,25 +2,27 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 /**
- * Dictionary entry — standardized English schema.
- * Source columns (dictionary_entries):
- *   term, normalized_term, category, short_meaning,
- *   full_description, bible_references, keywords
+ * Small dictionary entry — schema mapped from `alpha_dictionary`.
  *
- * Highlighting uses ONLY `term` and `normalized_term` (exact match after
- * Arabic normalization). `keywords` is search-only, never used for matching.
+ * Column mapping (alpha_dictionary):
+ *   word              → term            (display title; original Arabic)
+ *   word_normalized   → normalizedTerm  (SEARCH-ONLY key; never displayed)
+ *   meaning           → meaning         (short meaning shown in the sheet)
+ *
+ * Long-form content lives in `alpha_dictionary_deep` (title, content) and is
+ * fetched separately via useDeepDictionary().
  */
 export type DictionaryEntry = {
   id: number;
-  /** Display title — sourced from `term`. */
+  /** Display title — sourced from `word`. */
   term: string;
-  /** Optional extra exact-match source. */
+  /** Search key — sourced from `word_normalized`. Never display this. */
   normalizedTerm?: string;
   category?: string;
-  shortMeaning?: string;
-  /** Fallback when shortMeaning is empty. */
+  /** Short meaning — sourced from `meaning`. */
   meaning?: string;
-  /** Second fallback when both shortMeaning and meaning are empty. */
+  // Legacy fields kept only for type back-compat; not populated by alpha_dictionary.
+  shortMeaning?: string;
   explanation?: string;
   fullDescription?: string;
   bibleReferencesRaw?: string;
