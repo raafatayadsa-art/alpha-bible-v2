@@ -36,9 +36,11 @@ import {
   normalizeAr,
   stemAr,
   classifyEntry,
+  lookupAllSources,
   type DictionaryEntry,
   type DictionaryIndex,
 } from "@/lib/dictionary";
+import type { Tab as MeaningTab } from "@/components/bible/MeaningSheet";
 
 /**
  * HMR_EPOCH — bumps on every hot-module reload of this file (and indirectly
