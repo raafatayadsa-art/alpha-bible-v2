@@ -555,7 +555,7 @@ function ScriptureReader() {
             )}
             style={{ fontSize: `${fontSize}px`, lineHeight, wordSpacing: "0.06em" }}
           >
-            {(() => { const _dictKey = `${dictIndex.map.size}:${dictIndex.stems.size}:${dictIndex.phrases.size}:${dictIndex.phraseStems.size}:${HMR_EPOCH}:${book}:${ch}`; const seenWords = new Set<string>(); return verses.data!.map((v, i) => {
+            {(() => { const _dictKey = `${dictIndex.map.size}:${dictIndex.stems.size}:${dictIndex.phrases.size}:${dictIndex.phraseStems.size}:${HMR_EPOCH}:${book}:${ch}`; const seenWords = new Map<number, number>(); return verses.data!.map((v, i) => {
               const num = v?.verse_number ?? i + 1;
               const id = verseKey(book, ch, num);
               const isActive = activeVerse === id;
@@ -704,7 +704,7 @@ function VerseCard({
   onSelectWord: (entry: DictionaryEntry) => void;
   dictIndex: DictionaryIndex;
   /** Shared per-chapter set of normalized words already highlighted (mutated). */
-  seenWords: Set<string>;
+  seenWords: Map<number, number>;
   showRef: boolean;
   onOpenRef: () => void;
 }) {
@@ -780,7 +780,7 @@ const VerseHighlighted = memo(function VerseHighlighted({
 }: {
   text: string;
   dictIndex: DictionaryIndex;
-  seenWords: Set<string>;
+  seenWords: Map<number, number>;
   onSelectWord: (entry: DictionaryEntry) => void;
   spiritualMode: boolean;
 }) {
@@ -1097,7 +1097,7 @@ function SliderRow({
 function renderVerse(
   text: string,
   dictIndex: DictionaryIndex,
-  seenWords: Set<string>, // de-dup keys: `entry:<id>` so all variants share one slot
+  seenWords: Map<number, number>, // de-dup keys: `entry:<id>` so all variants share one slot
   onSelect: (entry: DictionaryEntry) => void,
 ): React.ReactNode {
   if (!text) return null;
