@@ -15,7 +15,7 @@ export type MeaningSheetData = {
   mapLabel?: string;
 };
 
-export type Tab = "meaning" | "verses" | "people" | "map" | "timeline";
+type Tab = "meaning" | "verses" | "people" | "map" | "timeline";
 
 const tabs: { key: Tab; label: string; icon: typeof X }[] = [
   { key: "meaning", label: "المعنى", icon: Sparkles },
@@ -28,24 +28,22 @@ const tabs: { key: Tab; label: string; icon: typeof X }[] = [
 export function MeaningSheet({
   data,
   onClose,
-  initialTab,
 }: {
   data: MeaningSheetData | null;
   onClose: () => void;
-  initialTab?: Tab;
 }) {
   const open = !!data;
-  const [tab, setTab] = useState<Tab>(initialTab ?? "meaning");
+  const [tab, setTab] = useState<Tab>("meaning");
   const [expanded, setExpanded] = useState(false);
   const dragStart = useRef<number | null>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (open) {
-      setTab(initialTab ?? "meaning");
+      setTab("meaning");
       setExpanded(false);
     }
-  }, [open, data?.word, initialTab]);
+  }, [open, data?.word]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
