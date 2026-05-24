@@ -21,6 +21,10 @@ export type DictionaryEntry = {
   fullDescription?: string;
   bibleReferencesRaw?: string;
   keywords?: string;
+  /** Source table — controls highlight eligibility. */
+  source?: "alpha_dictionary" | "alpha_dictionary_deep" | "bible_encyclopedia" | "bible_names_dictionary";
+  /** True only for entries that represent a non-obvious / explanatory word. */
+  highlightable?: boolean;
 };
 
 export type EntryKind = "person" | "place" | "symbol" | "word" | "other";
