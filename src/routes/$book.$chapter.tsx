@@ -177,6 +177,8 @@ function ScriptureReader() {
   const dict = useDictionary();
   // Deep details (alpha_dictionary_deep) — long-form description by normalized title.
   const deep = useDeepDictionary();
+  // Encyclopedia (bible_encyclopedia) — title/content/scripture_references/keywords.
+  const enc = useEncyclopedia();
   // Book abbreviations (bible_book_abbreviations) — book → short label.
   const abbrev = useBookAbbreviations();
 
@@ -189,6 +191,10 @@ function ScriptureReader() {
     () => buildDeepIndex(deep.data ?? []),
     [deep.data, deep.dataUpdatedAt],
   );
+  const encIndex = useMemo<EncyclopediaIndex>(
+    () => buildEncyclopediaIndex(enc.data ?? []),
+    [enc.data, enc.dataUpdatedAt],
+  );
   const abbrevMap = useMemo(
     () => buildAbbrevMap(abbrev.data ?? []),
     [abbrev.data, abbrev.dataUpdatedAt],
@@ -197,13 +203,12 @@ function ScriptureReader() {
     // eslint-disable-next-line no-console
     console.log("[dictionary] index built:", {
       words: dictIndex.map.size,
-      stems: dictIndex.stems.size,
       phrases: dictIndex.phrases.size,
-      phraseStems: dictIndex.phraseStems.size,
       deep: deepIndex.size,
+      encyclopedia: encIndex.size,
       abbrev: abbrevMap.size,
     });
-  }, [dictIndex, deepIndex, abbrevMap]);
+  }, [dictIndex, deepIndex, encIndex, abbrevMap]);
 
 
 
