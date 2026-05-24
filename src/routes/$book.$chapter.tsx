@@ -1097,7 +1097,7 @@ function SliderRow({
 function renderVerse(
   text: string,
   dictIndex: DictionaryIndex,
-  seenWords: Map<number, number>, // de-dup keys: `entry:<id>` so all variants share one slot
+  seenWords: Map<number, number>, // chapter-wide entry-id -> highlight count
   onSelect: (entry: DictionaryEntry) => void,
 ): React.ReactNode {
   if (!text) return null;
@@ -1109,12 +1109,15 @@ function renderVerse(
   )
     return text;
 
+  // Chapter-wide cap: after this many occurrences of the same entry,
+  // skip further highlights to avoid visual spam from repeated common words.
+  const MAX_PER_CHAPTER = 3;
+
   const parts = text.split(/([\u0600-\u06FF\u0750-\u077F]+)/g);
 
   const wordIdx: number[] = [];
   for (let i = 0; i < parts.length; i++) if (i % 2 === 1 && parts[i]) wordIdx.push(i);
 
-  // Pre-compute normalized + stem for every word position.
   const norms: string[] = [];
   const stems: string[] = [];
   for (const i of wordIdx) {
@@ -1124,6 +1127,9 @@ function renderVerse(
 
   const consumed = new Array<number>(parts.length).fill(0);
   const matchedEntry = new Array<DictionaryEntry | null>(parts.length).fill(null);
+
+  // Per-verse dedup: each entry highlights at most once inside a single verse.
+  const seenThisVerse = new Set<number>();
 
   const maxSpan = Math.max(1, dictIndex.maxPhraseTokens || 1);
   let w = 0;
@@ -1145,8 +1151,15 @@ function renderVerse(
     }
 
     if (bestSpan && bestEntry) {
-      consumed[startPartI] = bestSpan;
-      matchedEntry[startPartI] = bestEntry;
+      const id = bestEntry.id;
+      const chapterCount = seenWords.get(id) ?? 0;
+      const allowed = !seenThisVerse.has(id) && chapterCount < MAX_PER_CHAPTER;
+      if (allowed) {
+        seenThisVerse.add(id);
+        seenWords.set(id, chapterCount + 1);
+        consumed[startPartI] = bestSpan;
+        matchedEntry[startPartI] = bestEntry;
+      }
       w += bestSpan;
     } else {
       w += 1;
