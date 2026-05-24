@@ -150,7 +150,7 @@ function ScriptureReader() {
   const chapters = useQuery(chaptersQueryOptions(book));
 
   const [spiritualMode, setSpiritualMode] = useState(false);
-  const [sheet, setSheet] = useState<MeaningSheetData | null>(null);
+  const [sheet, setSheet] = useState<{ data: MeaningSheetData; initialTab: MeaningTab } | null>(null);
   const [progress, setProgress] = useState(0);
   const [typeOpen, setTypeOpen] = useState(false);
   const [activeVerse, setActiveVerse] = useState<string | null>(null);
