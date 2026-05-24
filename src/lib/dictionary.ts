@@ -121,8 +121,8 @@ async function fetchDictionary(): Promise<DictionaryEntry[]> {
     .map((row: any) => {
       const word = ((row.word ?? row.term ?? "") as string).toString().trim();
       const wordNormalized = ((row.word_normalized ?? "") as string).toString().trim();
-      // Per spec: short meaning lives in the `meaning` column. No long descriptions.
-      const meaning = ((row.meaning ?? row.short_meaning ?? "") as string).toString().trim();
+      // Per spec: short meaning lives in `short_meaning` (fallback `meaning`). No long descriptions.
+      const meaning = ((row.short_meaning ?? row.meaning ?? "") as string).toString().trim();
       return {
         id: row.id,
         term: word,
