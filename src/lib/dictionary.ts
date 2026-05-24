@@ -18,6 +18,10 @@ export type DictionaryEntry = {
   normalizedTerm?: string;
   category?: string;
   shortMeaning?: string;
+  /** Fallback when shortMeaning is empty. */
+  meaning?: string;
+  /** Second fallback when both shortMeaning and meaning are empty. */
+  explanation?: string;
   fullDescription?: string;
   bibleReferencesRaw?: string;
   keywords?: string;
