@@ -771,7 +771,7 @@ const VerseHighlighted = memo(function VerseHighlighted({
   text: string;
   dictIndex: DictionaryIndex;
   seenWords: Set<string>;
-  onSelectWord: (entry: DictionaryEntry) => void;
+  onSelectWord: (entry: DictionaryEntry, key: string) => void;
   spiritualMode: boolean;
 }) {
   return useMemo(
