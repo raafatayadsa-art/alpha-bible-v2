@@ -121,14 +121,16 @@ async function fetchDictionary(): Promise<DictionaryEntry[]> {
     .map((row: any) => {
       const word = ((row.word ?? row.term ?? "") as string).toString().trim();
       const wordNormalized = ((row.word_normalized ?? "") as string).toString().trim();
+      // Per spec: short meaning lives in the `meaning` column. No long descriptions.
+      const meaning = ((row.meaning ?? row.short_meaning ?? "") as string).toString().trim();
       return {
         id: row.id,
         term: word,
         normalizedTerm: wordNormalized || undefined,
         category: row.category ?? undefined,
-        shortMeaning: row.short_meaning ?? undefined,
-        fullDescription: row.full_description ?? undefined,
-        bibleReferencesRaw: row.bible_references ?? undefined,
+        shortMeaning: meaning || undefined,
+        fullDescription: undefined,
+        bibleReferencesRaw: row.bible_references ?? row.reference ?? undefined,
         keywords: row.keywords ?? undefined,
       } as DictionaryEntry;
     })
@@ -140,6 +142,132 @@ async function fetchDictionary(): Promise<DictionaryEntry[]> {
   // eslint-disable-next-line no-console
   console.log("[alpha_dictionary] loaded entries:", (data ?? []).length, "valid terms:", rows.length);
   return rows;
+}
+
+/* ============================================================
+ * alpha_dictionary_deep — Persons / detailed entries
+ * ============================================================ */
+
+export type DeepEntry = {
+  word: string;
+  meaning?: string;
+  reference?: string;
+  wordNormalized?: string;
+};
+
+export async function fetchDeepByNormalized(norm: string): Promise<DeepEntry | null> {
+  if (!norm) return null;
+  try {
+    const { data, error } = await (supabase as any)
+      .from("alpha_dictionary_deep")
+      .select("word, meaning, reference, word_normalized")
+      .eq("word_normalized", norm)
+      .limit(1);
+    if (error) {
+      // eslint-disable-next-line no-console
+      console.warn("[alpha_dictionary_deep] lookup failed:", error.message);
+      return null;
+    }
+    const row = (data ?? [])[0];
+    if (!row) return null;
+    return {
+      word: row.word,
+      meaning: row.meaning ?? undefined,
+      reference: row.reference ?? undefined,
+      wordNormalized: row.word_normalized ?? undefined,
+    };
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.warn("[alpha_dictionary_deep] threw:", e);
+    return null;
+  }
+}
+
+/* ============================================================
+ * bible_book_abbreviations — reference parsing
+ * ============================================================ */
+
+export type BookAbbrevMaps = {
+  /** normalized abbreviation -> canonical book_name */
+  abbr: Map<string, string>;
+  /** normalized full book name -> canonical book_name */
+  full: Map<string, string>;
+};
+
+function normRefKey(s: string): string {
+  return normalizeAr(s).replace(/\s+/g, "");
+}
+
+async function fetchBookAbbreviations(): Promise<BookAbbrevMaps> {
+  const { data, error } = await supabase
+    .from("bible_book_abbreviations")
+    .select("book, abbreviation");
+  if (error) throw error;
+  const abbr = new Map<string, string>();
+  const full = new Map<string, string>();
+  for (const row of (data ?? []) as any[]) {
+    const book = (row.book ?? "").toString().trim();
+    const ab = (row.abbreviation ?? "").toString().trim();
+    if (book) full.set(normRefKey(book), book);
+    if (ab) abbr.set(normRefKey(ab), book);
+  }
+  return { abbr, full };
+}
+
+export function useBookAbbreviations() {
+  return useQuery({
+    queryKey: ["bible_book_abbreviations"],
+    queryFn: fetchBookAbbreviations,
+    staleTime: Infinity,
+  });
+}
+
+export type ParsedRef = {
+  book: string;
+  chapter: number;
+  verse?: number;
+  verseEnd?: number;
+  raw: string;
+};
+
+/**
+ * Parse a scripture reference like:
+ *   "تك 1:1", "تكوين 1:1-3", "1صم 17:45", "يو 3 : 16"
+ * Returns null if the book token doesn't match the abbreviations table.
+ */
+export function parseScriptureRef(raw: string, maps: BookAbbrevMaps): ParsedRef | null {
+  if (!raw) return null;
+  const s = raw.trim();
+  // Capture: book token (Arabic letters, optionally prefixed by digit), then chapter[:verse[-verse]].
+  const m = s.match(
+    /^\s*(\d?\s*[\u0600-\u06FF]+)\s*(\d+)\s*[:؛،\u061B]?\s*(\d+)?\s*(?:[-–]\s*(\d+))?/,
+  );
+  if (!m) return null;
+  const bookRaw = m[1].replace(/\s+/g, "");
+  const chapter = Number(m[2]);
+  if (!chapter || Number.isNaN(chapter)) return null;
+  const verse = m[3] ? Number(m[3]) : undefined;
+  const verseEnd = m[4] ? Number(m[4]) : undefined;
+  const key = normRefKey(bookRaw);
+  const book = maps.abbr.get(key) ?? maps.full.get(key);
+  if (!book) return null;
+  return { book, chapter, verse, verseEnd, raw: s };
+}
+
+export async function fetchVerseText(
+  book: string,
+  chapter: number,
+  verse: number,
+): Promise<string | null> {
+  const { data, error } = await supabase
+    .from("bible_verses")
+    .select("verse_text")
+    .eq("book_name", book)
+    .eq("chapter_number", chapter)
+    .eq("verse_number", verse)
+    .limit(1);
+  if (error) return null;
+  return ((data ?? [])[0] as any)?.verse_text ?? null;
 }
 
 export function useDictionary() {

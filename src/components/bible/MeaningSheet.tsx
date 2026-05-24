@@ -1,6 +1,22 @@
 import { useEffect, useRef, useState } from "react";
-import { X, MapPin, Clock, Users, BookOpen, Sparkles, Layers } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { X, MapPin, Clock, Users, BookOpen, Sparkles, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  useBookAbbreviations,
+  parseScriptureRef,
+  fetchVerseText,
+  type BookAbbrevMaps,
+  type ParsedRef,
+} from "@/lib/dictionary";
+
+export type MeaningSheetPerson = {
+  name: string;
+  role?: string;
+  meaning?: string;
+  reference?: string;
+};
 
 export type MeaningSheetData = {
   word: string;
@@ -9,18 +25,21 @@ export type MeaningSheetData = {
   origin?: string;
   firstAppearance?: string;
   spiritualRole?: string;
-  relatedVerses?: { reference: string; text: string }[];
-  relatedPeople?: { name: string; role?: string }[];
+  /** Raw scripture references — one per entry. Resolved against bible_book_abbreviations. */
+  relatedVerses?: { reference: string; text?: string }[];
+  relatedPeople?: MeaningSheetPerson[];
   timeline?: { year?: string; event: string }[];
   mapLabel?: string;
+  /** Which tab to open by default. */
+  defaultTab?: Tab;
 };
 
 type Tab = "meaning" | "verses" | "people" | "map" | "timeline";
 
 const tabs: { key: Tab; label: string; icon: typeof X }[] = [
   { key: "meaning", label: "المعنى", icon: Sparkles },
-  { key: "verses", label: "الآيات", icon: BookOpen },
   { key: "people", label: "الأشخاص", icon: Users },
+  { key: "verses", label: "الآيات", icon: BookOpen },
   { key: "map", label: "الخريطة", icon: MapPin },
   { key: "timeline", label: "الخط الزمني", icon: Clock },
 ];
@@ -37,13 +56,14 @@ export function MeaningSheet({
   const [expanded, setExpanded] = useState(false);
   const dragStart = useRef<number | null>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
+  const abbrev = useBookAbbreviations();
 
   useEffect(() => {
     if (open) {
-      setTab("meaning");
+      setTab(data?.defaultTab ?? "meaning");
       setExpanded(false);
     }
-  }, [open, data?.word]);
+  }, [open, data?.word, data?.defaultTab]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -92,7 +112,6 @@ export function MeaningSheet({
         <div
           className={cn(
             "mx-2 overflow-hidden rounded-t-[28px] border backdrop-blur-[22px] backdrop-saturate-150",
-            // Balanced emerald glass — richer tint, medium blur, layered depth
             "bg-gradient-to-b from-[#0f3d2e]/72 via-[#0c3326]/70 to-[#07261c]/78 border-[#7af0b8]/35 text-[#eaf6ec]",
             "shadow-[0_-28px_70px_-18px_rgba(0,0,0,0.6),0_0_36px_-12px_rgba(122,240,184,0.45),inset_0_1px_0_rgba(255,255,255,0.14),inset_0_0_40px_-20px_rgba(122,240,184,0.18)]",
             "transition-[max-height] duration-300",
@@ -156,45 +175,65 @@ export function MeaningSheet({
             className="overflow-y-auto px-4 pt-2 pb-6"
             style={{ maxHeight: expanded ? "calc(92vh - 140px)" : "calc(70vh - 140px)" }}
           >
-            
             {tab === "meaning" && (
-              <TextBlock title="المعنى والأصل">
-                {data?.meaning || data?.origin || "لا توجد تفاصيل بعد."}
+              <TextBlock title="المعنى">
+                {data?.meaning || "لا توجد تفاصيل بعد."}
               </TextBlock>
             )}
-            {tab === "verses" && (
+
+            {tab === "people" && (
               <div className="space-y-2.5">
-                {(data?.relatedVerses ?? []).map((v, i) => (
+                {(data?.relatedPeople ?? []).map((p, i) => (
                   <div
                     key={i}
                     className="rounded-2xl bg-[#0a2a20]/45 border border-[#7af0b8]/20 p-3"
                   >
-                    <p className="text-[11px] font-bold text-[#e7c97a]">{v.reference}</p>
-                    <p className="mt-1 font-arabic-serif text-[14px] leading-relaxed text-[#eaf6ec]">
-                      {v.text}
-                    </p>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="font-arabic-serif text-[15px] font-bold text-[#f4f9ee] truncate">
+                          {p.name}
+                        </p>
+                        {p.role && (
+                          <p className="text-[11px] text-[#e7c97a] mt-0.5">{p.role}</p>
+                        )}
+                      </div>
+                      <Users className="h-4 w-4 text-[#e7c97a] shrink-0 mt-0.5" />
+                    </div>
+                    {p.meaning && (
+                      <p className="mt-2 font-arabic-serif text-[13.5px] leading-relaxed text-[#eaf6ec]">
+                        {p.meaning}
+                      </p>
+                    )}
+                    {p.reference && abbrev.data && (
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {splitRefs(p.reference).map((r, ri) => (
+                          <RefChip key={ri} raw={r} maps={abbrev.data!} onNavigate={onClose} />
+                        ))}
+                      </div>
+                    )}
                   </div>
+                ))}
+                {!(data?.relatedPeople?.length) && (
+                  <Empty label="لا توجد معلومات شخصية بعد." />
+                )}
+              </div>
+            )}
+
+            {tab === "verses" && (
+              <div className="space-y-2.5">
+                {(data?.relatedVerses ?? []).map((v, i) => (
+                  <RelatedVerseRow
+                    key={i}
+                    raw={v.reference}
+                    fallbackText={v.text}
+                    maps={abbrev.data ?? null}
+                    onNavigate={onClose}
+                  />
                 ))}
                 {!(data?.relatedVerses?.length) && <Empty label="لا توجد آيات مرتبطة بعد." />}
               </div>
             )}
-            {tab === "people" && (
-              <div className="space-y-2">
-                {(data?.relatedPeople ?? []).map((p, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between rounded-2xl bg-[#0a2a20]/45 border border-[#7af0b8]/20 p-3"
-                  >
-                    <div>
-                      <p className="text-[13px] font-bold text-[#eaf6ec]">{p.name}</p>
-                      {p.role && <p className="text-[11px] text-[#cfe4d5]">{p.role}</p>}
-                    </div>
-                    <Users className="h-4 w-4 text-[#e7c97a]" />
-                  </div>
-                ))}
-                {!(data?.relatedPeople?.length) && <Empty label="لا توجد أشخاص مرتبطون بعد." />}
-              </div>
-            )}
+
             {tab === "timeline" && (
               <ol className="relative space-y-3 ps-4 border-s border-[#e7c97a]/60">
                 {(data?.timeline ?? []).map((t, i) => (
@@ -207,6 +246,7 @@ export function MeaningSheet({
                 {!(data?.timeline?.length) && <Empty label="لا يوجد تسلسل زمني بعد." />}
               </ol>
             )}
+
             {tab === "map" && (
               <div className="rounded-2xl border border-[#efe2c4] bg-gradient-to-br from-[#eef3e6] via-[#dfe9d0] to-[#bcd0a7] aspect-[4/3] grid place-items-center text-center">
                 <div>
@@ -224,24 +264,100 @@ export function MeaningSheet({
   );
 }
 
-function OverviewBlock({ data }: { data: MeaningSheetData | null }) {
-  if (!data) return null;
-  const items = [
-    { label: "المعنى", value: data.meaning },
-    { label: "الأصل", value: data.origin },
-    { label: "أول ظهور", value: data.firstAppearance },
-    { label: "الدور الروحي", value: data.spiritualRole },
-  ].filter((x) => x.value);
-  if (!items.length) return <Empty label="لا تتوفر تفاصيل بعد." />;
+function splitRefs(raw: string): string[] {
+  return raw
+    .split(/\r?\n|،|;|؛|,/g)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+function RefChip({
+  raw,
+  maps,
+  onNavigate,
+}: {
+  raw: string;
+  maps: BookAbbrevMaps;
+  onNavigate: () => void;
+}) {
+  const parsed = parseScriptureRef(raw, maps);
+  if (!parsed) {
+    return (
+      <span className="inline-flex items-center rounded-full border border-[#7af0b8]/25 bg-[#0a2a20]/40 px-2.5 py-1 text-[11px] text-[#cfe4d5]">
+        {raw}
+      </span>
+    );
+  }
   return (
-    <div className="space-y-2.5">
-      {items.map((it) => (
-        <div key={it.label} className="rounded-2xl bg-[#0a2a20]/45 border border-[#7af0b8]/20 p-3">
-          <p className="text-[11px] font-bold text-[#e7c97a]">{it.label}</p>
-          <p className="mt-1 text-[13.5px] leading-relaxed text-[#eaf6ec]">{it.value}</p>
-        </div>
-      ))}
-    </div>
+    <Link
+      to="/$book/$chapter"
+      params={{ book: parsed.book, chapter: String(parsed.chapter) }}
+      onClick={onNavigate}
+      className="inline-flex items-center gap-1 rounded-full border border-[#7af0b8]/40 bg-[#0a2a20]/55 px-2.5 py-1 text-[11px] font-bold text-[#e7c97a] hover:border-[#7af0b8]/70 active:scale-95 transition-all"
+    >
+      <ChevronLeft className="h-3 w-3" />
+      {parsed.book} {parsed.chapter}
+      {parsed.verse ? `:${parsed.verse}${parsed.verseEnd ? `-${parsed.verseEnd}` : ""}` : ""}
+    </Link>
+  );
+}
+
+function RelatedVerseRow({
+  raw,
+  fallbackText,
+  maps,
+  onNavigate,
+}: {
+  raw: string;
+  fallbackText?: string;
+  maps: BookAbbrevMaps | null;
+  onNavigate: () => void;
+}) {
+  const parsed = maps ? parseScriptureRef(raw, maps) : null;
+  const verseNum = parsed?.verse;
+  const q = useQuery({
+    queryKey: ["verse-text", parsed?.book, parsed?.chapter, verseNum],
+    queryFn: () => fetchVerseText(parsed!.book, parsed!.chapter, verseNum!),
+    enabled: !!(parsed && verseNum),
+    staleTime: 60_000,
+  });
+  const text = q.data ?? fallbackText;
+
+  const refLabel = parsed
+    ? `${parsed.book} ${parsed.chapter}${parsed.verse ? `:${parsed.verse}${parsed.verseEnd ? `-${parsed.verseEnd}` : ""}` : ""}`
+    : raw;
+
+  const inner = (
+    <>
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-[11px] font-bold text-[#e7c97a]">{refLabel}</p>
+        {parsed && <ChevronLeft className="h-3.5 w-3.5 text-[#7af0b8]/70" />}
+      </div>
+      {text ? (
+        <p className="mt-1 font-arabic-serif text-[14px] leading-relaxed text-[#eaf6ec]">
+          {text}
+        </p>
+      ) : q.isLoading && parsed ? (
+        <p className="mt-1 text-[12px] text-[#cfe4d5]/70">…جاري التحميل</p>
+      ) : null}
+    </>
+  );
+
+  if (!parsed) {
+    return (
+      <div className="rounded-2xl bg-[#0a2a20]/45 border border-[#7af0b8]/20 p-3">{inner}</div>
+    );
+  }
+
+  return (
+    <Link
+      to="/$book/$chapter"
+      params={{ book: parsed.book, chapter: String(parsed.chapter) }}
+      onClick={onNavigate}
+      className="block rounded-2xl bg-[#0a2a20]/45 border border-[#7af0b8]/25 p-3 hover:border-[#7af0b8]/55 active:scale-[0.99] transition-all"
+    >
+      {inner}
+    </Link>
   );
 }
 

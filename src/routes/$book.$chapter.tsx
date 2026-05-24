@@ -36,6 +36,7 @@ import {
   normalizeAr,
   stemAr,
   classifyEntry,
+  fetchDeepByNormalized,
   type DictionaryEntry,
   type DictionaryIndex,
 } from "@/lib/dictionary";
@@ -67,15 +68,13 @@ function parseRelatedVerses(raw?: string): { reference: string; text: string }[]
 function entryToSheet(e: DictionaryEntry): MeaningSheetData {
   const kind = classifyEntry(e.category);
   const shortMeaning = (e.shortMeaning || "").trim();
-  const fullDesc = (e.fullDescription || "").trim();
   const verses = parseRelatedVerses(e.bibleReferencesRaw);
 
   const base: MeaningSheetData = {
-    // Overlay title = term. If empty, show nothing — no fallback.
     word: (e.term ?? "").trim(),
     kind: e.category,
+    // Short meaning only — never long descriptions.
     meaning: shortMeaning || undefined,
-    origin: fullDesc || undefined,
     relatedVerses: verses.length ? verses : undefined,
   };
 
@@ -83,9 +82,53 @@ function entryToSheet(e: DictionaryEntry): MeaningSheetData {
     return { ...base, mapLabel: e.term };
   }
   if (kind === "person") {
-    return { ...base, relatedPeople: e.term ? [{ name: e.term, role: e.category }] : undefined };
+    return {
+      ...base,
+      relatedPeople: e.term
+        ? [{ name: e.term, role: e.category, meaning: shortMeaning || undefined }]
+        : undefined,
+    };
   }
   return base;
+}
+
+/**
+ * Build the sheet for a tapped highlighted word.
+ * If alpha_dictionary_deep has a match, augment with person info + open the
+ * "people" tab by default.
+ */
+async function buildSheetForEntry(e: DictionaryEntry): Promise<MeaningSheetData> {
+  const base = entryToSheet(e);
+  const norm = (e.normalizedTerm || normalizeAr(e.term || "")).trim();
+  if (!norm) return base;
+  const deep = await fetchDeepByNormalized(norm);
+  if (!deep) return base;
+
+  const person = {
+    name: deep.word || e.term || "",
+    role: e.category,
+    meaning: (deep.meaning || "").trim() || undefined,
+    reference: (deep.reference || "").trim() || undefined,
+  };
+
+  // Merge references from deep entry into the verses tab too.
+  const deepVerses = deep.reference ? parseRelatedVerses(deep.reference) : [];
+  const merged = [...(base.relatedVerses ?? []), ...deepVerses];
+  // De-dupe by reference string.
+  const seen = new Set<string>();
+  const dedupVerses = merged.filter((v) => {
+    const k = v.reference.trim();
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+
+  return {
+    ...base,
+    defaultTab: "people",
+    relatedPeople: [person],
+    relatedVerses: dedupVerses.length ? dedupVerses : base.relatedVerses,
+  };
 }
 
 
@@ -535,7 +578,14 @@ function ScriptureReader() {
                       text: v?.verse_text ?? "",
                     })
                   }
-                  onSelectWord={(entry) => setSheet(entryToSheet(entry))}
+                  onSelectWord={(entry) => {
+                    // Show the base sheet immediately, then upgrade if deep entry exists.
+                    const base = entryToSheet(entry);
+                    setSheet(base);
+                    buildSheetForEntry(entry)
+                      .then((upgraded) => setSheet(upgraded))
+                      .catch(() => {/* keep base */});
+                  }}
                   dictIndex={dictIndex}
                   seenWords={seenWords}
                   showRef={showRef}
