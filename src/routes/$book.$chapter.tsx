@@ -64,34 +64,26 @@ function parseRelatedVerses(raw?: string): { reference: string; text: string }[]
     });
 }
 
-function entryToSheet(e: DictionaryEntry, displayWord?: string): MeaningSheetData {
+function entryToSheet(e: DictionaryEntry): MeaningSheetData {
   const kind = classifyEntry(e.category);
   const shortMeaning = (e.shortMeaning || "").trim();
-  const meaningAlt = (e.meaning || "").trim();
-  const explanation = (e.explanation || "").trim();
   const fullDesc = (e.fullDescription || "").trim();
   const verses = parseRelatedVerses(e.bibleReferencesRaw);
 
-  // Fallback chain per spec: short_meaning -> meaning -> explanation.
-  const primaryMeaning = shortMeaning || meaningAlt || explanation || undefined;
-
-  // Title = original tapped word (Arabic, as it appears in the verse).
-  // Never show the normalized form to the user.
-  const title = (displayWord || e.term || "").trim();
-
   const base: MeaningSheetData = {
-    word: title,
+    // Overlay title = term. If empty, show nothing — no fallback.
+    word: (e.term ?? "").trim(),
     kind: e.category,
-    meaning: primaryMeaning,
+    meaning: shortMeaning || undefined,
     origin: fullDesc || undefined,
     relatedVerses: verses.length ? verses : undefined,
   };
 
   if (kind === "place") {
-    return { ...base, mapLabel: title };
+    return { ...base, mapLabel: e.term };
   }
   if (kind === "person") {
-    return { ...base, relatedPeople: title ? [{ name: title, role: e.category }] : undefined };
+    return { ...base, relatedPeople: e.term ? [{ name: e.term, role: e.category }] : undefined };
   }
   return base;
 }
@@ -543,7 +535,7 @@ function ScriptureReader() {
                       text: v?.verse_text ?? "",
                     })
                   }
-                  onSelectWord={(entry, surface) => setSheet(entryToSheet(entry, surface))}
+                  onSelectWord={(entry) => setSheet(entryToSheet(entry))}
                   dictIndex={dictIndex}
                   seenWords={seenWords}
                   showRef={showRef}
@@ -657,7 +649,7 @@ function VerseCard({
   surfaceClass: string;
   onTap: () => void;
   onToggleSave: () => void;
-  onSelectWord: (entry: DictionaryEntry, surface: string) => void;
+  onSelectWord: (entry: DictionaryEntry) => void;
   dictIndex: DictionaryIndex;
   /** Shared per-chapter set of normalized words already highlighted (mutated). */
   seenWords: Set<string>;
@@ -737,7 +729,7 @@ const VerseHighlighted = memo(function VerseHighlighted({
   text: string;
   dictIndex: DictionaryIndex;
   seenWords: Set<string>;
-  onSelectWord: (entry: DictionaryEntry, surface: string) => void;
+  onSelectWord: (entry: DictionaryEntry) => void;
   spiritualMode: boolean;
 }) {
   return useMemo(
@@ -1054,7 +1046,7 @@ function renderVerse(
   text: string,
   dictIndex: DictionaryIndex,
   seenWords: Set<string>, // de-dup keys: `entry:<id>` so all variants share one slot
-  onSelect: (entry: DictionaryEntry, surface: string) => void,
+  onSelect: (entry: DictionaryEntry) => void,
 ): React.ReactNode {
   if (!text) return null;
   if (
@@ -1148,7 +1140,7 @@ function renderVerse(
               sourceField,
               { id: entry.id, surface },
             );
-            onSelect(entry, surface);
+            onSelect(entry);
           }}
         >
           {surface}

@@ -18,10 +18,6 @@ export type DictionaryEntry = {
   normalizedTerm?: string;
   category?: string;
   shortMeaning?: string;
-  /** Fallback when shortMeaning is empty. */
-  meaning?: string;
-  /** Second fallback when both shortMeaning and meaning are empty. */
-  explanation?: string;
   fullDescription?: string;
   bibleReferencesRaw?: string;
   keywords?: string;
@@ -130,8 +126,6 @@ async function fetchDictionary(): Promise<DictionaryEntry[]> {
         normalizedTerm: wordNormalized || undefined,
         category: row.category ?? undefined,
         shortMeaning: row.short_meaning ?? undefined,
-        meaning: row.meaning ?? undefined,
-        explanation: row.explanation ?? undefined,
         fullDescription: row.full_description ?? undefined,
         bibleReferencesRaw: row.bible_references ?? undefined,
         keywords: row.keywords ?? undefined,
