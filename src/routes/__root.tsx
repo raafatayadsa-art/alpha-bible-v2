@@ -120,6 +120,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
+      <DictionaryDebugBadge />
     </QueryClientProvider>
   );
 }
