@@ -35,6 +35,7 @@ import {
   buildDictionaryIndex,
   normalizeAr,
   stemAr,
+  lookupEntry,
   classifyEntry,
   fetchDeepByNormalized,
   type DictionaryEntry,
