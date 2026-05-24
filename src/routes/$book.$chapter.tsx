@@ -543,7 +543,7 @@ function ScriptureReader() {
                       text: v?.verse_text ?? "",
                     })
                   }
-                  onSelectWord={(entry) => setSheet(entryToSheet(entry))}
+                  onSelectWord={(entry, surface) => setSheet(entryToSheet(entry, surface))}
                   dictIndex={dictIndex}
                   seenWords={seenWords}
                   showRef={showRef}
@@ -657,7 +657,7 @@ function VerseCard({
   surfaceClass: string;
   onTap: () => void;
   onToggleSave: () => void;
-  onSelectWord: (entry: DictionaryEntry) => void;
+  onSelectWord: (entry: DictionaryEntry, surface: string) => void;
   dictIndex: DictionaryIndex;
   /** Shared per-chapter set of normalized words already highlighted (mutated). */
   seenWords: Set<string>;
@@ -737,7 +737,7 @@ const VerseHighlighted = memo(function VerseHighlighted({
   text: string;
   dictIndex: DictionaryIndex;
   seenWords: Set<string>;
-  onSelectWord: (entry: DictionaryEntry) => void;
+  onSelectWord: (entry: DictionaryEntry, surface: string) => void;
   spiritualMode: boolean;
 }) {
   return useMemo(
@@ -1148,7 +1148,7 @@ function renderVerse(
               sourceField,
               { id: entry.id, surface },
             );
-            onSelect(entry);
+            onSelect(entry, surface);
           }}
         >
           {surface}
