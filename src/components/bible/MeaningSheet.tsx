@@ -179,9 +179,20 @@ export function MeaningSheet({
             style={{ maxHeight: expanded ? "calc(92vh - 140px)" : "calc(70vh - 140px)" }}
           >
             {tab === "meaning" && (
-              <TextBlock title="المعنى">
-                {data?.meaning || "لا توجد تفاصيل بعد."}
-              </TextBlock>
+              <div className="space-y-3">
+                <TextBlock title="المعنى">
+                  {data?.meaning || "لا توجد تفاصيل بعد."}
+                </TextBlock>
+                {data?.fullMeaning && (
+                  <button
+                    type="button"
+                    onClick={() => setShowFull(true)}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-[#7af0b8]/50 bg-[#0a2a20]/60 px-4 py-2 text-[12.5px] font-bold text-[#e7c97a] hover:border-[#7af0b8]/80 active:scale-95 transition-all"
+                  >
+                    المزيد
+                  </button>
+                )}
+              </div>
             )}
 
             {tab === "people" && (
