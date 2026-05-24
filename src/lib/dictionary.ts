@@ -53,6 +53,28 @@ export function stemAr(input: string): string {
   return normalizeAr(input);
 }
 
+/**
+ * Strip common Arabic attached prefixes (definite article + single-letter
+ * prepositions/conjunctions) so dictionary terms stored without "ال" still
+ * match surface forms like "النور", "والأرض", "بالسماوات".
+ * Returns an empty string if the result becomes too short to be meaningful.
+ */
+export function stripArPrefix(norm: string): string {
+  if (!norm) return "";
+  // Order matters: longer prefixes first.
+  const prefixes = [
+    "وبال", "فبال", "وكال", "فكال", "وللل", "فلل",
+    "وال", "فال", "بال", "كال", "لل",
+    "و", "ف", "ب", "ك", "ل",
+  ];
+  for (const p of prefixes) {
+    if (norm.length > p.length + 2 && norm.startsWith(p)) {
+      return norm.slice(p.length);
+    }
+  }
+  return "";
+}
+
 export function tokenizeAr(text: string): { surface: string; norm: string }[] {
   if (!text) return [];
   const out: { surface: string; norm: string }[] = [];
