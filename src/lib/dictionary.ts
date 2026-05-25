@@ -326,12 +326,18 @@ export async function fetchVerseText(
 // Global in-memory cache — loaded once per app session, reused for every chapter.
 let __dictCache: DictionaryEntry[] | null = null;
 let __dictPromise: Promise<DictionaryEntry[]> | null = null;
-function loadDictionaryOnce(): Promise<DictionaryEntry[]> {
+let __dictLogged = false;
+export function loadDictionaryOnce(): Promise<DictionaryEntry[]> {
   if (__dictCache) return Promise.resolve(__dictCache);
   if (__dictPromise) return __dictPromise;
   __dictPromise = fetchDictionary()
     .then((rows) => {
       __dictCache = rows;
+      if (!__dictLogged) {
+        __dictLogged = true;
+        // eslint-disable-next-line no-console
+        console.log("dictionary loaded once:", rows.length);
+      }
       return rows;
     })
     .catch((e) => {
@@ -339,6 +345,18 @@ function loadDictionaryOnce(): Promise<DictionaryEntry[]> {
       throw e;
     });
   return __dictPromise;
+}
+
+export function getCachedDictionary(): DictionaryEntry[] | null {
+  return __dictCache;
+}
+
+// Kick off the fetch eagerly at module import time (browser only) so the
+// dictionary is loaded once on app start, before any chapter mounts.
+if (typeof window !== "undefined") {
+  loadDictionaryOnce().catch(() => {
+    /* surfaced via useDictionary() error state */
+  });
 }
 
 export function useDictionary() {
