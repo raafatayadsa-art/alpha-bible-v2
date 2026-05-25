@@ -144,9 +144,24 @@ async function fetchDictionary(): Promise<DictionaryEntry[]> {
   // eslint-disable-next-line no-console
   console.log("[alpha_dictionary] source:", { url: supabaseUrl, table: "public.alpha_dictionary" });
 
-  const { data, error } = await (supabase as any).from("alpha_dictionary").select("*");
-  if (error) throw error;
-  const rows = (data ?? [])
+  const PAGE = 1000;
+  let from = 0;
+  const all: any[] = [];
+  // Paginate through all rows — Supabase caps a single response at 1000.
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const to = from + PAGE - 1;
+    const { data, error } = await (supabase as any)
+      .from("alpha_dictionary")
+      .select("*")
+      .range(from, to);
+    if (error) throw error;
+    const batch = data ?? [];
+    all.push(...batch);
+    if (batch.length < PAGE) break;
+    from += PAGE;
+  }
+  const rows = all
     .map((row: any) => {
       const word = ((row.word ?? row.term ?? "") as string).toString().trim();
       const wordNormalized = ((row.word_normalized ?? "") as string).toString().trim();
