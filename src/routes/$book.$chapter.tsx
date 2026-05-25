@@ -1109,9 +1109,9 @@ function renderVerse(
   )
     return text;
 
-  // Chapter-wide cap: after this many occurrences of the same entry,
-  // skip further highlights to avoid visual spam from repeated common words.
-  const MAX_PER_CHAPTER = 3;
+  // Chapter-wide rule: each dictionary entry highlights only ONCE per chapter.
+  // First occurrence wins; later occurrences render as plain text.
+  const MAX_PER_CHAPTER = 1;
 
   const parts = text.split(/([\u0600-\u06FF\u0750-\u077F]+)/g);
 
