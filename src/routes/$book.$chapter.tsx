@@ -291,14 +291,17 @@ function ScriptureReader() {
         if (cancelled) return;
         setMatchedSet(new Set(matched));
         setChapterDictState({ count: matched.size, status: "ready" });
-        try {
-          window.sessionStorage.setItem(
-            matchedSSKey,
-            JSON.stringify(Array.from(matched)),
-          );
-        } catch {
-          /* quota / serialization — non-fatal */
+        if (matched.size > 0) {
+          try {
+            window.sessionStorage.setItem(
+              matchedSSKey,
+              JSON.stringify(Array.from(matched)),
+            );
+          } catch {
+            /* quota / serialization — non-fatal */
+          }
         }
+
         const sample = Array.from(matched).slice(0, 12);
         // eslint-disable-next-line no-console
         console.log("[chapter-highlight] matched:", matched.size, "sample:", sample);
