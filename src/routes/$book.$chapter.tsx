@@ -21,6 +21,8 @@ import {
   MeaningSheet,
   ReferenceIndicator,
   VerseSkeleton,
+  DictionaryLookupSheet,
+  DictionarySearchDialog,
   type MeaningSheetData,
 } from "@/components/bible";
 import {
@@ -38,8 +40,10 @@ import {
   lookupEntry,
   classifyEntry,
   fetchDeepByNormalized,
+  lookupDictionary,
   type DictionaryEntry,
   type DictionaryIndex,
+  type LookupDictionaryRow,
 } from "@/lib/dictionary";
 
 /**
