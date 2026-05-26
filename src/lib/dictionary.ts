@@ -564,38 +564,46 @@ export async function bulkLookupMatched(
 ): Promise<Set<string>> {
   const matched = new Set<string>();
   const seen = new Set<string>();
-  const todo: string[] = [];
+  // word -> [candidate forms to try against lookup_dictionary]
+  const candidates = new Map<string, string[]>();
+  const todoLookups = new Set<string>();
   for (const w of normalizedWords) {
     if (!w) continue;
-    // Strict pre-filter: length, stopwords, pure digits.
     if (w.length < 3) continue;
     if (HIGHLIGHT_STOPWORDS.has(w)) continue;
     if (/^\d+$/.test(w)) continue;
     if (seen.has(w)) continue;
     seen.add(w);
-    if (__lookupHitCache.has(w)) {
-      if (__lookupHitCache.get(w)) matched.add(w);
-    } else {
-      todo.push(w);
+    const forms = [w];
+    const stripped = stripArPrefix(w);
+    if (stripped && stripped !== w && stripped.length >= 3) forms.push(stripped);
+    candidates.set(w, forms);
+    let resolved = true;
+    let anyHit = false;
+    for (const f of forms) {
+      if (__lookupHitCache.has(f)) {
+        if (__lookupHitCache.get(f)) anyHit = true;
+      } else {
+        resolved = false;
+        todoLookups.add(f);
+      }
     }
+    if (resolved && anyHit) matched.add(w);
   }
   onProgress?.(matched);
+  const todo = Array.from(todoLookups);
   const CONCURRENCY = 5;
   let idx = 0;
   const worker = async () => {
     while (idx < todo.length) {
       const my = idx++;
-      const w = todo[my];
+      const f = todo[my];
       try {
-        const rows = await lookupDictionary(w);
-        const hit = isStrongDictHit(w, rows);
-        __lookupHitCache.set(w, hit);
-        if (hit) {
-          matched.add(w);
-          onProgress?.(matched);
-        }
+        const rows = await lookupDictionary(f);
+        const hit = isStrongDictHit(f, rows);
+        __lookupHitCache.set(f, hit);
       } catch {
-        __lookupHitCache.set(w, false);
+        __lookupHitCache.set(f, false);
       }
     }
   };
@@ -604,6 +612,19 @@ export async function bulkLookupMatched(
     () => worker(),
   );
   await Promise.all(workers);
+
+  // Second pass — resolve every chapter word using cached candidate results.
+  for (const [w, forms] of candidates) {
+    if (matched.has(w)) continue;
+    for (const f of forms) {
+      if (__lookupHitCache.get(f)) {
+        matched.add(w);
+        break;
+      }
+    }
+  }
+  onProgress?.(matched);
   return matched;
 }
+
 
