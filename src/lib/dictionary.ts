@@ -426,3 +426,48 @@ export function lookupEntry(idx: DictionaryIndex, key: string): DictionaryEntry 
   // Strict exact normalized match only — no prefix stripping, no fallback.
   return idx.phrases.get(key) ?? idx.map.get(key);
 }
+
+/* ============================================================
+ * lookup_dictionary RPC — Supabase function returning the new
+ * dictionary schema. Called for: explicit search input + word taps.
+ * ============================================================ */
+
+export type LookupDictionaryRow = {
+  id?: number | string;
+  word: string;
+  category?: string | null;
+  short_meaning_ar?: string | null;
+  arabic_content?: string | null;
+  english_content?: string | null;
+  hebrew_content?: string | null;
+  greek_content?: string | null;
+  latin_content?: string | null;
+  syriac_aramaic_content?: string | null;
+  bible_references?: string | null;
+  source_url?: string | null;
+};
+
+/**
+ * Call `public.lookup_dictionary(search_term text)`. The user spec uses
+ * `search_term`; some deployments name the param `term`. We try both so the
+ * wiring works either way without code changes.
+ */
+export async function lookupDictionary(term: string): Promise<LookupDictionaryRow[]> {
+  const q = (term ?? "").trim();
+  if (!q) return [];
+  const tryRpc = async (args: Record<string, string>) => {
+    return await (supabase as any).rpc("lookup_dictionary", args);
+  };
+  let { data, error } = await tryRpc({ search_term: q });
+  if (error && /PGRST202|without parameters|search_term/i.test(error.message ?? "")) {
+    ({ data, error } = await tryRpc({ term: q }));
+  }
+  if (error) {
+    // eslint-disable-next-line no-console
+    console.warn("[lookup_dictionary] failed:", error.message);
+    return [];
+  }
+  const rows = Array.isArray(data) ? data : data ? [data] : [];
+  return rows as LookupDictionaryRow[];
+}
+
