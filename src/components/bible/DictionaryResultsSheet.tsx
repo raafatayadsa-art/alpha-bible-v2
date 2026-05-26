@@ -105,11 +105,10 @@ export function DictionaryResultsSheet({
                     </span>
                   )}
                 </div>
-                {row.short_meaning_ar && (
-                  <p className="mt-1.5 font-arabic-serif text-[13.5px] leading-relaxed text-[#d6ecdc] line-clamp-2">
-                    {row.short_meaning_ar}
-                  </p>
-                )}
+                <p className="mt-1.5 font-arabic-serif text-[13.5px] leading-relaxed text-[#d6ecdc] line-clamp-2">
+                  {row.short_meaning_ar?.trim() || "لا يوجد معنى مختصر متاح"}
+                </p>
+
               </button>
             ))}
           </div>
