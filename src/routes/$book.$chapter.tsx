@@ -755,6 +755,14 @@ function ScriptureReader() {
 
       <MeaningSheet data={sheet} onClose={() => setSheet(null)} />
       <DictionaryLookupSheet row={lookupRow} onClose={() => setLookupRow(null)} />
+      <DictionaryResultsSheet
+        rows={lookupChoices}
+        onSelect={(row) => {
+          setLookupChoices(null);
+          setLookupRow(row);
+        }}
+        onClose={() => setLookupChoices(null)}
+      />
       <DictionarySearchDialog
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
