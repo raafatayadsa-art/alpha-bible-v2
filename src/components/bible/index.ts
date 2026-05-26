@@ -8,6 +8,7 @@ export * from "./ReferenceIndicator";
 export * from "./MeaningSheet";
 export * from "./DictionaryLookupSheet";
 export * from "./DictionarySearchDialog";
+export * from "./DictionaryResultsSheet";
 export * from "./AutoScrollControls";
 export * from "./BottomDock";
 export * from "./Skeletons";

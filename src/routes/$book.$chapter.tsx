@@ -22,6 +22,7 @@ import {
   ReferenceIndicator,
   VerseSkeleton,
   DictionaryLookupSheet,
+  DictionaryResultsSheet,
   DictionarySearchDialog,
   type MeaningSheetData,
 } from "@/components/bible";
@@ -162,19 +163,25 @@ function ScriptureReader() {
   const [spiritualMode, setSpiritualMode] = useState(false);
   const [sheet, setSheet] = useState<MeaningSheetData | null>(null);
   const [lookupRow, setLookupRow] = useState<LookupDictionaryRow | null>(null);
+  const [lookupChoices, setLookupChoices] = useState<LookupDictionaryRow[] | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   const [typeOpen, setTypeOpen] = useState(false);
   const [activeVerse, setActiveVerse] = useState<string | null>(null);
 
-  // Tap a highlighted/any word: query lookup_dictionary first, show the
-  // new-schema sheet if a row is returned; otherwise fall back to the local
-  // dictionary entry sheet, and if nothing exists show a small toast.
+  // Tap a highlighted/any word: query lookup_dictionary first. If multiple
+  // entries match the same surface word, show a picker; otherwise open the
+  // single entry directly. Fall back to the local dictionary entry sheet,
+  // and if nothing exists show a small toast.
   const openWordLookup = async (term: string, entry?: DictionaryEntry) => {
     const rows = await lookupDictionary(term);
-    if (rows.length > 0) {
+    if (rows.length === 1) {
       setLookupRow(rows[0]);
+      return;
+    }
+    if (rows.length > 1) {
+      setLookupChoices(rows);
       return;
     }
     if (entry) {
@@ -748,6 +755,14 @@ function ScriptureReader() {
 
       <MeaningSheet data={sheet} onClose={() => setSheet(null)} />
       <DictionaryLookupSheet row={lookupRow} onClose={() => setLookupRow(null)} />
+      <DictionaryResultsSheet
+        rows={lookupChoices}
+        onSelect={(row) => {
+          setLookupChoices(null);
+          setLookupRow(row);
+        }}
+        onClose={() => setLookupChoices(null)}
+      />
       <DictionarySearchDialog
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
