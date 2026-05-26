@@ -222,11 +222,42 @@ function ScriptureReader() {
    * and expose the result as `matchedSet`. VerseCard renders any token
    * whose normalized form is in this set as a highlighted button.
    * ---------------------------------------------------------------- */
-  const [matchedSet, setMatchedSet] = useState<Set<string>>(new Set());
+  const matchedSSKey = `ab:dict:matched:v1:${book}:${ch}`;
+  const readMatchedFromSession = (): Set<string> | null => {
+    if (typeof window === "undefined") return null;
+    try {
+      const raw = window.sessionStorage.getItem(matchedSSKey);
+      if (!raw) return null;
+      const arr = JSON.parse(raw);
+      if (!Array.isArray(arr)) return null;
+      return new Set(arr as string[]);
+    } catch {
+      return null;
+    }
+  };
+  const [matchedSet, setMatchedSet] = useState<Set<string>>(() => {
+    const cached = readMatchedFromSession();
+    if (cached) {
+      // Reflect cached count immediately so the badge doesn't flash 0.
+      setChapterDictState({ count: cached.size, status: "ready" });
+      return cached;
+    }
+    return new Set();
+  });
   useEffect(() => {
     if (!verses.data?.length) {
       setMatchedSet(new Set());
       setChapterDictState({ count: 0, status: "idle" });
+      return;
+    }
+    // Hydrate from sessionStorage — skip the bulk RPC entirely if we already
+    // computed the matched set for this exact book+chapter in this tab.
+    const cached = readMatchedFromSession();
+    if (cached) {
+      setMatchedSet(cached);
+      setChapterDictState({ count: cached.size, status: "ready" });
+      // eslint-disable-next-line no-console
+      console.log("[chapter-highlight] hydrated from sessionStorage:", cached.size);
       return;
     }
     let cancelled = false;
@@ -253,6 +284,14 @@ function ScriptureReader() {
         if (cancelled) return;
         setMatchedSet(new Set(matched));
         setChapterDictState({ count: matched.size, status: "ready" });
+        try {
+          window.sessionStorage.setItem(
+            matchedSSKey,
+            JSON.stringify(Array.from(matched)),
+          );
+        } catch {
+          /* quota / serialization — non-fatal */
+        }
         const sample = Array.from(matched).slice(0, 12);
         // eslint-disable-next-line no-console
         console.log("[chapter-highlight] matched:", matched.size, "sample:", sample);
@@ -266,6 +305,7 @@ function ScriptureReader() {
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [verses.data, book, ch]);
 
 
