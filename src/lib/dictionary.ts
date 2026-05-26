@@ -488,9 +488,9 @@ export type LookupDictionaryRow = {
 };
 
 /**
- * Call `public.lookup_dictionary(search_term text)`. The user spec uses
- * `search_term`; some deployments name the param `term`. We try both so the
- * wiring works either way without code changes.
+ * Broad RPC — `public.lookup_dictionary(search_term)` performs a CONTAINS
+ * search server-side. ONLY used for the manual search dialog and to fetch
+ * full row details after an exact highlight has already been decided.
  */
 export async function lookupDictionary(term: string): Promise<LookupDictionaryRow[]> {
   const q = (term ?? "").trim();
@@ -511,52 +511,91 @@ export async function lookupDictionary(term: string): Promise<LookupDictionaryRo
   return rows as LookupDictionaryRow[];
 }
 
+/** Alias — manual search dialog uses the broad contains RPC. */
+export const manualSearchDictionary = lookupDictionary;
 
 /* ------------------------------------------------------------------
- * Bulk chapter highlight: takes a list of unique normalized words and
- * returns the subset that has at least one STRONG row in
- * lookup_dictionary. Strong = person/place category, OR a meaningful
- * short_meaning_ar paired with a word of length ≥ 4.
- * Uses a session-wide cache so already-checked words are free, and
- * caps RPC concurrency at 5.
+ * STRICT highlight lookup: returns ONLY rows whose normalized word
+ * exactly equals the tapped surface word (or its prefix-stripped form).
+ * Filters out unrelated contains hits returned by the RPC.
+ * ------------------------------------------------------------------ */
+export async function lookupHighlightWord(
+  surfaceOrNorm: string,
+): Promise<LookupDictionaryRow[]> {
+  const norm = normalizeAr(surfaceOrNorm);
+  if (!norm) return [];
+  const stripped = stripArPrefix(norm);
+  const candidates = new Set<string>([norm]);
+  if (stripped && stripped !== norm && stripped.length >= 3) candidates.add(stripped);
+
+  // Query RPC for each candidate then keep only rows that EXACTLY match
+  // (post-normalization) one of the candidates.
+  const seen = new Set<string | number>();
+  const out: LookupDictionaryRow[] = [];
+  for (const c of candidates) {
+    const rows = await lookupDictionary(c);
+    for (const r of rows) {
+      const rn = normalizeAr(r.word ?? "");
+      if (!candidates.has(rn)) continue;
+      const key = r.id ?? `${r.word}|${rn}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(r);
+    }
+  }
+  return out;
+}
+
+
+/* ------------------------------------------------------------------
+ * Bulk chapter highlight — STRICT exact match against alpha_dictionary.
+ *   SELECT word_normalized FROM alpha_dictionary
+ *   WHERE word_normalized IN (...)
+ * No contains, no fuzzy. Stopwords + length filters applied first.
+ * Batched to keep URL length safe.
  * ------------------------------------------------------------------ */
 
-// Stop / generic words that must never be highlighted regardless of what
-// lookup_dictionary returns. Stored in normalized form.
+// Stop / generic words that must never be highlighted regardless of any
+// dictionary hit. Stored in normalized form.
 const HIGHLIGHT_STOPWORDS = new Set(
   [
-    "هو","هي","هم","هن","انا","انت","نحن","هما",
+    // pronouns / particles / prepositions
+    "هو","هي","هم","هن","انا","انت","نحن","هما","ان","إن",
     "هذا","هذه","ذلك","تلك","هؤلاء","اولئك","التي","الذي","الذين","اللاتي","اللواتي",
-    "الي","علي","في","من","عن","مع","عند","لدي","حتي","الا","الى","إلى",
+    "الي","علي","في","من","عن","مع","عند","لدي","حتي","الا","الى","إلى","على",
     "ما","لا","لم","لن","قد","ثم","او","أو","ام","بل","كل","بعض","غير","ايضا","فقط",
     "كان","كانت","كانوا","يكون","تكون","نكون","ليس","ليست","صار","اصبح",
-    "ان","انه","انها","لان","كما","لذلك","اذا","حيث","عندما","بينما","لكن","اذن","كذلك","هكذا",
-    "الله","الرب","رب",
+    "انه","انها","لان","كما","لذلك","اذا","حيث","عندما","بينما","لكن","اذن","كذلك","هكذا",
+    // divine names / generic religious nouns that flood every chapter
+    "الله","الرب","رب","سيد","عبدي",
+    "النساء",
+    // attached-pronoun forms
     "يا","ها","به","بها","له","لها","لهم","عليه","عليها","اليه","اليها","منه","منها","فيه","فيها",
-    "قال","قالت","قالوا","يقول","تقول",
+    // ubiquitous speech verbs
+    "قال","قالت","قالوا","يقول","تقول","فقال","وقال",
   ].map(normalizeAr),
 );
 
-const STRONG_CATEGORY_RE =
-  /(person|place|نبي|رسول|قديس|ملك|كاهن|شخص|تلميذ|بطريرك|مدين|قري|نهر|جبل|بحر|ارض|منطق|بلد|اقليم|موقع|بريه|واد|اسم|سفر)/i;
+const __highlightHitCache = new Map<string, boolean>();
 
-/** Returns true if the lookup_dictionary rows justify highlighting. */
-export function isStrongDictHit(word: string, rows: LookupDictionaryRow[]): boolean {
-  if (!rows || rows.length === 0) return false;
-  for (const r of rows) {
-    if (r.category && STRONG_CATEGORY_RE.test(r.category)) return true;
+async function fetchStrictMatches(batch: string[]): Promise<Set<string>> {
+  const hits = new Set<string>();
+  if (batch.length === 0) return hits;
+  const { data, error } = await (supabase as any)
+    .from("alpha_dictionary")
+    .select("word_normalized")
+    .in("word_normalized", batch);
+  if (error) {
+    // eslint-disable-next-line no-console
+    console.warn("[alpha_dictionary] strict match failed:", error.message);
+    return hits;
   }
-  // Generic / uncategorized rows: require length ≥ 4 AND a meaningful
-  // short meaning (≥ 12 chars) to avoid noisy single-line hits.
-  if (word.length < 4) return false;
-  for (const r of rows) {
-    const m = (r.short_meaning_ar ?? "").trim();
-    if (m.length >= 12) return true;
+  for (const row of (data ?? []) as any[]) {
+    const n = (row.word_normalized ?? "").toString();
+    if (n) hits.add(n);
   }
-  return false;
+  return hits;
 }
-
-const __lookupHitCache = new Map<string, boolean>();
 
 export async function bulkLookupMatched(
   normalizedWords: string[],
@@ -564,9 +603,8 @@ export async function bulkLookupMatched(
 ): Promise<Set<string>> {
   const matched = new Set<string>();
   const seen = new Set<string>();
-  // word -> [candidate forms to try against lookup_dictionary]
-  const candidates = new Map<string, string[]>();
-  const todoLookups = new Set<string>();
+  const candidates = new Map<string, string[]>(); // chapter word -> forms
+  const todo = new Set<string>();
   for (const w of normalizedWords) {
     if (!w) continue;
     if (w.length < 3) continue;
@@ -581,50 +619,35 @@ export async function bulkLookupMatched(
     let resolved = true;
     let anyHit = false;
     for (const f of forms) {
-      if (__lookupHitCache.has(f)) {
-        if (__lookupHitCache.get(f)) anyHit = true;
+      if (__highlightHitCache.has(f)) {
+        if (__highlightHitCache.get(f)) anyHit = true;
       } else {
         resolved = false;
-        todoLookups.add(f);
+        todo.add(f);
       }
     }
     if (resolved && anyHit) matched.add(w);
   }
   onProgress?.(matched);
-  const todo = Array.from(todoLookups);
-  const CONCURRENCY = 5;
-  let idx = 0;
-  const worker = async () => {
-    while (idx < todo.length) {
-      const my = idx++;
-      const f = todo[my];
-      try {
-        const rows = await lookupDictionary(f);
-        const hit = isStrongDictHit(f, rows);
-        __lookupHitCache.set(f, hit);
-      } catch {
-        __lookupHitCache.set(f, false);
-      }
-    }
-  };
-  const workers = Array.from(
-    { length: Math.min(CONCURRENCY, todo.length) },
-    () => worker(),
-  );
-  await Promise.all(workers);
 
-  // Second pass — resolve every chapter word using cached candidate results.
-  for (const [w, forms] of candidates) {
-    if (matched.has(w)) continue;
-    for (const f of forms) {
-      if (__lookupHitCache.get(f)) {
+  // Strict batched lookup against alpha_dictionary.word_normalized.
+  const todoArr = Array.from(todo);
+  const BATCH = 200;
+  for (let i = 0; i < todoArr.length; i += BATCH) {
+    const slice = todoArr.slice(i, i + BATCH);
+    const hits = await fetchStrictMatches(slice);
+    for (const f of slice) __highlightHitCache.set(f, hits.has(f));
+    // Resolve any chapter word covered by this slice on the fly.
+    for (const [w, forms] of candidates) {
+      if (matched.has(w)) continue;
+      if (forms.some((f) => __highlightHitCache.get(f))) {
         matched.add(w);
-        break;
       }
     }
+    onProgress?.(matched);
   }
-  onProgress?.(matched);
   return matched;
 }
+
 
 
