@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Search, X, BookOpen, Sparkles, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { lookupDictionary, type LookupDictionaryRow } from "@/lib/dictionary";
+import { manualSearchDictionary, type LookupDictionaryRow } from "@/lib/dictionary";
 
 /**
  * Premium glass search dialog. Calls `public.lookup_dictionary` and
