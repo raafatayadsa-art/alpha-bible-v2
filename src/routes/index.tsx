@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import splashPhase1 from "@/assets/splash-phase1.png";
-import alphaLogo from "@/assets/alpha-logo.png";
+import alphaLockup from "@/assets/alpha-lockup.png";
 
 export const Route = createFileRoute("/")({
   ssr: false,
@@ -16,25 +16,21 @@ export const Route = createFileRoute("/")({
 
 function SplashScreen() {
   // Phase 1: black → cinematic background reveal
-  // Phase 2: holy logo reveal from the light above the church
+  // Phase 2: holy logo lockup reveal (single unified element)
   const [revealed, setRevealed] = useState(false);
   const [logoIn, setLogoIn] = useState(false);
-  const [copticIn, setCopticIn] = useState(false);
-  const [sloganIn, setSloganIn] = useState(false);
+  const [shimmer, setShimmer] = useState(false);
 
   useEffect(() => {
     const t1 = setTimeout(() => setRevealed(true), 350);
     const t2 = setTimeout(() => setLogoIn(true), 1600);
-    const t3 = setTimeout(() => setCopticIn(true), 2900);
-    const t4 = setTimeout(() => setSloganIn(true), 3700);
+    const t3 = setTimeout(() => setShimmer(true), 2900);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
-      clearTimeout(t4);
     };
   }, []);
-
 
   return (
     <div
@@ -71,99 +67,93 @@ function SplashScreen() {
         }}
       />
 
-      {/* Phase 2 — Holy logo reveal */}
+      {/* Phase 2 — Unified logo lockup reveal */}
       <div
         aria-hidden={!logoIn}
         className="pointer-events-none absolute inset-x-0 flex justify-center"
         style={{
-          // Sits in the upper third, clear of Dynamic Island and the church
-          top: "calc(env(safe-area-inset-top) + 7%)",
+          top: "calc(env(safe-area-inset-top) + 5%)",
         }}
       >
         <div className="relative flex flex-col items-center">
-          {/* Soft divine glow behind the logo — only blooms during reveal, then settles */}
+          {/* Soft divine glow behind the lockup */}
           <div
             className={[
-              "pointer-events-none absolute left-1/2 top-[115px] -translate-x-1/2 -translate-y-1/2 rounded-full",
+              "pointer-events-none absolute left-1/2 top-[140px] -translate-x-1/2 -translate-y-1/2 rounded-full",
               "transition-opacity ease-out [transition-duration:1400ms]",
               logoIn ? "opacity-100" : "opacity-0",
             ].join(" ")}
             style={{
-              width: "230px",
-              height: "230px",
+              width: "280px",
+              height: "280px",
               background:
-                "radial-gradient(closest-side, rgba(255, 214, 140, 0.45), rgba(255, 200, 120, 0.18) 45%, transparent 75%)",
-              filter: "blur(8px)",
+                "radial-gradient(closest-side, rgba(255, 214, 140, 0.42), rgba(255, 200, 120, 0.16) 45%, transparent 75%)",
+              filter: "blur(10px)",
               mixBlendMode: "screen",
             }}
           />
 
-          <img
-            src={alphaLogo}
-            alt=""
-            draggable={false}
-            className={[
-              "relative block w-[200px] h-auto select-none",
-              "transition-all ease-out [transition-duration:1200ms]",
-              logoIn
-                ? "opacity-100 scale-100 blur-0"
-                : "opacity-0 scale-[0.92] blur-[6px]",
-            ].join(" ")}
-            style={{
-              filter: logoIn
-                ? "drop-shadow(0 2px 18px rgba(255, 200, 110, 0.35))"
-                : "drop-shadow(0 0 0 rgba(0,0,0,0))",
-              transitionProperty: "opacity, transform, filter",
-            }}
-          />
+          {/* The official logo lockup — single unified asset, untouched */}
+          <div className="relative">
+            <img
+              src={alphaLockup}
+              alt=""
+              draggable={false}
+              className={[
+                "relative block w-[230px] h-auto select-none",
+                "transition-all ease-out [transition-duration:1200ms]",
+                logoIn
+                  ? "opacity-100 scale-100 translate-y-0 blur-0"
+                  : "opacity-0 scale-[0.72] -translate-y-[30px] blur-[10px]",
+              ].join(" ")}
+              style={{
+                filter: logoIn
+                  ? "drop-shadow(0 2px 22px rgba(255, 200, 110, 0.38))"
+                  : "drop-shadow(0 0 0 rgba(0,0,0,0))",
+                transitionProperty: "opacity, transform, filter",
+              }}
+            />
 
-          {/* Coptic name — appears under ALPHA wordmark */}
-          <div
-            className={[
-              "relative mt-3 select-none",
-              "transition-all ease-out [transition-duration:1100ms]",
-              copticIn
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-2",
-            ].join(" ")}
-            style={{
-              fontFamily: '"Noto Sans Coptic", "Segoe UI Historic", serif',
-              fontSize: "30px",
-              letterSpacing: "0.12em",
-              color: "#d9a85a",
-              textShadow:
-                "0 1px 10px rgba(255, 200, 110, 0.35), 0 0 22px rgba(217, 168, 90, 0.18)",
-              transitionProperty: "opacity, transform",
-            }}
-          >
-            ⲀⲖⲪⲀ
-          </div>
-
-          {/* Slogan — quiet luxury */}
-          <div
-            className={[
-              "relative mt-4 text-center select-none",
-              "transition-all ease-out [transition-duration:1200ms]",
-              sloganIn
-                ? "opacity-90 translate-y-0"
-                : "opacity-0 translate-y-2",
-            ].join(" ")}
-            style={{
-              fontFamily:
-                '"Cormorant Garamond", "Cinzel", "Times New Roman", serif',
-              fontWeight: 300,
-              fontSize: "11px",
-              letterSpacing: "0.42em",
-              color: "rgba(220, 184, 120, 0.78)",
-              textTransform: "uppercase",
-              transitionProperty: "opacity, transform",
-            }}
-          >
-            The Coptic Orthodox Digital Home
+            {/* Subtle light shimmer that sweeps across after settle */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 overflow-hidden"
+              style={{
+                WebkitMaskImage: `url(${alphaLockup})`,
+                maskImage: `url(${alphaLockup})`,
+                WebkitMaskSize: "contain",
+                maskSize: "contain",
+                WebkitMaskRepeat: "no-repeat",
+                maskRepeat: "no-repeat",
+                WebkitMaskPosition: "center",
+                maskPosition: "center",
+              }}
+            >
+              <div
+                className={[
+                  "absolute top-0 h-full w-[40%]",
+                  shimmer ? "animate-[shimmerSweep_1800ms_ease-out_forwards]" : "",
+                ].join(" ")}
+                style={{
+                  background:
+                    "linear-gradient(100deg, transparent 0%, rgba(255, 240, 200, 0.55) 50%, transparent 100%)",
+                  filter: "blur(6px)",
+                  mixBlendMode: "screen",
+                  transform: "translateX(-120%)",
+                }}
+              />
+            </div>
           </div>
         </div>
-
       </div>
+
+      <style>{`
+        @keyframes shimmerSweep {
+          0% { transform: translateX(-120%); opacity: 0; }
+          30% { opacity: 1; }
+          100% { transform: translateX(320%); opacity: 0; }
+        }
+      `}</style>
     </div>
   );
 }
