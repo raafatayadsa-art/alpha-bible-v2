@@ -40,10 +40,12 @@ export function classifyEntry(category?: string): EntryKind {
 export function normalizeAr(s: string): string {
   if (!s) return "";
   return s
-    .replace(/[\u064B-\u0652\u0670\u0640]/g, "")
+    .replace(/[\u064B-\u0652\u0670\u0640]/g, "") // tashkeel + tatweel
     .replace(/[أإآٱ]/g, "ا")
     .replace(/ى/g, "ي")
     .replace(/ة/g, "ه")
+    .replace(/ؤ/g, "و")
+    .replace(/ئ/g, "ي")
     .replace(/[^\u0600-\u06FF\s]/g, "")
     .trim();
 }
