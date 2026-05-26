@@ -21,6 +21,8 @@ import {
   MeaningSheet,
   ReferenceIndicator,
   VerseSkeleton,
+  DictionaryLookupSheet,
+  DictionarySearchDialog,
   type MeaningSheetData,
 } from "@/components/bible";
 import {
@@ -38,8 +40,10 @@ import {
   lookupEntry,
   classifyEntry,
   fetchDeepByNormalized,
+  lookupDictionary,
   type DictionaryEntry,
   type DictionaryIndex,
+  type LookupDictionaryRow,
 } from "@/lib/dictionary";
 
 /**
@@ -157,9 +161,33 @@ function ScriptureReader() {
 
   const [spiritualMode, setSpiritualMode] = useState(false);
   const [sheet, setSheet] = useState<MeaningSheetData | null>(null);
+  const [lookupRow, setLookupRow] = useState<LookupDictionaryRow | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   const [typeOpen, setTypeOpen] = useState(false);
   const [activeVerse, setActiveVerse] = useState<string | null>(null);
+
+  // Tap a highlighted/any word: query lookup_dictionary first, show the
+  // new-schema sheet if a row is returned; otherwise fall back to the local
+  // dictionary entry sheet, and if nothing exists show a small toast.
+  const openWordLookup = async (term: string, entry?: DictionaryEntry) => {
+    const rows = await lookupDictionary(term);
+    if (rows.length > 0) {
+      setLookupRow(rows[0]);
+      return;
+    }
+    if (entry) {
+      const base = entryToSheet(entry);
+      setSheet(base);
+      buildSheetForEntry(entry)
+        .then((upgraded) => setSheet(upgraded))
+        .catch(() => {/* keep base */});
+      return;
+    }
+    setToast("لا يوجد معنى متاح لهذه الكلمة");
+    window.setTimeout(() => setToast(null), 1800);
+  };
 
   // Dictionary words from Supabase (dictionary_entries) — drives highlight + meaning sheet.
   const dict = useDictionary();
@@ -509,7 +537,7 @@ function ScriptureReader() {
           </div>
 
           <div className="flex items-center gap-1">
-            <ToolbarBtn label="بحث" surfaceClass={surfaceClass}>
+            <ToolbarBtn label="بحث" surfaceClass={surfaceClass} onClick={() => setSearchOpen(true)}>
               <Search className="h-4 w-4" />
             </ToolbarBtn>
             <ToolbarBtn
@@ -581,12 +609,8 @@ function ScriptureReader() {
                     })
                   }
                   onSelectWord={(entry) => {
-                    // Show the base sheet immediately, then upgrade if deep entry exists.
-                    const base = entryToSheet(entry);
-                    setSheet(base);
-                    buildSheetForEntry(entry)
-                      .then((upgraded) => setSheet(upgraded))
-                      .catch(() => {/* keep base */});
+                    // Prefer the new lookup_dictionary RPC; fall back to local entry.
+                    void openWordLookup(entry.term || entry.normalizedTerm || "", entry);
                   }}
                   dictIndex={dictIndex}
                   seenWords={seenWords}
@@ -672,6 +696,24 @@ function ScriptureReader() {
       <BottomDock hidden={chromeHidden} spiritualMode={spiritualMode} />
 
       <MeaningSheet data={sheet} onClose={() => setSheet(null)} />
+      <DictionaryLookupSheet row={lookupRow} onClose={() => setLookupRow(null)} />
+      <DictionarySearchDialog
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        onSelect={(row) => {
+          setLookupRow(row);
+          setSearchOpen(false);
+        }}
+      />
+      {toast && (
+        <div
+          role="status"
+          dir="rtl"
+          className="fixed left-1/2 -translate-x-1/2 bottom-[120px] z-[80] rounded-full border border-[#7af0b8]/40 bg-[#0a2a20]/85 px-4 py-2 text-[12px] font-bold text-[#eaf6ec] backdrop-blur-md shadow-[0_8px_24px_-12px_rgba(0,0,0,0.5)] animate-in fade-in slide-in-from-bottom-2 duration-200"
+        >
+          {toast}
+        </div>
+      )}
     </main>
   );
 }

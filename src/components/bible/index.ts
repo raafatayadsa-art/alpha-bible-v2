@@ -6,6 +6,8 @@ export * from "./BookCard";
 export * from "./HighlightedWord";
 export * from "./ReferenceIndicator";
 export * from "./MeaningSheet";
+export * from "./DictionaryLookupSheet";
+export * from "./DictionarySearchDialog";
 export * from "./AutoScrollControls";
 export * from "./BottomDock";
 export * from "./Skeletons";

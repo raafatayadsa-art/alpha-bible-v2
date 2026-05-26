@@ -96,7 +96,7 @@ export function MeaningSheet({
         onClick={onClose}
         aria-hidden
         className={cn(
-          "fixed inset-0 z-[60] bg-[#06251c]/25 backdrop-blur-[5px] transition-opacity duration-300",
+          "fixed inset-0 z-[60] bg-[#06251c]/15 transition-opacity duration-300",
           open ? "opacity-100" : "opacity-0 pointer-events-none",
         )}
       />
