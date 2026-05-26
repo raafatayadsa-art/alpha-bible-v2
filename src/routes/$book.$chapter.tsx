@@ -40,7 +40,6 @@ import {
   stripArPrefix,
   classifyEntry,
   fetchDeepByNormalized,
-  lookupDictionary,
   lookupHighlightWord,
   bulkLookupMatched,
   type DictionaryEntry,
