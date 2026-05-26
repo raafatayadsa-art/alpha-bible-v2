@@ -41,10 +41,12 @@ import {
   classifyEntry,
   fetchDeepByNormalized,
   lookupDictionary,
+  bulkLookupMatched,
   type DictionaryEntry,
   type DictionaryIndex,
   type LookupDictionaryRow,
 } from "@/lib/dictionary";
+import { setChapterDictState } from "@/lib/chapter-dict-store";
 
 /**
  * HMR_EPOCH — bumps on every hot-module reload of this file (and indirectly
