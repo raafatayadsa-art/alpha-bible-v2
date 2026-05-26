@@ -176,7 +176,14 @@ function ScriptureReader() {
   // single entry directly. Fall back to the local dictionary entry sheet,
   // and if nothing exists show a small toast.
   const openWordLookup = async (term: string, entry?: DictionaryEntry) => {
-    const rows = await lookupDictionary(term);
+    let rows = await lookupDictionary(term);
+    if (rows.length === 0) {
+      // Retry with prefix-stripped form so "والأرض" still resolves to "ارض".
+      const stripped = stripArPrefix(normalizeAr(term));
+      if (stripped && stripped.length >= 3) {
+        rows = await lookupDictionary(stripped);
+      }
+    }
     if (rows.length === 1) {
       setLookupRow(rows[0]);
       return;
