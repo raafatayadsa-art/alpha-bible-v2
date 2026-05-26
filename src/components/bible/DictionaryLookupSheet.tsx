@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { X, ExternalLink, BookOpen, Languages } from "lucide-react";
+import { X } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 import type { LookupDictionaryRow } from "@/lib/dictionary";
 
