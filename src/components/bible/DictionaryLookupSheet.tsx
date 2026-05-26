@@ -109,38 +109,11 @@ export function DictionaryLookupSheet({
             className="overflow-y-auto px-4 pt-1 pb-6 space-y-3"
             style={{ maxHeight: expanded ? "calc(92vh - 110px)" : "calc(72vh - 110px)" }}
           >
-            {row?.short_meaning_ar && (
-              <Section title="المعنى المختصر">{row.short_meaning_ar}</Section>
-            )}
-            {row?.arabic_content && (
-              <Section title="الشرح بالعربية" multiline>
-                {row.arabic_content}
-              </Section>
-            )}
-            <LangPair label="العبرية" value={row?.hebrew_content} />
-            <LangPair label="اليونانية" value={row?.greek_content} />
-            <LangPair label="السريانية / الآرامية" value={row?.syriac_aramaic_content} />
-            <LangPair label="اللاتينية" value={row?.latin_content} />
-            <LangPair label="الإنجليزية" value={row?.english_content} ltr />
-
-            {row?.bible_references && (
-              <Section title="الشواهد الكتابية" icon={<BookOpen className="h-3.5 w-3.5" />}>
-                <span className="whitespace-pre-line">{row.bible_references}</span>
-              </Section>
-            )}
-
-            {row?.source_url && (
-              <a
-                href={row.source_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-full border border-[#7af0b8]/50 bg-[#0a2a20]/60 px-4 py-2 text-[12px] font-bold text-[#e7c97a] hover:border-[#7af0b8]/80 active:scale-95 transition-all"
-              >
-                <ExternalLink className="h-3.5 w-3.5" />
-                المصدر
-              </a>
-            )}
+            <Section title="المعنى المختصر">
+              {row?.short_meaning_ar?.trim() || "لا يوجد معنى مختصر متاح"}
+            </Section>
           </div>
+
         </div>
       </div>
     </>
