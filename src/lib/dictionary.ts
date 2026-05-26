@@ -324,15 +324,53 @@ export async function fetchVerseText(
 }
 
 // Global in-memory cache — loaded once per app session, reused for every chapter.
+// Also persisted to sessionStorage so a page reload within the same tab can
+// rehydrate instantly without a network round-trip.
+const SS_KEY = "ab:dict:cache:v1";
 let __dictCache: DictionaryEntry[] | null = null;
 let __dictPromise: Promise<DictionaryEntry[]> | null = null;
 let __dictLogged = false;
+
+function loadFromSession(): DictionaryEntry[] | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.sessionStorage.getItem(SS_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) return null;
+    return parsed as DictionaryEntry[];
+  } catch {
+    return null;
+  }
+}
+
+function saveToSession(rows: DictionaryEntry[]) {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.setItem(SS_KEY, JSON.stringify(rows));
+  } catch {
+    /* quota or serialization errors are non-fatal */
+  }
+}
+
 export function loadDictionaryOnce(): Promise<DictionaryEntry[]> {
   if (__dictCache) return Promise.resolve(__dictCache);
   if (__dictPromise) return __dictPromise;
+  // Try sessionStorage first — survives page reloads in the same tab.
+  const cached = loadFromSession();
+  if (cached) {
+    __dictCache = cached;
+    if (!__dictLogged) {
+      __dictLogged = true;
+      // eslint-disable-next-line no-console
+      console.log("dictionary loaded once (sessionStorage):", cached.length);
+    }
+    return Promise.resolve(cached);
+  }
   __dictPromise = fetchDictionary()
     .then((rows) => {
       __dictCache = rows;
+      saveToSession(rows);
       if (!__dictLogged) {
         __dictLogged = true;
         // eslint-disable-next-line no-console
@@ -348,7 +386,7 @@ export function loadDictionaryOnce(): Promise<DictionaryEntry[]> {
 }
 
 export function getCachedDictionary(): DictionaryEntry[] | null {
-  return __dictCache;
+  return __dictCache ?? loadFromSession();
 }
 
 // Kick off the fetch eagerly at module import time (browser only) so the
