@@ -637,7 +637,7 @@ function ScriptureReader() {
             )}
             style={{ fontSize: `${fontSize}px`, lineHeight, wordSpacing: "0.06em" }}
           >
-            {(() => { const _dictKey = `${dictIndex.map.size}:${dictIndex.stems.size}:${dictIndex.phrases.size}:${dictIndex.phraseStems.size}:${HMR_EPOCH}:${book}:${ch}`; const seenWords = new Map<number, number>(); return verses.data!.map((v, i) => {
+            {(() => { const _dictKey = `${matchedSet.size}:${HMR_EPOCH}:${book}:${ch}`; const seenChapterWords = new Set<string>(); return verses.data!.map((v, i) => {
               const num = v?.verse_number ?? i + 1;
               const id = verseKey(book, ch, num);
               const isActive = activeVerse === id;
@@ -662,12 +662,11 @@ function ScriptureReader() {
                       text: v?.verse_text ?? "",
                     })
                   }
-                  onSelectWord={(entry) => {
-                    // Prefer the new lookup_dictionary RPC; fall back to local entry.
-                    void openWordLookup(entry.term || entry.normalizedTerm || "", entry);
+                  onSelectWord={(word) => {
+                    void openWordLookup(word);
                   }}
-                  dictIndex={dictIndex}
-                  seenWords={seenWords}
+                  matchedSet={matchedSet}
+                  seenChapterWords={seenChapterWords}
                   showRef={showRef}
                   onOpenRef={() =>
                     setSheet({
