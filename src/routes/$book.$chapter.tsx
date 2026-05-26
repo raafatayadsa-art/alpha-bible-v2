@@ -161,9 +161,33 @@ function ScriptureReader() {
 
   const [spiritualMode, setSpiritualMode] = useState(false);
   const [sheet, setSheet] = useState<MeaningSheetData | null>(null);
+  const [lookupRow, setLookupRow] = useState<LookupDictionaryRow | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   const [typeOpen, setTypeOpen] = useState(false);
   const [activeVerse, setActiveVerse] = useState<string | null>(null);
+
+  // Tap a highlighted/any word: query lookup_dictionary first, show the
+  // new-schema sheet if a row is returned; otherwise fall back to the local
+  // dictionary entry sheet, and if nothing exists show a small toast.
+  const openWordLookup = async (term: string, entry?: DictionaryEntry) => {
+    const rows = await lookupDictionary(term);
+    if (rows.length > 0) {
+      setLookupRow(rows[0]);
+      return;
+    }
+    if (entry) {
+      const base = entryToSheet(entry);
+      setSheet(base);
+      buildSheetForEntry(entry)
+        .then((upgraded) => setSheet(upgraded))
+        .catch(() => {/* keep base */});
+      return;
+    }
+    setToast("لا يوجد معنى متاح لهذه الكلمة");
+    window.setTimeout(() => setToast(null), 1800);
+  };
 
   // Dictionary words from Supabase (dictionary_entries) — drives highlight + meaning sheet.
   const dict = useDictionary();
