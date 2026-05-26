@@ -253,11 +253,16 @@ function ScriptureReader() {
   });
 
   useEffect(() => {
+    if (!enableSmartDictionaryHighlight) {
+      setChapterDictState({ count: 0, status: "idle" });
+      return;
+    }
     if (!verses.data?.length) {
       setMatchedSet(new Set());
       setChapterDictState({ count: 0, status: "idle" });
       return;
     }
+
     // Hydrate from sessionStorage only if a non-empty set is cached.
     const cached = readMatchedFromSession();
     if (cached && cached.size > 0) {
