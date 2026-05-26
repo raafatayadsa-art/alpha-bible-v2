@@ -525,44 +525,47 @@ export async function lookupDictionary(term: string): Promise<LookupDictionaryRo
 // lookup_dictionary returns. Stored in normalized form.
 const HIGHLIGHT_STOPWORDS = new Set(
   [
+    // pronouns / particles / prepositions / auxiliaries
     "هو","هي","هم","هن","انا","انت","نحن","هما",
     "هذا","هذه","ذلك","تلك","هؤلاء","اولئك","التي","الذي","الذين","اللاتي","اللواتي",
     "الي","علي","في","من","عن","مع","عند","لدي","حتي","الا","الى","إلى",
     "ما","لا","لم","لن","قد","ثم","او","أو","ام","بل","كل","بعض","غير","ايضا","فقط",
     "كان","كانت","كانوا","يكون","تكون","نكون","ليس","ليست","صار","اصبح",
     "ان","انه","انها","لان","كما","لذلك","اذا","حيث","عندما","بينما","لكن","اذن","كذلك","هكذا",
-    "الله","الرب","رب",
+    "الله","الرب","رب","سيد",
     "يا","ها","به","بها","له","لها","لهم","عليه","عليها","اليه","اليها","منه","منها","فيه","فيها",
-    "قال","قالت","قالوا","يقول","تقول",
+    "قال","قالت","قالوا","يقول","تقول","فقال",
+    // user-specified common-word blacklist
+    "ابن","بنت","ابو","ابي","ام","اخ","اخت",
+    "عبدي","عادت","عاد","ولد","ولدت",
   ].map(normalizeAr),
 );
 
-const STRONG_CATEGORY_RE =
-  /(person|place|نبي|رسول|قديس|ملك|كاهن|شخص|تلميذ|بطريرك|مدين|قري|نهر|جبل|بحر|ارض|منطق|بلد|اقليم|موقع|بريه|واد|اسم|سفر)/i;
+// Categories that justify auto-highlight. Per spec: only person / place.
+const HIGHLIGHT_CATEGORY_RE =
+  /(person|place|نبي|رسول|قديس|ملك|كاهن|شخص|تلميذ|بطريرك|مدين|قري|نهر|جبل|بحر|منطق|بلد|اقليم|موقع|بريه|واد)/i;
 
-/** Returns true if the lookup_dictionary rows justify highlighting. */
-export function isStrongDictHit(word: string, rows: LookupDictionaryRow[]): boolean {
+function isPersonOrPlace(category?: string | null): boolean {
+  if (!category) return false;
+  return HIGHLIGHT_CATEGORY_RE.test(category);
+}
+
+/** @deprecated kept for API compat; no longer used by highlight pipeline. */
+export function isStrongDictHit(_word: string, rows: LookupDictionaryRow[]): boolean {
   if (!rows || rows.length === 0) return false;
   for (const r of rows) {
-    if (r.category && STRONG_CATEGORY_RE.test(r.category)) return true;
-  }
-  // Generic / uncategorized rows: require length ≥ 4 AND a meaningful
-  // short meaning (≥ 12 chars) to avoid noisy single-line hits.
-  if (word.length < 4) return false;
-  for (const r of rows) {
-    const m = (r.short_meaning_ar ?? "").trim();
-    if (m.length >= 12) return true;
+    if (isPersonOrPlace(r.category)) return true;
   }
   return false;
 }
 
 /**
- * Build the set of chapter words that highlight. Strict rule:
- *   highlight a word ONLY if its normalized form exactly equals
- *   alpha_dictionary.word_normalized for some row.
- *
- * No RPC calls, no prefix stripping, no contains/fuzzy match, no fallback
- * to arabic_content. Uses the in-memory dictionary cache (loadDictionaryOnce).
+ * Build the set of chapter words that highlight. Strict rules:
+ *   - exact match against alpha_dictionary.word_normalized
+ *   - entry category must be person or place
+ *   - multi-word phrase entries cannot match single chapter tokens, so in
+ *     practice only single-word person/place entries highlight
+ *   - common Arabic words are excluded even if present in the dictionary
  */
 export async function bulkLookupMatched(
   normalizedWords: string[],
@@ -576,12 +579,13 @@ export async function bulkLookupMatched(
     onProgress?.(matched);
     return matched;
   }
-  // Build a Set of normalized terms present in alpha_dictionary.
   const known = new Set<string>();
   for (const e of entries) {
+    if (!isPersonOrPlace(e.category)) continue;
     const k = (e.normalizedTerm ?? "").trim() || normalizeAr(e.term ?? "");
     if (!k) continue;
     if (k.length < 3) continue;
+    if (k.includes(" ")) continue;
     if (HIGHLIGHT_STOPWORDS.has(k)) continue;
     known.add(k);
   }
