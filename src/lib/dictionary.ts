@@ -514,10 +514,47 @@ export async function lookupDictionary(term: string): Promise<LookupDictionaryRo
 
 /* ------------------------------------------------------------------
  * Bulk chapter highlight: takes a list of unique normalized words and
- * returns the subset that has at least one row in lookup_dictionary.
+ * returns the subset that has at least one STRONG row in
+ * lookup_dictionary. Strong = person/place category, OR a meaningful
+ * short_meaning_ar paired with a word of length ≥ 4.
  * Uses a session-wide cache so already-checked words are free, and
  * caps RPC concurrency at 5.
  * ------------------------------------------------------------------ */
+
+// Stop / generic words that must never be highlighted regardless of what
+// lookup_dictionary returns. Stored in normalized form.
+const HIGHLIGHT_STOPWORDS = new Set(
+  [
+    "هو","هي","هم","هن","انا","انت","نحن","هما",
+    "هذا","هذه","ذلك","تلك","هؤلاء","اولئك","التي","الذي","الذين","اللاتي","اللواتي",
+    "الي","علي","في","من","عن","مع","عند","لدي","حتي","الا","الى","إلى",
+    "ما","لا","لم","لن","قد","ثم","او","أو","ام","بل","كل","بعض","غير","ايضا","فقط",
+    "كان","كانت","كانوا","يكون","تكون","نكون","ليس","ليست","صار","اصبح",
+    "ان","انه","انها","لان","كما","لذلك","اذا","حيث","عندما","بينما","لكن","اذن","كذلك","هكذا",
+    "الله","الرب","رب",
+    "يا","ها","به","بها","له","لها","لهم","عليه","عليها","اليه","اليها","منه","منها","فيه","فيها",
+    "قال","قالت","قالوا","يقول","تقول",
+  ].map(normalizeAr),
+);
+
+const STRONG_CATEGORY_RE =
+  /(person|place|نبي|رسول|قديس|ملك|كاهن|شخص|تلميذ|بطريرك|مدين|قري|نهر|جبل|بحر|ارض|منطق|بلد|اقليم|موقع|بريه|واد|اسم|سفر)/i;
+
+/** Returns true if the lookup_dictionary rows justify highlighting. */
+export function isStrongDictHit(word: string, rows: LookupDictionaryRow[]): boolean {
+  if (!rows || rows.length === 0) return false;
+  for (const r of rows) {
+    if (r.category && STRONG_CATEGORY_RE.test(r.category)) return true;
+  }
+  // Generic / uncategorized rows: require length ≥ 4 AND a meaningful
+  // short meaning (≥ 12 chars) to avoid noisy single-line hits.
+  if (word.length < 4) return false;
+  for (const r of rows) {
+    const m = (r.short_meaning_ar ?? "").trim();
+    if (m.length >= 12) return true;
+  }
+  return false;
+}
 
 const __lookupHitCache = new Map<string, boolean>();
 
@@ -529,7 +566,11 @@ export async function bulkLookupMatched(
   const seen = new Set<string>();
   const todo: string[] = [];
   for (const w of normalizedWords) {
-    if (!w || w.length < 2) continue;
+    if (!w) continue;
+    // Strict pre-filter: length, stopwords, pure digits.
+    if (w.length < 3) continue;
+    if (HIGHLIGHT_STOPWORDS.has(w)) continue;
+    if (/^\d+$/.test(w)) continue;
     if (seen.has(w)) continue;
     seen.add(w);
     if (__lookupHitCache.has(w)) {
@@ -547,7 +588,7 @@ export async function bulkLookupMatched(
       const w = todo[my];
       try {
         const rows = await lookupDictionary(w);
-        const hit = rows.length > 0;
+        const hit = isStrongDictHit(w, rows);
         __lookupHitCache.set(w, hit);
         if (hit) {
           matched.add(w);
@@ -565,3 +606,4 @@ export async function bulkLookupMatched(
   await Promise.all(workers);
   return matched;
 }
+
