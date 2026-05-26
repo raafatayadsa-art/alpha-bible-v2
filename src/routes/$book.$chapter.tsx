@@ -211,6 +211,58 @@ function ScriptureReader() {
     });
   }, [dictIndex]);
 
+  /* ----------------------------------------------------------------
+   * Smart highlight: collect every unique normalized word in the
+   * current chapter, ask lookup_dictionary which ones are real entries,
+   * and expose the result as `matchedSet`. VerseCard renders any token
+   * whose normalized form is in this set as a highlighted button.
+   * ---------------------------------------------------------------- */
+  const [matchedSet, setMatchedSet] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    if (!verses.data?.length) {
+      setMatchedSet(new Set());
+      setChapterDictState({ count: 0, status: "idle" });
+      return;
+    }
+    let cancelled = false;
+    const allWords: string[] = [];
+    for (const v of verses.data) {
+      const re = /[\u0600-\u06FF\u0750-\u077F]+/g;
+      const text = (v as any)?.verse_text ?? "";
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(text)) !== null) {
+        const n = normalizeAr(m[0]);
+        if (n) allWords.push(n);
+      }
+    }
+    const unique = Array.from(new Set(allWords));
+    // eslint-disable-next-line no-console
+    console.log("[chapter-highlight] words:", allWords.length, "unique:", unique.length);
+    setChapterDictState({ count: 0, status: "loading" });
+    bulkLookupMatched(unique, (partial) => {
+      if (cancelled) return;
+      setMatchedSet(new Set(partial));
+      setChapterDictState({ count: partial.size, status: "loading" });
+    })
+      .then((matched) => {
+        if (cancelled) return;
+        setMatchedSet(new Set(matched));
+        setChapterDictState({ count: matched.size, status: "ready" });
+        const sample = Array.from(matched).slice(0, 12);
+        // eslint-disable-next-line no-console
+        console.log("[chapter-highlight] matched:", matched.size, "sample:", sample);
+      })
+      .catch((e) => {
+        if (cancelled) return;
+        // eslint-disable-next-line no-console
+        console.warn("[chapter-highlight] bulk lookup failed:", e);
+        setChapterDictState({ count: 0, status: "ready" });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [verses.data, book, ch]);
+
 
 
   // Persistent typography prefs
