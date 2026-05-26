@@ -20,11 +20,13 @@ export function DictionarySearchDialog({
   const [results, setResults] = useState<LookupDictionaryRow[] | null>(null);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const reqIdRef = useRef(0);
 
   useEffect(() => {
     if (open) {
       setTerm("");
       setResults(null);
+      reqIdRef.current++; // invalidate any in-flight request from a previous open
       setTimeout(() => inputRef.current?.focus(), 150);
     }
   }, [open]);
@@ -32,6 +34,8 @@ export function DictionarySearchDialog({
   useEffect(() => {
     if (!open) return;
     const q = term.trim();
+    // Always supersede any prior in-flight request on each keystroke.
+    const myId = ++reqIdRef.current;
     if (!q) {
       setResults(null);
       setLoading(false);
@@ -40,10 +44,16 @@ export function DictionarySearchDialog({
     setLoading(true);
     const handle = setTimeout(async () => {
       const rows = await lookupDictionary(q);
+      // Drop stale responses — only the latest request wins.
+      if (myId !== reqIdRef.current) return;
       setResults(rows);
       setLoading(false);
-    }, 220);
-    return () => clearTimeout(handle);
+    }, 280);
+    return () => {
+      clearTimeout(handle);
+      // Bump again so a response that arrives after unmount/change is ignored.
+      reqIdRef.current++;
+    };
   }, [term, open]);
 
   useEffect(() => {
