@@ -227,7 +227,7 @@ function ScriptureReader() {
    * and expose the result as `matchedSet`. VerseCard renders any token
    * whose normalized form is in this set as a highlighted button.
    * ---------------------------------------------------------------- */
-  const matchedSSKey = `ab:dict:matched:v6:${book}:${ch}`;
+  const matchedSSKey = `ab:dict:matched:v7:${book}:${ch}`;
   const readMatchedFromSession = (): Set<string> | null => {
     if (typeof window === "undefined") return null;
     try {
