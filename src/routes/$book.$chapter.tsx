@@ -22,6 +22,7 @@ import {
   ReferenceIndicator,
   VerseSkeleton,
   DictionaryLookupSheet,
+  DictionaryResultsSheet,
   DictionarySearchDialog,
   type MeaningSheetData,
 } from "@/components/bible";
