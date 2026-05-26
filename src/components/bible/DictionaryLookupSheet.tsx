@@ -149,20 +149,3 @@ function Section({
   );
 }
 
-function LangPair({ label, value, ltr }: { label: string; value?: string | null; ltr?: boolean }) {
-  if (!value) return null;
-  return (
-    <div className="rounded-2xl bg-[#0a2a20]/40 border border-[#7af0b8]/15 px-4 py-3">
-      <div className="flex items-center gap-1.5 text-[10.5px] font-bold text-[#e7c97a]">
-        <Languages className="h-3 w-3" />
-        {label}
-      </div>
-      <p
-        dir={ltr ? "ltr" : undefined}
-        className="mt-1 text-[13.5px] leading-relaxed text-[#eaf6ec]"
-      >
-        {value}
-      </p>
-    </div>
-  );
-}
