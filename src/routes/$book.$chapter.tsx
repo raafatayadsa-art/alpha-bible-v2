@@ -139,7 +139,7 @@ export const Route = createFileRoute("/$book/$chapter")({
   head: ({ params }) => ({
     meta: [
       { title: `${params.book} ${params.chapter} — الكتاب المقدس` },
-      { name: "description", content: `${params.book} الإصحاح ${params.chapter}.` },
+      { name: "description", content: `${params.book} المزمور ${params.chapter}.` },
     ],
   }),
   component: ScriptureReader,
@@ -665,7 +665,7 @@ function ScriptureReader() {
           )}
         >
           <p className="text-[11px] font-bold opacity-80">
-            الإصحاح {ch}
+            مزمور {ch}
             {list.length ? ` من ${list.length}` : ""}
           </p>
           <p className="text-[11px] font-bold tabular-nums opacity-80">
@@ -726,7 +726,7 @@ function ScriptureReader() {
                 surfaceClass,
               )}
             >
-              → الإصحاح {prev}
+              → مزمور {prev}
             </Link>
           ) : (
             <span />
@@ -740,7 +740,7 @@ function ScriptureReader() {
                 surfaceClass,
               )}
             >
-              الإصحاح {next} ←
+              مزمور {next} ←
             </Link>
           ) : (
             <span />
@@ -1236,7 +1236,7 @@ function VerticalProgress({
                 key={c}
                 to="/$book/$chapter"
                 params={{ book, chapter: String(c) }}
-                aria-label={`الإصحاح ${c}`}
+                aria-label={`مزمور ${c}`}
                 className="absolute -translate-x-1/2 left-1/2"
                 style={{ top: `${top}%` }}
               >
