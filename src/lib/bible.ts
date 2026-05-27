@@ -36,23 +36,27 @@ export async function fetchBooks(): Promise<string[]> {
 }
 
 export async function fetchChapters(book: string): Promise<number[]> {
-  const { data, error } = await supabase
-    .from("bible_verses")
-    .select("chapter_number")
-    .eq("book_name", book)
-    .order("chapter_number", { ascending: true })
-    .limit(10000);
-  if (error) throw error;
   const seen = new Set<number>();
-  const out: number[] = [];
-  for (const row of data ?? []) {
-    const c = (row as { chapter_number: number }).chapter_number;
-    if (!seen.has(c)) {
-      seen.add(c);
-      out.push(c);
+  let from = 0;
+  // Page through all rows; PostgREST caps per-response (commonly 1000),
+  // so we must paginate to capture every distinct chapter_number.
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const { data, error } = await supabase
+      .from("bible_verses")
+      .select("chapter_number")
+      .eq("book_name", book)
+      .order("chapter_number", { ascending: true })
+      .range(from, from + PAGE - 1);
+    if (error) throw error;
+    if (!data || data.length === 0) break;
+    for (const row of data) {
+      seen.add((row as { chapter_number: number }).chapter_number);
     }
+    if (data.length < PAGE) break;
+    from += PAGE;
   }
-  return out;
+  return Array.from(seen).sort((a, b) => a - b);
 }
 
 export async function fetchVerses(book: string, chapter: number): Promise<BibleVerse[]> {
