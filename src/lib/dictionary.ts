@@ -579,7 +579,7 @@ export async function bulkLookupMatched(
   // Build a Set of normalized terms present in alpha_dictionary.
   const known = new Set<string>();
   for (const e of entries) {
-    const k = (e.normalizedTerm ?? "").trim() || normalizeAr(e.term ?? "");
+    const k = normalizeAr((e.normalizedTerm ?? e.term ?? "").trim());
     if (!k) continue;
     if (k.length < 3) continue;
     if (HIGHLIGHT_STOPWORDS.has(k)) continue;
