@@ -227,8 +227,8 @@ function ScriptureReader() {
    * and expose the result as `matchedSet`. VerseCard renders any token
    * whose normalized form is in this set as a highlighted button.
    * ---------------------------------------------------------------- */
-  // Re-enabled — reads from Supabase view `dictionary_index`.
-  const enableSmartDictionaryHighlight = true;
+  // Temporarily disabled — manual dictionary search still works.
+  const enableSmartDictionaryHighlight = false;
   const matchedSSKey = `ab:dict:matched:v6:${book}:${ch}`;
   const readMatchedFromSession = (): Set<string> | null => {
     if (typeof window === "undefined") return null;

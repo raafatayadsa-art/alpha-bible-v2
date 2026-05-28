@@ -140,22 +140,22 @@ function isAllowedCategory(category?: string): boolean {
 }
 
 async function fetchDictionary(): Promise<DictionaryEntry[]> {
-  // Data source: Supabase view `dictionary_index`.
-  // Fields: word, normalized_word, type, source_table, meaning
+  // Data source: alpha_dictionary. Exact-match lookup uses `word_normalized`.
   const supabaseUrl =
     (import.meta as any)?.env?.VITE_SUPABASE_URL ?? (supabase as any)?.supabaseUrl ?? "(unknown)";
   // eslint-disable-next-line no-console
-  console.log("[dictionary-debug] source:", { url: supabaseUrl, view: "public.dictionary_index" });
+  console.log("[alpha_dictionary] source:", { url: supabaseUrl, table: "public.alpha_dictionary" });
 
   const PAGE = 1000;
   let from = 0;
   const all: any[] = [];
+  // Paginate through all rows — Supabase caps a single response at 1000.
   // eslint-disable-next-line no-constant-condition
   while (true) {
     const to = from + PAGE - 1;
     const { data, error } = await (supabase as any)
-      .from("dictionary_index")
-      .select("word, normalized_word, type, source_table, meaning")
+      .from("alpha_dictionary")
+      .select("*")
       .range(from, to);
     if (error) throw error;
     const batch = data ?? [];
@@ -164,20 +164,22 @@ async function fetchDictionary(): Promise<DictionaryEntry[]> {
     from += PAGE;
   }
   const rows = all
-    .map((row: any, idx: number) => {
-      const word = ((row.word ?? "") as string).toString().trim();
-      const normalized = ((row.normalized_word ?? "") as string).toString().trim();
-      const meaning = ((row.meaning ?? "") as string).toString().trim();
+    .map((row: any) => {
+      const word = ((row.word ?? row.term ?? "") as string).toString().trim();
+      const wordNormalized = ((row.word_normalized ?? "") as string).toString().trim();
+      // Per spec: short meaning lives in `short_meaning` (fallback `meaning`). No long descriptions.
+      const meaning = ((row.short_meaning ?? row.meaning ?? "") as string).toString().trim();
+      const fullMeaning = ((row.full_meaning ?? "") as string).toString().trim();
       return {
-        id: idx,
+        id: row.id,
         term: word,
-        normalizedTerm: normalized || normalizeAr(word),
-        category: row.type ?? undefined,
+        normalizedTerm: wordNormalized || undefined,
+        category: row.category ?? undefined,
         shortMeaning: meaning || undefined,
-        fullMeaning: undefined,
+        fullMeaning: fullMeaning || undefined,
         fullDescription: undefined,
-        bibleReferencesRaw: undefined,
-        keywords: row.source_table ?? undefined,
+        bibleReferencesRaw: row.bible_references ?? row.reference ?? undefined,
+        keywords: row.keywords ?? undefined,
       } as DictionaryEntry;
     })
     .filter(
@@ -186,9 +188,14 @@ async function fetchDictionary(): Promise<DictionaryEntry[]> {
         (e.normalizedTerm && e.normalizedTerm.trim().length > 1),
     );
   // eslint-disable-next-line no-console
-  console.log("[dictionary-debug] entries length:", rows.length);
-  // eslint-disable-next-line no-console
-  console.log("[dictionary-debug] first 5 entries:", rows.slice(0, 5));
+  console.log(
+    "[alpha_dictionary] loaded entries:",
+    all.length,
+    "valid terms:",
+    rows.length,
+    "from",
+    `${supabaseUrl}/rest/v1/alpha_dictionary`,
+  );
   return rows;
 }
 
@@ -321,7 +328,7 @@ export async function fetchVerseText(
 // Global in-memory cache — loaded once per app session, reused for every chapter.
 // Also persisted to sessionStorage so a page reload within the same tab can
 // rehydrate instantly without a network round-trip.
-const SS_KEY = "ab:dict:cache:v2-index";
+const SS_KEY = "ab:dict:cache:v1";
 let __dictCache: DictionaryEntry[] | null = null;
 let __dictPromise: Promise<DictionaryEntry[]> | null = null;
 let __dictLogged = false;
@@ -569,7 +576,7 @@ export async function bulkLookupMatched(
     onProgress?.(matched);
     return matched;
   }
-  // Build a Set of normalized terms present in dictionary_index.
+  // Build a Set of normalized terms present in alpha_dictionary.
   const known = new Set<string>();
   for (const e of entries) {
     const k = (e.normalizedTerm ?? "").trim() || normalizeAr(e.term ?? "");
@@ -578,10 +585,6 @@ export async function bulkLookupMatched(
     if (HIGHLIGHT_STOPWORDS.has(k)) continue;
     known.add(k);
   }
-  // eslint-disable-next-line no-console
-  console.log("[dictionary-debug] known size:", known.size);
-  // eslint-disable-next-line no-console
-  console.log("[dictionary-debug] first 20 known terms:", Array.from(known).slice(0, 20));
   const seen = new Set<string>();
   for (const w of normalizedWords) {
     if (!w || seen.has(w)) continue;
@@ -591,8 +594,6 @@ export async function bulkLookupMatched(
     if (/^\d+$/.test(w)) continue;
     if (known.has(w)) matched.add(w);
   }
-  // eslint-disable-next-line no-console
-  console.log("[chapter-highlight] matched size:", matched.size);
   onProgress?.(matched);
   return matched;
 }
