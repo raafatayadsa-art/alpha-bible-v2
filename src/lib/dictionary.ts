@@ -321,7 +321,7 @@ export async function fetchVerseText(
 // Global in-memory cache — loaded once per app session, reused for every chapter.
 // Also persisted to sessionStorage so a page reload within the same tab can
 // rehydrate instantly without a network round-trip.
-const SS_KEY = "ab:dict:cache:v1";
+const SS_KEY = "ab:dict:cache:v2-index";
 let __dictCache: DictionaryEntry[] | null = null;
 let __dictPromise: Promise<DictionaryEntry[]> | null = null;
 let __dictLogged = false;
