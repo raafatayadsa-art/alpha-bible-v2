@@ -140,22 +140,22 @@ function isAllowedCategory(category?: string): boolean {
 }
 
 async function fetchDictionary(): Promise<DictionaryEntry[]> {
-  // Data source: alpha_dictionary. Exact-match lookup uses `word_normalized`.
+  // Data source: Supabase view `dictionary_index`.
+  // Fields: word, normalized_word, type, source_table, meaning
   const supabaseUrl =
     (import.meta as any)?.env?.VITE_SUPABASE_URL ?? (supabase as any)?.supabaseUrl ?? "(unknown)";
   // eslint-disable-next-line no-console
-  console.log("[alpha_dictionary] source:", { url: supabaseUrl, table: "public.alpha_dictionary" });
+  console.log("[dictionary-debug] source:", { url: supabaseUrl, view: "public.dictionary_index" });
 
   const PAGE = 1000;
   let from = 0;
   const all: any[] = [];
-  // Paginate through all rows — Supabase caps a single response at 1000.
   // eslint-disable-next-line no-constant-condition
   while (true) {
     const to = from + PAGE - 1;
     const { data, error } = await (supabase as any)
-      .from("alpha_dictionary")
-      .select("*")
+      .from("dictionary_index")
+      .select("word, normalized_word, type, source_table, meaning")
       .range(from, to);
     if (error) throw error;
     const batch = data ?? [];
@@ -164,22 +164,20 @@ async function fetchDictionary(): Promise<DictionaryEntry[]> {
     from += PAGE;
   }
   const rows = all
-    .map((row: any) => {
-      const word = ((row.word ?? row.term ?? "") as string).toString().trim();
-      const wordNormalized = ((row.word_normalized ?? "") as string).toString().trim();
-      // Per spec: short meaning lives in `short_meaning` (fallback `meaning`). No long descriptions.
-      const meaning = ((row.short_meaning ?? row.meaning ?? "") as string).toString().trim();
-      const fullMeaning = ((row.full_meaning ?? "") as string).toString().trim();
+    .map((row: any, idx: number) => {
+      const word = ((row.word ?? "") as string).toString().trim();
+      const normalized = ((row.normalized_word ?? "") as string).toString().trim();
+      const meaning = ((row.meaning ?? "") as string).toString().trim();
       return {
-        id: row.id,
+        id: idx,
         term: word,
-        normalizedTerm: wordNormalized || undefined,
-        category: row.category ?? undefined,
+        normalizedTerm: normalized || normalizeAr(word),
+        category: row.type ?? undefined,
         shortMeaning: meaning || undefined,
-        fullMeaning: fullMeaning || undefined,
+        fullMeaning: undefined,
         fullDescription: undefined,
-        bibleReferencesRaw: row.bible_references ?? row.reference ?? undefined,
-        keywords: row.keywords ?? undefined,
+        bibleReferencesRaw: undefined,
+        keywords: row.source_table ?? undefined,
       } as DictionaryEntry;
     })
     .filter(
@@ -188,14 +186,9 @@ async function fetchDictionary(): Promise<DictionaryEntry[]> {
         (e.normalizedTerm && e.normalizedTerm.trim().length > 1),
     );
   // eslint-disable-next-line no-console
-  console.log(
-    "[alpha_dictionary] loaded entries:",
-    all.length,
-    "valid terms:",
-    rows.length,
-    "from",
-    `${supabaseUrl}/rest/v1/alpha_dictionary`,
-  );
+  console.log("[dictionary-debug] entries length:", rows.length);
+  // eslint-disable-next-line no-console
+  console.log("[dictionary-debug] first 5 entries:", rows.slice(0, 5));
   return rows;
 }
 
