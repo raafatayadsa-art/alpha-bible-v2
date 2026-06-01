@@ -1,0 +1,19 @@
+---
+description: 
+globs: supabase/**
+alwaysApply: false
+---
+
+Never delete tables without approval.
+
+Never rewrite RLS blindly.
+
+Inspect relationships first.
+
+Preserve authentication.
+
+Preserve church isolation.
+
+Preserve tenant isolation.
+
+Preserve existing schema unless explicitly approved.

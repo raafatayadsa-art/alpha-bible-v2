@@ -1,0 +1,800 @@
+{
+  "corpus": {
+    "totalVersesScanned": 35759,
+    "totalUniqueNormalizedTokens": 72586,
+    "totalTokenOccurrences": 496632
+  },
+  "dictionarySources": {
+    "alpha_dictionary": 8123,
+    "bible_names_dictionary": 0,
+    "bible_encyclopedia": 1123,
+    "alpha_dictionary_deep": 1241
+  },
+  "indexes": {
+    "currentProduction": {
+      "map": 440,
+      "phrases": 2801
+    },
+    "generalEnabled": {
+      "map": 2431,
+      "phrases": 11569
+    },
+    "allSourcesGeneral": {
+      "map": 2890,
+      "phrases": 11937
+    }
+  },
+  "tokenOverlapWithAlphaDictionary": {
+    "uniqueTokensWithExactDbSingleTokenMatch": 1644,
+    "uniqueTokensMatchingCurrentProductionIndex": 249,
+    "uniqueTokensMatchingGeneralIndexExact": 1603,
+    "uniqueTokensMatchingGeneralIndexPrefix": 3463,
+    "uniqueTokensMatchingGeneralIndexPhrases": 3931,
+    "uniqueTokensMatchingAllSourcesPhrases": 1603
+  },
+  "incrementalUniqueTokenMatches": {
+    "currentProduction": 249,
+    "generalEnabled": 1603,
+    "prefixOnGeneralIndex": 3463,
+    "phrasesOnGeneralIndex": 3931,
+    "generalPlusBibleNames": 1603,
+    "allSourcesPlusPhrases": 4578
+  },
+  "expectedHighlightCounts": [
+    {
+      "name": "Current production",
+      "indexMapKeys": 440,
+      "indexPhraseKeys": 2801,
+      "uniqueMatchingTokens": 249,
+      "matchingTokenOccurrences": 4002,
+      "renderedHighlightsFirstPerChapter": 2074
+    },
+    {
+      "name": "General enabled",
+      "indexMapKeys": 2431,
+      "indexPhraseKeys": 11569,
+      "uniqueMatchingTokens": 1603,
+      "matchingTokenOccurrences": 24842,
+      "renderedHighlightsFirstPerChapter": 13659
+    },
+    {
+      "name": "Prefix enabled (general index)",
+      "indexMapKeys": 2431,
+      "indexPhraseKeys": 11569,
+      "uniqueMatchingTokens": 3463,
+      "matchingTokenOccurrences": 30740,
+      "renderedHighlightsFirstPerChapter": 17215
+    },
+    {
+      "name": "Phrases enabled (general index)",
+      "indexMapKeys": 2431,
+      "indexPhraseKeys": 11569,
+      "uniqueMatchingTokens": 3931,
+      "matchingTokenOccurrences": 32228,
+      "renderedHighlightsFirstPerChapter": 19797
+    },
+    {
+      "name": "General + bible_names_dictionary",
+      "indexMapKeys": 2431,
+      "indexPhraseKeys": 11569,
+      "uniqueMatchingTokens": 1603,
+      "matchingTokenOccurrences": 24842,
+      "renderedHighlightsFirstPerChapter": 13659
+    },
+    {
+      "name": "All sources + general + phrases",
+      "indexMapKeys": 2890,
+      "indexPhraseKeys": 11937,
+      "uniqueMatchingTokens": 4578,
+      "matchingTokenOccurrences": 47794,
+      "renderedHighlightsFirstPerChapter": 27158
+    }
+  ],
+  "top100FrequentDictionaryWordsNeverHighlighted": [
+    {
+      "token": "من",
+      "freq": 11795,
+      "dbWord": "مَن",
+      "category": "person",
+      "reason": "stopword-filter"
+    },
+    {
+      "token": "قد",
+      "freq": 2610,
+      "dbWord": "قدَّ",
+      "category": "person",
+      "reason": "stopword-filter"
+    },
+    {
+      "token": "بني",
+      "freq": 1094,
+      "dbWord": "بُنِّي",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "امام",
+      "freq": 877,
+      "dbWord": "أَمَام",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "يهوذا",
+      "freq": 795,
+      "dbWord": "يَهُوذَا",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "ابن",
+      "freq": 677,
+      "dbWord": "ابْن",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "بنو",
+      "freq": 671,
+      "dbWord": "بَنُو",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "اورشليم",
+      "freq": 657,
+      "dbWord": "أُورُشَلِيم",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "بين",
+      "freq": 606,
+      "dbWord": "بَيْن",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "رب",
+      "freq": 553,
+      "dbWord": "رَب",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "يوم",
+      "freq": 532,
+      "dbWord": "يوم",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "حين",
+      "freq": 321,
+      "dbWord": "حَين",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "انسان",
+      "freq": 312,
+      "dbWord": "إِنْسان",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "يعقوب",
+      "freq": 286,
+      "dbWord": "يَعْقوب",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "الشر",
+      "freq": 280,
+      "dbWord": "الشَر",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "البحر",
+      "freq": 278,
+      "dbWord": "البَحْر",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "اليهود",
+      "freq": 273,
+      "dbWord": "اليهود",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "مدينه",
+      "freq": 261,
+      "dbWord": "مَدِينَة",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "بابل",
+      "freq": 253,
+      "dbWord": "بابل",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "وجه",
+      "freq": 251,
+      "dbWord": "وَجْه",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "سليمان",
+      "freq": 251,
+      "dbWord": "سليمان",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "باب",
+      "freq": 237,
+      "dbWord": "باب",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "الحق",
+      "freq": 209,
+      "dbWord": "الحق",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "كلمه",
+      "freq": 206,
+      "dbWord": "كلمة",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "ام",
+      "freq": 195,
+      "dbWord": "أُمّ",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "يوسف",
+      "freq": 194,
+      "dbWord": "يُوسُف",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "ابراهيم",
+      "freq": 192,
+      "dbWord": "إِبْرَاهِيم",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "يشوع",
+      "freq": 192,
+      "dbWord": "يَشُوع",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "الف",
+      "freq": 187,
+      "dbWord": "ألف",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "راس",
+      "freq": 186,
+      "dbWord": "رأس",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "الهه",
+      "freq": 174,
+      "dbWord": "آلهة",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "العالم",
+      "freq": 155,
+      "dbWord": "العالم",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "الحكمه",
+      "freq": 148,
+      "dbWord": "الحكمة",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "قلب",
+      "freq": 147,
+      "dbWord": "قَلب",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "لبني",
+      "freq": 139,
+      "dbWord": "لِبني",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "نعمه",
+      "freq": 137,
+      "dbWord": "نَعَمَة",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "افرايم",
+      "freq": 135,
+      "dbWord": "أفْرَايِم",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "مواب",
+      "freq": 132,
+      "dbWord": "موآب",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "الذهب",
+      "freq": 131,
+      "dbWord": "الذَّهَب",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "ارميا",
+      "freq": 129,
+      "dbWord": "إِرْميا",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "صهيون",
+      "freq": 129,
+      "dbWord": "صِهْيَوْن",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "غضب",
+      "freq": 127,
+      "dbWord": "غَضب",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "تابوت",
+      "freq": 126,
+      "dbWord": "تابوُت",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "اشور",
+      "freq": 123,
+      "dbWord": "أَشُّور",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "سمعان",
+      "freq": 120,
+      "dbWord": "سِمعان",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "وادي",
+      "freq": 116,
+      "dbWord": "وادي",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "دم",
+      "freq": 115,
+      "dbWord": "دم",
+      "category": "place",
+      "reason": "generic-blacklist"
+    },
+    {
+      "token": "عني",
+      "freq": 113,
+      "dbWord": "عُنِّي",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "منسي",
+      "freq": 113,
+      "dbWord": "مَنَسَّى",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "يواب",
+      "freq": 113,
+      "dbWord": "يُوآب",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "جلعاد",
+      "freq": 112,
+      "dbWord": "جِلْعَاد",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "مكتوب",
+      "freq": 104,
+      "dbWord": "مكتوب",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "نفس",
+      "freq": 104,
+      "dbWord": "نَفْس",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "ملاك",
+      "freq": 103,
+      "dbWord": "ملاك",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "حزقيا",
+      "freq": 103,
+      "dbWord": "حَزَقِيَّا",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "جماعه",
+      "freq": 102,
+      "dbWord": "جَمَاعَة",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "بنيامين",
+      "freq": 101,
+      "dbWord": "بَنْيَامِين",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "الليل",
+      "freq": 100,
+      "dbWord": "اللَيل",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "ارام",
+      "freq": 99,
+      "dbWord": "أًرام",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "ادوم",
+      "freq": 98,
+      "dbWord": "أَدُوم",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "السامره",
+      "freq": 97,
+      "dbWord": "السامرة",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "دانيال",
+      "freq": 95,
+      "dbWord": "دانيال",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "شريعه",
+      "freq": 93,
+      "dbWord": "شَريعة",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "المحله",
+      "freq": 91,
+      "dbWord": "الْمَحَلَّة",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "الدم",
+      "freq": 87,
+      "dbWord": "الدَم",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "الاثم",
+      "freq": 83,
+      "dbWord": "الإثم",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "يربعام",
+      "freq": 82,
+      "dbWord": "يُربعام",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "يوناثان",
+      "freq": 81,
+      "dbWord": "يُونَاثَان",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "ابشالوم",
+      "freq": 81,
+      "dbWord": "أبشالوم",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "عين",
+      "freq": 80,
+      "dbWord": "عَيْن",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "ايليا",
+      "freq": 78,
+      "dbWord": "إِيلِيَّا",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "العهد",
+      "freq": 77,
+      "dbWord": "العَهد",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "عيسو",
+      "freq": 76,
+      "dbWord": "عِيسو",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "نصيب",
+      "freq": 75,
+      "dbWord": "نَصِيب",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "سلاه",
+      "freq": 74,
+      "dbWord": "سِلاَهْ",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "كنعان",
+      "freq": 72,
+      "dbWord": "كنعان",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "طوبيا",
+      "freq": 70,
+      "dbWord": "طُوبيا",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "ملكه",
+      "freq": 69,
+      "dbWord": "مِلْكَة",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "صور",
+      "freq": 67,
+      "dbWord": "صُور",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "حول",
+      "freq": 67,
+      "dbWord": "حُول",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "قدس",
+      "freq": 67,
+      "dbWord": "قُدْسٌ",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "اخاب",
+      "freq": 66,
+      "dbWord": "أَخْآب",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "راوبين",
+      "freq": 65,
+      "dbWord": "رأوبين",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "القدير",
+      "freq": 63,
+      "dbWord": "القدير",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "ايه",
+      "freq": 63,
+      "dbWord": "أَيَّة",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "ذراع",
+      "freq": 63,
+      "dbWord": "ذِرَاع",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "الفلسطينيون",
+      "freq": 63,
+      "dbWord": "الْفَلَسْطِينِيُّون",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "الخمر",
+      "freq": 61,
+      "dbWord": "الخَمْر",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "جاد",
+      "freq": 61,
+      "dbWord": "جَاد",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "هيكل",
+      "freq": 60,
+      "dbWord": "هيكل",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "بير",
+      "freq": 59,
+      "dbWord": "بئر",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "ايل",
+      "freq": 59,
+      "dbWord": "إِيل",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "لاوي",
+      "freq": 57,
+      "dbWord": "لاوي",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "مره",
+      "freq": 57,
+      "dbWord": "مُرَّة",
+      "category": "person",
+      "reason": "stopword-filter"
+    },
+    {
+      "token": "ابيمالك",
+      "freq": 57,
+      "dbWord": "أِبيمالِك",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "لبنان",
+      "freq": 56,
+      "dbWord": "لبنان",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "منا",
+      "freq": 55,
+      "dbWord": "منا",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "يهوشافاط",
+      "freq": 55,
+      "dbWord": "يهوشافاط",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "مقدس",
+      "freq": 55,
+      "dbWord": "مقدس",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "الجليل",
+      "freq": 54,
+      "dbWord": "الجَلِيل",
+      "category": "general",
+      "reason": "category-general-blocked"
+    }
+  ],
+  "notes": {
+    "renderedHighlightsFirstPerChapter": "Matches production renderVerseTokens + seenChapterWords (first occurrence of each match key per chapter)",
+    "matchingTokenOccurrences": "Every token instance in corpus that satisfies the match rule",
+    "top100Definition": "Token appears in Bible, exists as single-token alpha_dictionary.word entry, but is NOT in current dictIndex.map exact match"
+  }
+}

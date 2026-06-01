@@ -1,0 +1,16 @@
+---
+globs: /**
+alwaysApply: false
+---
+
+Before major edits:
+
+Identify affected files.
+
+Create safe commit point.
+
+Review diff before accepting.
+
+Never accept large generated changes blindly.
+
+Prefer rollback over emergency fixes.

@@ -1,0 +1,805 @@
+﻿Loading dictionary sources...
+Loading all bible verses...
+  verses loaded: 10000
+  verses loaded: 20000
+  verses loaded: 30000
+{
+  "corpus": {
+    "totalVersesScanned": 35759,
+    "totalUniqueNormalizedTokens": 72586,
+    "totalTokenOccurrences": 496632
+  },
+  "dictionarySources": {
+    "alpha_dictionary": 8123,
+    "bible_names_dictionary": 0,
+    "bible_encyclopedia": 1123,
+    "alpha_dictionary_deep": 1241
+  },
+  "indexes": {
+    "currentProduction": {
+      "map": 440,
+      "phrases": 2801
+    },
+    "generalEnabled": {
+      "map": 2431,
+      "phrases": 11569
+    },
+    "allSourcesGeneral": {
+      "map": 2890,
+      "phrases": 11937
+    }
+  },
+  "tokenOverlapWithAlphaDictionary": {
+    "uniqueTokensWithExactDbSingleTokenMatch": 1644,
+    "uniqueTokensMatchingCurrentProductionIndex": 249,
+    "uniqueTokensMatchingGeneralIndexExact": 1603,
+    "uniqueTokensMatchingGeneralIndexPrefix": 3463,
+    "uniqueTokensMatchingGeneralIndexPhrases": 3931,
+    "uniqueTokensMatchingAllSourcesPhrases": 1603
+  },
+  "incrementalUniqueTokenMatches": {
+    "currentProduction": 249,
+    "generalEnabled": 1603,
+    "prefixOnGeneralIndex": 3463,
+    "phrasesOnGeneralIndex": 3931,
+    "generalPlusBibleNames": 1603,
+    "allSourcesPlusPhrases": 4578
+  },
+  "expectedHighlightCounts": [
+    {
+      "name": "Current production",
+      "indexMapKeys": 440,
+      "indexPhraseKeys": 2801,
+      "uniqueMatchingTokens": 249,
+      "matchingTokenOccurrences": 4002,
+      "renderedHighlightsFirstPerChapter": 2074
+    },
+    {
+      "name": "General enabled",
+      "indexMapKeys": 2431,
+      "indexPhraseKeys": 11569,
+      "uniqueMatchingTokens": 1603,
+      "matchingTokenOccurrences": 24842,
+      "renderedHighlightsFirstPerChapter": 13659
+    },
+    {
+      "name": "Prefix enabled (general index)",
+      "indexMapKeys": 2431,
+      "indexPhraseKeys": 11569,
+      "uniqueMatchingTokens": 3463,
+      "matchingTokenOccurrences": 30740,
+      "renderedHighlightsFirstPerChapter": 17215
+    },
+    {
+      "name": "Phrases enabled (general index)",
+      "indexMapKeys": 2431,
+      "indexPhraseKeys": 11569,
+      "uniqueMatchingTokens": 3931,
+      "matchingTokenOccurrences": 32228,
+      "renderedHighlightsFirstPerChapter": 19797
+    },
+    {
+      "name": "General + bible_names_dictionary",
+      "indexMapKeys": 2431,
+      "indexPhraseKeys": 11569,
+      "uniqueMatchingTokens": 1603,
+      "matchingTokenOccurrences": 24842,
+      "renderedHighlightsFirstPerChapter": 13659
+    },
+    {
+      "name": "All sources + general + phrases",
+      "indexMapKeys": 2890,
+      "indexPhraseKeys": 11937,
+      "uniqueMatchingTokens": 4578,
+      "matchingTokenOccurrences": 47794,
+      "renderedHighlightsFirstPerChapter": 27158
+    }
+  ],
+  "top100FrequentDictionaryWordsNeverHighlighted": [
+    {
+      "token": "┘à┘å",
+      "freq": 11795,
+      "dbWord": "┘à┘Ä┘å",
+      "category": "person",
+      "reason": "stopword-filter"
+    },
+    {
+      "token": "┘é╪»",
+      "freq": 2610,
+      "dbWord": "┘é╪»┘Ä┘æ",
+      "category": "person",
+      "reason": "stopword-filter"
+    },
+    {
+      "token": "╪¿┘å┘è",
+      "freq": 1094,
+      "dbWord": "╪¿┘Å┘å┘É┘æ┘è",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º┘à╪º┘à",
+      "freq": 877,
+      "dbWord": "╪ú┘Ä┘à┘Ä╪º┘à",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "┘è┘ç┘ê╪░╪º",
+      "freq": 795,
+      "dbWord": "┘è┘Ä┘ç┘Å┘ê╪░┘Ä╪º",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º╪¿┘å",
+      "freq": 677,
+      "dbWord": "╪º╪¿┘Æ┘å",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪¿┘å┘ê",
+      "freq": 671,
+      "dbWord": "╪¿┘Ä┘å┘Å┘ê",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º┘ê╪▒╪┤┘ä┘è┘à",
+      "freq": 657,
+      "dbWord": "╪ú┘Å┘ê╪▒┘Å╪┤┘Ä┘ä┘É┘è┘à",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪¿┘è┘å",
+      "freq": 606,
+      "dbWord": "╪¿┘Ä┘è┘Æ┘å",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪▒╪¿",
+      "freq": 553,
+      "dbWord": "╪▒┘Ä╪¿",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "┘è┘ê┘à",
+      "freq": 532,
+      "dbWord": "┘è┘ê┘à",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪¡┘è┘å",
+      "freq": 321,
+      "dbWord": "╪¡┘Ä┘è┘å",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º┘å╪│╪º┘å",
+      "freq": 312,
+      "dbWord": "╪Ñ┘É┘å┘Æ╪│╪º┘å",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "┘è╪╣┘é┘ê╪¿",
+      "freq": 286,
+      "dbWord": "┘è┘Ä╪╣┘Æ┘é┘ê╪¿",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º┘ä╪┤╪▒",
+      "freq": 280,
+      "dbWord": "╪º┘ä╪┤┘Ä╪▒",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º┘ä╪¿╪¡╪▒",
+      "freq": 278,
+      "dbWord": "╪º┘ä╪¿┘Ä╪¡┘Æ╪▒",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º┘ä┘è┘ç┘ê╪»",
+      "freq": 273,
+      "dbWord": "╪º┘ä┘è┘ç┘ê╪»",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "┘à╪»┘è┘å┘ç",
+      "freq": 261,
+      "dbWord": "┘à┘Ä╪»┘É┘è┘å┘Ä╪⌐",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪¿╪º╪¿┘ä",
+      "freq": 253,
+      "dbWord": "╪¿╪º╪¿┘ä",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "┘ê╪¼┘ç",
+      "freq": 251,
+      "dbWord": "┘ê┘Ä╪¼┘Æ┘ç",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪│┘ä┘è┘à╪º┘å",
+      "freq": 251,
+      "dbWord": "╪│┘ä┘è┘à╪º┘å",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪¿╪º╪¿",
+      "freq": 237,
+      "dbWord": "╪¿╪º╪¿",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º┘ä╪¡┘é",
+      "freq": 209,
+      "dbWord": "╪º┘ä╪¡┘é",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "┘â┘ä┘à┘ç",
+      "freq": 206,
+      "dbWord": "┘â┘ä┘à╪⌐",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º┘à",
+      "freq": 195,
+      "dbWord": "╪ú┘Å┘à┘æ",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "┘è┘ê╪│┘ü",
+      "freq": 194,
+      "dbWord": "┘è┘Å┘ê╪│┘Å┘ü",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º╪¿╪▒╪º┘ç┘è┘à",
+      "freq": 192,
+      "dbWord": "╪Ñ┘É╪¿┘Æ╪▒┘Ä╪º┘ç┘É┘è┘à",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "┘è╪┤┘ê╪╣",
+      "freq": 192,
+      "dbWord": "┘è┘Ä╪┤┘Å┘ê╪╣",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º┘ä┘ü",
+      "freq": 187,
+      "dbWord": "╪ú┘ä┘ü",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪▒╪º╪│",
+      "freq": 186,
+      "dbWord": "╪▒╪ú╪│",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º┘ä┘ç┘ç",
+      "freq": 174,
+      "dbWord": "╪ó┘ä┘ç╪⌐",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º┘ä╪╣╪º┘ä┘à",
+      "freq": 155,
+      "dbWord": "╪º┘ä╪╣╪º┘ä┘à",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º┘ä╪¡┘â┘à┘ç",
+      "freq": 148,
+      "dbWord": "╪º┘ä╪¡┘â┘à╪⌐",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "┘é┘ä╪¿",
+      "freq": 147,
+      "dbWord": "┘é┘Ä┘ä╪¿",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "┘ä╪¿┘å┘è",
+      "freq": 139,
+      "dbWord": "┘ä┘É╪¿┘å┘è",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "┘å╪╣┘à┘ç",
+      "freq": 137,
+      "dbWord": "┘å┘Ä╪╣┘Ä┘à┘Ä╪⌐",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º┘ü╪▒╪º┘è┘à",
+      "freq": 135,
+      "dbWord": "╪ú┘ü┘Æ╪▒┘Ä╪º┘è┘É┘à",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "┘à┘ê╪º╪¿",
+      "freq": 132,
+      "dbWord": "┘à┘ê╪ó╪¿",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º┘ä╪░┘ç╪¿",
+      "freq": 131,
+      "dbWord": "╪º┘ä╪░┘Ä┘æ┘ç┘Ä╪¿",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º╪▒┘à┘è╪º",
+      "freq": 129,
+      "dbWord": "╪Ñ┘É╪▒┘Æ┘à┘è╪º",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪╡┘ç┘è┘ê┘å",
+      "freq": 129,
+      "dbWord": "╪╡┘É┘ç┘Æ┘è┘Ä┘ê┘Æ┘å",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪║╪╢╪¿",
+      "freq": 127,
+      "dbWord": "╪║┘Ä╪╢╪¿",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪¬╪º╪¿┘ê╪¬",
+      "freq": 126,
+      "dbWord": "╪¬╪º╪¿┘ê┘Å╪¬",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º╪┤┘ê╪▒",
+      "freq": 123,
+      "dbWord": "╪ú┘Ä╪┤┘Å┘æ┘ê╪▒",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪│┘à╪╣╪º┘å",
+      "freq": 120,
+      "dbWord": "╪│┘É┘à╪╣╪º┘å",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "┘ê╪º╪»┘è",
+      "freq": 116,
+      "dbWord": "┘ê╪º╪»┘è",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪»┘à",
+      "freq": 115,
+      "dbWord": "╪»┘à",
+      "category": "place",
+      "reason": "generic-blacklist"
+    },
+    {
+      "token": "╪╣┘å┘è",
+      "freq": 113,
+      "dbWord": "╪╣┘Å┘å┘É┘æ┘è",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "┘à┘å╪│┘è",
+      "freq": 113,
+      "dbWord": "┘à┘Ä┘å┘Ä╪│┘Ä┘æ┘ë",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "┘è┘ê╪º╪¿",
+      "freq": 113,
+      "dbWord": "┘è┘Å┘ê╪ó╪¿",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪¼┘ä╪╣╪º╪»",
+      "freq": 112,
+      "dbWord": "╪¼┘É┘ä┘Æ╪╣┘Ä╪º╪»",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "┘à┘â╪¬┘ê╪¿",
+      "freq": 104,
+      "dbWord": "┘à┘â╪¬┘ê╪¿",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "┘å┘ü╪│",
+      "freq": 104,
+      "dbWord": "┘å┘Ä┘ü┘Æ╪│",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "┘à┘ä╪º┘â",
+      "freq": 103,
+      "dbWord": "┘à┘ä╪º┘â",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪¡╪▓┘é┘è╪º",
+      "freq": 103,
+      "dbWord": "╪¡┘Ä╪▓┘Ä┘é┘É┘è┘Ä┘æ╪º",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪¼┘à╪º╪╣┘ç",
+      "freq": 102,
+      "dbWord": "╪¼┘Ä┘à┘Ä╪º╪╣┘Ä╪⌐",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪¿┘å┘è╪º┘à┘è┘å",
+      "freq": 101,
+      "dbWord": "╪¿┘Ä┘å┘Æ┘è┘Ä╪º┘à┘É┘è┘å",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º┘ä┘ä┘è┘ä",
+      "freq": 100,
+      "dbWord": "╪º┘ä┘ä┘Ä┘è┘ä",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º╪▒╪º┘à",
+      "freq": 99,
+      "dbWord": "╪ú┘ï╪▒╪º┘à",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º╪»┘ê┘à",
+      "freq": 98,
+      "dbWord": "╪ú┘Ä╪»┘Å┘ê┘à",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º┘ä╪│╪º┘à╪▒┘ç",
+      "freq": 97,
+      "dbWord": "╪º┘ä╪│╪º┘à╪▒╪⌐",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪»╪º┘å┘è╪º┘ä",
+      "freq": 95,
+      "dbWord": "╪»╪º┘å┘è╪º┘ä",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪┤╪▒┘è╪╣┘ç",
+      "freq": 93,
+      "dbWord": "╪┤┘Ä╪▒┘è╪╣╪⌐",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º┘ä┘à╪¡┘ä┘ç",
+      "freq": 91,
+      "dbWord": "╪º┘ä┘Æ┘à┘Ä╪¡┘Ä┘ä┘Ä┘æ╪⌐",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º┘ä╪»┘à",
+      "freq": 87,
+      "dbWord": "╪º┘ä╪»┘Ä┘à",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º┘ä╪º╪½┘à",
+      "freq": 83,
+      "dbWord": "╪º┘ä╪Ñ╪½┘à",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "┘è╪▒╪¿╪╣╪º┘à",
+      "freq": 82,
+      "dbWord": "┘è┘Å╪▒╪¿╪╣╪º┘à",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "┘è┘ê┘å╪º╪½╪º┘å",
+      "freq": 81,
+      "dbWord": "┘è┘Å┘ê┘å┘Ä╪º╪½┘Ä╪º┘å",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º╪¿╪┤╪º┘ä┘ê┘à",
+      "freq": 81,
+      "dbWord": "╪ú╪¿╪┤╪º┘ä┘ê┘à",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪╣┘è┘å",
+      "freq": 80,
+      "dbWord": "╪╣┘Ä┘è┘Æ┘å",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º┘è┘ä┘è╪º",
+      "freq": 78,
+      "dbWord": "╪Ñ┘É┘è┘ä┘É┘è┘Ä┘æ╪º",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º┘ä╪╣┘ç╪»",
+      "freq": 77,
+      "dbWord": "╪º┘ä╪╣┘Ä┘ç╪»",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪╣┘è╪│┘ê",
+      "freq": 76,
+      "dbWord": "╪╣┘É┘è╪│┘ê",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "┘å╪╡┘è╪¿",
+      "freq": 75,
+      "dbWord": "┘å┘Ä╪╡┘É┘è╪¿",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪│┘ä╪º┘ç",
+      "freq": 74,
+      "dbWord": "╪│┘É┘ä╪º┘Ä┘ç┘Æ",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "┘â┘å╪╣╪º┘å",
+      "freq": 72,
+      "dbWord": "┘â┘å╪╣╪º┘å",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪╖┘ê╪¿┘è╪º",
+      "freq": 70,
+      "dbWord": "╪╖┘Å┘ê╪¿┘è╪º",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "┘à┘ä┘â┘ç",
+      "freq": 69,
+      "dbWord": "┘à┘É┘ä┘Æ┘â┘Ä╪⌐",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪╡┘ê╪▒",
+      "freq": 67,
+      "dbWord": "╪╡┘Å┘ê╪▒",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪¡┘ê┘ä",
+      "freq": 67,
+      "dbWord": "╪¡┘Å┘ê┘ä",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "┘é╪»╪│",
+      "freq": 67,
+      "dbWord": "┘é┘Å╪»┘Æ╪│┘î",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º╪«╪º╪¿",
+      "freq": 66,
+      "dbWord": "╪ú┘Ä╪«┘Æ╪ó╪¿",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪▒╪º┘ê╪¿┘è┘å",
+      "freq": 65,
+      "dbWord": "╪▒╪ú┘ê╪¿┘è┘å",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º┘ä┘é╪»┘è╪▒",
+      "freq": 63,
+      "dbWord": "╪º┘ä┘é╪»┘è╪▒",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º┘è┘ç",
+      "freq": 63,
+      "dbWord": "╪ú┘Ä┘è┘Ä┘æ╪⌐",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪░╪▒╪º╪╣",
+      "freq": 63,
+      "dbWord": "╪░┘É╪▒┘Ä╪º╪╣",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º┘ä┘ü┘ä╪│╪╖┘è┘å┘è┘ê┘å",
+      "freq": 63,
+      "dbWord": "╪º┘ä┘Æ┘ü┘Ä┘ä┘Ä╪│┘Æ╪╖┘É┘è┘å┘É┘è┘Å┘æ┘ê┘å",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º┘ä╪«┘à╪▒",
+      "freq": 61,
+      "dbWord": "╪º┘ä╪«┘Ä┘à┘Æ╪▒",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪¼╪º╪»",
+      "freq": 61,
+      "dbWord": "╪¼┘Ä╪º╪»",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "┘ç┘è┘â┘ä",
+      "freq": 60,
+      "dbWord": "┘ç┘è┘â┘ä",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪¿┘è╪▒",
+      "freq": 59,
+      "dbWord": "╪¿╪ª╪▒",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º┘è┘ä",
+      "freq": 59,
+      "dbWord": "╪Ñ┘É┘è┘ä",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "┘ä╪º┘ê┘è",
+      "freq": 57,
+      "dbWord": "┘ä╪º┘ê┘è",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "┘à╪▒┘ç",
+      "freq": 57,
+      "dbWord": "┘à┘Å╪▒┘Ä┘æ╪⌐",
+      "category": "person",
+      "reason": "stopword-filter"
+    },
+    {
+      "token": "╪º╪¿┘è┘à╪º┘ä┘â",
+      "freq": 57,
+      "dbWord": "╪ú┘É╪¿┘è┘à╪º┘ä┘É┘â",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "┘ä╪¿┘å╪º┘å",
+      "freq": 56,
+      "dbWord": "┘ä╪¿┘å╪º┘å",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "┘à┘å╪º",
+      "freq": 55,
+      "dbWord": "┘à┘å╪º",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "┘è┘ç┘ê╪┤╪º┘ü╪º╪╖",
+      "freq": 55,
+      "dbWord": "┘è┘ç┘ê╪┤╪º┘ü╪º╪╖",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "┘à┘é╪»╪│",
+      "freq": 55,
+      "dbWord": "┘à┘é╪»╪│",
+      "category": "general",
+      "reason": "category-general-blocked"
+    },
+    {
+      "token": "╪º┘ä╪¼┘ä┘è┘ä",
+      "freq": 54,
+      "dbWord": "╪º┘ä╪¼┘Ä┘ä┘É┘è┘ä",
+      "category": "general",
+      "reason": "category-general-blocked"
+    }
+  ],
+  "notes": {
+    "renderedHighlightsFirstPerChapter": "Matches production renderVerseTokens + seenChapterWords (first occurrence of each match key per chapter)",
+    "matchingTokenOccurrences": "Every token instance in corpus that satisfies the match rule",
+    "top100Definition": "Token appears in Bible, exists as single-token alpha_dictionary.word entry, but is NOT in current dictIndex.map exact match"
+  }
+}

@@ -1,0 +1,31 @@
+---
+alwaysApply: true
+---
+
+Alpha Bible
+
+Improvements only.
+
+Never rebuild approved screens.
+
+Never redesign approved UI.
+
+Preserve approved DNA.
+
+Preserve Bottom Navigation.
+
+Preserve animations.
+
+Preserve responsiveness.
+
+Inspect before editing.
+
+Plan before editing.
+
+Use small isolated edits.
+
+Avoid broad refactors.
+
+Protect stability.
+
+Protect approved work.

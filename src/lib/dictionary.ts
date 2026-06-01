@@ -22,7 +22,22 @@ export type DictionaryEntry = {
   fullDescription?: string;
   bibleReferencesRaw?: string;
   keywords?: string;
+  source?: string;
 };
+
+export function hasDictionaryMeaning(e: DictionaryEntry): boolean {
+  return ((e.shortMeaning ?? e.fullMeaning ?? "").trim().length ?? 0) > 0;
+}
+
+export function dictionaryEntryKey(e: DictionaryEntry): string {
+  return normalizeAr((e.normalizedTerm ?? e.term ?? "").trim());
+}
+
+export function namesDictionaryEntries(entries: DictionaryEntry[]): DictionaryEntry[] {
+  return entries.filter(
+    (e) => e.source === "bible_names_dictionary" && hasDictionaryMeaning(e),
+  );
+}
 
 export type EntryKind = "person" | "place" | "symbol" | "word" | "other";
 
@@ -187,16 +202,61 @@ async function fetchDictionary(): Promise<DictionaryEntry[]> {
         (e.term && e.term.trim().length > 1) ||
         (e.normalizedTerm && e.normalizedTerm.trim().length > 1),
     );
+  let namesAll: any[] = [];
+  try {
+    let namesFrom = 0;
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const namesTo = namesFrom + PAGE - 1;
+      const { data: namesData, error: namesError } = await (supabase as any)
+        .from("bible_names_dictionary")
+        .select("*")
+        .range(namesFrom, namesTo);
+      if (namesError) throw namesError;
+      const namesBatch = namesData ?? [];
+      namesAll.push(...namesBatch);
+      if (namesBatch.length < PAGE) break;
+      namesFrom += PAGE;
+    }
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.warn("[bible_names_dictionary] load failed — alpha entries only:", e);
+    namesAll = [];
+  }
+
+  const nameRows = namesAll
+    .map((row: any, i: number) => {
+      const word = ((row.word ?? "") as string).toString().trim();
+      const meaning = ((row.meaning ?? "") as string).toString().trim();
+      const reference = ((row.reference ?? "") as string).toString().trim();
+      const norm = normalizeAr(word);
+      return {
+        id: 9_000_000 + i,
+        term: word,
+        normalizedTerm: norm || undefined,
+        category: "person",
+        shortMeaning: meaning || undefined,
+        fullMeaning: meaning || undefined,
+        bibleReferencesRaw: reference || undefined,
+        source: "bible_names_dictionary",
+      } as DictionaryEntry;
+    })
+    .filter(
+      (e: DictionaryEntry) =>
+        ((e.term && e.term.trim().length > 1) ||
+          (e.normalizedTerm && e.normalizedTerm.trim().length > 1)) &&
+        hasDictionaryMeaning(e),
+    );
+
+  const merged = [...rows, ...nameRows];
   // eslint-disable-next-line no-console
-  console.log(
-    "[alpha_dictionary] loaded entries:",
-    all.length,
-    "valid terms:",
-    rows.length,
-    "from",
-    `${supabaseUrl}/rest/v1/alpha_dictionary`,
-  );
-  return rows;
+  console.log("[dictionary] loaded entries:", {
+    alpha: rows.length,
+    bible_names: nameRows.length,
+    merged: merged.length,
+    from: `${supabaseUrl}/rest/v1/alpha_dictionary + bible_names_dictionary`,
+  });
+  return merged;
 }
 
 /* ============================================================
@@ -558,11 +618,9 @@ export function isStrongDictHit(word: string, rows: LookupDictionaryRow[]): bool
 
 /**
  * Build the set of chapter words that highlight. Strict rule:
- *   highlight a word ONLY if its normalized form exactly equals
- *   alpha_dictionary.word_normalized for some row.
+ *   normalized form is an exact key in `bible_names_dictionary` (with meaning).
  *
- * No RPC calls, no prefix stripping, no contains/fuzzy match, no fallback
- * to arabic_content. Uses the in-memory dictionary cache (loadDictionaryOnce).
+ * No RPC, no alpha_dictionary auto-highlight, no prefix/fuzzy match.
  */
 export async function bulkLookupMatched(
   normalizedWords: string[],
@@ -576,10 +634,9 @@ export async function bulkLookupMatched(
     onProgress?.(matched);
     return matched;
   }
-  // Build a Set of normalized terms present in alpha_dictionary.
   const known = new Set<string>();
-  for (const e of entries) {
-    const k = normalizeAr((e.normalizedTerm ?? e.term ?? "").trim());
+  for (const e of namesDictionaryEntries(entries)) {
+    const k = dictionaryEntryKey(e);
     if (!k) continue;
     if (k.length < 3) continue;
     if (HIGHLIGHT_STOPWORDS.has(k)) continue;

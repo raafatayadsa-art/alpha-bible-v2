@@ -32,6 +32,8 @@ import { cn } from "@/lib/utils";
 import {
   useDictionary,
   buildDictionaryIndex,
+  lookupEntry,
+  namesDictionaryEntries,
   normalizeAr,
   classifyEntry,
   fetchDeepByNormalized,
@@ -65,6 +67,32 @@ function parseRelatedVerses(raw?: string): { reference: string; text: string }[]
       const [refRaw, ...rest] = s.split(/\s[-–—:]\s/);
       return { reference: refRaw.trim(), text: rest.join(" - ").trim() };
     });
+}
+
+function isNamesPersonEntry(e: DictionaryEntry): boolean {
+  if (e.source === "bible_names_dictionary") return true;
+  if (classifyEntry(e.category) === "person") return true;
+  return /name|اسم/i.test(e.category ?? "");
+}
+
+function entryToNamesPersonSheet(e: DictionaryEntry): MeaningSheetData {
+  const name = (e.term ?? "").trim();
+  const meaning = (e.shortMeaning ?? e.fullMeaning ?? "").trim();
+  const reference = (e.bibleReferencesRaw ?? "").trim();
+  return {
+    word: name,
+    kind: e.category ?? "person",
+    defaultTab: "people",
+    hideMeaningTab: true,
+    relatedPeople: [
+      {
+        name,
+        role: e.category,
+        meaning: meaning || undefined,
+        reference: reference || undefined,
+      },
+    ],
+  };
 }
 
 function entryToSheet(e: DictionaryEntry): MeaningSheetData {
@@ -182,13 +210,7 @@ function ScriptureReader() {
       return;
     }
     if (entry) {
-      const base = entryToSheet(entry);
-      setSheet(base);
-      buildSheetForEntry(entry)
-        .then((upgraded) => setSheet(upgraded))
-        .catch(() => {
-          /* keep base */
-        });
+      setSheet(isNamesPersonEntry(entry) ? entryToNamesPersonSheet(entry) : entryToSheet(entry));
       return;
     }
     setToast("لا يوجد معنى متاح لهذه الكلمة");
@@ -200,10 +222,15 @@ function ScriptureReader() {
   // HMR epoch — bumps every time this module (or dictionary.ts) hot-reloads
   // in the dev editor, forcing the index + verse cards to rebuild without
   // requiring a full page reload or jumping to Preview.
-  const dictIndex = useMemo<DictionaryIndex>(
-    () => buildDictionaryIndex(dict.data ?? []),
+  const highlightEntries = useMemo(
+    () => namesDictionaryEntries(dict.data ?? []),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [dict.data, dict.dataUpdatedAt, HMR_EPOCH],
+  );
+  const dictIndex = useMemo<DictionaryIndex>(
+    () => buildDictionaryIndex(highlightEntries),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [highlightEntries, HMR_EPOCH],
   );
   useEffect(() => {
     // eslint-disable-next-line no-console
@@ -222,8 +249,8 @@ function ScriptureReader() {
    * whose normalized form is in this set as a highlighted button.
    * ---------------------------------------------------------------- */
   // Temporarily disabled — manual dictionary search still works.
-  const enableSmartDictionaryHighlight = false;
-  const matchedSSKey = `ab:dict:matched:v6:${book}:${ch}`;
+  const enableSmartDictionaryHighlight = true;
+  const matchedSSKey = `ab:dict:matched:v8-names:${book}:${ch}`;
   const readMatchedFromSession = (): Set<string> | null => {
     if (typeof window === "undefined") return null;
     try {
@@ -343,7 +370,11 @@ function ScriptureReader() {
     setActiveVerse(id);
   }, []);
 
-  const onSelectWordStable = useCallback((word: string) => {
+  const onSelectWordStable = useCallback((word: string, entry?: DictionaryEntry) => {
+    if (entry) {
+      setSheet(isNamesPersonEntry(entry) ? entryToNamesPersonSheet(entry) : entryToSheet(entry));
+      return;
+    }
     void openWordLookupRef.current(word);
   }, []);
 
@@ -699,6 +730,7 @@ function ScriptureReader() {
               spiritualMode={spiritualMode}
               verseCardClass={verseCardClass}
               matchedSet={matchedSet}
+              dictIndex={dictIndex}
               dictRenderKey={dictRenderKey}
               isSaved={isSaved}
               registerVerseElement={registerVerseElement}
@@ -916,12 +948,13 @@ type ChapterVerseListProps = {
   spiritualMode: boolean;
   verseCardClass: string;
   matchedSet: Set<string>;
+  dictIndex: DictionaryIndex;
   dictRenderKey: string;
   isSaved: (id: string) => boolean;
   registerVerseElement: (num: number, el: HTMLElement | null) => void;
   onVerseActive: (id: string) => void;
   onToggleSaveVerse: (v: Parameters<ReturnType<typeof useSavedVerses>["toggle"]>[0]) => void;
-  onSelectWord: (word: string) => void;
+  onSelectWord: (word: string, entry?: DictionaryEntry) => void;
   onOpenCrossRef: (num: number) => void;
 };
 
@@ -934,6 +967,7 @@ const ChapterVerseList = memo(function ChapterVerseList({
   spiritualMode,
   verseCardClass,
   matchedSet,
+  dictIndex,
   dictRenderKey,
   isSaved,
   registerVerseElement,
@@ -972,6 +1006,7 @@ const ChapterVerseList = memo(function ChapterVerseList({
             onToggleSaveVerse={onToggleSaveVerse}
             onSelectWord={onSelectWord}
             matchedSet={matchedSet}
+            dictIndex={dictIndex}
             seenChapterWords={seenChapterWordsRef.current}
             showRef={showRef}
             onOpenCrossRef={onOpenCrossRef}
@@ -1000,6 +1035,7 @@ const VerseCard = memo(function VerseCard({
   onToggleSaveVerse,
   onSelectWord,
   matchedSet,
+  dictIndex,
   seenChapterWords,
   showRef,
   onOpenCrossRef,
@@ -1017,8 +1053,9 @@ const VerseCard = memo(function VerseCard({
   registerVerseElement: (num: number, el: HTMLElement | null) => void;
   onVerseActive: (id: string) => void;
   onToggleSaveVerse: (v: Parameters<ReturnType<typeof useSavedVerses>["toggle"]>[0]) => void;
-  onSelectWord: (word: string) => void;
+  onSelectWord: (word: string, entry?: DictionaryEntry) => void;
   matchedSet: Set<string>;
+  dictIndex: DictionaryIndex;
   seenChapterWords: Set<string>;
   showRef: boolean;
   onOpenCrossRef: (num: number) => void;
@@ -1075,6 +1112,7 @@ const VerseCard = memo(function VerseCard({
           <VerseHighlighted
             text={text}
             matchedSet={matchedSet}
+            dictIndex={dictIndex}
             seenChapterWords={seenChapterWords}
             onSelectWord={onSelectWord}
             spiritualMode={spiritualMode}
@@ -1122,20 +1160,22 @@ const VerseCard = memo(function VerseCard({
 const VerseHighlighted = memo(function VerseHighlighted({
   text,
   matchedSet,
+  dictIndex,
   seenChapterWords,
   onSelectWord,
   spiritualMode,
 }: {
   text: string;
   matchedSet: Set<string>;
+  dictIndex: DictionaryIndex;
   seenChapterWords: Set<string>;
-  onSelectWord: (word: string) => void;
+  onSelectWord: (word: string, entry?: DictionaryEntry) => void;
   spiritualMode: boolean;
 }) {
   return useMemo(
-    () => renderVerseTokens(text, matchedSet, seenChapterWords, onSelectWord),
+    () => renderVerseTokens(text, matchedSet, dictIndex, seenChapterWords, onSelectWord),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [text, matchedSet, spiritualMode, HMR_EPOCH, onSelectWord],
+    [text, matchedSet, dictIndex, spiritualMode, HMR_EPOCH, onSelectWord],
   );
 });
 
@@ -1452,8 +1492,9 @@ function SliderRow({
 function renderVerseTokens(
   text: string,
   matchedSet: Set<string>,
+  dictIndex: DictionaryIndex,
   seenChapterWords: Set<string>,
-  onSelect: (word: string) => void,
+  onSelect: (word: string, entry?: DictionaryEntry) => void,
 ): React.ReactNode {
   if (!text) return null;
   const parts = text.split(/([\u0600-\u06FF\u0750-\u077F]+)/g);
@@ -1490,9 +1531,8 @@ function renderVerseTokens(
           <HighlightedWord
             key={i}
             onSelect={() => {
-              // eslint-disable-next-line no-console
-              console.log("[chapter-highlight] tap:", { surface: p, norm, matchKey });
-              onSelect(p);
+              const entry = lookupEntry(dictIndex, matchKey);
+              onSelect(p, entry);
             }}
           >
             {p}

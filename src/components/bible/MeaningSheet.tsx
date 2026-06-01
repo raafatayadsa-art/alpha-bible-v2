@@ -33,6 +33,8 @@ export type MeaningSheetData = {
   mapLabel?: string;
   /** Which tab to open by default. */
   defaultTab?: Tab;
+  /** Omit "المعنى" tab when its content duplicates the people card. */
+  hideMeaningTab?: boolean;
 };
 
 type Tab = "meaning" | "verses" | "people" | "map" | "timeline";
@@ -59,6 +61,7 @@ export function MeaningSheet({
   const dragStart = useRef<number | null>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
   const abbrev = useBookAbbreviations();
+  const visibleTabs = data?.hideMeaningTab ? tabs.filter((t) => t.key !== "meaning") : tabs;
 
   useEffect(() => {
     if (open) {
@@ -150,7 +153,7 @@ export function MeaningSheet({
 
           <div dir="rtl" className="px-3">
             <div className="flex gap-1.5 overflow-x-auto pb-2 -mx-1 px-1 no-scrollbar">
-              {tabs.map((t) => {
+              {visibleTabs.map((t) => {
                 const Icon = t.icon;
                 const active = tab === t.key;
                 return (
