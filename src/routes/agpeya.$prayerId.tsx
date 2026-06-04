@@ -27,11 +27,10 @@ import {
   readPrayerPosition,
   savePrayerPosition,
   useAgpeyaAudio,
-  useAgpeyaFontSize,
-  useAgpeyaLineHeight,
   useAgpeyaTheme,
   useSavedAgpeya,
 } from "@/features/agpeya";
+import { useTypographyPrefs } from "@/lib/reading-state";
 import type { AgpeyaPrayer } from "@/features/agpeya";
 import { CopticWatermark } from "@/components/coptic";
 import { cn } from "@/lib/utils";
