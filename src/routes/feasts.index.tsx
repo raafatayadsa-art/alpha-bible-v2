@@ -323,26 +323,170 @@ function FeastsHome() {
 
         {/* Quick actions */}
         <div className="grid grid-cols-4 gap-2">
-          <QuickAction icon={<BookOpen className="h-4 w-4" />} label="قراءات اليوم" sub="اضغط للعرض" tone="#6a4ab5" />
-          <QuickAction icon={<Moon className="h-4 w-4" />} label="الصوم الحالي" sub="لا يوجد صوم" tone="#3a6a9b" />
-          <QuickAction icon={<Calendar className="h-4 w-4" />} label="التقويم الكامل" sub="جميع المناسبات" tone="#b8893a" />
-          <QuickAction icon={<BellRing className="h-4 w-4" />} label="التنبيهات" sub="إدارة التنبيهات" tone="#3e7a55" />
+          <QuickAction
+            icon={<BookOpen className="h-4 w-4" />}
+            label="قراءات اليوم"
+            sub="اضغط للعرض"
+            tone="#6a4ab5"
+            onClick={() => navigate({ to: "/agpeya" })}
+          />
+          <QuickAction
+            icon={<Moon className="h-4 w-4" />}
+            label="الصوم الحالي"
+            sub="لا يوجد صوم"
+            tone="#3a6a9b"
+            onClick={() => setFastOpen(true)}
+          />
+          <QuickAction
+            icon={<Calendar className="h-4 w-4" />}
+            label="التقويم الكامل"
+            sub="جميع المناسبات"
+            tone="#b8893a"
+            onClick={() => {
+              setActive("all");
+              calendarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }}
+          />
+          <QuickAction
+            icon={<BellRing className="h-4 w-4" />}
+            label="التنبيهات"
+            sub="إدارة التنبيهات"
+            tone="#3e7a55"
+            onClick={() => setNotifOpen(true)}
+          />
         </div>
       </main>
 
       <BottomDock />
+
+      {/* Notifications panel */}
+      <Drawer open={notifOpen} onOpenChange={setNotifOpen}>
+        <DrawerContent className="bg-white border-[#ead9b1]" dir="rtl">
+          <DrawerHeader className="text-right">
+            <DrawerTitle className="font-arabic-serif text-[17px] text-[#3a2a18]">التنبيهات</DrawerTitle>
+          </DrawerHeader>
+          <div className="px-4 pb-[calc(env(safe-area-inset-bottom)+16px)]">
+            <div className="rounded-2xl bg-[#faf3e3] border border-[#ead9b1] p-6 text-center text-[13px] text-[#6a543a]">
+              لا توجد تنبيهات حالياً
+            </div>
+            <DrawerClose asChild>
+              <button
+                type="button"
+                className="mt-3 h-11 w-full rounded-2xl bg-white border border-[#ead9b1] text-[13px] font-bold text-[#3a2a18] active:scale-[0.98] transition-transform"
+              >
+                إغلاق
+              </button>
+            </DrawerClose>
+          </div>
+        </DrawerContent>
+      </Drawer>
+
+      {/* Current fast panel */}
+      <Drawer open={fastOpen} onOpenChange={setFastOpen}>
+        <DrawerContent className="bg-white border-[#ead9b1]" dir="rtl">
+          <DrawerHeader className="text-right">
+            <DrawerTitle className="font-arabic-serif text-[17px] text-[#3a2a18]">الصوم الحالي</DrawerTitle>
+          </DrawerHeader>
+          <div className="px-4 pb-[calc(env(safe-area-inset-bottom)+16px)]">
+            <div className="rounded-2xl bg-[#faf3e3] border border-[#ead9b1] p-6 text-center text-[13px] text-[#6a543a]">
+              لا يوجد صوم في هذا اليوم
+            </div>
+            <DrawerClose asChild>
+              <button
+                type="button"
+                className="mt-3 h-11 w-full rounded-2xl bg-white border border-[#ead9b1] text-[13px] font-bold text-[#3a2a18] active:scale-[0.98] transition-transform"
+              >
+                إغلاق
+              </button>
+            </DrawerClose>
+          </div>
+        </DrawerContent>
+      </Drawer>
+
+      {/* Search panel */}
+      <Drawer open={searchOpen} onOpenChange={setSearchOpen}>
+        <DrawerContent className="bg-white border-[#ead9b1]" dir="rtl">
+          <DrawerHeader className="text-right">
+            <DrawerTitle className="font-arabic-serif text-[17px] text-[#3a2a18]">البحث في المناسبات</DrawerTitle>
+          </DrawerHeader>
+          <div className="px-4">
+            <div className="relative">
+              <Search className="pointer-events-none absolute top-1/2 -translate-y-1/2 right-3 h-4 w-4 text-[#b8893a]" />
+              <input
+                ref={searchInputRef}
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="ابحث باسم العيد أو المناسبة"
+                className="w-full h-11 rounded-2xl bg-[#faf3e3] border border-[#ead9b1] pr-9 pl-3 text-[13px] text-[#3a2a18] placeholder:text-[#b08a55] focus:outline-none focus:border-[#6a4ab5]"
+              />
+            </div>
+          </div>
+          <div className="px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+12px)] max-h-[55vh] overflow-y-auto space-y-2">
+            {results.length === 0 ? (
+              <p className="text-center text-[12px] text-[#6a543a] py-6">لا توجد نتائج</p>
+            ) : (
+              results.map((f) => (
+                <button
+                  key={f.id}
+                  type="button"
+                  onClick={() => {
+                    setSearchOpen(false);
+                    navigate({ to: "/feasts/$eventId", params: { eventId: f.id } });
+                  }}
+                  className="w-full text-right flex items-center gap-3 rounded-2xl bg-[#faf3e3] border border-[#ead9b1] p-2.5 active:scale-[0.98] transition-transform"
+                >
+                  <img src={f.image} alt="" className="h-12 w-12 rounded-xl object-cover" draggable={false} />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[13px] font-extrabold text-[#3a2a18] leading-tight line-clamp-1">
+                      {f.title}
+                    </div>
+                    <div className="text-[11px] text-[#6a543a] mt-0.5 line-clamp-1">
+                      {f.subtitle}
+                    </div>
+                  </div>
+                  <ChevronLeft className="h-4 w-4 text-[#b8893a]" />
+                </button>
+              ))
+            )}
+            <DrawerClose asChild>
+              <button
+                type="button"
+                className="mt-2 h-11 w-full rounded-2xl bg-white border border-[#ead9b1] text-[13px] font-bold text-[#3a2a18] active:scale-[0.98] transition-transform"
+              >
+                إغلاق
+              </button>
+            </DrawerClose>
+          </div>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }
 
-function QuickAction({ icon, label, sub, tone }: { icon: React.ReactNode; label: string; sub: string; tone: string }) {
+function QuickAction({
+  icon,
+  label,
+  sub,
+  tone,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  sub: string;
+  tone: string;
+  onClick?: () => void;
+}) {
   return (
-    <div className="rounded-2xl bg-white border border-[#ead9b1] p-2 text-center flex flex-col items-center gap-1 shadow-[0_8px_18px_-12px_rgba(120,80,30,0.5)]">
+    <button
+      type="button"
+      onClick={onClick}
+      className="rounded-2xl bg-white border border-[#ead9b1] p-2 text-center flex flex-col items-center gap-1 shadow-[0_8px_18px_-12px_rgba(120,80,30,0.5)] active:scale-[0.96] transition-transform"
+    >
       <span className="grid h-8 w-8 place-items-center rounded-lg" style={{ background: `${tone}14`, color: tone }}>
         {icon}
       </span>
       <div className="text-[10.5px] font-extrabold text-[#3a2a18] leading-tight">{label}</div>
       <div className="text-[9.5px] text-[#6a543a] leading-tight">{sub}</div>
-    </div>
+    </button>
   );
 }
