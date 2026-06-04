@@ -380,29 +380,16 @@ function FeastsHome() {
 
       <BottomDock />
 
-      {/* Notifications panel */}
-      <Drawer open={notifOpen} onOpenChange={setNotifOpen}>
-        <DrawerContent className="bg-white border-[#ead9b1]" dir="rtl">
-          <DrawerHeader className="text-right">
-            <DrawerTitle className="font-arabic-serif text-[17px] text-[#3a2a18]">التنبيهات</DrawerTitle>
-          </DrawerHeader>
-          <div className="px-4 pb-[calc(env(safe-area-inset-bottom)+16px)]">
-            <div className="rounded-2xl bg-[#faf3e3] border border-[#ead9b1] p-6 text-center text-[13px] text-[#6a543a]">
-              لا توجد تنبيهات حالياً
-            </div>
-            <DrawerClose asChild>
-              <button
-                type="button"
-                className="mt-3 h-11 w-full rounded-2xl bg-white border border-[#ead9b1] text-[13px] font-bold text-[#3a2a18] active:scale-[0.98] transition-transform"
-              >
-                إغلاق
-              </button>
-            </DrawerClose>
-          </div>
-        </DrawerContent>
-      </Drawer>
+      {/* Notifications Center */}
+      <NotificationsCenter
+        open={notifOpen}
+        onClose={() => setNotifOpen(false)}
+        items={notifications}
+        onMarkAllRead={() => setNotifications((p) => p.map((n) => ({ ...n, read: true })))}
+        onDelete={(id) => setNotifications((p) => p.filter((n) => n.id !== id))}
+      />
 
-      {/* Current fast panel */}
+      {/* Current fast panel — kept as drawer (status sheet, not search) */}
       <Drawer open={fastOpen} onOpenChange={setFastOpen}>
         <DrawerContent className="bg-white border-[#ead9b1]" dir="rtl">
           <DrawerHeader className="text-right">
@@ -424,62 +411,38 @@ function FeastsHome() {
         </DrawerContent>
       </Drawer>
 
-      {/* Search panel */}
-      <Drawer open={searchOpen} onOpenChange={setSearchOpen}>
-        <DrawerContent className="bg-white border-[#ead9b1]" dir="rtl">
-          <DrawerHeader className="text-right">
-            <DrawerTitle className="font-arabic-serif text-[17px] text-[#3a2a18]">البحث في المناسبات</DrawerTitle>
-          </DrawerHeader>
-          <div className="px-4">
-            <div className="relative">
-              <Search className="pointer-events-none absolute top-1/2 -translate-y-1/2 right-3 h-4 w-4 text-[#b8893a]" />
-              <input
-                ref={searchInputRef}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="ابحث باسم العيد أو المناسبة"
-                className="w-full h-11 rounded-2xl bg-[#faf3e3] border border-[#ead9b1] pr-9 pl-3 text-[13px] text-[#3a2a18] placeholder:text-[#b08a55] focus:outline-none focus:border-[#6a4ab5]"
-              />
-            </div>
-          </div>
-          <div className="px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+12px)] max-h-[55vh] overflow-y-auto space-y-2">
-            {results.length === 0 ? (
-              <p className="text-center text-[12px] text-[#6a543a] py-6">لا توجد نتائج</p>
-            ) : (
-              results.map((f) => (
-                <button
-                  key={f.id}
-                  type="button"
-                  onClick={() => {
-                    setSearchOpen(false);
-                    navigate({ to: "/feasts/$eventId", params: { eventId: f.id } });
-                  }}
-                  className="w-full text-right flex items-center gap-3 rounded-2xl bg-[#faf3e3] border border-[#ead9b1] p-2.5 active:scale-[0.98] transition-transform"
-                >
-                  <img src={f.image} alt="" className="h-12 w-12 rounded-xl object-cover" draggable={false} />
-                  <div className="min-w-0 flex-1">
-                    <div className="text-[13px] font-extrabold text-[#3a2a18] leading-tight line-clamp-1">
-                      {f.title}
-                    </div>
-                    <div className="text-[11px] text-[#6a543a] mt-0.5 line-clamp-1">
-                      {f.subtitle}
-                    </div>
-                  </div>
-                  <ChevronLeft className="h-4 w-4 text-[#b8893a]" />
-                </button>
-              ))
-            )}
-            <DrawerClose asChild>
-              <button
-                type="button"
-                className="mt-2 h-11 w-full rounded-2xl bg-white border border-[#ead9b1] text-[13px] font-bold text-[#3a2a18] active:scale-[0.98] transition-transform"
-              >
-                إغلاق
-              </button>
-            </DrawerClose>
-          </div>
-        </DrawerContent>
-      </Drawer>
+      {/* Search Overlay */}
+      <SearchOverlay
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        title="البحث في المناسبات"
+        placeholder="ابحث باسم العيد أو المناسبة"
+        query={query}
+        onQueryChange={setQuery}
+      >
+        {results.length === 0 ? (
+          <p className="text-center text-[12px] text-[#6a543a] py-6">لا توجد نتائج</p>
+        ) : (
+          results.map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              onClick={() => {
+                setSearchOpen(false);
+                navigate({ to: "/feasts/$eventId", params: { eventId: f.id } });
+              }}
+              className="w-full text-right flex items-center gap-3 rounded-2xl bg-[#faf3e3] border border-[#ead9b1] p-2.5 active:scale-[0.98] transition-transform"
+            >
+              <img src={f.image} alt="" className="h-12 w-12 rounded-xl object-cover" draggable={false} />
+              <div className="min-w-0 flex-1">
+                <div className="text-[13px] font-extrabold text-[#3a2a18] leading-tight line-clamp-1">{f.title}</div>
+                <div className="text-[11px] text-[#6a543a] mt-0.5 line-clamp-1">{f.subtitle}</div>
+              </div>
+              <ChevronLeft className="h-4 w-4 text-[#b8893a]" />
+            </button>
+          ))
+        )}
+      </SearchOverlay>
     </div>
   );
 }
