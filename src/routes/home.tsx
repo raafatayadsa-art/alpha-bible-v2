@@ -122,32 +122,69 @@ function HomeScreen() {
   }, []);
 
 
-  const quickCards: Array<{
+  // Primary modules — large horizontal swipe cards
+  const primary: Array<{
     key: string;
-    icon: string;
     title: string;
     sub: string;
-    to?: string;
+    icon: string;
+    to: string;
+    accent: string;
+    gradient: string;
+    glyph: "Ⲁ" | "Ⲱ";
   }> = [
-    // Row 1
-    { key: "bible", icon: iconBible, title: "الكتاب المقدس", sub: "إقرا كلمة الله", to: "/books" },
-    { key: "prayer", icon: iconPrayer, title: "الأجبية", sub: "صلوات السبع ساعات\nصلاة كل ساعة", to: "/agpeya" },
-    { key: "katameros", icon: iconMeditation, title: "القطمارس", sub: "قراءات الكنيسة\nاليومية", to: "/katameros" },
-    // Row 2
-    { key: "synaxarium", icon: iconMeeting, title: "السنكسار", sub: "سير القديسين\nيوماً بيوم", to: "/synaxarium" },
-    { key: "feasts", icon: iconCalendar, title: "الأعياد والمناسبات", sub: "اكتشف الأعياد\nوالمواسم", to: "/feasts" },
-    { key: "church", icon: iconMeeting, title: "كنيستك معاك", sub: "أخبار وخدمات\nكنيستك" },
-    // Row 3
-    { key: "meditation", icon: iconMeditation, title: "التأملات", sub: "رحلات روحية\nوتأملات يومية" },
-    { key: "audio", icon: iconHymn, title: "المكتبة الصوتية", sub: "ترانيم وعظات\nوقراءات" },
-    { key: "kids", icon: iconMeeting, title: "الأطفال", sub: "قصص وأنشطة\nلتعليم الإيمان" },
+    {
+      key: "bible",
+      title: "الكتاب المقدس",
+      sub: "إقرأ كلمة الله",
+      icon: iconBible,
+      to: "/books",
+      accent: "#caa15f",
+      gradient: "linear-gradient(135deg,#fff4d6 0%,#f3d99a 55%,#caa15f 100%)",
+      glyph: "Ⲁ",
+    },
+    {
+      key: "agpeya",
+      title: "الأجبية",
+      sub: "صلوات السبع ساعات",
+      icon: iconPrayer,
+      to: "/agpeya",
+      accent: "#8a6ec1",
+      gradient: "linear-gradient(135deg,#f3ecff 0%,#cdb9ef 55%,#8a6ec1 100%)",
+      glyph: "Ⲱ",
+    },
+    {
+      key: "katameros",
+      title: "القطمارس",
+      sub: "قراءات اليوم",
+      icon: iconMeditation,
+      to: "/katameros",
+      accent: "#4a9e6e",
+      gradient: "linear-gradient(135deg,#e8f7ee 0%,#a7d9bb 55%,#4a9e6e 100%)",
+      glyph: "Ⲁ",
+    },
+    {
+      key: "synaxarium",
+      title: "السنكسار",
+      sub: "سير القديسين",
+      icon: iconMeeting,
+      to: "/synaxarium",
+      accent: "#a85450",
+      gradient: "linear-gradient(135deg,#fbecea 0%,#e3a8a4 55%,#a85450 100%)",
+      glyph: "Ⲱ",
+    },
   ];
 
-  const church = [
-    { key: "mass", img: churchChalice, title: "قداس الأحد", time: "الأحد 12 مايو · 8:00 ص", place: "كنيسة مارمرقس" },
-    { key: "youth", img: churchPeople, title: "اجتماع الشباب", time: "الجمعة 17 مايو · 7:00 م", place: "قاعة الاجتماعات" },
-    { key: "notif", img: churchBell, title: "أشعار جديد", time: "تغيير في موعد اجتماع", place: "الخدمة القادمة" },
+  // Secondary modules — smaller cards
+  const secondary: Array<{
+    key: string; title: string; icon: string; to?: string; color: string; bg: string;
+  }> = [
+    { key: "meditation", title: "التأملات", icon: iconMeditation, color: "#5b8fd1", bg: "linear-gradient(160deg,#eaf2fb,#cfdef2)" },
+    { key: "feasts", title: "المناسبات", icon: iconCalendar, to: "/feasts", color: "#c98a3c", bg: "linear-gradient(160deg,#fdf0d9,#f3d49a)" },
+    { key: "saint", title: "قديس اليوم", icon: iconMeeting, to: "/synaxarium", color: "#a85450", bg: "linear-gradient(160deg,#fbe9e7,#eec0bd)" },
+    { key: "prayerDay", title: "صلاة اليوم", icon: iconPrayer, to: "/agpeya", color: "#8a6ec1", bg: "linear-gradient(160deg,#efe8fa,#d4c2ee)" },
   ];
+
 
   return (
     <div dir="rtl" className="relative min-h-screen w-full overflow-x-hidden bg-[#faf8f3]">
