@@ -923,7 +923,7 @@ function PrimaryArtCard({
 function DailyCard({ title, sub, image, accent }: { title: string; sub: string; image: string; accent: string }) {
   return (
     <div
-      className="relative h-[110px] w-[230px] overflow-hidden rounded-[22px] border border-white/12"
+      className="relative h-[130px] w-full overflow-hidden rounded-[22px] border border-white/12"
       style={{
         boxShadow: `0 14px 28px -16px rgba(0,0,0,0.75), inset 0 0 20px ${accent}22, inset 0 1px 0 rgba(255,255,255,0.12)`,
         background: "#0a0612",
