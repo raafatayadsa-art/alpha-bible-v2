@@ -544,32 +544,8 @@ function PrayerReader() {
     }
   }, [activeId]);
 
-  // Auto-scroll loop
-  useEffect(() => {
-    if (!playing) return;
-    const el = scrollerRef.current;
-    if (!el) return;
-    let raf = 0;
-    let last = performance.now();
-    let acc = 0;
-    const step = (t: number) => {
-      const dt = Math.min(64, t - last);
-      last = t;
-      acc += (SPEED_PX_PER_SEC[speed] * dt) / 1000;
-      if (acc >= 1) {
-        const d = Math.floor(acc);
-        acc -= d;
-        el.scrollTop += d;
-        if (el.scrollTop + el.clientHeight >= el.scrollHeight - 1) {
-          setPlaying(false);
-          return;
-        }
-      }
-      raf = requestAnimationFrame(step);
-    };
-    raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
-  }, [playing, speed]);
+
+
 
   // Swipe navigation between prayers
   const touchStart = useRef<{ x: number; y: number } | null>(null);
