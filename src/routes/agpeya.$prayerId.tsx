@@ -610,7 +610,7 @@ function PrayerReader() {
         )}
         style={{ paddingTop: "max(env(safe-area-inset-top), 0px)" }}
       >
-        <div className="mx-auto flex max-w-[560px] items-center justify-between px-4 py-3">
+        <div className="mx-auto flex max-w-[640px] items-center justify-between px-3 py-3">
           <Link
             to="/agpeya"
             aria-label="رجوع للأجبية"
@@ -664,7 +664,7 @@ function PrayerReader() {
           <div
             ref={chipsRef}
             className={cn(
-              "mx-auto flex max-w-[560px] gap-1.5 overflow-x-auto px-3 pb-2 no-scrollbar",
+              "mx-auto flex max-w-[640px] gap-1.5 overflow-x-auto px-3 pb-2 no-scrollbar",
             )}
           >
             {sections.map((s) => {
@@ -718,7 +718,7 @@ function PrayerReader() {
         />
 
         <article
-          className="relative mx-auto max-w-[560px] px-4 pb-44 pt-5 font-arabic-serif"
+          className="relative mx-auto max-w-[640px] px-3 pb-44 pt-5 sm:px-5 font-arabic-serif"
           style={{ fontSize, lineHeight }}
         >
           {/* Draft notice */}
@@ -790,7 +790,7 @@ function PrayerReader() {
       {/* Floating reader controls */}
       <div
         dir="rtl"
-        className="fixed inset-x-0 z-40 mx-auto flex w-full max-w-[560px] items-center justify-center px-4"
+        className="fixed inset-x-0 z-40 mx-auto flex w-full max-w-[640px] items-center justify-center px-3"
         style={{ bottom: "max(env(safe-area-inset-bottom), 16px)" }}
       >
         <div
