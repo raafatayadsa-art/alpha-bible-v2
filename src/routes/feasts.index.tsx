@@ -39,6 +39,26 @@ function FeastsHome() {
   const [active, setActive] = useState<FeastCategory | "all">("all");
   const today = getTodayFeast();
   const list = active === "all" ? FEASTS : FEASTS.filter((f) => f.category === active);
+  const navigate = useNavigate();
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [fastOpen, setFastOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const calendarRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (searchOpen) {
+      const t = setTimeout(() => searchInputRef.current?.focus(), 80);
+      return () => clearTimeout(t);
+    }
+  }, [searchOpen]);
+
+  const results = FEASTS.filter((f) => {
+    const q = query.trim();
+    if (!q) return true;
+    return f.title.includes(q) || f.subtitle.includes(q) || (f.gregorianDate ?? "").includes(q);
+  });
 
   return (
     <div dir="rtl" className="relative min-h-dvh bg-[#faf3e3]">
