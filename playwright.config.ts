@@ -20,10 +20,12 @@ export default defineConfig({
       name: "mobile-chromium",
       use: {
         ...devices["Pixel 5"],
-        // Override to iPhone-13-ish viewport while keeping Chromium engine
         viewport: { width: 390, height: 844 },
         isMobile: true,
         hasTouch: true,
+        launchOptions: process.env.CHROMIUM_EXECUTABLE_PATH
+          ? { executablePath: process.env.CHROMIUM_EXECUTABLE_PATH }
+          : undefined,
       },
     },
   ],
