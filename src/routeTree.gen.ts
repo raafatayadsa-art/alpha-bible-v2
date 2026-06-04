@@ -24,6 +24,12 @@ import { Route as FeastsIndexRouteImport } from './routes/feasts.index'
 import { Route as AgpeyaIndexRouteImport } from './routes/agpeya.index'
 import { Route as BookIndexRouteImport } from './routes/$book.index'
 import { Route as SynaxariumSaintIdRouteImport } from './routes/synaxarium.$saintId'
+import { Route as ProfileSecurityRouteImport } from './routes/profile.security'
+import { Route as ProfilePersonalRouteImport } from './routes/profile.personal'
+import { Route as ProfileMessagesRouteImport } from './routes/profile.messages'
+import { Route as ProfileFamilyRouteImport } from './routes/profile.family'
+import { Route as ProfileChurchRouteImport } from './routes/profile.church'
+import { Route as ProfileAppearanceRouteImport } from './routes/profile.appearance'
 import { Route as FeastsEventIdRouteImport } from './routes/feasts.$eventId'
 import { Route as AgpeyaSavedRouteImport } from './routes/agpeya.saved'
 import { Route as AgpeyaPrayerIdRouteImport } from './routes/agpeya.$prayerId'
@@ -104,6 +110,36 @@ const SynaxariumSaintIdRoute = SynaxariumSaintIdRouteImport.update({
   path: '/synaxarium/$saintId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileSecurityRoute = ProfileSecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
+  getParentRoute: () => ProfileRoute,
+} as any)
+const ProfilePersonalRoute = ProfilePersonalRouteImport.update({
+  id: '/personal',
+  path: '/personal',
+  getParentRoute: () => ProfileRoute,
+} as any)
+const ProfileMessagesRoute = ProfileMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => ProfileRoute,
+} as any)
+const ProfileFamilyRoute = ProfileFamilyRouteImport.update({
+  id: '/family',
+  path: '/family',
+  getParentRoute: () => ProfileRoute,
+} as any)
+const ProfileChurchRoute = ProfileChurchRouteImport.update({
+  id: '/church',
+  path: '/church',
+  getParentRoute: () => ProfileRoute,
+} as any)
+const ProfileAppearanceRoute = ProfileAppearanceRouteImport.update({
+  id: '/appearance',
+  path: '/appearance',
+  getParentRoute: () => ProfileRoute,
+} as any)
 const FeastsEventIdRoute = FeastsEventIdRouteImport.update({
   id: '/feasts/$eventId',
   path: '/feasts/$eventId',
@@ -133,12 +169,18 @@ export interface FileRoutesByFullPath {
   '/diagnostics': typeof DiagnosticsRoute
   '/home': typeof HomeRoute
   '/onboarding': typeof OnboardingRoute
-  '/profile': typeof ProfileRoute
+  '/profile': typeof ProfileRouteWithChildren
   '/search': typeof SearchRoute
   '/$book/$chapter': typeof BookChapterRoute
   '/agpeya/$prayerId': typeof AgpeyaPrayerIdRoute
   '/agpeya/saved': typeof AgpeyaSavedRoute
   '/feasts/$eventId': typeof FeastsEventIdRoute
+  '/profile/appearance': typeof ProfileAppearanceRoute
+  '/profile/church': typeof ProfileChurchRoute
+  '/profile/family': typeof ProfileFamilyRoute
+  '/profile/messages': typeof ProfileMessagesRoute
+  '/profile/personal': typeof ProfilePersonalRoute
+  '/profile/security': typeof ProfileSecurityRoute
   '/synaxarium/$saintId': typeof SynaxariumSaintIdRoute
   '/$book/': typeof BookIndexRoute
   '/agpeya/': typeof AgpeyaIndexRoute
@@ -153,12 +195,18 @@ export interface FileRoutesByTo {
   '/diagnostics': typeof DiagnosticsRoute
   '/home': typeof HomeRoute
   '/onboarding': typeof OnboardingRoute
-  '/profile': typeof ProfileRoute
+  '/profile': typeof ProfileRouteWithChildren
   '/search': typeof SearchRoute
   '/$book/$chapter': typeof BookChapterRoute
   '/agpeya/$prayerId': typeof AgpeyaPrayerIdRoute
   '/agpeya/saved': typeof AgpeyaSavedRoute
   '/feasts/$eventId': typeof FeastsEventIdRoute
+  '/profile/appearance': typeof ProfileAppearanceRoute
+  '/profile/church': typeof ProfileChurchRoute
+  '/profile/family': typeof ProfileFamilyRoute
+  '/profile/messages': typeof ProfileMessagesRoute
+  '/profile/personal': typeof ProfilePersonalRoute
+  '/profile/security': typeof ProfileSecurityRoute
   '/synaxarium/$saintId': typeof SynaxariumSaintIdRoute
   '/$book': typeof BookIndexRoute
   '/agpeya': typeof AgpeyaIndexRoute
@@ -175,12 +223,18 @@ export interface FileRoutesById {
   '/diagnostics': typeof DiagnosticsRoute
   '/home': typeof HomeRoute
   '/onboarding': typeof OnboardingRoute
-  '/profile': typeof ProfileRoute
+  '/profile': typeof ProfileRouteWithChildren
   '/search': typeof SearchRoute
   '/$book/$chapter': typeof BookChapterRoute
   '/agpeya/$prayerId': typeof AgpeyaPrayerIdRoute
   '/agpeya/saved': typeof AgpeyaSavedRoute
   '/feasts/$eventId': typeof FeastsEventIdRoute
+  '/profile/appearance': typeof ProfileAppearanceRoute
+  '/profile/church': typeof ProfileChurchRoute
+  '/profile/family': typeof ProfileFamilyRoute
+  '/profile/messages': typeof ProfileMessagesRoute
+  '/profile/personal': typeof ProfilePersonalRoute
+  '/profile/security': typeof ProfileSecurityRoute
   '/synaxarium/$saintId': typeof SynaxariumSaintIdRoute
   '/$book/': typeof BookIndexRoute
   '/agpeya/': typeof AgpeyaIndexRoute
@@ -204,6 +258,12 @@ export interface FileRouteTypes {
     | '/agpeya/$prayerId'
     | '/agpeya/saved'
     | '/feasts/$eventId'
+    | '/profile/appearance'
+    | '/profile/church'
+    | '/profile/family'
+    | '/profile/messages'
+    | '/profile/personal'
+    | '/profile/security'
     | '/synaxarium/$saintId'
     | '/$book/'
     | '/agpeya/'
@@ -224,6 +284,12 @@ export interface FileRouteTypes {
     | '/agpeya/$prayerId'
     | '/agpeya/saved'
     | '/feasts/$eventId'
+    | '/profile/appearance'
+    | '/profile/church'
+    | '/profile/family'
+    | '/profile/messages'
+    | '/profile/personal'
+    | '/profile/security'
     | '/synaxarium/$saintId'
     | '/$book'
     | '/agpeya'
@@ -245,6 +311,12 @@ export interface FileRouteTypes {
     | '/agpeya/$prayerId'
     | '/agpeya/saved'
     | '/feasts/$eventId'
+    | '/profile/appearance'
+    | '/profile/church'
+    | '/profile/family'
+    | '/profile/messages'
+    | '/profile/personal'
+    | '/profile/security'
     | '/synaxarium/$saintId'
     | '/$book/'
     | '/agpeya/'
@@ -261,7 +333,7 @@ export interface RootRouteChildren {
   DiagnosticsRoute: typeof DiagnosticsRoute
   HomeRoute: typeof HomeRoute
   OnboardingRoute: typeof OnboardingRoute
-  ProfileRoute: typeof ProfileRoute
+  ProfileRoute: typeof ProfileRouteWithChildren
   SearchRoute: typeof SearchRoute
   AgpeyaPrayerIdRoute: typeof AgpeyaPrayerIdRoute
   AgpeyaSavedRoute: typeof AgpeyaSavedRoute
@@ -380,6 +452,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SynaxariumSaintIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profile/security': {
+      id: '/profile/security'
+      path: '/security'
+      fullPath: '/profile/security'
+      preLoaderRoute: typeof ProfileSecurityRouteImport
+      parentRoute: typeof ProfileRoute
+    }
+    '/profile/personal': {
+      id: '/profile/personal'
+      path: '/personal'
+      fullPath: '/profile/personal'
+      preLoaderRoute: typeof ProfilePersonalRouteImport
+      parentRoute: typeof ProfileRoute
+    }
+    '/profile/messages': {
+      id: '/profile/messages'
+      path: '/messages'
+      fullPath: '/profile/messages'
+      preLoaderRoute: typeof ProfileMessagesRouteImport
+      parentRoute: typeof ProfileRoute
+    }
+    '/profile/family': {
+      id: '/profile/family'
+      path: '/family'
+      fullPath: '/profile/family'
+      preLoaderRoute: typeof ProfileFamilyRouteImport
+      parentRoute: typeof ProfileRoute
+    }
+    '/profile/church': {
+      id: '/profile/church'
+      path: '/church'
+      fullPath: '/profile/church'
+      preLoaderRoute: typeof ProfileChurchRouteImport
+      parentRoute: typeof ProfileRoute
+    }
+    '/profile/appearance': {
+      id: '/profile/appearance'
+      path: '/appearance'
+      fullPath: '/profile/appearance'
+      preLoaderRoute: typeof ProfileAppearanceRouteImport
+      parentRoute: typeof ProfileRoute
+    }
     '/feasts/$eventId': {
       id: '/feasts/$eventId'
       path: '/feasts/$eventId'
@@ -423,6 +537,27 @@ const BookRouteChildren: BookRouteChildren = {
 
 const BookRouteWithChildren = BookRoute._addFileChildren(BookRouteChildren)
 
+interface ProfileRouteChildren {
+  ProfileAppearanceRoute: typeof ProfileAppearanceRoute
+  ProfileChurchRoute: typeof ProfileChurchRoute
+  ProfileFamilyRoute: typeof ProfileFamilyRoute
+  ProfileMessagesRoute: typeof ProfileMessagesRoute
+  ProfilePersonalRoute: typeof ProfilePersonalRoute
+  ProfileSecurityRoute: typeof ProfileSecurityRoute
+}
+
+const ProfileRouteChildren: ProfileRouteChildren = {
+  ProfileAppearanceRoute: ProfileAppearanceRoute,
+  ProfileChurchRoute: ProfileChurchRoute,
+  ProfileFamilyRoute: ProfileFamilyRoute,
+  ProfileMessagesRoute: ProfileMessagesRoute,
+  ProfilePersonalRoute: ProfilePersonalRoute,
+  ProfileSecurityRoute: ProfileSecurityRoute,
+}
+
+const ProfileRouteWithChildren =
+  ProfileRoute._addFileChildren(ProfileRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BookRoute: BookRouteWithChildren,
@@ -431,7 +566,7 @@ const rootRouteChildren: RootRouteChildren = {
   DiagnosticsRoute: DiagnosticsRoute,
   HomeRoute: HomeRoute,
   OnboardingRoute: OnboardingRoute,
-  ProfileRoute: ProfileRoute,
+  ProfileRoute: ProfileRouteWithChildren,
   SearchRoute: SearchRoute,
   AgpeyaPrayerIdRoute: AgpeyaPrayerIdRoute,
   AgpeyaSavedRoute: AgpeyaSavedRoute,
@@ -445,3 +580,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
