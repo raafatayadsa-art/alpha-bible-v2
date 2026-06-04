@@ -558,7 +558,7 @@ function HeroStack({
   return (
     <section className="mt-5 select-none">
       <div
-        className="relative h-[320px] w-full"
+        className="relative h-[268px] w-full"
         style={{ perspective: 1200 }}
         onTouchStart={onTouchStart as any}
         onTouchMove={onTouchMove as any}
@@ -573,7 +573,7 @@ function HeroStack({
           const c = cards[cardIdx];
           const isFront = rel === 0;
           const scale = 1 - rel * 0.06;
-          const translateY = rel * 14;
+          const translateY = rel * 12;
           const translateX = isFront ? dx : 0;
           const rotate = isFront ? dx * 0.02 : 0;
           const opacity = rel <= 2 ? 1 : 0.4;
