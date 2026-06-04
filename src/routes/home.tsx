@@ -122,12 +122,12 @@ function HomeScreen() {
 
 
   const quickCards = [
-    { key: "bible", icon: iconBible, title: "اكمل القراءة", sub: "تابع حيث توقفت\nفي الكتاب المقدس", to: "/books" },
-    { key: "hymn", icon: iconHymn, title: "ترنيمة اليوم", sub: "استمع لترنيمة مختارة\nكل يوم" },
+    { key: "bible", icon: iconBible, title: "الكتاب المقدس", sub: "إقرا كلمة الله", to: "/books" },
+    { key: "hymn", icon: iconHymn, title: "الصوتيات", sub: "استمع لترنيمة مختارة\nكل يوم" },
     { key: "prayer", icon: iconPrayer, title: "الأجبية", sub: "صلوات السبع ساعات\nصلاة كل ساعة", to: "/agpeya" },
-    { key: "meeting", icon: iconMeeting, title: "اجتماع اليوم", sub: "لا تفوت اجتماع\nكنيستك اليوم" },
+    { key: "meeting", icon: iconMeeting, title: "الأطفال", sub: "قصص و أنشطة تعلم الايمان" },
     { key: "calendar", icon: iconCalendar, title: "المناسبات", sub: "اكتشف المناسبات\nالقادمة" },
-    { key: "meditation", icon: iconMeditation, title: "التأمل اليومي", sub: "لحظات من التأمل\nوالقرب من الله" },
+    { key: "meditation", icon: iconMeditation, title: "التأملات ", sub: "رحلات روحية \n و تأملات يومية" },
   ];
 
   const church = [
@@ -312,12 +312,12 @@ function HomeScreen() {
 
         {/* Continue your journey */}
         <section className="mt-4">
-          <Pressable to="/books" ariaLabel="استكمل رحلتك">
+          <Pressable to="/books" ariaLabel="الكتاب المقدس">
             <div className="flex items-center gap-3 rounded-3xl bg-[#fbf3e1] border border-[#efe2c4] p-2.5 shadow-[0_10px_24px_-14px_rgba(120,80,30,0.30)]">
               <img src={continueImg} alt="" className="h-[78px] w-[110px] rounded-2xl object-cover" draggable={false} />
               <div className="flex-1 text-right">
-                <h3 className="text-[14px] font-extrabold text-[#3a2a18]">استكمل رحلتك</h3>
-                <p className="mt-0.5 text-[11px] text-[#6a543a] leading-snug">خطة قراءة الكتاب المقدس<br />اليوم 5 من 30 يوم</p>
+                <h3 className="text-[14px] font-extrabold text-[#3a2a18]">الكتاب المقدس</h3>
+                <p className="mt-0.5 text-[11px] text-[#6a543a] leading-snug">إقرا كلمة الله<br />اليوم 5 من 30 يوم</p>
                 <div className="mt-2 flex items-center gap-2">
                   <div className="h-1.5 flex-1 rounded-full bg-[#ecdcb6] overflow-hidden">
                     <div className="h-full rounded-full bg-gradient-to-r from-[#c79356] to-[#7a4a26]" style={{ width: "35%" }} />
