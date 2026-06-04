@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Bell, Search, BookOpen, Calendar, Moon, BellRing, ChevronLeft, Plus, Star, Cross, Fish, Church } from "lucide-react";
+import { Bell, Search, BookOpen, Calendar, Moon, BellRing, ChevronLeft, Star, Cross, Fish, Church } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { FEASTS, CATEGORIES, getTodayFeast, type FeastCategory } from "@/features/feasts";
+import { getTodaySaint } from "@/features/synaxarium";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { GlassSurface } from "@/components/bible/primitives";
 import { CopticCross, CopticWatermark, CopticSeparator } from "@/components/coptic";
@@ -172,7 +173,7 @@ function FeastsHome() {
                       <div className="font-arabic-serif text-[15.5px] font-extrabold text-[#3a2a18] leading-tight line-clamp-1">
                         {f.title}
                       </div>
-                      <div className="text-[11.5px] text-[#6a543a] line-clamp-2 mt-1 leading-snug">
+                      <div className="text-[12.5px] text-[#5a4630] line-clamp-2 mt-1 leading-relaxed">
                         {f.subtitle}
                       </div>
                     </div>
@@ -192,21 +193,49 @@ function FeastsHome() {
           ))}
         </div>
 
-        {/* Add CTA */}
-        <button className="mt-5 w-full active:scale-[0.99] transition-transform">
-          <GlassSurface className="p-3 bg-gradient-to-l from-[#f3eafd] to-white border-[#e7d4f5]">
-            <div className="flex items-center gap-3">
-              <span className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-[#6a4ab5] to-[#8c6fd1] text-white shadow-[0_6px_14px_-6px_rgba(106,74,181,0.55)]">
-                <Plus className="h-5 w-5" />
-              </span>
-              <div className="flex-1 text-right">
-                <div className="text-[13px] font-extrabold text-[#3a2a18]">هل تريد إضافة مناسبة؟</div>
-                <div className="text-[11px] text-[#6a543a]">اضغط لإضافتها إلى تقويمك الروحي</div>
-              </div>
-              <ChevronLeft className="h-4 w-4 text-[#6a4ab5]" />
-            </div>
-          </GlassSurface>
-        </button>
+        {/* Synaxarium Today */}
+        {(() => {
+          const saint = getTodaySaint();
+          return (
+            <Link
+              to="/synaxarium/$saintId"
+              params={{ saintId: saint.id }}
+              className="block mt-5 active:scale-[0.99] transition-transform"
+            >
+              <GlassSurface className="p-3 bg-white border-[#ead9b1] shadow-[0_14px_30px_-22px_rgba(120,80,30,0.55)]">
+                <div className="flex items-center gap-3">
+                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-[#f4ead8] ring-1 ring-inset ring-[#ead9b1]">
+                    <img
+                      src={saint.image}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      draggable={false}
+                      className="absolute inset-0 h-full w-full object-cover object-center select-none"
+                    />
+                  </div>
+                  <div className="flex-1 text-right min-w-0">
+                    <div className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#b8893a]">
+                      <CopticCross size={11} />
+                      سنكسار اليوم
+                      <span className="text-[#b8893a]/60">Ⲁ Ⲱ</span>
+                    </div>
+                    <div className="font-arabic-serif text-[14.5px] font-extrabold text-[#3a2a18] leading-tight mt-0.5 line-clamp-1">
+                      {saint.name}
+                    </div>
+                    <div className="text-[12px] text-[#5a4630] leading-snug line-clamp-1 mt-0.5">
+                      {saint.summary}
+                    </div>
+                  </div>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-[#fff7e0] border border-[#ead9b1] px-2.5 h-8 text-[11px] font-bold text-[#3a2a18] shrink-0">
+                    <BookOpen className="h-3 w-3 text-[#b8893a]" />
+                    افتح
+                  </span>
+                </div>
+              </GlassSurface>
+            </Link>
+          );
+        })()}
 
         <CopticSeparator />
 

@@ -1,7 +1,10 @@
 import type { FeastEvent, FeastCategory } from "./types";
-import feastCovenant from "@/assets/feasts/feast-covenant.jpg";
-import feastResurrection from "@/assets/feasts/feast-resurrection.jpg";
-import { heavenlyChurch, churchChalice, churchPeople, churchBell } from "@/assets/home";
+import feastLastSupper from "@/assets/feasts/feast-last-supper.jpg";
+import feastCrucifixion from "@/assets/feasts/feast-crucifixion.jpg";
+import feastHolyLight from "@/assets/feasts/feast-holy-light.jpg";
+import feastEmptyTomb from "@/assets/feasts/feast-empty-tomb.jpg";
+import feastPalmSunday from "@/assets/feasts/feast-palm-sunday.jpg";
+import feastThomas from "@/assets/feasts/feast-thomas.jpg";
 
 export const FEASTS: FeastEvent[] = [
   {
@@ -18,7 +21,7 @@ export const FEASTS: FeastEvent[] = [
     about: "في هذا اليوم نتذكر العشاء الأخير الذي أسس فيه السيد المسيح سر التناول، وغسل أرجل تلاميذه ليعلمنا التواضع.",
     rite: "قداس خميس العهد يقام في المساء بعد غسل الأرجل، وفيه يُكرَّس الميرون كل سبع سنوات.",
     readings: "إنجيل يوحنا 13 — رسالة كورنثوس الأولى 11.",
-    image: feastCovenant,
+    image: feastLastSupper,
     accent: "purple",
   },
   {
@@ -33,7 +36,7 @@ export const FEASTS: FeastEvent[] = [
     about: "نتذكر فيه آلام الرب وصلبه وموته من أجل خلاص الجنس البشري.",
     rite: "صلوات الساعات السبع وقراءة سفر النبوات والمزامير.",
     readings: "إنجيل البصخة المقدسة — متى 27 ومرقس 15.",
-    image: churchChalice,
+    image: feastCrucifixion,
     accent: "gold",
   },
   {
@@ -48,7 +51,7 @@ export const FEASTS: FeastEvent[] = [
     about: "في هذا اليوم نزل الرب إلى الجحيم وحرر آدم وحواء والآباء البررة.",
     rite: "قداس خاص بطقس البصخة وإنارة الكنيسة بالنور المقدس.",
     readings: "تكوين 1 — أعمال الرسل 1.",
-    image: heavenlyChurch,
+    image: feastHolyLight,
     accent: "gold",
   },
   {
@@ -65,7 +68,7 @@ export const FEASTS: FeastEvent[] = [
     about: "قيامة الرب يسوع المسيح من الأموات هي أساس إيماننا وأعظم أعيادنا.",
     rite: "قداس عيد القيامة بطقس فرايحي مميز ودورة القيامة حول الكنيسة.",
     readings: "متى 28 — مرقس 16 — لوقا 24 — يوحنا 20.",
-    image: feastResurrection,
+    image: feastEmptyTomb,
     accent: "green",
   },
   {
@@ -80,7 +83,7 @@ export const FEASTS: FeastEvent[] = [
     about: "نتذكر دخول الرب أورشليم وكيف استقبله الشعب بسعف النخيل والترانيم.",
     rite: "دورة الشعانين بسعف النخيل وقراءة البشارات الأربع.",
     readings: "متى 21 — مرقس 11 — لوقا 19 — يوحنا 12.",
-    image: churchPeople,
+    image: feastPalmSunday,
     accent: "green",
   },
   {
@@ -95,7 +98,7 @@ export const FEASTS: FeastEvent[] = [
     about: "ظهر الرب لتلاميذه ومعهم توما، وأكد له قيامته فآمن وقال 'ربي وإلهي'.",
     rite: "قداس أحد توما بطقس الخمسين المقدسة.",
     readings: "يوحنا 20 — أعمال 5.",
-    image: churchBell,
+    image: feastThomas,
     accent: "blue",
   },
 ];
