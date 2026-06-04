@@ -136,30 +136,8 @@ function ProfileHero() {
       <div aria-hidden className="absolute bottom-16 left-7 text-[#f0d78c]/25"><CopticCross size={7} /></div>
       <div aria-hidden className="absolute bottom-20 right-5 text-[#f0d78c]/30"><CopticCross size={9} /></div>
 
-      {/* Alpha Logo — top center crest */}
-      <div className="relative pt-3 flex justify-center">
-        <div
-          className="relative grid place-items-center"
-          style={{ filter: "drop-shadow(0 0 14px rgba(240,215,140,0.55)) drop-shadow(0 2px 8px rgba(0,0,0,0.45))" }}
-        >
-          <span
-            aria-hidden
-            className="absolute inset-0 -m-3 rounded-full"
-            style={{
-              background: "radial-gradient(circle, rgba(255,244,208,0.45), rgba(216,162,58,0.18) 55%, transparent 75%)",
-              filter: "blur(8px)",
-            }}
-          />
-          <img
-            src={alphaLogoAsset.url}
-            alt="Alpha"
-            className="relative h-9 w-auto object-contain select-none"
-            draggable={false}
-          />
-        </div>
-      </div>
+      <div className="relative px-4 pt-6 pb-5 flex flex-col items-center text-center">
 
-      <div className="relative px-4 pt-5 pb-5 flex flex-col items-center text-center">
         {/* Premium Orthodox Halo + Cross system */}
         <div className="relative">
           {/* Radiant outer aura — strong sacred glow */}
