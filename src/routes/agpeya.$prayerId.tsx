@@ -42,16 +42,39 @@ export const Route = createFileRoute("/agpeya/$prayerId")({
       ],
     };
   },
+  loader: ({ params }) => {
+    const prayer = getAgpeyaPrayer(params.prayerId);
+    if (!prayer) throw notFound();
+    return { prayer };
+  },
+  pendingComponent: ReaderPending,
+  errorComponent: ReaderError,
+  notFoundComponent: ReaderNotFound,
   component: PrayerReader,
 });
 
 const TABS: { key: AgpeyaTabKey; label: string }[] = [
   { key: "text", label: "نص الصلاة" },
   { key: "psalms", label: "المزامير" },
-  { key: "gospel", label: "الإنجيل" },
   { key: "fragments", label: "القطع" },
+  { key: "gospel", label: "الإنجيل" },
   { key: "info", label: "معلومات" },
 ];
+
+/** Build a readable info-tab body from prayer metadata as a graceful fallback. */
+function buildInfoBody(p: AgpeyaPrayer): string {
+  const lines: string[] = [];
+  if (p.description) lines.push(p.description);
+  if (p.subtitle && p.subtitle !== p.description) lines.push(p.subtitle);
+  const meta: string[] = [];
+  if (p.clock) meta.push(`الساعة: ${p.clock}`);
+  if (p.psalmsCount) meta.push(`عدد المزامير: ${p.psalmsCount}`);
+  if (p.gospelCount) meta.push(`عدد القطع الإنجيلية: ${p.gospelCount}`);
+  if (p.durationMin) meta.push(`زمن القراءة التقريبي: ${p.durationMin} دقيقة`);
+  if (meta.length) lines.push("", meta.join("\n"));
+  if (p.audio?.available) lines.push("", "التسجيل الصوتي قيد الإعداد.");
+  return lines.join("\n");
+}
 
 function PrayerReader() {
   const { prayerId } = Route.useParams();
