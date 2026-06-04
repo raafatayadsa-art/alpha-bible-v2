@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import headerStill from "@/assets/agpeya/header-still.jpg";
 import heroSunrise from "@/assets/agpeya/hero-sunrise.jpg";
 
-export const Route = createFileRoute("/agpeya")({
+export const Route = createFileRoute("/agpeya/")({
   ssr: false,
   head: () => ({
     meta: [
