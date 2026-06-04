@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, ErrorComponentProps, Link, notFound, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronLeft,
@@ -12,6 +12,7 @@ import {
   Play,
   Pause,
   Gauge,
+  Rows3,
 } from "lucide-react";
 import {
   adjacentAgpeyaPrayers,
@@ -19,13 +20,15 @@ import {
   readPrayerPosition,
   savePrayerPosition,
   SPEED_PX_PER_SEC,
+  useAgpeyaAudio,
   useAgpeyaFontSize,
+  useAgpeyaLineHeight,
   useAgpeyaSpeed,
   useAgpeyaTheme,
   useSavedAgpeya,
   type AgpeyaSpeed,
 } from "@/features/agpeya";
-import type { AgpeyaTabKey } from "@/features/agpeya";
+import type { AgpeyaPrayer, AgpeyaTabKey } from "@/features/agpeya";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/agpeya/$prayerId")({
@@ -39,41 +42,76 @@ export const Route = createFileRoute("/agpeya/$prayerId")({
       ],
     };
   },
+  loader: ({ params }) => {
+    const prayer = getAgpeyaPrayer(params.prayerId);
+    if (!prayer) throw notFound();
+    return { prayer };
+  },
+  pendingComponent: ReaderPending,
+  errorComponent: ReaderError,
+  notFoundComponent: ReaderNotFound,
   component: PrayerReader,
 });
 
 const TABS: { key: AgpeyaTabKey; label: string }[] = [
   { key: "text", label: "نص الصلاة" },
   { key: "psalms", label: "المزامير" },
-  { key: "gospel", label: "الإنجيل" },
   { key: "fragments", label: "القطع" },
+  { key: "gospel", label: "الإنجيل" },
   { key: "info", label: "معلومات" },
 ];
 
+/** Build a readable info-tab body from prayer metadata as a graceful fallback. */
+function buildInfoBody(p: AgpeyaPrayer): string {
+  const lines: string[] = [];
+  if (p.description) lines.push(p.description);
+  if (p.subtitle && p.subtitle !== p.description) lines.push(p.subtitle);
+  const meta: string[] = [];
+  if (p.clock) meta.push(`الساعة: ${p.clock}`);
+  if (p.psalmsCount) meta.push(`عدد المزامير: ${p.psalmsCount}`);
+  if (p.gospelCount) meta.push(`عدد القطع الإنجيلية: ${p.gospelCount}`);
+  if (p.durationMin) meta.push(`زمن القراءة التقريبي: ${p.durationMin} دقيقة`);
+  if (meta.length) lines.push("", meta.join("\n"));
+  if (p.audio?.available) lines.push("", "التسجيل الصوتي قيد الإعداد.");
+  return lines.join("\n");
+}
+
 function PrayerReader() {
-  const { prayerId } = Route.useParams();
-  const prayer = getAgpeyaPrayer(prayerId);
+  const { prayer } = Route.useLoaderData() as { prayer: AgpeyaPrayer };
+  const prayerId = prayer.id;
   const navigate = useNavigate();
-  if (!prayer) throw notFound();
 
   const { prev, next } = useMemo(() => adjacentAgpeyaPrayers(prayerId), [prayerId]);
-  const availableTabs = TABS.filter((t) => prayer.tabs[t.key]?.body);
+
+  // Augment tabs: always provide an info tab built from metadata if missing.
+  const effectiveTabs = useMemo(() => {
+    const t = { ...prayer.tabs };
+    if (!t.info?.body) t.info = { body: buildInfoBody(prayer) };
+    return t;
+  }, [prayer]);
+  const availableTabs = TABS.filter((t) => effectiveTabs[t.key]?.body);
 
   const initial = readPrayerPosition(prayerId);
   const [tab, setTab] = useState<AgpeyaTabKey>(
     initial?.tab && availableTabs.some((t) => t.key === initial.tab) ? initial.tab : availableTabs[0]?.key ?? "text",
   );
   const [fontSize, setFontSize] = useAgpeyaFontSize();
+  const [lineHeight, setLineHeight] = useAgpeyaLineHeight();
   const [theme, setTheme] = useAgpeyaTheme();
   const [speed, setSpeed] = useAgpeyaSpeed();
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [savedNotice, setSavedNotice] = useState(false);
   const { isSaved, toggle } = useSavedAgpeya();
+  // Audio scaffolding — reserved for future player. Tracks last selected prayer only.
+  const [, setAudioState] = useAgpeyaAudio();
+  useEffect(() => {
+    setAudioState({ prayerId, positionSec: 0 });
+  }, [prayerId, setAudioState]);
   const scrollerRef = useRef<HTMLDivElement>(null);
 
   const dark = theme === "dark";
-  const content = prayer.tabs[tab]?.body ?? "";
+  const content = effectiveTabs[tab]?.body ?? "";
 
   // Restore scroll position on tab change
   useEffect(() => {
@@ -265,16 +303,22 @@ function PrayerReader() {
         style={{ scrollBehavior: "smooth" }}
       >
         <article
-          className="mx-auto max-w-[640px] px-5 py-8 font-arabic-serif leading-[2.05]"
-          style={{ fontSize, lineHeight: 2.05 }}
+          className="mx-auto max-w-[640px] px-5 py-8 font-arabic-serif"
+          style={{ fontSize, lineHeight }}
         >
-          {content
-            .split(/\n\s*\n/)
-            .map((para, i) => (
-              <p key={i} className={cn("mb-5", dark ? "text-[#e8e2cf]" : "text-[#2a1a08]")}>
-                {para}
-              </p>
-            ))}
+          {content.trim().length === 0 ? (
+            <div className={cn("rounded-2xl border px-5 py-10 text-center text-[13px]", dark ? "border-white/10 bg-white/5 text-white/65" : "border-[#c79356]/30 bg-white/55 text-[#7a5a32]")}>
+              لا يوجد محتوى لهذا القسم بعد.
+            </div>
+          ) : (
+            content
+              .split(/\n\s*\n/)
+              .map((para: string, i: number) => (
+                <p key={i} className={cn("mb-5", dark ? "text-[#e8e2cf]" : "text-[#2a1a08]")}>
+                  {para}
+                </p>
+              ))
+          )}
           <div className={cn("mt-10 border-t pt-5 text-center text-[12px]", dark ? "border-white/10 text-white/55" : "border-[#c79356]/25 text-[#8a5a1f]")}>
             نهاية الصلاة — بركة الرب تشملكم
           </div>
@@ -345,6 +389,18 @@ function PrayerReader() {
 
           <ControlBtn dark={dark} ariaLabel={dark ? "وضع النهار" : "الوضع الليلي"} onClick={() => setTheme(dark ? "light" : "dark")}>
             {dark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+          </ControlBtn>
+
+          <ControlBtn
+            dark={dark}
+            ariaLabel="تباعد الأسطر"
+            onClick={() => {
+              const steps = [1.7, 1.9, 2.05, 2.25, 2.5];
+              const idx = steps.findIndex((s) => Math.abs(s - lineHeight) < 0.05);
+              setLineHeight(steps[(idx + 1) % steps.length] ?? 2.05);
+            }}
+          >
+            <Rows3 className="h-3.5 w-3.5" />
           </ControlBtn>
 
           <span className={cn("mx-1 h-4 w-px", dark ? "bg-white/15" : "bg-[#c79356]/30")} />
@@ -432,5 +488,66 @@ function ControlBtn({
     >
       {children}
     </button>
+  );
+}
+
+/* ---------- Lifecycle states ---------- */
+
+function ReaderShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      dir="rtl"
+      className="min-h-dvh flex flex-col items-center justify-center px-6 text-center bg-[radial-gradient(120%_60%_at_50%_-10%,#fff5dd_0%,#fbeac6_45%,#f3d9a5_100%)] text-[#3a2410]"
+    >
+      {children}
+    </div>
+  );
+}
+
+function ReaderPending() {
+  return (
+    <ReaderShell>
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#c79356] border-t-transparent" aria-label="جار التحميل" />
+      <p className="mt-4 text-[13px] font-semibold text-[#8a5a1f]">جار تحميل الصلاة…</p>
+    </ReaderShell>
+  );
+}
+
+function ReaderNotFound() {
+  return (
+    <ReaderShell>
+      <h1 className="font-arabic-serif text-[22px] font-extrabold text-[#5b3a18]">الصلاة غير موجودة</h1>
+      <p className="mt-2 text-[13px] text-[#8a5a1f]">تعذر العثور على هذه الصلاة في الأجبية.</p>
+      <Link
+        to="/agpeya"
+        className="mt-5 inline-flex items-center gap-2 rounded-full bg-gradient-to-br from-[#e7b35a] to-[#b87a22] px-4 py-2 text-[13px] font-bold text-white shadow"
+      >
+        العودة للأجبية
+      </Link>
+    </ReaderShell>
+  );
+}
+
+function ReaderError({ error, reset }: ErrorComponentProps) {
+  const router = useRouter();
+  return (
+    <ReaderShell>
+      <h1 className="font-arabic-serif text-[22px] font-extrabold text-[#5b3a18]">حدث خطأ غير متوقع</h1>
+      <p className="mt-2 max-w-sm text-[12.5px] text-[#8a5a1f]">
+        {error?.message ?? "تعذر تحميل هذه الصلاة. حاول مرة أخرى."}
+      </p>
+      <div className="mt-5 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => { router.invalidate(); reset(); }}
+          className="rounded-full bg-gradient-to-br from-[#e7b35a] to-[#b87a22] px-4 py-2 text-[13px] font-bold text-white shadow"
+        >
+          إعادة المحاولة
+        </button>
+        <Link to="/agpeya" className="rounded-full border border-[#c79356]/40 bg-white/70 px-4 py-2 text-[13px] font-bold text-[#5b3a18]">
+          الأجبية
+        </Link>
+      </div>
+    </ReaderShell>
   );
 }

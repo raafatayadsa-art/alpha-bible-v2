@@ -7,6 +7,8 @@ const SPEED_KEY = "ab.agpeya.autoscrollSpeed";
 const SAVED_KEY = "ab.agpeya.saved";
 const THEME_KEY = "ab.agpeya.theme";
 const FONT_KEY = "ab.agpeya.fontSize";
+const LH_KEY = "ab.agpeya.lineHeight";
+const AUDIO_KEY = "ab.agpeya.audio";
 
 export type AgpeyaTheme = "light" | "dark";
 export type AgpeyaSpeed = "slow" | "medium" | "fast";
@@ -84,6 +86,12 @@ export function useAgpeyaFontSize(): [number, (n: number) => void] {
   return [size, setSize];
 }
 
+export function useAgpeyaLineHeight(): [number, (n: number) => void] {
+  const [lh, setLh] = useState<number>(() => safeRead<number>(LH_KEY, 2.05));
+  useEffect(() => { safeWrite(LH_KEY, lh); }, [lh]);
+  return [lh, setLh];
+}
+
 export function useAgpeyaSpeed(): [AgpeyaSpeed, (s: AgpeyaSpeed) => void] {
   const [speed, setSpeed] = useState<AgpeyaSpeed>(() => safeRead<AgpeyaSpeed>(SPEED_KEY, "medium"));
   useEffect(() => { safeWrite(SPEED_KEY, speed); }, [speed]);
@@ -95,3 +103,28 @@ export const SPEED_PX_PER_SEC: Record<AgpeyaSpeed, number> = {
   medium: 36,
   fast: 64,
 };
+
+/* ---------- Audio (placeholder — no player yet) ---------- */
+
+export interface AgpeyaAudioState {
+  /** Currently selected prayer's audio (or null). */
+  prayerId: string | null;
+  /** Whether the future player is logically "playing". Always false today. */
+  playing: boolean;
+  /** Position in seconds; reserved for future player. */
+  positionSec: number;
+}
+
+export function useAgpeyaAudio(): [AgpeyaAudioState, (s: Partial<AgpeyaAudioState>) => void] {
+  const [state, setState] = useState<AgpeyaAudioState>(() =>
+    safeRead<AgpeyaAudioState>(AUDIO_KEY, { prayerId: null, playing: false, positionSec: 0 }),
+  );
+  const update = useCallback((patch: Partial<AgpeyaAudioState>) => {
+    setState((prev) => {
+      const next = { ...prev, ...patch, playing: false }; // force-off until player ships
+      safeWrite(AUDIO_KEY, next);
+      return next;
+    });
+  }, []);
+  return [state, update];
+}

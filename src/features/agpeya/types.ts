@@ -9,6 +9,14 @@ export interface AgpeyaTabContent {
   references?: string[];
 }
 
+/** Audio metadata placeholder — playback not implemented yet. */
+export interface AgpeyaAudioMeta {
+  url?: string;
+  durationSec?: number;
+  reciter?: string;
+  available?: boolean;
+}
+
 export interface AgpeyaPrayer {
   id: string;
   title: string;
@@ -33,4 +41,6 @@ export interface AgpeyaPrayer {
   accent?: "dawn" | "midmorning" | "noon" | "evening" | "compline" | "veil" | "midnight" | "extra";
   /** Per-tab content. Tabs with no entry are hidden. */
   tabs: Partial<Record<AgpeyaTabKey, AgpeyaTabContent>>;
+  /** Optional audio recitation metadata (not yet wired to a player). */
+  audio?: AgpeyaAudioMeta;
 }
