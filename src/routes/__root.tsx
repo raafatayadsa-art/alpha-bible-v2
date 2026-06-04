@@ -122,6 +122,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
+      <GlobalBackButton />
       <Toaster />
       {/* <DictionaryDebugBadge /> — disabled with smart highlight */}
     </QueryClientProvider>
