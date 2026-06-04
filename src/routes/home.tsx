@@ -856,69 +856,6 @@ function HeroCardView({
   );
 }
 
-// ===== Primary Art Card =====
-function PrimaryArtCard({
-  title, sub, image, accent, glyph,
-}: {
-  title: string;
-  sub: string;
-  image: string;
-  accent: string;
-  glyph: "Ⲁ" | "Ⲱ";
-}) {
-  return (
-    <div
-      className="relative h-[230px] w-[165px] overflow-hidden rounded-[28px] border border-white/15"
-      style={{
-        boxShadow: `0 24px 48px -22px rgba(0,0,0,0.85), 0 0 0 1px ${accent}22, inset 0 0 30px ${accent}22, inset 0 1px 0 rgba(255,255,255,0.18)`,
-        background: "#0a0612",
-      }}
-    >
-      <img src={image} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
-      {/* gradient */}
-      <div
-        aria-hidden
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(180deg, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.05) 40%, rgba(0,0,0,0.70) 85%, rgba(0,0,0,0.95) 100%)",
-        }}
-      />
-      {/* glow ring */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 rounded-[28px]"
-        style={{ boxShadow: `inset 0 0 24px ${accent}55` }}
-      />
-      {/* coptic glyph */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute top-2 left-3 select-none font-black leading-none"
-        style={{ fontSize: 52, color: "rgba(255,255,255,0.10)" }}
-      >
-        {glyph}
-      </span>
-      <div className="absolute inset-x-3 bottom-3 text-right">
-        <h3
-          className="text-[15px] font-extrabold leading-tight text-white"
-          style={{ textShadow: "0 2px 8px rgba(0,0,0,0.85)" }}
-        >
-          {title}
-        </h3>
-        <p className="mt-0.5 text-[11px] font-medium leading-snug text-white/85" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.7)" }}>
-          {sub}
-        </p>
-        <div
-          className="mt-2 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold text-white border"
-          style={{ background: `${accent}30`, borderColor: `${accent}66`, backdropFilter: "blur(6px)" }}
-        >
-          افتح
-          <ChevronLeft className="h-3 w-3" />
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function DailyCard({ title, sub, image, accent }: { title: string; sub: string; image: string; accent: string }) {
   return (
