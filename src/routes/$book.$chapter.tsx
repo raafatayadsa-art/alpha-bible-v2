@@ -35,7 +35,6 @@ import {
   lookupEntry,
   namesDictionaryEntries,
   normalizeAr,
-  classifyEntry,
   fetchDeepByNormalized,
   lookupDictionary,
   bulkLookupMatched,
