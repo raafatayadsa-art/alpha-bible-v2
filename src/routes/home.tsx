@@ -487,8 +487,8 @@ function HomeScreen() {
         </section>
       </div>
 
-      {/* Floating Mini Player */}
-      <MiniPlayer dockVisible={dockVisible} />
+      {/* TEMP_MEDIA_PLAYER_DISABLED — hide floating mini player during design reviews */}
+      {/* <MiniPlayer dockVisible={dockVisible} /> */}
 
       {/* Share Sheet host */}
       <ShareSheetHost />
