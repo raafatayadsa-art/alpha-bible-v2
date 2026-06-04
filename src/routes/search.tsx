@@ -34,14 +34,14 @@ function norm(s: string): string {
 type Category = "bible" | "agpeya" | "katameros" | "synaxarium" | "feasts" | "meditations";
 type Scope = "all" | Category;
 
-const SCOPE_COLORS: Record<Scope, { color: string; text: string }> = {
-  all:         { color: "#8a7558", text: "text-[#8a7558]" },
-  bible:       { color: "#caa15f", text: "text-[#caa15f]" },
-  agpeya:      { color: "#8a6ec1", text: "text-[#7a5fb0]" },
-  katameros:   { color: "#4a9e6e", text: "text-[#3d8a60]" },
-  synaxarium:  { color: "#a85450", text: "text-[#a85450]" },
-  feasts:      { color: "#c98a3c", text: "text-[#b87c32]" },
-  meditations: { color: "#5b8fd1", text: "text-[#4a7ec0]" },
+const SCOPE_COLORS: Record<Scope, { color: string }> = {
+  all:         { color: "#8a7558" },
+  bible:       { color: "#caa15f" },
+  agpeya:      { color: "#8a6ec1" },
+  katameros:   { color: "#4a9e6e" },
+  synaxarium:  { color: "#a85450" },
+  feasts:      { color: "#c98a3c" },
+  meditations: { color: "#5b8fd1" },
 };
 
 const SCOPES: { id: Scope; label: string; placeholder: string }[] = [
