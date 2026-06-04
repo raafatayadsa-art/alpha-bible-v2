@@ -59,6 +59,17 @@ function SynaxariumHome() {
   const [query, setQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const topRef = useRef<HTMLDivElement | null>(null);
+  const [notifications, setNotifications] = useState<NotificationItem[]>(() => [
+    {
+      id: "saint-today",
+      title: `سيرة اليوم: ${today.name}`,
+      description: today.summary,
+      time: "اليوم",
+      read: false,
+      icon: <CopticCross size={14} />,
+      onOpen: () => navigate({ to: "/synaxarium/$saintId", params: { saintId: today.id } }),
+    },
+  ]);
 
   useEffect(() => {
     if (searchOpen) {
