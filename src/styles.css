@@ -3,8 +3,37 @@
 /* Google Fonts loaded via <link> tags in src/routes/__root.tsx */
 @source "../src";
 
-html, body { font-family: 'Tajawal', 'Segoe UI', system-ui, -apple-system, sans-serif; }
-.font-arabic-serif { font-family: 'Amiri', 'Tajawal', serif; }
+@font-face {
+  font-family: 'Thmanyah Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/gh/qaiserwh/thmanyah-font@main/thmanyahsans-Regular.otf') format('opentype');
+}
+@font-face {
+  font-family: 'Thmanyah Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/gh/qaiserwh/thmanyah-font@main/thmanyahsans-Medium.otf') format('opentype');
+}
+@font-face {
+  font-family: 'Thmanyah Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/gh/qaiserwh/thmanyah-font@main/thmanyahsans-Bold.otf') format('opentype');
+}
+@font-face {
+  font-family: 'Thmanyah Sans';
+  font-style: normal;
+  font-weight: 800 900;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/gh/qaiserwh/thmanyah-font@main/thmanyahsans-Black.otf') format('opentype');
+}
+
+html, body { font-family: 'Thmanyah Sans', 'Tajawal', 'Segoe UI', system-ui, -apple-system, sans-serif; }
+.font-arabic-serif { font-family: 'Thmanyah Sans', 'Amiri', 'Tajawal', serif; }
 
 @custom-variant dark (&:is(.dark *));
 
