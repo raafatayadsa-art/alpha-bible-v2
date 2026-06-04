@@ -29,6 +29,14 @@ export function AutoScrollControls({
   scrollContainer,
   bottomClass = "bottom-24",
   visible,
+  fontSize,
+  setFontSize,
+  fontMin = 14,
+  fontMax = 34,
+  fontStep = 1,
+  lineHeight,
+  setLineHeight,
+  lineHeightSteps = [1.6, 1.8, 2.0, 2.2, 2.4],
 }: {
   spiritualMode: boolean;
   onToggleSpiritual: () => void;
@@ -38,6 +46,14 @@ export function AutoScrollControls({
   visible?: boolean;
   /** legacy, unused */
   hidden?: boolean;
+  fontSize?: number;
+  setFontSize?: (n: number) => void;
+  fontMin?: number;
+  fontMax?: number;
+  fontStep?: number;
+  lineHeight?: number;
+  setLineHeight?: (n: number) => void;
+  lineHeightSteps?: number[];
 }) {
   const [playing, setPlaying] = useState(false);
   const [speedIdx, setSpeedIdx] = useState<number>(loadInitialSpeedIdx);
