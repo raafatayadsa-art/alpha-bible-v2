@@ -825,15 +825,372 @@ function DailyCard({ title, sub, image, accent }: { title: string; sub: string; 
   );
 }
 
-function NewsCard({ title, sub, image }: { title: string; sub: string; image: string }) {
+// ===== Featured News Card =====
+function FeaturedNewsCard({
+  title, sub, image, date, category, accent,
+}: {
+  title: string; sub: string; image: string; date: string; category: string; accent: string;
+}) {
   return (
-    <div className="relative flex items-center gap-3 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-2.5 backdrop-blur-xl">
-      <img src={image} alt="" className="h-[64px] w-[80px] rounded-xl object-cover" loading="lazy" />
-      <div className="flex-1 text-right">
-        <h3 className="text-[13px] font-extrabold text-white">{title}</h3>
-        <p className="text-[11px] text-white/65 mt-0.5">{sub}</p>
+    <article
+      className="relative h-[150px] w-full overflow-hidden rounded-[24px] border border-white/12"
+      style={{
+        boxShadow: `0 18px 36px -20px rgba(0,0,0,0.8), 0 0 0 1px ${accent}22, inset 0 0 24px ${accent}1a, inset 0 1px 0 rgba(255,255,255,0.12)`,
+        background: "#0a0612",
+      }}
+    >
+      <img src={image} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(270deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0.92) 100%)",
+        }}
+      />
+      {/* category badge */}
+      <div
+        className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-extrabold text-white backdrop-blur-md"
+        style={{ background: `${accent}33`, borderColor: `${accent}80` }}
+      >
+        <Sparkles className="h-2.5 w-2.5" />
+        {category}
       </div>
-      <ChevronLeft className="h-4 w-4 text-white/45 shrink-0" />
+      {/* date badge */}
+      <div className="absolute top-3 left-3 inline-flex items-center gap-1 rounded-full border border-white/20 bg-black/40 backdrop-blur-md px-2.5 py-1 text-[10px] font-bold text-white/90">
+        <Calendar className="h-2.5 w-2.5" />
+        {date}
+      </div>
+      <div className="absolute inset-x-0 bottom-0 px-4 pb-3.5 pt-4 text-right">
+        <h3
+          className="text-[15px] font-extrabold leading-tight text-white"
+          style={{ textShadow: "0 1px 6px rgba(0,0,0,0.85)" }}
+        >
+          {title}
+        </h3>
+        <p className="mt-1 text-[11.5px] leading-snug text-white/85 line-clamp-2">{sub}</p>
+      </div>
+    </article>
+  );
+}
+
+// ===== Primary Stack — Apple Wallet style layered =====
+function PrimaryStack({ cards }: { cards: { key: string; title: string; sub: string; image: string; to: string; accent: string; glyph: "Ⲁ" | "Ⲱ" }[] }) {
+  const total = cards.length;
+  const [index, setIndex] = useState(0);
+  const startX = useRef<number | null>(null);
+  const [dx, setDx] = useState(0);
+
+  const onStart = (e: React.TouchEvent | React.MouseEvent) => {
+    startX.current = "touches" in e ? e.touches[0].clientX : e.clientX;
+    setDx(0);
+  };
+  const onMove = (e: React.TouchEvent | React.MouseEvent) => {
+    if (startX.current == null) return;
+    const x = "touches" in e ? e.touches[0].clientX : e.clientX;
+    setDx(x - startX.current);
+  };
+  const onEnd = () => {
+    if (Math.abs(dx) > 60) setIndex((i) => i + (dx < 0 ? 1 : -1));
+    startX.current = null;
+    setDx(0);
+  };
+
+  const mod = ((index % total) + total) % total;
+  const visible = Math.min(4, total);
+
+  return (
+    <div
+      className="relative h-[260px] w-full select-none"
+      style={{ perspective: 1200 }}
+      onTouchStart={onStart as any}
+      onTouchMove={onMove as any}
+      onTouchEnd={onEnd}
+      onMouseDown={onStart as any}
+      onMouseMove={(e) => { if (startX.current != null) onMove(e); }}
+      onMouseUp={onEnd}
+      onMouseLeave={() => { if (startX.current != null) onEnd(); }}
+    >
+      {Array.from({ length: visible }).map((_, rel) => {
+        const c = cards[(mod + rel) % total];
+        const isFront = rel === 0;
+        const scale = 1 - rel * 0.05;
+        const translateY = rel * 12;
+        const translateX = isFront ? dx : 0;
+        const rotate = isFront ? dx * 0.015 : 0;
+        const opacity = rel <= 2 ? 1 : 0.5;
+        return (
+          <div
+            key={`${c.key}-${rel}`}
+            className="absolute inset-x-6 top-0"
+            style={{
+              transform: `translate3d(${translateX}px, ${translateY}px, 0) scale(${scale}) rotate(${rotate}deg)`,
+              zIndex: 30 - rel,
+              opacity,
+              transition: startX.current != null && isFront ? "none" : "transform 400ms cubic-bezier(0.22,1,0.36,1), opacity 300ms",
+            }}
+          >
+            {isFront ? (
+              <Link to={c.to as any} aria-label={c.title} className="block active:scale-[0.98] transition-transform">
+                <PrimaryArtCardFull {...c} />
+              </Link>
+            ) : (
+              <div className="pointer-events-none"><PrimaryArtCardFull {...c} /></div>
+            )}
+          </div>
+        );
+      })}
+      {/* indicators */}
+      <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 flex items-center gap-1.5">
+        {cards.map((_, i) => (
+          <span
+            key={i}
+            className="h-1.5 rounded-full transition-all"
+            style={{
+              width: i === mod ? 20 : 6,
+              background: i === mod ? "#e7c97a" : "rgba(255,255,255,0.25)",
+              boxShadow: i === mod ? "0 0 8px rgba(231,201,122,0.6)" : "none",
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PrimaryArtCardFull({ title, sub, image, accent, glyph }: { title: string; sub: string; image: string; accent: string; glyph: "Ⲁ" | "Ⲱ" }) {
+  return (
+    <div
+      className="relative h-[240px] w-full overflow-hidden rounded-[28px] border border-white/15"
+      style={{
+        boxShadow: `0 28px 56px -22px rgba(0,0,0,0.85), 0 0 0 1px ${accent}33, inset 0 0 36px ${accent}26, inset 0 1px 0 rgba(255,255,255,0.18)`,
+        background: "#0a0612",
+      }}
+    >
+      <img src={image} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.05) 35%, rgba(0,0,0,0.65) 80%, rgba(0,0,0,0.95) 100%)" }}
+      />
+      <span aria-hidden className="pointer-events-none absolute top-3 left-4 select-none font-black leading-none" style={{ fontSize: 80, color: "rgba(255,255,255,0.10)" }}>{glyph}</span>
+      <div className="absolute inset-x-5 bottom-4 text-right">
+        <h3 className="text-[20px] font-extrabold leading-tight text-white" style={{ textShadow: "0 2px 8px rgba(0,0,0,0.85)" }}>{title}</h3>
+        <p className="mt-1 text-[12.5px] font-medium text-white/85" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.7)" }}>{sub}</p>
+        <div
+          className="mt-2.5 inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold text-white border"
+          style={{ background: `${accent}33`, borderColor: `${accent}80`, backdropFilter: "blur(6px)" }}
+        >
+          افتح
+          <ChevronLeft className="h-3 w-3" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== Floating Mini Player =====
+function MiniPlayer({ dockVisible }: { dockVisible: boolean }) {
+  const [playing, setPlaying] = useState(false);
+  const [progress, setProgress] = useState(28);
+  const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    if (!playing) return;
+    const id = window.setInterval(() => setProgress((p) => (p >= 100 ? 0 : p + 0.4)), 200);
+    return () => clearInterval(id);
+  }, [playing]);
+
+  if (dismissed) return null;
+
+  const title = "ترنيمة بي إيك أفنوتي — لحن سنوي";
+
+  return (
+    <div
+      aria-label="مشغل الوسائط"
+      className="fixed inset-x-0 z-40 transition-all duration-300 ease-out"
+      style={{
+        bottom: `calc(env(safe-area-inset-bottom, 0px) + ${dockVisible ? 92 : 16}px)`,
+        opacity: 1,
+      }}
+    >
+      <div className="mx-auto w-full max-w-[440px] px-4">
+        <div
+          className="relative flex items-center gap-3 overflow-hidden rounded-[20px] border border-white/12 bg-gradient-to-r from-[#1a1230]/85 to-[#0c0918]/90 px-2.5 py-2 backdrop-blur-2xl"
+          style={{ boxShadow: "0 18px 36px -16px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.08)" }}
+        >
+          {/* artwork */}
+          <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-[12px] border border-white/15">
+            <img src={dailyHymn} alt="" className="h-full w-full object-cover" />
+            <div className="pointer-events-none absolute inset-0" style={{ boxShadow: "inset 0 0 18px rgba(231,201,122,0.35)" }} />
+          </div>
+          {/* title + progress */}
+          <div className="flex-1 min-w-0">
+            <div className="overflow-hidden">
+              <div
+                className="whitespace-nowrap text-[12.5px] font-bold text-white"
+                style={{
+                  display: "inline-block",
+                  paddingInlineStart: "100%",
+                  animation: "alphaMarquee 12s linear infinite",
+                }}
+              >
+                {title} · {title}
+              </div>
+            </div>
+            <div className="mt-1.5 h-[3px] w-full overflow-hidden rounded-full bg-white/10">
+              <div
+                className="h-full rounded-full"
+                style={{
+                  width: `${progress}%`,
+                  background: "linear-gradient(90deg,#e7c97a,#d88a2a)",
+                  boxShadow: "0 0 8px rgba(231,201,122,0.5)",
+                }}
+              />
+            </div>
+          </div>
+          {/* play/pause */}
+          <button
+            aria-label={playing ? "إيقاف" : "تشغيل"}
+            onClick={() => setPlaying((p) => !p)}
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-[#1a1230] active:scale-95 transition"
+            style={{ background: "linear-gradient(180deg,#f0d78c,#d88a2a)", boxShadow: "0 6px 14px -4px rgba(231,201,122,0.6)" }}
+          >
+            {playing ? <Pause className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current" />}
+          </button>
+          {/* dismiss */}
+          <button
+            aria-label="إغلاق"
+            onClick={() => setDismissed(true)}
+            className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 active:scale-95 transition"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+      <style>{`@keyframes alphaMarquee { 0%{transform:translateX(0)} 100%{transform:translateX(-100%)} }`}</style>
+    </div>
+  );
+}
+
+// ===== Share Sheet Host =====
+function ShareSheetHost() {
+  const [req, setReq] = useState<ShareRequest | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    const onOpen = (e: Event) => setReq((e as CustomEvent<ShareRequest>).detail);
+    window.addEventListener("alpha-share-open", onOpen as EventListener);
+    return () => window.removeEventListener("alpha-share-open", onOpen as EventListener);
+  }, []);
+
+  const close = useCallback(() => setReq(null), []);
+
+  if (!req) return null;
+
+  const text = shareText(req);
+  const encoded = encodeURIComponent(text);
+  const url = encodeURIComponent(APP_URL);
+
+  const doNative = async () => {
+    setBusy(true);
+    try {
+      const blob = await getShareBlob(req);
+      if (blob && (navigator as any).canShare?.({ files: [new File([blob], "alpha.jpg", { type: "image/jpeg" })] })) {
+        const file = new File([blob], "alpha.jpg", { type: "image/jpeg" });
+        await (navigator as any).share({ title: req.title, text, files: [file] });
+      } else if (navigator.share) {
+        await navigator.share({ title: req.title, text });
+      } else {
+        await navigator.clipboard?.writeText(text);
+      }
+    } catch {}
+    setBusy(false);
+    close();
+  };
+
+  const openExternal = (href: string) => { window.open(href, "_blank", "noopener,noreferrer"); close(); };
+
+  const doCopy = async () => {
+    try { await navigator.clipboard?.writeText(text); } catch {}
+    close();
+  };
+
+  const doSaveImage = async () => {
+    setBusy(true);
+    try {
+      const blob = await getShareBlob(req);
+      if (blob) {
+        const u = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = u; a.download = "alpha-coptic.jpg";
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(u), 1000);
+      }
+    } catch {}
+    setBusy(false);
+    close();
+  };
+
+  const options: { key: string; label: string; color: string; emoji: string; onClick: () => void }[] = [
+    { key: "wa", label: "واتساب", color: "#25D366", emoji: "💬", onClick: () => openExternal(`https://wa.me/?text=${encoded}`) },
+    { key: "tg", label: "تيليجرام", color: "#229ED9", emoji: "✈️", onClick: () => openExternal(`https://t.me/share/url?url=${url}&text=${encoded}`) },
+    { key: "fb", label: "فيسبوك", color: "#1877F2", emoji: "📘", onClick: () => openExternal(`https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${encoded}`) },
+    { key: "ig", label: "إنستجرام", color: "#E1306C", emoji: "📷", onClick: async () => { await doSaveImage(); } },
+    { key: "native", label: "مشاركة", color: "#e7c97a", emoji: "🔗", onClick: doNative },
+    { key: "copy", label: "نسخ النص", color: "#8a6ec1", emoji: "📋", onClick: doCopy },
+  ];
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      className="fixed inset-0 z-[60] flex items-end justify-center"
+      onClick={close}
+    >
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in" />
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-[440px] rounded-t-[28px] border-t border-x border-white/12 bg-gradient-to-b from-[#1a1230] to-[#0c0918] px-4 pt-3 pb-[max(env(safe-area-inset-bottom),20px)]"
+        style={{ boxShadow: "0 -20px 40px -10px rgba(0,0,0,0.7)" }}
+      >
+        <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-white/15" />
+        <div className="flex items-center justify-between px-1">
+          <h3 className="text-[14px] font-extrabold text-white">مشاركة</h3>
+          <button aria-label="إغلاق" onClick={close} className="grid h-8 w-8 place-items-center rounded-full bg-white/8 text-white/70">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <p className="mt-1 px-1 text-[11.5px] text-white/60 line-clamp-2 text-right">{req.title} — {req.body.slice(0, 80)}…</p>
+
+        <div className="mt-4 grid grid-cols-3 gap-3">
+          {options.map((o) => (
+            <button
+              key={o.key}
+              disabled={busy}
+              onClick={o.onClick}
+              className="flex flex-col items-center gap-1.5 rounded-2xl border border-white/10 bg-white/[0.04] p-3 active:scale-[0.96] transition disabled:opacity-50"
+            >
+              <span
+                className="grid h-12 w-12 place-items-center rounded-full text-[22px]"
+                style={{ background: `${o.color}22`, border: `1px solid ${o.color}66` }}
+              >
+                {o.emoji}
+              </span>
+              <span className="text-[11px] font-bold text-white">{o.label}</span>
+            </button>
+          ))}
+        </div>
+
+        <button
+          onClick={doSaveImage}
+          disabled={busy}
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.05] py-3 text-[12.5px] font-bold text-white active:scale-[0.99] transition disabled:opacity-50"
+        >
+          <Link2 className="h-4 w-4 text-[#e7c97a]" />
+          حفظ صورة المشاركة
+        </button>
+      </div>
     </div>
   );
 }
