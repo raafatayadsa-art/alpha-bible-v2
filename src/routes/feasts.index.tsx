@@ -159,36 +159,40 @@ function FeastsHome() {
                   style={{ background: ACCENT_COLORS[f.accent], boxShadow: `0 0 0 3px ${ACCENT_COLORS[f.accent]}22` }}
                   aria-hidden
                 />
-                <GlassSurface className="p-2 bg-white border-[#ead9b1] shadow-[0_14px_30px_-22px_rgba(120,80,30,0.55)]">
-                  <div className="grid grid-cols-[42px_110px_minmax(0,1fr)_38px] gap-2 items-center">
+                <GlassSurface className="relative overflow-hidden p-0 bg-white border-[#ead9b1] shadow-[0_14px_30px_-22px_rgba(120,80,30,0.55)]">
+                  {/* Image bleeds in from the left edge */}
+                  <img
+                    src={f.image}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    draggable={false}
+                    className="absolute inset-y-0 left-0 h-full w-[44%] object-cover object-center select-none"
+                  />
+                  {/* Beige→white fade from text into image */}
+                  <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      background:
+                        "linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,251,240,0.2) 22%, rgba(255,250,238,0.75) 40%, #fffaee 56%, #ffffff 70%)",
+                    }}
+                  />
+                  <div className="absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-white/50 to-transparent pointer-events-none" />
+                  <div className="absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-white/50 to-transparent pointer-events-none" />
+
+                  <div className="relative grid grid-cols-[52px_minmax(0,1fr)_44%] items-center gap-3 p-3 min-h-[96px]">
+                    {/* RIGHT: date */}
                     <div className="text-center">
                       <div className="text-[9.5px] font-bold text-[#b8893a] leading-none">{f.gregorianDate}</div>
                       <div
-                        className="font-arabic-serif text-[26px] font-extrabold leading-none mt-1"
+                        className="font-arabic-serif text-[28px] font-extrabold leading-none mt-1"
                         style={{ color: ACCENT_COLORS[f.accent] }}
                       >
                         {f.copticDay}
                       </div>
                       <div className="text-[9.5px] text-[#6a543a] mt-1 leading-none">{f.copticYear}</div>
                     </div>
-                    <div className="relative h-[82px] w-[110px] overflow-hidden rounded-2xl bg-[#f4ead8]">
-                      <img
-                        src={f.image}
-                        alt=""
-                        loading="lazy"
-                        decoding="async"
-                        draggable={false}
-                        className="absolute inset-0 h-full w-full object-cover object-center select-none"
-                        style={{
-                          WebkitMaskImage:
-                            "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.25) 18%, rgba(0,0,0,0.7) 42%, #000 70%)",
-                          maskImage:
-                            "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.25) 18%, rgba(0,0,0,0.7) 42%, #000 70%)",
-                        }}
-                      />
-                      <div className="absolute inset-y-0 left-0 w-1/2 bg-[linear-gradient(to_right,#ffffff_0%,rgba(255,255,255,0.6)_55%,transparent_100%)] pointer-events-none" />
-                      <div className="absolute inset-0 ring-1 ring-inset ring-[#ead9b1]/70 rounded-2xl pointer-events-none" />
-                    </div>
+                    {/* CENTER: title + description */}
                     <div className="min-w-0 text-right">
                       <div className="font-arabic-serif text-[15.5px] font-extrabold text-[#3a2a18] leading-tight line-clamp-1">
                         {f.title}
@@ -196,16 +200,14 @@ function FeastsHome() {
                       <div className="text-[12.5px] text-[#5a4630] line-clamp-2 mt-1 leading-relaxed">
                         {f.subtitle}
                       </div>
+                      <div className="mt-1.5 inline-flex items-center gap-1 text-[10.5px] font-bold" style={{ color: ACCENT_COLORS[f.accent] }}>
+                        <CopticCross size={10} />
+                        <span>اقرأ المزيد</span>
+                        <ChevronLeft className="h-3 w-3" />
+                      </div>
                     </div>
-                    <div className="flex flex-col items-center gap-1">
-                      <span
-                        className="grid h-9 w-9 place-items-center rounded-xl"
-                        style={{ background: `${ACCENT_COLORS[f.accent]}14`, color: ACCENT_COLORS[f.accent] }}
-                      >
-                        <CopticCross size={16} />
-                      </span>
-                      <ChevronLeft className="h-4 w-4 text-[#6a543a]" />
-                    </div>
+                    {/* LEFT spacer: reserves space over the image side */}
+                    <div aria-hidden />
                   </div>
                 </GlassSurface>
               </div>
