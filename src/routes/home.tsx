@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { Menu, Bell, Search, Sparkles, Share2, Bookmark, ChevronLeft, SkipBack, SkipForward, Play, Pause, Home as HomeIcon, HandHeart, Users, User as UserIcon } from "lucide-react";
 import logoBible from "@/assets/home/logo-bible.png";
 import { supabase } from "@/integrations/supabase/client";
+import { CopticWatermark } from "@/components/coptic";
 
 
 import heroImg from "@/assets/home/hero.png";
