@@ -5,13 +5,8 @@ import { SAINTS, getTodaySaint, type Saint } from "@/features/synaxarium";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { GlassSurface } from "@/components/bible/primitives";
 import { CopticCross, CopticWatermark, CopticSeparator } from "@/components/coptic";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerClose,
-} from "@/components/ui/drawer";
+import { SearchOverlay } from "@/components/overlays/SearchOverlay";
+import { NotificationsCenter, type NotificationItem } from "@/components/overlays/NotificationsCenter";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/synaxarium/")({
@@ -64,6 +59,17 @@ function SynaxariumHome() {
   const [query, setQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const topRef = useRef<HTMLDivElement | null>(null);
+  const [notifications, setNotifications] = useState<NotificationItem[]>(() => [
+    {
+      id: "saint-today",
+      title: `سيرة اليوم: ${today.name}`,
+      description: today.summary,
+      time: "اليوم",
+      read: false,
+      icon: <CopticCross size={14} />,
+      onOpen: () => navigate({ to: "/synaxarium/$saintId", params: { saintId: today.id } }),
+    },
+  ]);
 
   useEffect(() => {
     if (searchOpen) {
@@ -171,11 +177,11 @@ function SynaxariumHome() {
                 className="absolute inset-0 pointer-events-none"
                 style={{
                   background:
-                    "linear-gradient(to left, rgba(255,255,255,0) 0%, rgba(255,253,247,0.15) 30%, rgba(255,251,240,0.7) 48%, #fffaee 62%, #ffffff 78%)",
+                    "linear-gradient(to left, rgba(255,255,255,0) 30%, rgba(255,251,240,0.35) 50%, rgba(255,250,238,0.85) 60%, #ffffff 70%)",
                 }}
               />
-              <div className="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-white/70 to-transparent pointer-events-none" />
-              <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-white/80 to-transparent pointer-events-none" />
+              <div className="absolute inset-x-0 top-0 h-4 bg-gradient-to-b from-white/40 to-transparent pointer-events-none" />
+              <div className="absolute inset-x-0 bottom-0 h-4 bg-gradient-to-t from-white/40 to-transparent pointer-events-none" />
 
               <div className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-white/90 backdrop-blur px-2.5 py-1 text-[11px] font-bold text-[#3a2a18] border border-[#ead9b1] shadow-[0_4px_10px_-8px_rgba(120,80,30,0.5)]">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#6a4ab5]" />
@@ -241,11 +247,11 @@ function SynaxariumHome() {
                       className="absolute inset-0 pointer-events-none"
                       style={{
                         background:
-                          "linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,251,240,0.2) 22%, rgba(255,250,238,0.75) 40%, #fffaee 56%, #ffffff 70%)",
+                          "linear-gradient(to right, rgba(255,255,255,0) 30%, rgba(255,250,238,0.5) 48%, #ffffff 62%)",
                       }}
                     />
-                    <div className="absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-white/50 to-transparent pointer-events-none" />
-                    <div className="absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-white/50 to-transparent pointer-events-none" />
+                    <div className="absolute inset-x-0 top-0 h-3 bg-gradient-to-b from-white/30 to-transparent pointer-events-none" />
+                    <div className="absolute inset-x-0 bottom-0 h-3 bg-gradient-to-t from-white/30 to-transparent pointer-events-none" />
 
                     <div className="relative grid grid-cols-[64px_minmax(0,1fr)_44%] items-center gap-3 p-3 min-h-[96px]">
                       {/* date block */}
@@ -348,95 +354,49 @@ function SynaxariumHome() {
 
       <BottomDock />
 
-      {/* Search Drawer */}
-      <Drawer open={searchOpen} onOpenChange={setSearchOpen}>
-        <DrawerContent className="bg-white border-[#ead9b1]" dir="rtl">
-          <DrawerHeader className="text-right">
-            <DrawerTitle className="font-arabic-serif text-[17px] text-[#3a2a18]">
-              البحث في السنكسار
-            </DrawerTitle>
-          </DrawerHeader>
-          <div className="px-4">
-            <div className="relative">
-              <Search className="pointer-events-none absolute top-1/2 -translate-y-1/2 right-3 h-4 w-4 text-[#b8893a]" />
-              <input
-                ref={searchInputRef}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="ابحث باسم القديس أو التاريخ القبطي"
-                className="w-full h-11 rounded-2xl bg-[#faf3e3] border border-[#ead9b1] pr-9 pl-3 text-[13px] text-[#3a2a18] placeholder:text-[#b08a55] focus:outline-none focus:border-[#6a4ab5]"
-              />
-            </div>
-          </div>
-          <div className="px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+12px)] max-h-[55vh] overflow-y-auto space-y-2">
-            {searchResults.length === 0 && (
-              <p className="text-center text-[12px] text-[#6a543a] py-6">
-                لا توجد نتائج
-              </p>
-            )}
-            {searchResults.map((s) => (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => {
-                  setSearchOpen(false);
-                  navigate({
-                    to: "/synaxarium/$saintId",
-                    params: { saintId: s.id },
-                  });
-                }}
-                className="w-full text-right flex items-center gap-3 rounded-2xl bg-[#faf3e3] border border-[#ead9b1] p-2.5 active:scale-[0.98] transition-transform"
-              >
-                <img
-                  src={s.image}
-                  alt=""
-                  className="h-12 w-12 rounded-xl object-cover"
-                  draggable={false}
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="text-[13px] font-extrabold text-[#3a2a18] leading-tight line-clamp-1">
-                    {s.name}
-                  </div>
-                  <div className="text-[11px] text-[#6a543a] mt-0.5 line-clamp-1">
-                    {s.copticDate} · {s.title}
-                  </div>
-                </div>
-                <ChevronLeft className="h-4 w-4 text-[#b8893a]" />
-              </button>
-            ))}
-            <DrawerClose asChild>
-              <button
-                type="button"
-                className="mt-2 h-11 w-full rounded-2xl bg-white border border-[#ead9b1] text-[13px] font-bold text-[#3a2a18] active:scale-[0.98] transition-transform"
-              >
-                إغلاق
-              </button>
-            </DrawerClose>
-          </div>
-        </DrawerContent>
-      </Drawer>
+      {/* Search Overlay */}
+      <SearchOverlay
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        title="البحث في السنكسار"
+        placeholder="ابحث باسم القديس أو التاريخ القبطي"
+        query={query}
+        onQueryChange={setQuery}
+      >
+        {searchResults.length === 0 ? (
+          <p className="text-center text-[12px] text-[#6a543a] py-6">لا توجد نتائج</p>
+        ) : (
+          searchResults.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => {
+                setSearchOpen(false);
+                navigate({ to: "/synaxarium/$saintId", params: { saintId: s.id } });
+              }}
+              className="w-full text-right flex items-center gap-3 rounded-2xl bg-[#faf3e3] border border-[#ead9b1] p-2.5 active:scale-[0.98] transition-transform"
+            >
+              <img src={s.image} alt="" className="h-12 w-12 rounded-xl object-cover" draggable={false} />
+              <div className="min-w-0 flex-1">
+                <div className="text-[13px] font-extrabold text-[#3a2a18] leading-tight line-clamp-1">{s.name}</div>
+                <div className="text-[11px] text-[#6a543a] mt-0.5 line-clamp-1">{s.copticDate} · {s.title}</div>
+              </div>
+              <ChevronLeft className="h-4 w-4 text-[#b8893a]" />
+            </button>
+          ))
+        )}
+      </SearchOverlay>
 
-      {/* Notifications panel */}
-      <Drawer open={notifOpen} onOpenChange={setNotifOpen}>
-        <DrawerContent className="bg-white border-[#ead9b1]" dir="rtl">
-          <DrawerHeader className="text-right">
-            <DrawerTitle className="font-arabic-serif text-[17px] text-[#3a2a18]">التنبيهات</DrawerTitle>
-          </DrawerHeader>
-          <div className="px-4 pb-[calc(env(safe-area-inset-bottom)+16px)]">
-            <div className="rounded-2xl bg-[#faf3e3] border border-[#ead9b1] p-6 text-center text-[13px] text-[#6a543a]">
-              لا توجد تنبيهات حالياً
-            </div>
-            <DrawerClose asChild>
-              <button
-                type="button"
-                className="mt-3 h-11 w-full rounded-2xl bg-white border border-[#ead9b1] text-[13px] font-bold text-[#3a2a18] active:scale-[0.98] transition-transform"
-              >
-                إغلاق
-              </button>
-            </DrawerClose>
-          </div>
-        </DrawerContent>
-      </Drawer>
+      {/* Notifications Center */}
+      <NotificationsCenter
+        open={notifOpen}
+        onClose={() => setNotifOpen(false)}
+        items={notifications}
+        onMarkAllRead={() =>
+          setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
+        }
+        onDelete={(id) => setNotifications((prev) => prev.filter((n) => n.id !== id))}
+      />
     </div>
   );
 }

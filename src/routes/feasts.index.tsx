@@ -7,6 +7,8 @@ import { BottomDock } from "@/components/bible/BottomDock";
 import { GlassSurface } from "@/components/bible/primitives";
 import { CopticCross, CopticWatermark, CopticSeparator } from "@/components/coptic";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from "@/components/ui/drawer";
+import { SearchOverlay } from "@/components/overlays/SearchOverlay";
+import { NotificationsCenter, type NotificationItem } from "@/components/overlays/NotificationsCenter";
 import { cn } from "@/lib/utils";
 
 const CATEGORY_ICONS: Record<string, ReactNode> = {
@@ -46,6 +48,17 @@ function FeastsHome() {
   const [query, setQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const calendarRef = useRef<HTMLDivElement | null>(null);
+  const [notifications, setNotifications] = useState<NotificationItem[]>(() => [
+    {
+      id: "feast-today",
+      title: `مناسبة اليوم: ${today.title}`,
+      description: today.subtitle,
+      time: "اليوم",
+      read: false,
+      icon: <Church className="h-4 w-4" />,
+      onOpen: () => navigate({ to: "/feasts/$eventId", params: { eventId: today.id } }),
+    },
+  ]);
 
   useEffect(() => {
     if (searchOpen) {
@@ -141,12 +154,12 @@ function FeastsHome() {
                 className="absolute inset-0 pointer-events-none"
                 style={{
                   background:
-                    "linear-gradient(to left, rgba(255,255,255,0) 0%, rgba(255,253,247,0.15) 30%, rgba(255,251,240,0.7) 48%, #fffaee 62%, #ffffff 78%)",
+                    "linear-gradient(to left, rgba(255,255,255,0) 30%, rgba(255,251,240,0.35) 50%, rgba(255,250,238,0.85) 60%, #ffffff 70%)",
                 }}
               />
-              {/* Soft top/bottom polish */}
-              <div className="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-white/70 to-transparent pointer-events-none" />
-              <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-white/80 to-transparent pointer-events-none" />
+              {/* Soft top/bottom polish — minimal */}
+              <div className="absolute inset-x-0 top-0 h-4 bg-gradient-to-b from-white/40 to-transparent pointer-events-none" />
+              <div className="absolute inset-x-0 bottom-0 h-4 bg-gradient-to-t from-white/40 to-transparent pointer-events-none" />
 
               <div className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-white/90 backdrop-blur px-2.5 py-1 text-[11px] font-bold text-[#3a2a18] border border-[#ead9b1] shadow-[0_4px_10px_-8px_rgba(120,80,30,0.5)]">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#6a4ab5]" />
@@ -165,9 +178,16 @@ function FeastsHome() {
                 {today.scriptureRef && (
                   <p className="text-[11px] font-bold text-[#b8893a] mt-1.5 text-right">{today.scriptureRef}</p>
                 )}
-                <span className="mt-4 self-end inline-flex items-center gap-2 rounded-full bg-white border border-[#ead9b1] px-3.5 h-9 text-[11.5px] font-bold text-[#3a2a18] shadow-[0_10px_18px_-12px_rgba(120,80,30,0.55)]">
-                  <BookOpen className="h-3.5 w-3.5 text-[#6a4ab5]" />
-                  تعرف على المناسبة
+                <span
+                  className="group/cta mt-4 self-end relative inline-flex items-center gap-2 rounded-full px-4 h-8 text-[11.5px] font-extrabold text-white overflow-hidden border border-white/40 backdrop-blur-md shadow-[0_8px_18px_-8px_rgba(106,74,181,0.55),inset_0_1px_0_rgba(255,255,255,0.5)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:shadow-[0_12px_24px_-8px_rgba(106,74,181,0.7),inset_0_1px_0_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:scale-[0.96] active:translate-y-0"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, #6a4ab5 0%, #8c6fd1 55%, #b8893a 130%)",
+                  }}
+                >
+                  <span className="absolute inset-0 opacity-0 group-hover/cta:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-white/0 via-white/25 to-white/0 -translate-x-full group-hover/cta:translate-x-full" style={{ transitionProperty: "transform, opacity", transitionDuration: "700ms" }} />
+                  <BookOpen className="relative h-3.5 w-3.5" />
+                  <span className="relative">تعرف على المناسبة</span>
                 </span>
               </div>
             </div>
@@ -210,16 +230,17 @@ function FeastsHome() {
                     draggable={false}
                     className="absolute inset-y-0 left-0 h-full w-[44%] object-cover object-center select-none transition-transform duration-[300ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform [@media(hover:hover)]:group-hover:scale-[1.035] [@media(hover:hover)]:group-hover:-translate-x-0.5 group-focus-visible:scale-[1.035] group-focus-visible:-translate-x-0.5 group-active:scale-[1.02] group-active:-translate-x-0.5"
                   />
-                  {/* Beige→white fade from text into image */}
+                  {/* Beige→white fade from text into image — softer, less coverage */}
                   <div
                     className="absolute inset-0 pointer-events-none"
                     style={{
                       background:
-                        "linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,251,240,0.2) 22%, rgba(255,250,238,0.75) 40%, #fffaee 56%, #ffffff 70%)",
+                        "linear-gradient(to right, rgba(255,255,255,0) 30%, rgba(255,250,238,0.5) 48%, #ffffff 62%)",
                     }}
                   />
-                  <div className="absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-white/50 to-transparent pointer-events-none" />
-                  <div className="absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-white/50 to-transparent pointer-events-none" />
+                  <div className="absolute inset-x-0 top-0 h-3 bg-gradient-to-b from-white/30 to-transparent pointer-events-none" />
+                  <div className="absolute inset-x-0 bottom-0 h-3 bg-gradient-to-t from-white/30 to-transparent pointer-events-none" />
+
 
                   <div className="relative grid grid-cols-[64px_minmax(0,1fr)_44%] items-center gap-3 p-3 min-h-[96px]">
 
@@ -359,29 +380,16 @@ function FeastsHome() {
 
       <BottomDock />
 
-      {/* Notifications panel */}
-      <Drawer open={notifOpen} onOpenChange={setNotifOpen}>
-        <DrawerContent className="bg-white border-[#ead9b1]" dir="rtl">
-          <DrawerHeader className="text-right">
-            <DrawerTitle className="font-arabic-serif text-[17px] text-[#3a2a18]">التنبيهات</DrawerTitle>
-          </DrawerHeader>
-          <div className="px-4 pb-[calc(env(safe-area-inset-bottom)+16px)]">
-            <div className="rounded-2xl bg-[#faf3e3] border border-[#ead9b1] p-6 text-center text-[13px] text-[#6a543a]">
-              لا توجد تنبيهات حالياً
-            </div>
-            <DrawerClose asChild>
-              <button
-                type="button"
-                className="mt-3 h-11 w-full rounded-2xl bg-white border border-[#ead9b1] text-[13px] font-bold text-[#3a2a18] active:scale-[0.98] transition-transform"
-              >
-                إغلاق
-              </button>
-            </DrawerClose>
-          </div>
-        </DrawerContent>
-      </Drawer>
+      {/* Notifications Center */}
+      <NotificationsCenter
+        open={notifOpen}
+        onClose={() => setNotifOpen(false)}
+        items={notifications}
+        onMarkAllRead={() => setNotifications((p) => p.map((n) => ({ ...n, read: true })))}
+        onDelete={(id) => setNotifications((p) => p.filter((n) => n.id !== id))}
+      />
 
-      {/* Current fast panel */}
+      {/* Current fast panel — kept as drawer (status sheet, not search) */}
       <Drawer open={fastOpen} onOpenChange={setFastOpen}>
         <DrawerContent className="bg-white border-[#ead9b1]" dir="rtl">
           <DrawerHeader className="text-right">
@@ -403,62 +411,38 @@ function FeastsHome() {
         </DrawerContent>
       </Drawer>
 
-      {/* Search panel */}
-      <Drawer open={searchOpen} onOpenChange={setSearchOpen}>
-        <DrawerContent className="bg-white border-[#ead9b1]" dir="rtl">
-          <DrawerHeader className="text-right">
-            <DrawerTitle className="font-arabic-serif text-[17px] text-[#3a2a18]">البحث في المناسبات</DrawerTitle>
-          </DrawerHeader>
-          <div className="px-4">
-            <div className="relative">
-              <Search className="pointer-events-none absolute top-1/2 -translate-y-1/2 right-3 h-4 w-4 text-[#b8893a]" />
-              <input
-                ref={searchInputRef}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="ابحث باسم العيد أو المناسبة"
-                className="w-full h-11 rounded-2xl bg-[#faf3e3] border border-[#ead9b1] pr-9 pl-3 text-[13px] text-[#3a2a18] placeholder:text-[#b08a55] focus:outline-none focus:border-[#6a4ab5]"
-              />
-            </div>
-          </div>
-          <div className="px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+12px)] max-h-[55vh] overflow-y-auto space-y-2">
-            {results.length === 0 ? (
-              <p className="text-center text-[12px] text-[#6a543a] py-6">لا توجد نتائج</p>
-            ) : (
-              results.map((f) => (
-                <button
-                  key={f.id}
-                  type="button"
-                  onClick={() => {
-                    setSearchOpen(false);
-                    navigate({ to: "/feasts/$eventId", params: { eventId: f.id } });
-                  }}
-                  className="w-full text-right flex items-center gap-3 rounded-2xl bg-[#faf3e3] border border-[#ead9b1] p-2.5 active:scale-[0.98] transition-transform"
-                >
-                  <img src={f.image} alt="" className="h-12 w-12 rounded-xl object-cover" draggable={false} />
-                  <div className="min-w-0 flex-1">
-                    <div className="text-[13px] font-extrabold text-[#3a2a18] leading-tight line-clamp-1">
-                      {f.title}
-                    </div>
-                    <div className="text-[11px] text-[#6a543a] mt-0.5 line-clamp-1">
-                      {f.subtitle}
-                    </div>
-                  </div>
-                  <ChevronLeft className="h-4 w-4 text-[#b8893a]" />
-                </button>
-              ))
-            )}
-            <DrawerClose asChild>
-              <button
-                type="button"
-                className="mt-2 h-11 w-full rounded-2xl bg-white border border-[#ead9b1] text-[13px] font-bold text-[#3a2a18] active:scale-[0.98] transition-transform"
-              >
-                إغلاق
-              </button>
-            </DrawerClose>
-          </div>
-        </DrawerContent>
-      </Drawer>
+      {/* Search Overlay */}
+      <SearchOverlay
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        title="البحث في المناسبات"
+        placeholder="ابحث باسم العيد أو المناسبة"
+        query={query}
+        onQueryChange={setQuery}
+      >
+        {results.length === 0 ? (
+          <p className="text-center text-[12px] text-[#6a543a] py-6">لا توجد نتائج</p>
+        ) : (
+          results.map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              onClick={() => {
+                setSearchOpen(false);
+                navigate({ to: "/feasts/$eventId", params: { eventId: f.id } });
+              }}
+              className="w-full text-right flex items-center gap-3 rounded-2xl bg-[#faf3e3] border border-[#ead9b1] p-2.5 active:scale-[0.98] transition-transform"
+            >
+              <img src={f.image} alt="" className="h-12 w-12 rounded-xl object-cover" draggable={false} />
+              <div className="min-w-0 flex-1">
+                <div className="text-[13px] font-extrabold text-[#3a2a18] leading-tight line-clamp-1">{f.title}</div>
+                <div className="text-[11px] text-[#6a543a] mt-0.5 line-clamp-1">{f.subtitle}</div>
+              </div>
+              <ChevronLeft className="h-4 w-4 text-[#b8893a]" />
+            </button>
+          ))
+        )}
+      </SearchOverlay>
     </div>
   );
 }
