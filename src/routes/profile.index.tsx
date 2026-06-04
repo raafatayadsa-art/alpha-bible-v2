@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { CopticWatermark, CopticCross } from "@/components/coptic";
+import alphaLogoAsset from "@/assets/alpha-logo.png.asset.json";
 
 export const Route = createFileRoute("/profile/")({
   ssr: false,
