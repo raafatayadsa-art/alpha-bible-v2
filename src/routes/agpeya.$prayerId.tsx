@@ -13,13 +13,10 @@ import {
   Pause,
   Gauge,
   Rows3,
-  Search,
   X,
   Copy,
   Send,
   MessageCircle,
-  ChevronUp,
-  ChevronDown,
 } from "lucide-react";
 import {
   adjacentAgpeyaPrayers,
@@ -28,11 +25,9 @@ import {
   AgpeyaNotFoundState,
   AgpeyaSkeleton,
   CopticCross,
-  CopticDivider,
   getAgpeyaPrayer,
   readPrayerPosition,
   savePrayerPosition,
-  splitForHighlight,
   SPEED_PX_PER_SEC,
   useAgpeyaAudio,
   useAgpeyaFontSize,
@@ -40,13 +35,9 @@ import {
   useAgpeyaSpeed,
   useAgpeyaTheme,
   useSavedAgpeya,
-  type AgpeyaFragment,
-  type AgpeyaGospelPassage,
-  type AgpeyaInfoEntry,
-  type AgpeyaPsalm,
   type AgpeyaSpeed,
 } from "@/features/agpeya";
-import type { AgpeyaPrayer, AgpeyaTabKey } from "@/features/agpeya";
+import type { AgpeyaPrayer } from "@/features/agpeya";
 import { cn } from "@/lib/utils";
 
 /* ---------- Lifecycle states ---------- */
@@ -91,188 +82,122 @@ export const Route = createFileRoute("/agpeya/$prayerId")({
   component: PrayerReader,
 });
 
-const TABS: { key: AgpeyaTabKey; label: string }[] = [
-  { key: "text", label: "نص الصلاة" },
-  { key: "psalms", label: "المزامير" },
-  { key: "fragments", label: "القطع" },
-  { key: "gospel", label: "الإنجيل" },
-  { key: "info", label: "معلومات" },
-];
+/* ---------- Section model ---------- */
 
-/* ---------- Highlight helper ---------- */
-
-function Highlighted({ text, query, dark }: { text: string; query: string; dark: boolean }) {
-  if (!query.trim()) return <>{text}</>;
-  const parts = splitForHighlight(text, query);
-  return (
-    <>
-      {parts.map((p, i) =>
-        p.match ? (
-          <mark
-            key={i}
-            className={cn(
-              "rounded px-0.5 py-0",
-              dark ? "bg-[#f0d78c] text-[#1a1208]" : "bg-[#ffe79a] text-[#3a2410]",
-            )}
-          >
-            {p.text}
-          </mark>
-        ) : (
-          <span key={i}>{p.text}</span>
-        ),
-      )}
-    </>
-  );
+interface PrayerSection {
+  id: string;
+  label: string;
+  render: (ctx: { dark: boolean }) => React.ReactNode;
 }
 
-/* ---------- Tab renderers ---------- */
-
-function TextTab({ body, query, dark }: { body: string; query: string; dark: boolean }) {
-  const paragraphs = body.split(/\n\s*\n/);
-  return (
-    <>
-      {paragraphs.map((para, i) => (
-        <p key={i} className={cn("mb-5", dark ? "text-[#e8e2cf]" : "text-[#2a1a08]")}>
-          <Highlighted text={para} query={query} dark={dark} />
-        </p>
-      ))}
-    </>
-  );
+function paragraphs(body: string): string[] {
+  return body.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
 }
 
-function PsalmsTab({ psalms, query, dark }: { psalms: AgpeyaPsalm[]; query: string; dark: boolean }) {
-  return (
-    <div className="space-y-6">
-      {psalms.map((ps, i) => (
-        <section key={i}>
-          <header className="mb-3 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <span className={cn(
-                "grid h-9 w-9 place-items-center rounded-full text-[12px] font-extrabold tabular-nums",
-                dark ? "bg-[#f0d78c] text-[#1a1208]" : "bg-gradient-to-br from-[#e7b35a] to-[#b87a22] text-white",
-              )}>
-                {ps.number}
-              </span>
-              <div>
-                <div className={cn("font-arabic-serif text-[15px] font-bold", dark ? "text-[#f0d78c]" : "text-[#5b3a18]")}>
-                  مزمور {ps.number}
-                </div>
-                {ps.title && (
-                  <div className={cn("text-[11.5px]", dark ? "text-white/55" : "text-[#8a5a1f]")}>
-                    {ps.title}
-                  </div>
-                )}
-              </div>
-            </div>
-            <CopticCross className={cn("h-4 w-4", dark ? "text-[#f0d78c]/70" : "text-[#c79356]")} />
-          </header>
-          <ol className="space-y-2.5">
-            {ps.verses.map((v, vi) => (
-              <li key={vi} className="flex gap-2">
-                <span className={cn("shrink-0 select-none text-[11px] font-bold tabular-nums leading-relaxed", dark ? "text-[#f0d78c]/70" : "text-[#c79356]")}>
-                  {vi + 1}
-                </span>
-                <span className={cn(dark ? "text-[#e8e2cf]" : "text-[#2a1a08]")}>
-                  <Highlighted text={v} query={query} dark={dark} />
-                </span>
-              </li>
-            ))}
-          </ol>
-          {i < psalms.length - 1 && <CopticDivider dark={dark} />}
-        </section>
-      ))}
-    </div>
-  );
-}
+function buildSections(prayer: AgpeyaPrayer): PrayerSection[] {
+  const out: PrayerSection[] = [];
 
-function GospelTab({ gospel, query, dark }: { gospel: AgpeyaGospelPassage[]; query: string; dark: boolean }) {
-  return (
-    <div className="space-y-6">
-      {gospel.map((g, i) => (
-        <article
-          key={i}
-          className={cn(
-            "rounded-2xl border p-5",
-            dark ? "border-white/10 bg-white/5" : "border-[#c79356]/30 bg-white/55",
-          )}
-        >
-          <div className={cn(
-            "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold mb-3",
-            dark ? "bg-[#f0d78c]/15 text-[#f0d78c]" : "bg-[#1f4032]/10 text-[#1f4032]",
-          )}>
-            <CopticCross className="h-3 w-3" />
-            {g.reference}
-          </div>
-          {g.intro && (
-            <p className={cn("mb-4 text-[13.5px] italic", dark ? "text-white/65" : "text-[#7a5a32]")}>
-              <Highlighted text={g.intro} query={query} dark={dark} />
-            </p>
-          )}
-          {g.passage.split(/\n\s*\n/).map((para, pi) => (
-            <p key={pi} className={cn("mb-4", dark ? "text-[#e8e2cf]" : "text-[#2a1a08]")}>
-              <Highlighted text={para} query={query} dark={dark} />
-            </p>
+  const text = prayer.tabs.text?.body ?? "";
+  const paras = paragraphs(text);
+  if (paras.length > 0) {
+    const intro = paras.slice(0, Math.max(1, Math.ceil(paras.length / 2)));
+    const thanks = paras.slice(intro.length);
+    out.push({
+      id: "intro",
+      label: "مقدمة الساعة",
+      render: ({ dark }) => <ProseCard dark={dark} paragraphs={intro} />,
+    });
+    if (thanks.length) {
+      out.push({
+        id: "thanksgiving",
+        label: "صلاة الشكر",
+        render: ({ dark }) => <ProseCard dark={dark} paragraphs={thanks} />,
+      });
+    }
+  }
+
+  const psalms = prayer.tabs.psalms?.psalms ?? [];
+  const psalm50 = psalms.find((p) => p.number === 50);
+  const otherPsalms = psalms.filter((p) => p !== psalm50);
+
+  if (psalm50) {
+    out.push({
+      id: "psalm-50",
+      label: "المزمور ٥٠",
+      render: ({ dark }) => <PsalmCard dark={dark} psalm={psalm50} />,
+    });
+  }
+
+  if (otherPsalms.length) {
+    out.push({
+      id: "psalms",
+      label: "المزامير",
+      render: ({ dark }) => (
+        <div className="space-y-3">
+          {otherPsalms.map((p, i) => (
+            <PsalmCard key={`${p.number}-${i}`} dark={dark} psalm={p} />
           ))}
-          {g.conclusion && (
-            <p className={cn("mt-3 text-[12.5px] text-center font-bold", dark ? "text-[#f0d78c]" : "text-[#1f4032]")}>
-              {g.conclusion}
-            </p>
-          )}
-        </article>
-      ))}
-    </div>
-  );
-}
-
-function FragmentsTab({ fragments, query, dark }: { fragments: AgpeyaFragment[]; query: string; dark: boolean }) {
-  return (
-    <div className="space-y-4">
-      {fragments.map((f, i) => (
-        <article
-          key={i}
-          className={cn(
-            "rounded-2xl border p-4",
-            dark ? "border-white/10 bg-white/5" : "border-[#c79356]/30 bg-white/55",
-          )}
-        >
-          <h3 className={cn("font-arabic-serif text-[15px] font-bold mb-2 flex items-center gap-2", dark ? "text-[#f0d78c]" : "text-[#5b3a18]")}>
-            <CopticCross className="h-3.5 w-3.5" />
-            {f.title}
-          </h3>
-          {f.body.split(/\n+/).map((line, li) => (
-            <p key={li} className={cn("mb-2", dark ? "text-[#e8e2cf]" : "text-[#2a1a08]")}>
-              <Highlighted text={line} query={query} dark={dark} />
-            </p>
-          ))}
-        </article>
-      ))}
-    </div>
-  );
-}
-
-function InfoTab({ info, query, dark }: { info: AgpeyaInfoEntry[]; query: string; dark: boolean }) {
-  return (
-    <dl className={cn(
-      "divide-y rounded-2xl border",
-      dark ? "divide-white/10 border-white/10 bg-white/5" : "divide-[#c79356]/20 border-[#c79356]/30 bg-white/55",
-    )}>
-      {info.map((entry, i) => (
-        <div key={i} className="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-baseline sm:gap-4">
-          <dt className={cn("shrink-0 text-[12px] font-bold", dark ? "text-[#f0d78c]/85" : "text-[#8a5a1f]")}>
-            {entry.label}
-          </dt>
-          <dd className={cn("text-[13.5px] flex-1", dark ? "text-[#e8e2cf]" : "text-[#2a1a08]")}>
-            <Highlighted text={entry.value} query={query} dark={dark} />
-          </dd>
         </div>
-      ))}
-    </dl>
-  );
+      ),
+    });
+  }
+
+  const gospel = prayer.tabs.gospel?.gospel ?? [];
+  if (gospel.length) {
+    out.push({
+      id: "gospel",
+      label: "الإنجيل",
+      render: ({ dark }) => (
+        <div className="space-y-3">
+          {gospel.map((g, i) => (
+            <GospelCard key={i} dark={dark} g={g} />
+          ))}
+        </div>
+      ),
+    });
+  }
+
+  const frags = prayer.tabs.fragments?.fragments ?? [];
+  const creed = frags.find((f) => /قانون الإيمان|الإيمان/i.test(f.title));
+  const otherFrags = frags.filter((f) => f !== creed);
+
+  if (otherFrags.length) {
+    out.push({
+      id: "fragments",
+      label: "القطع",
+      render: ({ dark }) => (
+        <div className="space-y-3">
+          {otherFrags.map((f, i) => (
+            <FragmentCard key={i} dark={dark} f={f} />
+          ))}
+        </div>
+      ),
+    });
+  }
+
+  if (creed) {
+    out.push({
+      id: "creed",
+      label: "قانون الإيمان",
+      render: ({ dark }) => <FragmentCard dark={dark} f={creed} />,
+    });
+  }
+
+  const info = prayer.tabs.info?.info ?? [];
+  const infoList = info.length ? info : buildInfoFallback(prayer);
+  if (infoList.length) {
+    out.push({
+      id: "info",
+      label: "معلومات",
+      render: ({ dark }) => <InfoCard dark={dark} entries={infoList} />,
+    });
+  }
+
+  return out;
 }
 
-/** Build a metadata-derived info list as a graceful fallback. */
-function buildInfoFromMeta(p: AgpeyaPrayer): AgpeyaInfoEntry[] {
-  const out: AgpeyaInfoEntry[] = [];
+function buildInfoFallback(p: AgpeyaPrayer) {
+  const out: { label: string; value: string }[] = [];
   if (p.description) out.push({ label: "المعنى", value: p.description });
   if (p.clock) out.push({ label: "الوقت", value: p.clock });
   if (p.psalmsCount) out.push({ label: "عدد المزامير", value: `${p.psalmsCount} مزمور` });
@@ -281,20 +206,182 @@ function buildInfoFromMeta(p: AgpeyaPrayer): AgpeyaInfoEntry[] {
   return out;
 }
 
-/** Flatten all searchable strings of a tab for match counting. */
-function flattenTab(tab: AgpeyaTabKey, prayer: AgpeyaPrayer, infoFallback: AgpeyaInfoEntry[]): string[] {
-  const t = prayer.tabs[tab];
-  if (!t) return [];
-  switch (tab) {
-    case "text": return t.body ? [t.body] : [];
-    case "psalms": return (t.psalms ?? []).flatMap((p) => [p.title ?? "", ...p.verses]);
-    case "gospel": return (t.gospel ?? []).flatMap((g) => [g.reference, g.intro ?? "", g.passage, g.conclusion ?? ""]);
-    case "fragments": return (t.fragments ?? []).flatMap((f) => [f.title, f.body]);
-    case "info": {
-      const list = t.info && t.info.length ? t.info : infoFallback;
-      return list.flatMap((e) => [e.label, e.value]);
-    }
-  }
+/* ---------- Reading cards ---------- */
+
+function SectionShell({
+  id, label, dark, children,
+}: { id: string; label: string; dark: boolean; children: React.ReactNode }) {
+  return (
+    <section
+      id={`section-${id}`}
+      data-section-id={id}
+      className="scroll-mt-32"
+    >
+      <header className="mb-3 flex items-center gap-2 px-1">
+        <CopticCross className={cn("h-3.5 w-3.5", dark ? "text-[#f0d78c]/80" : "text-[#c79356]")} />
+        <h2 className={cn(
+          "font-arabic-serif text-[15px] font-extrabold tracking-tight",
+          dark ? "text-[#f0d78c]" : "text-[#5b3a18]",
+        )}>
+          {label}
+        </h2>
+        <span className={cn("h-px flex-1", dark ? "bg-white/10" : "bg-[#c79356]/25")} />
+      </header>
+      {children}
+    </section>
+  );
+}
+
+function GlassCard({
+  dark, children, className,
+}: { dark: boolean; children: React.ReactNode; className?: string }) {
+  return (
+    <div
+      className={cn(
+        "rounded-2xl border p-5 backdrop-blur-xl transition-colors",
+        dark
+          ? "border-white/10 bg-white/[0.04] shadow-[0_10px_30px_-20px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.04)]"
+          : "border-[#c79356]/25 bg-white/70 shadow-[0_10px_28px_-18px_rgba(120,80,30,0.35),inset_0_1px_0_rgba(255,255,255,0.85)]",
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
+function ProseCard({ dark, paragraphs }: { dark: boolean; paragraphs: string[] }) {
+  return (
+    <GlassCard dark={dark}>
+      {paragraphs.map((p, i) => (
+        <p
+          key={i}
+          className={cn(
+            i < paragraphs.length - 1 && "mb-4",
+            dark ? "text-[#e8e2cf]" : "text-[#2a1a08]",
+          )}
+        >
+          {p}
+        </p>
+      ))}
+    </GlassCard>
+  );
+}
+
+function PsalmCard({
+  dark, psalm,
+}: { dark: boolean; psalm: { number: number; title?: string; verses: string[] } }) {
+  return (
+    <GlassCard dark={dark}>
+      <header className="mb-3 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <span className={cn(
+            "grid h-9 w-9 place-items-center rounded-full text-[12px] font-extrabold tabular-nums",
+            dark
+              ? "bg-[#f0d78c] text-[#1a1208]"
+              : "bg-gradient-to-br from-[#e7b35a] to-[#b87a22] text-white",
+          )}>
+            {psalm.number}
+          </span>
+          <div>
+            <div className={cn("font-arabic-serif text-[14px] font-bold", dark ? "text-[#f0d78c]" : "text-[#5b3a18]")}>
+              مزمور {psalm.number}
+            </div>
+            {psalm.title && (
+              <div className={cn("text-[11px]", dark ? "text-white/55" : "text-[#8a5a1f]")}>
+                {psalm.title}
+              </div>
+            )}
+          </div>
+        </div>
+        <CopticCross className={cn("h-4 w-4", dark ? "text-[#f0d78c]/70" : "text-[#c79356]")} />
+      </header>
+      <ol className="space-y-2.5">
+        {psalm.verses.map((v, vi) => (
+          <li key={vi} className="flex gap-2">
+            <span className={cn(
+              "shrink-0 select-none text-[11px] font-bold tabular-nums leading-relaxed",
+              dark ? "text-[#f0d78c]/70" : "text-[#c79356]",
+            )}>
+              {vi + 1}
+            </span>
+            <span className={cn(dark ? "text-[#e8e2cf]" : "text-[#2a1a08]")}>{v}</span>
+          </li>
+        ))}
+      </ol>
+    </GlassCard>
+  );
+}
+
+function GospelCard({
+  dark, g,
+}: { dark: boolean; g: { reference: string; intro?: string; passage: string; conclusion?: string } }) {
+  return (
+    <GlassCard dark={dark}>
+      <div className={cn(
+        "mb-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold",
+        dark ? "bg-[#f0d78c]/15 text-[#f0d78c]" : "bg-[#1f4032]/10 text-[#1f4032]",
+      )}>
+        <CopticCross className="h-3 w-3" />
+        {g.reference}
+      </div>
+      {g.intro && (
+        <p className={cn("mb-4 text-[13.5px] italic", dark ? "text-white/65" : "text-[#7a5a32]")}>
+          {g.intro}
+        </p>
+      )}
+      {paragraphs(g.passage).map((para, pi) => (
+        <p key={pi} className={cn("mb-3 last:mb-0", dark ? "text-[#e8e2cf]" : "text-[#2a1a08]")}>
+          {para}
+        </p>
+      ))}
+      {g.conclusion && (
+        <p className={cn("mt-3 text-center text-[12.5px] font-bold", dark ? "text-[#f0d78c]" : "text-[#1f4032]")}>
+          {g.conclusion}
+        </p>
+      )}
+    </GlassCard>
+  );
+}
+
+function FragmentCard({ dark, f }: { dark: boolean; f: { title: string; body: string } }) {
+  return (
+    <GlassCard dark={dark}>
+      <h3 className={cn(
+        "mb-2 flex items-center gap-2 font-arabic-serif text-[14px] font-bold",
+        dark ? "text-[#f0d78c]" : "text-[#5b3a18]",
+      )}>
+        <CopticCross className="h-3.5 w-3.5" />
+        {f.title}
+      </h3>
+      {f.body.split(/\n+/).map((line, li) => (
+        <p key={li} className={cn("mb-2 last:mb-0", dark ? "text-[#e8e2cf]" : "text-[#2a1a08]")}>
+          {line}
+        </p>
+      ))}
+    </GlassCard>
+  );
+}
+
+function InfoCard({
+  dark, entries,
+}: { dark: boolean; entries: { label: string; value: string }[] }) {
+  return (
+    <GlassCard dark={dark} className="p-0 overflow-hidden">
+      <dl className={cn("divide-y", dark ? "divide-white/10" : "divide-[#c79356]/20")}>
+        {entries.map((e, i) => (
+          <div key={i} className="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-baseline sm:gap-4">
+            <dt className={cn("shrink-0 text-[12px] font-bold", dark ? "text-[#f0d78c]/85" : "text-[#8a5a1f]")}>
+              {e.label}
+            </dt>
+            <dd className={cn("text-[13.5px] flex-1", dark ? "text-[#e8e2cf]" : "text-[#2a1a08]")}>
+              {e.value}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </GlassCard>
+  );
 }
 
 /* ---------- Reader ---------- */
@@ -305,22 +392,8 @@ function PrayerReader() {
   const navigate = useNavigate();
 
   const { prev, next } = useMemo(() => adjacentAgpeyaPrayers(prayerId), [prayerId]);
+  const sections = useMemo(() => buildSections(prayer), [prayer]);
 
-  const infoFallback = useMemo(() => buildInfoFromMeta(prayer), [prayer]);
-
-  // Determine which tabs have any content (structured or body).
-  const availableTabs = useMemo(() => {
-    return TABS.filter((t) => {
-      const c = prayer.tabs[t.key];
-      if (!c) return t.key === "info"; // info always available via fallback
-      return Boolean(c.body || c.psalms?.length || c.gospel?.length || c.fragments?.length || c.info?.length);
-    });
-  }, [prayer]);
-
-  const initial = readPrayerPosition(prayerId);
-  const [tab, setTab] = useState<AgpeyaTabKey>(
-    initial?.tab && availableTabs.some((t) => t.key === initial.tab) ? initial.tab : availableTabs[0]?.key ?? "text",
-  );
   const [fontSize, setFontSize] = useAgpeyaFontSize();
   const [lineHeight, setLineHeight] = useAgpeyaLineHeight();
   const [theme, setTheme] = useAgpeyaTheme();
@@ -328,18 +401,9 @@ function PrayerReader() {
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [notice, setNotice] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<string>(sections[0]?.id ?? "");
   const { isSaved, toggle } = useSavedAgpeya();
 
-  // Search
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    if (searchOpen) requestAnimationFrame(() => searchInputRef.current?.focus());
-    else setQuery("");
-  }, [searchOpen]);
-
-  // Share dialog
   const [shareOpen, setShareOpen] = useState(false);
 
   // Audio scaffolding — reserved for future player.
@@ -347,30 +411,22 @@ function PrayerReader() {
   useEffect(() => { setAudioState({ prayerId, positionSec: 0 }); }, [prayerId, setAudioState]);
 
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const chipsRef = useRef<HTMLDivElement>(null);
   const dark = theme === "dark";
 
-  const matchStrings = useMemo(() => flattenTab(tab, prayer, infoFallback), [tab, prayer, infoFallback]);
-  const matchCount = useMemo(() => {
-    if (!query.trim()) return 0;
-    try {
-      const re = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
-      return matchStrings.reduce((acc, s) => acc + (s.match(re)?.length ?? 0), 0);
-    } catch { return 0; }
-  }, [matchStrings, query]);
-
-  // Restore scroll position on tab change
+  // Restore scroll position on first mount per prayer
   useEffect(() => {
     const el = scrollerRef.current;
     if (!el) return;
     const pos = readPrayerPosition(prayerId);
-    if (pos && pos.tab === tab) {
+    if (pos) {
       requestAnimationFrame(() => {
         el.scrollTop = pos.scrollPercent * Math.max(0, el.scrollHeight - el.clientHeight);
       });
     } else {
       el.scrollTop = 0;
     }
-  }, [tab, prayerId]);
+  }, [prayerId]);
 
   // Track scroll progress and persist (throttled)
   useEffect(() => {
@@ -387,7 +443,7 @@ function PrayerReader() {
         const now = Date.now();
         if (now - lastSave > 400) {
           lastSave = now;
-          savePrayerPosition(prayerId, { tab, scrollPercent: pct, updatedAt: now });
+          savePrayerPosition(prayerId, { tab: "text", scrollPercent: pct, updatedAt: now });
         }
       });
     };
@@ -396,7 +452,41 @@ function PrayerReader() {
       el.removeEventListener("scroll", onScroll);
       cancelAnimationFrame(raf);
     };
-  }, [tab, prayerId]);
+  }, [prayerId]);
+
+  // IntersectionObserver to track active section
+  useEffect(() => {
+    const root = scrollerRef.current;
+    if (!root) return;
+    const els = sections
+      .map((s) => root.querySelector(`#section-${s.id}`))
+      .filter((el): el is Element => !!el);
+    if (!els.length) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (visible) {
+          const id = (visible.target as HTMLElement).dataset.sectionId;
+          if (id) setActiveId(id);
+        }
+      },
+      { root, rootMargin: "-30% 0px -60% 0px", threshold: [0, 0.25, 0.5, 1] },
+    );
+    els.forEach((e) => io.observe(e));
+    return () => io.disconnect();
+  }, [sections]);
+
+  // Auto-center active chip in the rail
+  useEffect(() => {
+    const rail = chipsRef.current;
+    if (!rail) return;
+    const chip = rail.querySelector(`[data-chip="${activeId}"]`) as HTMLElement | null;
+    if (chip) {
+      chip.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+    }
+  }, [activeId]);
 
   // Auto-scroll loop
   useEffect(() => {
@@ -425,6 +515,35 @@ function PrayerReader() {
     return () => cancelAnimationFrame(raf);
   }, [playing, speed]);
 
+  // Swipe navigation between prayers
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const onTouchStart = (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    touchStart.current = { x: t.clientX, y: t.clientY };
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const s = touchStart.current;
+    touchStart.current = null;
+    if (!s) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - s.x;
+    const dy = t.clientY - s.y;
+    if (Math.abs(dy) < 40 && Math.abs(dx) > 70) {
+      // RTL: swipe left (dx < 0) → next prayer; swipe right (dx > 0) → previous prayer
+      if (dx < 0 && next) navigate({ to: "/agpeya/$prayerId", params: { prayerId: next.id } });
+      else if (dx > 0 && prev) navigate({ to: "/agpeya/$prayerId", params: { prayerId: prev.id } });
+    }
+  };
+
+  const jumpTo = (id: string) => {
+    const root = scrollerRef.current;
+    if (!root) return;
+    const el = root.querySelector(`#section-${id}`) as HTMLElement | null;
+    if (!el) return;
+    const top = el.offsetTop - 16;
+    root.scrollTo({ top, behavior: "smooth" });
+  };
+
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
   const shareText = `${prayer.title} — الأجبية`;
 
@@ -451,24 +570,8 @@ function PrayerReader() {
     } catch { /* ignore */ }
   };
 
-  const navigateToScrollNextMatch = (dir: 1 | -1) => {
-    const root = scrollerRef.current;
-    if (!root) return;
-    const marks = Array.from(root.querySelectorAll("mark")) as HTMLElement[];
-    if (!marks.length) return;
-    const top = root.scrollTop;
-    const sorted = marks.map((m) => m.offsetTop);
-    let target: number | undefined;
-    if (dir === 1) target = sorted.find((y) => y > top + 4);
-    else { for (let i = sorted.length - 1; i >= 0; i--) if (sorted[i] < top - 4) { target = sorted[i]; break; } }
-    if (target == null) target = dir === 1 ? sorted[0] : sorted[sorted.length - 1];
-    root.scrollTo({ top: target - 80, behavior: "smooth" });
-  };
-
   const speeds: AgpeyaSpeed[] = ["slow", "medium", "fast"];
   const speedLabel: Record<AgpeyaSpeed, string> = { slow: "بطيء", medium: "متوسط", fast: "سريع" };
-
-  const currentTabContent = prayer.tabs[tab];
 
   return (
     <div
@@ -486,23 +589,29 @@ function PrayerReader() {
           "sticky top-0 z-30 backdrop-blur-xl border-b",
           dark ? "bg-[#0b1a2c]/80 border-white/10" : "bg-[#fbf3e1]/85 border-[#c79356]/25",
         )}
+        style={{ paddingTop: "max(env(safe-area-inset-top), 0px)" }}
       >
-        <div className="mx-auto flex max-w-[640px] items-center justify-between px-4 py-3">
+        <div className="mx-auto flex max-w-[560px] items-center justify-between px-4 py-3">
           <Link
             to="/agpeya"
             aria-label="رجوع للأجبية"
             className={cn(
-              "grid h-9 w-9 place-items-center rounded-full border active:scale-95",
+              "grid h-10 w-10 place-items-center rounded-full border active:scale-95",
               dark ? "bg-white/5 border-white/15 text-[#f0d78c]" : "bg-white/60 border-[#c79356]/35 text-[#8a5a1f]",
             )}
           >
             <ChevronLeft className="h-4 w-4 -scale-x-100" />
           </Link>
-          <div className="min-w-0 text-center px-2">
-            <h1 className="font-arabic-serif truncate text-[16px] font-bold leading-tight flex items-center justify-center gap-1.5">
+          <div className="min-w-0 px-2 text-center">
+            <h1 className="font-arabic-serif flex items-center justify-center gap-1.5 truncate text-[16px] font-bold leading-tight">
+              <span className={cn("opacity-60 text-[12px]", dark ? "text-[#f0d78c]" : "text-[#8a5a1f]")} aria-hidden>Ⲁ</span>
               {prayer.title}
+              <span className={cn("opacity-60 text-[12px]", dark ? "text-[#f0d78c]" : "text-[#8a5a1f]")} aria-hidden>Ⲱ</span>
               {isSaved(prayerId) && (
-                <span className={cn("rounded-full px-1.5 py-0.5 text-[9px] font-bold", dark ? "bg-[#f0d78c]/20 text-[#f0d78c]" : "bg-[#1f4032]/10 text-[#1f4032]")}>
+                <span className={cn(
+                  "rounded-full px-1.5 py-0.5 text-[9px] font-bold",
+                  dark ? "bg-[#f0d78c]/20 text-[#f0d78c]" : "bg-[#1f4032]/10 text-[#1f4032]",
+                )}>
                   محفوظة
                 </span>
               )}
@@ -514,9 +623,6 @@ function PrayerReader() {
             )}
           </div>
           <div className="flex items-center gap-1.5">
-            <IconButton dark={dark} ariaLabel="بحث داخل الصلاة" active={searchOpen} onClick={() => setSearchOpen((s) => !s)}>
-              <Search className="h-4 w-4" />
-            </IconButton>
             <IconButton dark={dark} ariaLabel="مشاركة" onClick={handleShare}>
               <Share2 className="h-4 w-4" />
             </IconButton>
@@ -534,81 +640,39 @@ function PrayerReader() {
           </div>
         </div>
 
-        {/* Search bar */}
-        {searchOpen && (
-          <div className="mx-auto max-w-[640px] px-3 pb-2">
-            <div className={cn(
-              "flex items-center gap-2 rounded-full border px-3 py-1.5",
-              dark ? "bg-white/5 border-white/10" : "bg-white/85 border-[#c79356]/35",
-            )}>
-              <Search className={cn("h-4 w-4", dark ? "text-white/55" : "text-[#8a5a1f]")} />
-              <input
-                ref={searchInputRef}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Escape") setSearchOpen(false);
-                  if (e.key === "Enter") navigateToScrollNextMatch(e.shiftKey ? -1 : 1);
-                }}
-                placeholder="ابحث داخل القسم الحالي…"
-                className={cn(
-                  "flex-1 bg-transparent text-[13px] font-medium outline-none placeholder:opacity-60",
-                  dark ? "text-[#f0d78c] placeholder:text-white/40" : "text-[#3a2410] placeholder:text-[#8a5a1f]/70",
-                )}
-              />
-              {query && (
-                <span className={cn("text-[11px] tabular-nums", dark ? "text-white/55" : "text-[#8a5a1f]")}>
-                  {matchCount}
-                </span>
-              )}
-              <button type="button" onClick={() => navigateToScrollNextMatch(-1)} aria-label="السابق" disabled={!matchCount}
-                className={cn("grid h-6 w-6 place-items-center rounded-full disabled:opacity-30", dark ? "text-[#f0d78c]" : "text-[#5b3a18]")}>
-                <ChevronUp className="h-3.5 w-3.5" />
-              </button>
-              <button type="button" onClick={() => navigateToScrollNextMatch(1)} aria-label="التالي" disabled={!matchCount}
-                className={cn("grid h-6 w-6 place-items-center rounded-full disabled:opacity-30", dark ? "text-[#f0d78c]" : "text-[#5b3a18]")}>
-                <ChevronDown className="h-3.5 w-3.5" />
-              </button>
-              <button type="button" onClick={() => setSearchOpen(false)} aria-label="إغلاق البحث"
-                className={cn("grid h-6 w-6 place-items-center rounded-full", dark ? "text-[#f0d78c]" : "text-[#5b3a18]")}>
-                <X className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Tabs */}
-        <div className="mx-auto max-w-[640px] px-3 pb-2">
+        {/* Section chip rail */}
+        {sections.length > 0 && (
           <div
+            ref={chipsRef}
             className={cn(
-              "flex gap-1 overflow-x-auto rounded-full border p-1 no-scrollbar",
-              dark ? "bg-white/5 border-white/10" : "bg-white/55 border-[#c79356]/30",
+              "mx-auto flex max-w-[560px] gap-1.5 overflow-x-auto px-3 pb-2 no-scrollbar",
             )}
           >
-            {availableTabs.map((t) => {
-              const active = t.key === tab;
+            {sections.map((s) => {
+              const active = s.id === activeId;
               return (
                 <button
-                  key={t.key}
+                  key={s.id}
                   type="button"
-                  onClick={() => setTab(t.key)}
+                  data-chip={s.id}
+                  onClick={() => jumpTo(s.id)}
                   className={cn(
-                    "shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-[12.5px] font-bold transition-all",
+                    "shrink-0 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-[12px] font-bold transition-all active:scale-95",
                     active
                       ? dark
-                        ? "bg-gradient-to-br from-[#f0d78c] to-[#c79356] text-[#1a1208] shadow"
-                        : "bg-gradient-to-br from-[#1f4032] to-[#234a3a] text-white shadow"
+                        ? "border-[#f0d78c] bg-gradient-to-br from-[#f0d78c] to-[#c79356] text-[#1a1208] shadow"
+                        : "border-[#1f4032] bg-gradient-to-br from-[#1f4032] to-[#234a3a] text-white shadow"
                       : dark
-                        ? "text-white/70"
-                        : "text-[#5b3a18]",
+                        ? "border-white/10 bg-white/5 text-white/75"
+                        : "border-[#c79356]/30 bg-white/55 text-[#5b3a18]",
                   )}
                 >
-                  {t.label}
+                  {s.label}
                 </button>
               );
             })}
           </div>
-        </div>
+        )}
 
         {/* Progress bar */}
         <div className={cn("h-[3px] w-full", dark ? "bg-white/5" : "bg-[#c79356]/15")}>
@@ -622,110 +686,101 @@ function PrayerReader() {
       {/* Reader body */}
       <main
         ref={scrollerRef}
-        className="flex-1 overflow-y-auto relative"
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+        className="relative flex-1 overflow-y-auto"
         style={{ scrollBehavior: "smooth" }}
       >
         {/* Faint Coptic cross watermark */}
         <CopticCross
-          aria-hidden
           className={cn(
-            "pointer-events-none absolute top-12 left-1/2 -translate-x-1/2 h-40 w-40 opacity-[0.04]",
+            "pointer-events-none absolute left-1/2 top-16 h-40 w-40 -translate-x-1/2 opacity-[0.04]",
             dark ? "text-[#f0d78c]" : "text-[#5b3a18]",
           )}
         />
 
         <article
-          className="relative mx-auto max-w-[640px] px-5 pt-5 pb-8 font-arabic-serif"
+          className="relative mx-auto max-w-[560px] px-4 pb-44 pt-5 font-arabic-serif"
           style={{ fontSize, lineHeight }}
         >
           {/* Draft notice */}
           <div className={cn(
-            "mb-6 rounded-xl border px-3 py-2 text-[11.5px] font-semibold text-center",
+            "mb-5 rounded-xl border px-3 py-2 text-center text-[11.5px] font-semibold",
             dark ? "border-[#f0d78c]/25 bg-[#f0d78c]/5 text-[#f0d78c]" : "border-[#c79356]/40 bg-[#fff7e0] text-[#8a5a1f]",
           )}>
             {AGPEYA_DRAFT_NOTICE}
           </div>
 
-          {(() => {
-            if (tab === "text") {
-              const body = currentTabContent?.body ?? "";
-              if (!body.trim()) return <EmptyTab dark={dark} />;
-              return <TextTab body={body} query={query} dark={dark} />;
-            }
-            if (tab === "psalms") {
-              const list = currentTabContent?.psalms ?? [];
-              if (!list.length) return <EmptyTab dark={dark} message="لا توجد مزامير لهذه الصلاة." />;
-              return <PsalmsTab psalms={list} query={query} dark={dark} />;
-            }
-            if (tab === "gospel") {
-              const list = currentTabContent?.gospel ?? [];
-              if (!list.length) return <EmptyTab dark={dark} message="لا يوجد إنجيل مرافق لهذه الصلاة." />;
-              return <GospelTab gospel={list} query={query} dark={dark} />;
-            }
-            if (tab === "fragments") {
-              const list = currentTabContent?.fragments ?? [];
-              if (!list.length) return <EmptyTab dark={dark} message="لا توجد قطع متاحة." />;
-              return <FragmentsTab fragments={list} query={query} dark={dark} />;
-            }
-            const info = (currentTabContent?.info && currentTabContent.info.length) ? currentTabContent.info : infoFallback;
-            return <InfoTab info={info} query={query} dark={dark} />;
-          })()}
+          {sections.length === 0 ? (
+            <EmptyTab dark={dark} message="لا يوجد محتوى لهذه الصلاة بعد." />
+          ) : (
+            <div className="space-y-6">
+              {sections.map((s) => (
+                <SectionShell key={s.id} id={s.id} label={s.label} dark={dark}>
+                  {s.render({ dark })}
+                </SectionShell>
+              ))}
+            </div>
+          )}
 
-          <div className={cn("mt-10 border-t pt-5 text-center text-[12px] flex flex-col items-center gap-2", dark ? "border-white/10 text-white/55" : "border-[#c79356]/25 text-[#8a5a1f]")}>
+          <div className={cn(
+            "mt-10 flex flex-col items-center gap-2 border-t pt-5 text-center text-[12px]",
+            dark ? "border-white/10 text-white/55" : "border-[#c79356]/25 text-[#8a5a1f]",
+          )}>
             <CopticCross className={cn("h-4 w-4", dark ? "text-[#f0d78c]" : "text-[#c79356]")} />
             نهاية الصلاة — بركة الرب تشملكم
           </div>
-        </article>
 
-        {/* Prev/Next navigation */}
-        <nav className="mx-auto max-w-[640px] px-4 pb-40 flex items-center justify-between gap-3">
-          {prev ? (
-            <button
-              type="button"
-              onClick={() => navigate({ to: "/agpeya/$prayerId", params: { prayerId: prev.id } })}
-              className={cn(
-                "flex flex-1 items-center gap-2 rounded-2xl border px-4 py-3 text-right active:scale-[0.98] transition-transform",
-                dark ? "bg-white/5 border-white/10 text-[#f0d78c]" : "bg-white/70 border-[#c79356]/35 text-[#5b3a18]",
-              )}
-            >
-              <ChevronRight className="h-4 w-4 -scale-x-100" />
-              <div className="min-w-0 flex-1">
-                <div className="text-[10.5px] opacity-70">السابقة</div>
-                <div className="font-arabic-serif truncate text-[13.5px] font-bold">{prev.title}</div>
-              </div>
-            </button>
-          ) : <div className="flex-1" />}
-          {next ? (
-            <button
-              type="button"
-              onClick={() => navigate({ to: "/agpeya/$prayerId", params: { prayerId: next.id } })}
-              className={cn(
-                "flex flex-1 items-center gap-2 rounded-2xl border px-4 py-3 text-left active:scale-[0.98] transition-transform",
-                dark ? "bg-white/5 border-white/10 text-[#f0d78c]" : "bg-white/70 border-[#c79356]/35 text-[#5b3a18]",
-              )}
-            >
-              <div className="min-w-0 flex-1">
-                <div className="text-[10.5px] opacity-70">التالية</div>
-                <div className="font-arabic-serif truncate text-[13.5px] font-bold">{next.title}</div>
-              </div>
-              <ChevronLeft className="h-4 w-4 -scale-x-100" />
-            </button>
-          ) : <div className="flex-1" />}
-        </nav>
+          {/* Prev/Next prayer navigation (backup to swipe) */}
+          <nav className="mt-6 flex items-center justify-between gap-3">
+            {prev ? (
+              <button
+                type="button"
+                onClick={() => navigate({ to: "/agpeya/$prayerId", params: { prayerId: prev.id } })}
+                className={cn(
+                  "flex flex-1 items-center gap-2 rounded-2xl border px-4 py-3 text-right transition-transform active:scale-[0.98]",
+                  dark ? "border-white/10 bg-white/5 text-[#f0d78c]" : "border-[#c79356]/35 bg-white/70 text-[#5b3a18]",
+                )}
+              >
+                <ChevronRight className="h-4 w-4 -scale-x-100" />
+                <div className="min-w-0 flex-1">
+                  <div className="text-[10.5px] opacity-70">السابقة</div>
+                  <div className="font-arabic-serif truncate text-[13.5px] font-bold">{prev.title}</div>
+                </div>
+              </button>
+            ) : <div className="flex-1" />}
+            {next ? (
+              <button
+                type="button"
+                onClick={() => navigate({ to: "/agpeya/$prayerId", params: { prayerId: next.id } })}
+                className={cn(
+                  "flex flex-1 items-center gap-2 rounded-2xl border px-4 py-3 text-left transition-transform active:scale-[0.98]",
+                  dark ? "border-white/10 bg-white/5 text-[#f0d78c]" : "border-[#c79356]/35 bg-white/70 text-[#5b3a18]",
+                )}
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="text-[10.5px] opacity-70">التالية</div>
+                  <div className="font-arabic-serif truncate text-[13.5px] font-bold">{next.title}</div>
+                </div>
+                <ChevronLeft className="h-4 w-4 -scale-x-100" />
+              </button>
+            ) : <div className="flex-1" />}
+          </nav>
+        </article>
       </main>
 
       {/* Floating reader controls */}
       <div
         dir="rtl"
-        className="fixed inset-x-0 z-40 mx-auto flex w-full max-w-[640px] items-center justify-center px-4"
-        style={{ bottom: "max(env(safe-area-inset-bottom), 14px)" }}
+        className="fixed inset-x-0 z-40 mx-auto flex w-full max-w-[560px] items-center justify-center px-4"
+        style={{ bottom: "max(env(safe-area-inset-bottom), 16px)" }}
       >
         <div
           className={cn(
             "flex items-center gap-1 rounded-full border px-2 py-1.5 backdrop-blur-2xl",
             dark
-              ? "bg-[#0b1a2c]/80 border-white/10 shadow-[0_18px_40px_-20px_rgba(0,0,0,0.85)]"
-              : "bg-white/80 border-[#c79356]/40 shadow-[0_18px_40px_-20px_rgba(120,80,30,0.45)]",
+              ? "border-white/10 bg-[#0b1a2c]/85 shadow-[0_20px_46px_-22px_rgba(0,0,0,0.9)]"
+              : "border-[#c79356]/40 bg-white/85 shadow-[0_20px_46px_-22px_rgba(120,80,30,0.5)]",
           )}
         >
           <ControlBtn dark={dark} ariaLabel="تصغير الخط" onClick={() => setFontSize(Math.max(14, fontSize - 1))}>
@@ -778,7 +833,7 @@ function PrayerReader() {
             type="button"
             onClick={() => setPlaying((p) => !p)}
             className={cn(
-              "ms-1 grid h-9 w-9 place-items-center rounded-full text-white active:scale-95 transition-all",
+              "ms-1 grid h-10 w-10 place-items-center rounded-full text-white transition-all active:scale-95",
               "bg-gradient-to-br from-[#3eb482] to-[#1f6e54]",
               playing
                 ? "shadow-[0_0_14px_rgba(62,180,130,0.85)] ring-1 ring-[#7af0b8]/40"
@@ -796,7 +851,7 @@ function PrayerReader() {
         <div
           role="dialog"
           aria-modal
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 backdrop-blur-sm"
           onClick={() => setShareOpen(false)}
         >
           <div
@@ -804,7 +859,7 @@ function PrayerReader() {
             onClick={(e) => e.stopPropagation()}
             className={cn(
               "w-full max-w-[420px] rounded-3xl border p-5 shadow-2xl",
-              dark ? "bg-[#0b1a2c] border-white/10 text-[#e8e2cf]" : "bg-white border-[#c79356]/35 text-[#3a2410]",
+              dark ? "border-white/10 bg-[#0b1a2c] text-[#e8e2cf]" : "border-[#c79356]/35 bg-white text-[#3a2410]",
             )}
           >
             <div className="mb-4 flex items-center justify-between">
@@ -857,7 +912,7 @@ function PrayerReader() {
 function EmptyTab({ dark, message = "لا يوجد محتوى لهذا القسم بعد." }: { dark: boolean; message?: string }) {
   return (
     <div className={cn(
-      "rounded-2xl border px-5 py-10 text-center text-[13px] flex flex-col items-center gap-2",
+      "flex flex-col items-center gap-2 rounded-2xl border px-5 py-10 text-center text-[13px]",
       dark ? "border-white/10 bg-white/5 text-white/65" : "border-[#c79356]/30 bg-white/55 text-[#7a5a32]",
     )}>
       <CopticCross className={cn("h-5 w-5", dark ? "text-[#f0d78c]/60" : "text-[#c79356]")} />
@@ -877,10 +932,10 @@ function IconButton({
       onClick={onClick}
       aria-label={ariaLabel}
       className={cn(
-        "grid h-9 w-9 place-items-center rounded-full border transition-all active:scale-95",
+        "grid h-10 w-10 place-items-center rounded-full border transition-all active:scale-95",
         dark
-          ? active ? "bg-[#f0d78c] text-[#1a1208] border-[#f0d78c]" : "bg-white/5 border-white/15 text-[#f0d78c]"
-          : active ? "bg-[#1f4032] text-white border-[#1f4032]" : "bg-white/60 border-[#c79356]/35 text-[#8a5a1f]",
+          ? active ? "border-[#f0d78c] bg-[#f0d78c] text-[#1a1208]" : "border-white/15 bg-white/5 text-[#f0d78c]"
+          : active ? "border-[#1f4032] bg-[#1f4032] text-white" : "border-[#c79356]/35 bg-white/60 text-[#8a5a1f]",
       )}
     >
       {children}
@@ -897,7 +952,7 @@ function ControlBtn({
       onClick={onClick}
       aria-label={ariaLabel}
       className={cn(
-        "grid h-7 w-7 place-items-center rounded-full transition-all active:scale-90",
+        "grid h-8 w-8 place-items-center rounded-full transition-all active:scale-90",
         dark ? "text-[#f0d78c] hover:bg-white/10" : "text-[#5b3a18] hover:bg-[#c79356]/15",
       )}
     >
@@ -914,7 +969,7 @@ function ShareBtn({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex flex-col items-center gap-1.5 rounded-2xl border px-3 py-3 text-[11.5px] font-bold active:scale-95 transition-transform",
+        "flex flex-col items-center gap-1.5 rounded-2xl border px-3 py-3 text-[11.5px] font-bold transition-transform active:scale-95",
         dark ? "border-white/10 bg-white/5 text-[#f0d78c]" : "border-[#c79356]/30 bg-[#fbf3e1] text-[#5b3a18]",
       )}
     >
