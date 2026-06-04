@@ -9,15 +9,13 @@ import {
   Plus,
   Sun,
   Moon,
-  Play,
-  Pause,
-  Gauge,
   Rows3,
   X,
   Copy,
   Send,
   MessageCircle,
 } from "lucide-react";
+import { AutoScrollControls } from "@/components/bible/AutoScrollControls";
 import {
   PresentationMode,
   DisplayButton,
