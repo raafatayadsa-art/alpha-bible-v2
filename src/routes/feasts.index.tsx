@@ -74,7 +74,7 @@ function FeastsHome() {
   });
 
   return (
-    <div dir="rtl" className="relative min-h-dvh bg-[#faf3e3]">
+    <div dir="rtl" className="relative min-h-dvh bg-[#faf8f3]">
       <CopticWatermark />
 
       {/* Header */}
@@ -396,7 +396,7 @@ function FeastsHome() {
             <DrawerTitle className="font-arabic-serif text-[17px] text-[#3a2a18]">الصوم الحالي</DrawerTitle>
           </DrawerHeader>
           <div className="px-4 pb-[calc(env(safe-area-inset-bottom)+16px)]">
-            <div className="rounded-2xl bg-[#faf3e3] border border-[#ead9b1] p-6 text-center text-[13px] text-[#6a543a]">
+            <div className="rounded-2xl bg-[#faf8f3] border border-[#ead9b1] p-6 text-center text-[13px] text-[#6a543a]">
               لا يوجد صوم في هذا اليوم
             </div>
             <DrawerClose asChild>
@@ -431,7 +431,7 @@ function FeastsHome() {
                 setSearchOpen(false);
                 navigate({ to: "/feasts/$eventId", params: { eventId: f.id } });
               }}
-              className="w-full text-right flex items-center gap-3 rounded-2xl bg-[#faf3e3] border border-[#ead9b1] p-2.5 active:scale-[0.98] transition-transform"
+              className="w-full text-right flex items-center gap-3 rounded-2xl bg-[#faf8f3] border border-[#ead9b1] p-2.5 active:scale-[0.98] transition-transform"
             >
               <img src={f.image} alt="" className="h-12 w-12 rounded-xl object-cover" draggable={false} />
               <div className="min-w-0 flex-1">

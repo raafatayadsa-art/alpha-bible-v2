@@ -95,7 +95,7 @@ function SynaxariumHome() {
   });
 
   return (
-    <div ref={topRef} dir="rtl" className="relative min-h-dvh bg-[#faf3e3]">
+    <div ref={topRef} dir="rtl" className="relative min-h-dvh bg-[#faf8f3]">
       <CopticWatermark />
 
       {/* Header */}
@@ -374,7 +374,7 @@ function SynaxariumHome() {
                 setSearchOpen(false);
                 navigate({ to: "/synaxarium/$saintId", params: { saintId: s.id } });
               }}
-              className="w-full text-right flex items-center gap-3 rounded-2xl bg-[#faf3e3] border border-[#ead9b1] p-2.5 active:scale-[0.98] transition-transform"
+              className="w-full text-right flex items-center gap-3 rounded-2xl bg-[#faf8f3] border border-[#ead9b1] p-2.5 active:scale-[0.98] transition-transform"
             >
               <img src={s.image} alt="" className="h-12 w-12 rounded-xl object-cover" draggable={false} />
               <div className="min-w-0 flex-1">

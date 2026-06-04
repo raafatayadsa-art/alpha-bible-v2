@@ -108,7 +108,7 @@ function KatamerosHome() {
   };
 
   return (
-    <div dir="rtl" className="relative min-h-dvh bg-[#faf3e3]">
+    <div dir="rtl" className="relative min-h-dvh bg-[#faf8f3]">
       <CopticWatermark />
 
       {/* Header — Back · Title · Notifications */}

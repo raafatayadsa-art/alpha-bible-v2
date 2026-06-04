@@ -95,7 +95,7 @@ function EventDetails() {
   };
 
   return (
-    <div dir="rtl" className="relative min-h-dvh bg-[#faf3e3]">
+    <div dir="rtl" className="relative min-h-dvh bg-[#faf8f3]">
       <CopticWatermark />
 
       <main
@@ -118,7 +118,7 @@ function EventDetails() {
                 "linear-gradient(to bottom, #000 0%, rgba(0,0,0,0.85) 55%, rgba(0,0,0,0.3) 85%, transparent 100%)",
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#faf3e3] via-[#faf3e3]/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#faf8f3] via-[#faf8f3]/40 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/25 to-transparent" />
 
           <div
