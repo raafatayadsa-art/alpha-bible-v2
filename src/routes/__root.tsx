@@ -10,6 +10,7 @@ import {
 
 import appCss from "../styles.css?url";
 import { DictionaryDebugBadge } from "@/components/DictionaryDebugBadge";
+import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -120,6 +121,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
+      <Toaster />
       {/* <DictionaryDebugBadge /> — disabled with smart highlight */}
     </QueryClientProvider>
   );

@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Bookmark, Share2, MoreVertical, BookOpen, Calendar, ChevronLeft } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Bookmark, BookmarkCheck, Share2, MoreVertical, BookOpen, Calendar, ChevronLeft } from "lucide-react";
+import { toast } from "sonner";
 import { FEASTS, getFeast } from "@/features/feasts";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { GlassSurface, BackButton } from "@/components/bible/primitives";
@@ -29,6 +31,49 @@ function EventDetails() {
   const accent = ACCENT_COLORS[event.accent];
   const related = FEASTS.filter((f) => f.id !== event.id).slice(0, 4);
 
+  const storageKey = "alpha:saved-feasts";
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    try {
+      const list: string[] = JSON.parse(localStorage.getItem(storageKey) || "[]");
+      setSaved(list.includes(event.id));
+    } catch {}
+  }, [event.id]);
+
+  const toggleSave = () => {
+    try {
+      const list: string[] = JSON.parse(localStorage.getItem(storageKey) || "[]");
+      const next = list.includes(event.id)
+        ? list.filter((x) => x !== event.id)
+        : [...list, event.id];
+      localStorage.setItem(storageKey, JSON.stringify(next));
+      const isSaved = next.includes(event.id);
+      setSaved(isSaved);
+      toast.success(isSaved ? "تم الحفظ في المفضلة" : "تمت الإزالة من المفضلة");
+    } catch {
+      toast.error("تعذر الحفظ");
+    }
+  };
+
+  const handleShare = async () => {
+    const shareData = {
+      title: event.title,
+      text: `${event.title} — ${event.subtitle}`,
+      url: typeof window !== "undefined" ? window.location.href : "",
+    };
+    try {
+      if (typeof navigator !== "undefined" && navigator.share) {
+        await navigator.share(shareData);
+        return;
+      }
+      await navigator.clipboard.writeText(shareData.url);
+      toast.success("تم نسخ الرابط");
+    } catch (err: any) {
+      if (err?.name !== "AbortError") toast.error("تعذرت المشاركة");
+    }
+  };
+
   return (
     <div dir="rtl" className="relative min-h-dvh bg-[#faf3e3]">
       <CopticWatermark />
@@ -49,13 +94,22 @@ function EventDetails() {
           >
             <BackButton compact to="/feasts" tone="dark" />
             <div className="flex items-center gap-2">
-              <button className="grid h-9 w-9 place-items-center rounded-full bg-black/35 backdrop-blur text-white border border-white/15 active:scale-90 transition-transform">
-                <Bookmark className="h-4 w-4" />
+              <button
+                onClick={toggleSave}
+                aria-pressed={saved}
+                aria-label={saved ? "إزالة من المفضلة" : "حفظ"}
+                className="grid h-9 w-9 place-items-center rounded-full bg-black/35 backdrop-blur text-white border border-white/15 active:scale-90 transition-transform"
+              >
+                {saved ? <BookmarkCheck className="h-4 w-4" style={{ color: accent }} /> : <Bookmark className="h-4 w-4" />}
               </button>
-              <button className="grid h-9 w-9 place-items-center rounded-full bg-black/35 backdrop-blur text-white border border-white/15 active:scale-90 transition-transform">
+              <button
+                onClick={handleShare}
+                aria-label="مشاركة"
+                className="grid h-9 w-9 place-items-center rounded-full bg-black/35 backdrop-blur text-white border border-white/15 active:scale-90 transition-transform"
+              >
                 <Share2 className="h-4 w-4" />
               </button>
-              <button className="grid h-9 w-9 place-items-center rounded-full bg-black/35 backdrop-blur text-white border border-white/15 active:scale-90 transition-transform">
+              <button aria-label="المزيد" className="grid h-9 w-9 place-items-center rounded-full bg-black/35 backdrop-blur text-white border border-white/15 active:scale-90 transition-transform">
                 <MoreVertical className="h-4 w-4" />
               </button>
             </div>
@@ -73,7 +127,7 @@ function EventDetails() {
         </div>
 
         <div className="px-4 -mt-4">
-          <GlassSurface className="p-4">
+          <GlassSurface className="p-4 bg-white border-[#ead9b1] shadow-[0_18px_40px_-22px_rgba(120,80,30,0.55)]">
             <h1 className="font-arabic-serif text-[22px] font-extrabold text-[#3a2a18] leading-tight">
               {event.title}
             </h1>
@@ -90,7 +144,7 @@ function EventDetails() {
             </div>
 
             {event.scripture && (
-              <div className="mt-4 relative rounded-2xl bg-[#fbf3e1] border border-[#efe2c4] p-4 pr-10">
+              <div className="mt-4 relative rounded-2xl bg-[#fff7e0] border border-[#ead9b1] p-4 pr-10">
                 <span className="absolute top-3 right-3 text-[#b8893a]/50 text-3xl leading-none font-serif">”</span>
                 <p className="text-[13px] text-[#3a2a18] leading-relaxed text-center">{event.scripture}</p>
                 {event.scriptureRef && (
@@ -132,7 +186,7 @@ function EventDetails() {
                   params={{ eventId: r.id }}
                   className="block min-w-[160px] active:scale-[0.98] transition-transform"
                 >
-                  <GlassSurface className="overflow-hidden p-0">
+                  <GlassSurface className="overflow-hidden p-0 bg-white border-[#ead9b1]">
                     <div
                       className="h-24 bg-cover bg-center"
                       style={{ backgroundImage: `url(${r.image})` }}
@@ -168,7 +222,7 @@ function Section({ title, accent, children }: { title: string; accent: string; c
         <span className="h-0.5 w-6 rounded-full" style={{ background: accent }} />
         {title}
       </h3>
-      <GlassSurface className="p-4">{children}</GlassSurface>
+      <GlassSurface className="p-4 bg-white border-[#ead9b1] shadow-[0_18px_40px_-22px_rgba(120,80,30,0.55)]">{children}</GlassSurface>
     </section>
   );
 }
