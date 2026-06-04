@@ -240,7 +240,7 @@ function MessageCard({ m, onOpen }: { m: Msg; onOpen: () => void }) {
         className="relative rounded-[20px] overflow-hidden p-3.5"
         style={{
           background: m.unread
-            ? "linear-gradient(180deg, #fffaec 0%, #fbf3e1 100%)"
+            ? `linear-gradient(180deg, #fffaec 0%, #fbf3e1 100%), linear-gradient(180deg, ${color}10, transparent)`
             : "linear-gradient(180deg, rgba(255,255,255,0.6) 0%, rgba(244,234,216,0.6) 100%)",
           border: `1px solid ${m.unread ? "#efe2c4" : "rgba(239,226,196,0.6)"}`,
           boxShadow: m.unread
@@ -248,6 +248,26 @@ function MessageCard({ m, onOpen }: { m: Msg; onOpen: () => void }) {
             : "0 6px 14px -12px rgba(120,80,30,0.4), inset 0 1px 0 rgba(255,255,255,0.5)",
         }}
       >
+        {/* Type accent stripe (right side, RTL leading edge) */}
+        <span
+          aria-hidden
+          className="absolute top-2 bottom-2 right-0 w-[3px] rounded-full"
+          style={{
+            background:
+              m.category === "كاهن"
+                ? `linear-gradient(180deg, #e7c97a, ${color})`
+                : `linear-gradient(180deg, ${color}, ${color}80)`,
+            opacity: m.unread ? 0.95 : 0.55,
+          }}
+        />
+        {/* Priest gold halo trim */}
+        {m.category === "كاهن" && m.unread && (
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-0 rounded-[20px]"
+            style={{ boxShadow: "inset 0 0 0 1px rgba(231,201,122,0.55)" }}
+          />
+        )}
         {m.unread && (
           <span
             aria-hidden
