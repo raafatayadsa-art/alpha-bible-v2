@@ -3,6 +3,19 @@ export type SaintEvent = {
   text: string;
 };
 
+export type TimelinePhase = {
+  id: "birth" | "service" | "events" | "repose";
+  label: string;
+  body: string;
+  year?: string;
+};
+
+export type RelatedItem = {
+  id: string;
+  title: string;
+  subtitle?: string;
+};
+
 export type Saint = {
   id: string;
   name: string;
@@ -22,4 +35,15 @@ export type Saint = {
   bio: string;
   events: SaintEvent[];
   image: string;
+  // Saint Details additions (optional, all UI-only mock fields)
+  type?: string;
+  era?: string;
+  servicePlace?: string;
+  occasion?: string;
+  virtues?: string[];
+  timelinePhases?: TimelinePhase[];
+  relatedPrayers?: RelatedItem[];
+  relatedMeditations?: RelatedItem[];
+  relatedEvents?: RelatedItem[];
+  similarSaints?: RelatedItem[];
 };
