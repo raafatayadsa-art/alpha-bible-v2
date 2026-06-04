@@ -84,7 +84,14 @@ function EventDetails() {
       >
         {/* Hero */}
         <div className="relative h-[280px] overflow-hidden">
-          <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${event.image})` }} />
+          <img
+            src={event.image}
+            alt={event.title}
+            loading="eager"
+            decoding="async"
+            draggable={false}
+            className="absolute inset-0 h-full w-full object-cover object-center select-none"
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-[#faf3e3] via-[#faf3e3]/30 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent" />
 
@@ -187,10 +194,16 @@ function EventDetails() {
                   className="block min-w-[160px] active:scale-[0.98] transition-transform"
                 >
                   <GlassSurface className="overflow-hidden p-0 bg-white border-[#ead9b1]">
-                    <div
-                      className="h-24 bg-cover bg-center"
-                      style={{ backgroundImage: `url(${r.image})` }}
-                    />
+                    <div className="relative h-24 overflow-hidden bg-[#f4ead8]">
+                      <img
+                        src={r.image}
+                        alt={r.title}
+                        loading="lazy"
+                        decoding="async"
+                        draggable={false}
+                        className="absolute inset-0 h-full w-full object-cover object-center select-none"
+                      />
+                    </div>
                     <div className="p-3">
                       <div
                         className="text-[10.5px] font-bold mb-1"
