@@ -356,10 +356,10 @@ function HomeScreen() {
         className="fixed inset-0 -z-10"
         style={{
           background:
-            "radial-gradient(120% 50% at 50% 0%, rgba(80,40,120,0.55), transparent 60%)," +
-            "radial-gradient(80% 60% at 100% 30%, rgba(231,201,138,0.18), transparent 65%)," +
-            "radial-gradient(80% 60% at 0% 80%, rgba(60,30,90,0.45), transparent 65%)," +
-            "linear-gradient(180deg,#0e0a1c 0%,#161028 50%,#0c0918 100%)",
+            "radial-gradient(120% 55% at 50% 0%, rgba(231,201,122,0.35), transparent 60%)," +
+            "radial-gradient(80% 60% at 100% 30%, rgba(216,138,42,0.16), transparent 65%)," +
+            "radial-gradient(80% 60% at 0% 80%, rgba(190,150,90,0.22), transparent 65%)," +
+            "linear-gradient(180deg,#f7eed6 0%,#f4ead8 50%,#ecdcb6 100%)",
         }}
       />
       <CopticWatermark />
