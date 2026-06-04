@@ -86,14 +86,32 @@ function ProfileHero() {
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(110% 70% at 50% 0%, rgba(231,201,122,0.55), transparent 60%)," +
-            "radial-gradient(80% 60% at 50% 110%, rgba(216,138,42,0.35), transparent 60%)," +
-            "linear-gradient(180deg,#241408 0%,#3a2818 55%,#180d05 100%)",
+            "radial-gradient(120% 75% at 50% 0%, rgba(231,201,122,0.55), transparent 60%)," +
+            "radial-gradient(70% 55% at 50% 100%, rgba(120,70,150,0.35), transparent 65%)," +
+            "linear-gradient(180deg,#1c1030 0%,#2a1a45 35%,#3a2618 75%,#180d20 100%)",
         }}
       />
 
-      {/* Alpha / Omega watermark */}
-      <div aria-hidden className="absolute inset-0 flex items-center justify-between px-3 opacity-[0.09] text-[#f0d78c] font-bold text-[120px] leading-none select-none">
+      {/* Incense smoke */}
+      <div
+        aria-hidden
+        className="absolute inset-0 opacity-60 mix-blend-screen"
+        style={{
+          background:
+            "radial-gradient(45% 22% at 22% 78%, rgba(240,215,140,0.18), transparent 70%)," +
+            "radial-gradient(38% 20% at 78% 82%, rgba(200,170,230,0.16), transparent 70%)," +
+            "radial-gradient(30% 18% at 50% 92%, rgba(240,215,140,0.14), transparent 70%)",
+          filter: "blur(8px)",
+        }}
+      />
+
+      {/* Church silhouettes */}
+      <svg aria-hidden viewBox="0 0 400 120" preserveAspectRatio="none" className="absolute inset-x-0 bottom-0 w-full h-[78px] text-[#f0d78c]" fill="currentColor" opacity="0.10">
+        <path d="M0 120 L0 92 L26 92 L26 78 Q26 68 36 68 Q46 68 46 78 L46 92 L66 92 L66 72 L62 72 L62 62 L70 62 L70 72 L76 72 L76 92 L106 92 L106 62 Q106 47 121 47 Q136 47 136 62 L136 92 L166 92 L166 82 L164 82 L164 74 L168 74 L168 82 L176 82 L176 92 L216 92 L216 57 Q216 42 231 42 Q246 42 246 57 L246 92 L276 92 L276 72 L316 72 L316 92 L346 92 L346 80 Q346 72 354 72 Q362 72 362 80 L362 92 L400 92 L400 120 Z" />
+      </svg>
+
+      {/* Larger Alpha & Omega watermark */}
+      <div aria-hidden className="absolute inset-0 flex items-center justify-between px-1 opacity-[0.11] text-[#f0d78c] font-bold text-[170px] leading-none select-none">
         <span>Ⲱ</span>
         <span>Ⲁ</span>
       </div>
@@ -101,83 +119,135 @@ function ProfileHero() {
       {/* Soft gold light rays */}
       <div
         aria-hidden
-        className="absolute inset-x-0 top-0 h-[180px] opacity-60 mix-blend-screen"
+        className="absolute inset-x-0 top-0 h-[220px] opacity-70 mix-blend-screen"
         style={{
           background:
-            "conic-gradient(from 270deg at 50% 0%, transparent 0deg, rgba(240,215,140,0.22) 14deg, transparent 32deg, rgba(240,215,140,0.28) 56deg, transparent 88deg, rgba(240,215,140,0.22) 128deg, transparent 168deg, rgba(240,215,140,0.28) 208deg, transparent 248deg, rgba(240,215,140,0.22) 290deg, transparent 330deg)",
+            "conic-gradient(from 270deg at 50% 0%, transparent 0deg, rgba(240,215,140,0.28) 12deg, transparent 28deg, rgba(240,215,140,0.32) 50deg, transparent 78deg, rgba(240,215,140,0.26) 118deg, transparent 158deg, rgba(240,215,140,0.32) 202deg, transparent 250deg, rgba(240,215,140,0.28) 292deg, transparent 332deg)",
         }}
       />
 
-      {/* Coptic geometry arc */}
-      <svg aria-hidden viewBox="0 0 320 60" className="absolute inset-x-0 top-1 mx-auto w-[88%] h-[42px] text-[#f0d78c]/40" fill="none" stroke="currentColor" strokeWidth="0.7">
-        <path d="M10 50 Q160 -8 310 50" />
-        <path d="M30 52 Q160 8 290 52" opacity="0.55" />
-        <circle cx="60" cy="34" r="1.4" fill="currentColor" stroke="none" />
-        <circle cx="260" cy="34" r="1.4" fill="currentColor" stroke="none" />
-      </svg>
+      {/* Small floating crosses */}
+      <div aria-hidden className="absolute top-6 left-5 text-[#f0d78c]/35"><CopticCross size={9} /></div>
+      <div aria-hidden className="absolute top-10 right-6 text-[#f0d78c]/30"><CopticCross size={8} /></div>
+      <div aria-hidden className="absolute bottom-16 left-7 text-[#f0d78c]/25"><CopticCross size={7} /></div>
+      <div aria-hidden className="absolute bottom-20 right-5 text-[#f0d78c]/30"><CopticCross size={9} /></div>
 
-      {/* Top Coptic cross */}
-      <div className="absolute top-2 left-1/2 -translate-x-1/2 text-[#f0d78c]">
-        <CopticCross size={18} />
-      </div>
-
-      <div className="relative px-4 pt-10 pb-5 flex flex-col items-center text-center">
-        {/* Halo + Avatar */}
+      <div className="relative px-4 pt-12 pb-5 flex flex-col items-center text-center">
+        {/* Premium Orthodox Halo + Cross system */}
         <div className="relative">
+          {/* Outer glow aura */}
           <div
             aria-hidden
-            className="absolute inset-0 -m-[18px] rounded-full"
+            className="absolute inset-0 -m-[42px] rounded-full"
             style={{
-              background:
-                "conic-gradient(from 0deg, #e7c97a, #f7e7b8 16%, #d88a2a 28%, #f0d78c 44%, #b8893a 60%, #f0d78c 74%, #d88a2a 86%, #e7c97a)",
-              filter: "blur(2px)",
-              opacity: 0.95,
-              maskImage:
-                "radial-gradient(circle, transparent 56%, black 60%, black 78%, transparent 82%)",
-              WebkitMaskImage:
-                "radial-gradient(circle, transparent 56%, black 60%, black 78%, transparent 82%)",
+              background: "radial-gradient(circle, rgba(240,215,140,0.55), rgba(216,138,42,0.18) 45%, transparent 70%)",
+              filter: "blur(14px)",
             }}
           />
-          <div
-            aria-hidden
-            className="absolute inset-0 -m-[26px] rounded-full"
-            style={{
-              background: "radial-gradient(circle, rgba(240,215,140,0.55), transparent 65%)",
-              filter: "blur(10px)",
-            }}
-          />
-          {/* Ornament dot+cross ring */}
+
+          {/* Premium engraved halo */}
           <svg
             aria-hidden
-            viewBox="0 0 120 120"
-            className="absolute inset-0 -m-[14px] h-[calc(100%+28px)] w-[calc(100%+28px)] text-[#f0d78c]/90"
+            viewBox="0 0 200 200"
+            className="absolute inset-0 -m-[34px] h-[calc(100%+68px)] w-[calc(100%+68px)]"
           >
-            {Array.from({ length: 12 }).map((_, i) => {
-              const a = (i * 360) / 12;
-              const rad = (a * Math.PI) / 180;
-              const r = 56;
-              const cx = 60 + r * Math.cos(rad);
-              const cy = 60 + r * Math.sin(rad);
-              return <circle key={i} cx={cx} cy={cy} r={i % 3 === 0 ? 1.6 : 1} fill="currentColor" />;
-            })}
-            {[0, 90, 180, 270].map((a) => {
-              const rad = (a * Math.PI) / 180;
-              const r = 56;
-              const cx = 60 + r * Math.cos(rad);
-              const cy = 60 + r * Math.sin(rad);
+            <defs>
+              <radialGradient id="haloGold" cx="50%" cy="35%" r="65%">
+                <stop offset="0%" stopColor="#fff4d0" />
+                <stop offset="30%" stopColor="#f0d78c" />
+                <stop offset="60%" stopColor="#d8a23a" />
+                <stop offset="100%" stopColor="#8a5a1c" />
+              </radialGradient>
+              <linearGradient id="haloShine" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#fff8e0" stopOpacity="0.95" />
+                <stop offset="50%" stopColor="#f0d78c" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="#7a4f18" stopOpacity="0.6" />
+              </linearGradient>
+              <radialGradient id="crossGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="#fff4d0" stopOpacity="1" />
+                <stop offset="60%" stopColor="#f0d78c" stopOpacity="0.65" />
+                <stop offset="100%" stopColor="#d8a23a" stopOpacity="0" />
+              </radialGradient>
+            </defs>
+
+            {/* Outer thick metallic ring */}
+            <circle cx="100" cy="100" r="93" fill="none" stroke="url(#haloGold)" strokeWidth="2.6" />
+            <circle cx="100" cy="100" r="93" fill="none" stroke="url(#haloShine)" strokeWidth="0.6" />
+
+            {/* Ornament band guides */}
+            <circle cx="100" cy="100" r="86" fill="none" stroke="#f0d78c" strokeOpacity="0.5" strokeWidth="0.5" />
+            <circle cx="100" cy="100" r="76" fill="none" stroke="#f0d78c" strokeOpacity="0.5" strokeWidth="0.5" />
+
+            {/* Coptic manuscript interlace dashes */}
+            <circle cx="100" cy="100" r="81" fill="none" stroke="#f0d78c" strokeOpacity="0.85" strokeWidth="1" strokeDasharray="2 3" />
+            <circle cx="100" cy="100" r="81" fill="none" stroke="#fff4d0" strokeOpacity="0.5" strokeWidth="0.35" strokeDasharray="2 3" strokeDashoffset="1.2" />
+
+            {/* Geometric Orthodox petals */}
+            {Array.from({ length: 24 }).map((_, i) => {
+              const a = (i * 360) / 24;
               return (
-                <g key={a} stroke="currentColor" strokeWidth="0.9" strokeLinecap="round">
-                  <line x1={cx - 2.5} y1={cy} x2={cx + 2.5} y2={cy} />
-                  <line x1={cx} y1={cy - 2.5} x2={cx} y2={cy + 2.5} />
+                <g key={`p-${i}`} transform={`rotate(${a} 100 100)`}>
+                  <path d="M100 18 Q102.2 25 100 32 Q97.8 25 100 18 Z" fill="#f0d78c" fillOpacity="0.55" />
                 </g>
               );
             })}
+
+            {/* Inner ring */}
+            <circle cx="100" cy="100" r="70" fill="none" stroke="url(#haloGold)" strokeWidth="1.3" />
+
+            {/* Ornament dots */}
+            {Array.from({ length: 24 }).map((_, i) => {
+              const a = (i * 360) / 24;
+              const rad = (a * Math.PI) / 180;
+              const r = 66;
+              const cx = 100 + r * Math.cos(rad);
+              const cy = 100 + r * Math.sin(rad);
+              return <circle key={`d-${i}`} cx={cx} cy={cy} r={i % 2 === 0 ? 0.95 : 0.55} fill="#fff4d0" opacity="0.9" />;
+            })}
+
+            {/* Cardinal small crosses */}
+            {[0, 90, 180, 270].map((a) => {
+              const rad = (a * Math.PI) / 180;
+              const r = 66;
+              const cx = 100 + r * Math.cos(rad);
+              const cy = 100 + r * Math.sin(rad);
+              return (
+                <g key={`c-${a}`} stroke="#fff4d0" strokeWidth="1.1" strokeLinecap="round" opacity="0.95">
+                  <line x1={cx - 3} y1={cy} x2={cx + 3} y2={cy} />
+                  <line x1={cx} y1={cy - 3} x2={cx} y2={cy + 3} />
+                </g>
+              );
+            })}
+
+            {/* Inner shadow ring */}
+            <circle cx="100" cy="100" r="60" fill="none" stroke="#3a2a18" strokeOpacity="0.35" strokeWidth="0.5" />
+          </svg>
+
+          {/* Integrated Coptic Cross above halo */}
+          <svg
+            aria-hidden
+            viewBox="0 0 60 80"
+            className="absolute left-1/2 -translate-x-1/2 -top-[60px] w-[46px] h-[60px]"
+          >
+            <ellipse cx="30" cy="40" rx="28" ry="28" fill="url(#crossGlow)" opacity="0.85" />
+            <g stroke="#a8761e" strokeWidth="0.6">
+              <rect x="26.5" y="14" width="7" height="52" rx="1.2" fill="url(#haloGold)" />
+              <rect x="10" y="32.5" width="40" height="7" rx="1.2" fill="url(#haloGold)" />
+              <circle cx="30" cy="14" r="3" fill="url(#haloGold)" />
+              <circle cx="30" cy="66" r="3" fill="url(#haloGold)" />
+              <circle cx="10" cy="36" r="3" fill="url(#haloGold)" />
+              <circle cx="50" cy="36" r="3" fill="url(#haloGold)" />
+              <circle cx="30" cy="36" r="3.6" fill="#fff4d0" stroke="#a8761e" strokeWidth="0.5" />
+              <circle cx="30" cy="36" r="1.4" fill="#a8761e" />
+            </g>
+            <rect x="27.4" y="15" width="1.2" height="50" rx="0.6" fill="#fff8e0" opacity="0.85" />
+            <rect x="11" y="33.4" width="38" height="1.2" rx="0.6" fill="#fff8e0" opacity="0.7" />
           </svg>
 
           {/* Avatar */}
-          <div className="relative h-[104px] w-[104px] rounded-full border-[3px] border-[#f0d78c] overflow-hidden bg-gradient-to-b from-[#5a3a1e] to-[#2a1810] grid place-items-center shadow-[0_12px_30px_-10px_rgba(0,0,0,0.7)]">
+          <div className="relative h-[104px] w-[104px] rounded-full border-[3px] border-[#f0d78c] overflow-hidden bg-gradient-to-b from-[#5a3a1e] to-[#2a1810] grid place-items-center shadow-[0_12px_30px_-10px_rgba(0,0,0,0.7),inset_0_0_0_1px_rgba(255,244,208,0.4)]">
             <span className="text-[42px] font-bold text-[#f0d78c] drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]">{MEMBER.name.charAt(0)}</span>
-            <div aria-hidden className="absolute inset-x-0 top-0 h-1/2" style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.18), transparent)" }} />
+            <div aria-hidden className="absolute inset-x-0 top-0 h-1/2" style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.22), transparent)" }} />
           </div>
 
           {/* Emerald verified badge */}
@@ -195,6 +265,7 @@ function ProfileHero() {
             </span>
           )}
         </div>
+
 
         <h1 className="mt-4 text-[19px] font-extrabold text-[#f7e7b8] drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
           {MEMBER.name}
