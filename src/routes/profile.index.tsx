@@ -871,7 +871,29 @@ function ProfileScreen() {
             <div className="h-9 w-9" />
           </header>
 
+          <div className="mt-3 mb-2 flex justify-center">
+            <div
+              className="relative grid place-items-center"
+              style={{ filter: "drop-shadow(0 0 12px rgba(216,168,58,0.45)) drop-shadow(0 2px 6px rgba(60,40,15,0.25))" }}
+            >
+              <span
+                aria-hidden
+                className="absolute inset-0 -m-3 rounded-full"
+                style={{
+                  background: "radial-gradient(circle, rgba(255,244,208,0.55), rgba(216,162,58,0.18) 55%, transparent 75%)",
+                  filter: "blur(8px)",
+                }}
+              />
+              <img
+                src={alphaLogoAsset.url}
+                alt="Alpha"
+                className="relative h-8 w-auto object-contain select-none"
+                draggable={false}
+              />
+            </div>
+          </div>
           <ProfileHero />
+
 
           <MembershipCard />
 
