@@ -274,6 +274,7 @@ function SaintDetails() {
           </h1>
         </div>
         <div className="flex items-center gap-2">
+          <DisplayButton onClick={() => setPresentOpen(true)} />
           <button
             type="button"
             aria-label="مشاركة"
