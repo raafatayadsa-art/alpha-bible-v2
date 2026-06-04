@@ -176,7 +176,7 @@ function SummaryCard({ members }: { members: Member[] }) {
         }}
       >
         <img
-          src={alphaLogoAsset}
+          src={alphaLogoAsset.url}
           alt="Alpha"
           className="h-9 w-9 object-contain"
           style={{ filter: "drop-shadow(0 1px 2px rgba(122,74,20,0.35))" }}
