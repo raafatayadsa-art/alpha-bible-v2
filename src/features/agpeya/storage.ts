@@ -7,6 +7,8 @@ const SPEED_KEY = "ab.agpeya.autoscrollSpeed";
 const SAVED_KEY = "ab.agpeya.saved";
 const THEME_KEY = "ab.agpeya.theme";
 const FONT_KEY = "ab.agpeya.fontSize";
+const LH_KEY = "ab.agpeya.lineHeight";
+const AUDIO_KEY = "ab.agpeya.audio";
 
 export type AgpeyaTheme = "light" | "dark";
 export type AgpeyaSpeed = "slow" | "medium" | "fast";
