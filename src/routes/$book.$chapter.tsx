@@ -837,6 +837,14 @@ function ScriptureReader() {
         onToggleSpiritual={() => setSpiritualMode((s) => !s)}
         bottomClass="bottom-[104px]"
         visible={chromeVisible}
+        fontSize={fontSize}
+        setFontSize={(n) => setFontSize(Math.max(14, Math.min(34, Math.round(n))))}
+        fontMin={14}
+        fontMax={34}
+        fontStep={1}
+        lineHeight={lineHeight}
+        setLineHeight={setLineHeight}
+        lineHeightSteps={[1.6, 1.8, 2.0, 2.2, 2.4]}
       />
 
       {/* Persistent global navigation */}
