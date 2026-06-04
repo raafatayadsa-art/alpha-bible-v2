@@ -932,23 +932,6 @@ function IconButton({
   );
 }
 
-function ControlBtn({
-  children, onClick, ariaLabel, dark,
-}: { children: React.ReactNode; onClick: () => void; ariaLabel: string; dark: boolean }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={ariaLabel}
-      className={cn(
-        "grid h-8 w-8 place-items-center rounded-full transition-all active:scale-90",
-        dark ? "text-[#f0d78c] hover:bg-white/10" : "text-[#5b3a18] hover:bg-[#c79356]/15",
-      )}
-    >
-      {children}
-    </button>
-  );
-}
 
 function ShareBtn({
   label, icon: Icon, onClick, dark,
