@@ -308,7 +308,7 @@ function KatamerosHome() {
                     </div>
                     <div className="text-[10.5px] text-[#6a543a] mt-0.5">{r.reference}</div>
                   </div>
-                  <StatusBadge status={st} />
+                  <StatusBadge status={st} tone={tone} />
                 </li>
               );
             })}
