@@ -368,6 +368,7 @@ function ProfileScreen() {
             title="البيانات الشخصية"
             subtitle="الاسم، الجوال، البريد، العنوان"
             accent="#4a86c1"
+            glyph="✥"
           />
           <NavCard
             to="/profile/church"
@@ -375,6 +376,7 @@ function ProfileScreen() {
             title="كنيستي"
             subtitle={`${MEMBER.church} · ${MEMBER.role}`}
             accent="#c98a3c"
+            glyph="☩"
           />
           <NavCard
             to="/profile/family"
@@ -383,6 +385,7 @@ function ProfileScreen() {
             subtitle="أفراد العائلة وإدارة الحساب"
             accent="#a07ec4"
             badge="جديد"
+            glyph="✿"
           />
         </div>
 
@@ -394,6 +397,7 @@ function ProfileScreen() {
             title="المظهر"
             subtitle="فاتح · داكن · النظام"
             accent="#d8a83a"
+            glyph="Ⲁ"
           />
           <NavCard
             to="/profile/security"
@@ -401,8 +405,10 @@ function ProfileScreen() {
             title="الخصوصية والأمان"
             subtitle="كلمة المرور، الأجهزة، تسجيل الخروج"
             accent="#3f9d6e"
+            glyph="⛨"
           />
         </div>
+
 
         <p className="mt-8 text-center text-[10px] text-[#9a7e5a]">
           ⲁⲗⲫⲁ · Alpha Coptic · إصدار 1.0
