@@ -96,21 +96,21 @@ function FeastsHome() {
           <GlassSurface className="overflow-hidden p-0 bg-white border-[#ead9b1] shadow-[0_18px_40px_-22px_rgba(120,80,30,0.55)]">
             <div className="relative h-[200px]">
               <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${today.image})` }} />
-              <div className="absolute inset-0 bg-gradient-to-l from-white via-white/40 to-transparent" />
-              <div className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-[#3a2a18] border border-[#ead9b1] shadow-[0_4px_10px_-8px_rgba(120,80,30,0.5)]">
+              <div className="absolute inset-0 bg-gradient-to-r from-white via-white/55 to-transparent" />
+              <div className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-[#3a2a18] border border-[#ead9b1] shadow-[0_4px_10px_-8px_rgba(120,80,30,0.5)]">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#6a4ab5]" />
                 اليوم
               </div>
-              <div className="absolute inset-y-0 right-0 w-[58%] p-4 flex flex-col justify-center">
-                <h2 className="font-arabic-serif text-[22px] font-extrabold text-[#3a2a18] leading-tight">
+              <div className="absolute inset-y-0 left-0 w-[58%] p-4 flex flex-col justify-center">
+                <h2 className="font-arabic-serif text-[22px] font-extrabold text-[#3a2a18] leading-tight text-right">
                   {today.title}
                 </h2>
-                <p className="text-[12px] text-[#6a543a] mt-1">{today.subtitle}</p>
+                <p className="text-[12px] text-[#6a543a] mt-1 text-right">{today.subtitle}</p>
                 {today.scripture && (
-                  <p className="text-[12px] text-[#3a2a18] mt-2 leading-relaxed line-clamp-3">{today.scripture}</p>
+                  <p className="text-[12px] text-[#3a2a18] mt-2 leading-relaxed line-clamp-3 text-right">{today.scripture}</p>
                 )}
                 {today.scriptureRef && (
-                  <p className="text-[11px] font-bold text-[#b8893a] mt-1">{today.scriptureRef}</p>
+                  <p className="text-[11px] font-bold text-[#b8893a] mt-1 text-right">{today.scriptureRef}</p>
                 )}
               </div>
             </div>
