@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronLeft, Bookmark, Clock, BookOpen, ChevronRight, Sun, Sunset, Moon, MoonStar, Sparkles, Heart, Music2, Shield } from "lucide-react";
-import { useMemo } from "react";
+import { ChevronLeft, Bookmark, Clock, BookOpen, ChevronRight, Sun, Sunset, Moon, MoonStar, Sparkles, Music2, Shield, X } from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
 import {
   AGPEYA_PRAYERS,
+  clearLastOpenedPrayer,
   getAgpeyaBySection,
   getCurrentAgpeyaPrayer,
   readLastOpenedPrayer,
@@ -174,8 +175,10 @@ function SectionTitle({ title }: { title: string }) {
 
 function AgpeyaHome() {
   const current = useMemo(() => getCurrentAgpeyaPrayer(), []);
-  const last = useMemo(() => readLastOpenedPrayer(), []);
-  const { isSaved, toggle } = useSavedAgpeya();
+  const [last, setLast] = useState(() => readLastOpenedPrayer());
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => { setLast(readLastOpenedPrayer()); setHydrated(true); }, []);
+  const { saved } = useSavedAgpeya();
   const day = getAgpeyaBySection("day");
   const night = getAgpeyaBySection("night");
   const extra = getAgpeyaBySection("extra");
@@ -221,13 +224,18 @@ function AgpeyaHome() {
               </h1>
               <p className="mt-0.5 text-[12px] font-medium text-[#8a5a1f]">صلوات السواعي اليومية</p>
             </div>
-            <button
-              type="button"
+            <Link
+              to="/agpeya/saved"
               aria-label="المحفوظات"
-              className="grid h-10 w-10 place-items-center rounded-full bg-white/85 backdrop-blur-md border border-white/70 text-[#5b3a18] shadow-[0_6px_14px_-8px_rgba(120,80,30,0.35)] active:scale-95"
+              className="relative grid h-10 w-10 place-items-center rounded-full bg-white/85 backdrop-blur-md border border-white/70 text-[#5b3a18] shadow-[0_6px_14px_-8px_rgba(120,80,30,0.35)] active:scale-95"
             >
               <Bookmark className="h-[18px] w-[18px]" />
-            </button>
+              {saved.length > 0 && (
+                <span className="absolute -top-1 -left-1 grid h-4 min-w-4 px-1 place-items-center rounded-full bg-[#b87a22] text-[9.5px] font-bold text-white">
+                  {saved.length}
+                </span>
+              )}
+            </Link>
           </div>
         </div>
       </header>
@@ -281,25 +289,35 @@ function AgpeyaHome() {
         </section>
 
         {/* Continue elsewhere */}
-        {last && last.prayerId !== current.id && (
-          <Link
-            to="/agpeya/$prayerId"
-            params={{ prayerId: last.prayerId }}
-            className="mt-3 flex items-center justify-between rounded-2xl bg-white/75 backdrop-blur-md border border-[#c79356]/35 px-4 py-3 text-[#5b3a18] shadow-[0_6px_16px_-12px_rgba(120,80,30,0.4)] active:scale-[0.98] transition-transform"
-          >
-            <div className="flex items-center gap-2.5">
-              <BookOpen className="h-4 w-4 text-[#8a5a1f]" />
-              <div>
-                <div className="text-[10.5px] text-[#8a5a1f]/80">متابعة القراءة</div>
-                <div className="font-arabic-serif text-[14px] font-bold leading-tight">
-                  {AGPEYA_PRAYERS.find((p) => p.id === last.prayerId)?.title ?? "آخر صلاة"}
+        {hydrated && last && last.prayerId !== current.id && (
+          <div className="mt-3 flex items-stretch gap-2">
+            <Link
+              to="/agpeya/$prayerId"
+              params={{ prayerId: last.prayerId }}
+              className="flex flex-1 items-center justify-between rounded-2xl bg-white/75 backdrop-blur-md border border-[#c79356]/35 px-4 py-3 text-[#5b3a18] shadow-[0_6px_16px_-12px_rgba(120,80,30,0.4)] active:scale-[0.98] transition-transform"
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <BookOpen className="h-4 w-4 text-[#8a5a1f] shrink-0" />
+                <div className="min-w-0">
+                  <div className="text-[10.5px] text-[#8a5a1f]/80">متابعة القراءة</div>
+                  <div className="font-arabic-serif text-[14px] font-bold leading-tight truncate">
+                    {AGPEYA_PRAYERS.find((p) => p.id === last.prayerId)?.title ?? "آخر صلاة"}
+                  </div>
                 </div>
               </div>
-            </div>
-            <span className="text-[11px] font-semibold text-[#8a5a1f]">
-              {Math.round((last.scrollPercent || 0) * 100)}%
-            </span>
-          </Link>
+              <span className="text-[11px] font-semibold text-[#8a5a1f] shrink-0">
+                {Math.round((last.scrollPercent || 0) * 100)}%
+              </span>
+            </Link>
+            <button
+              type="button"
+              aria-label="إخفاء متابعة القراءة"
+              onClick={() => { clearLastOpenedPrayer(); setLast(null); }}
+              className="grid w-9 place-items-center rounded-2xl border border-[#c79356]/35 bg-white/60 text-[#8a5a1f] active:scale-95"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         )}
 
         {/* ===== Day Prayers ===== */}
