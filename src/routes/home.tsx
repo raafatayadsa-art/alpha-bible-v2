@@ -124,7 +124,7 @@ function HomeScreen() {
   const quickCards = [
     { key: "bible", icon: iconBible, title: "اكمل القراءة", sub: "تابع حيث توقفت\nفي الكتاب المقدس", to: "/books" },
     { key: "hymn", icon: iconHymn, title: "ترنيمة اليوم", sub: "استمع لترنيمة مختارة\nكل يوم" },
-    { key: "prayer", icon: iconPrayer, title: "طلبات الصلاة", sub: "قدم طلبك وصل\nمن أجل الآخرين" },
+    { key: "prayer", icon: iconPrayer, title: "الأجبية", sub: "صلوات السبع ساعات\nصلاة كل ساعة", to: "/agpeya" },
     { key: "meeting", icon: iconMeeting, title: "اجتماع اليوم", sub: "لا تفوت اجتماع\nكنيستك اليوم" },
     { key: "calendar", icon: iconCalendar, title: "المناسبات", sub: "اكتشف المناسبات\nالقادمة" },
     { key: "meditation", icon: iconMeditation, title: "التأمل اليومي", sub: "لحظات من التأمل\nوالقرب من الله" },
@@ -393,7 +393,7 @@ function HomeScreen() {
             <div className="grid grid-cols-5 items-end px-2 pt-2.5 pb-2">
               {/* RTL order: الرئيسية (right) ... الملف الشخصي (left) */}
               <DockItem icon={HomeIcon} label="الرئيسية" active to="/home" color="#d96b2a" />
-              <DockItem icon={HandHeart} label="الصلاة" color="#3a6fb5" />
+              <DockItem icon={HandHeart} label="الصلاة" to="/agpeya" color="#3a6fb5" />
               <DockItem label="الكتاب المقدس" raised to="/books" />
               <DockItem icon={Users} label="المجتمع" color="#6a4ab5" />
               <DockItem icon={UserIcon} label="الملف الشخصي" color="#6a4ab5" />
