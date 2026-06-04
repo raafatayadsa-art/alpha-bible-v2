@@ -454,28 +454,49 @@ function PrayerReader() {
     };
   }, [prayerId]);
 
-  // IntersectionObserver to track active section
+  // Scroll-driven active section tracking (more reliable than IO across browsers)
   useEffect(() => {
     const root = scrollerRef.current;
-    if (!root) return;
-    const els = sections
-      .map((s) => root.querySelector(`#section-${s.id}`))
-      .filter((el): el is Element => !!el);
-    if (!els.length) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible) {
-          const id = (visible.target as HTMLElement).dataset.sectionId;
-          if (id) setActiveId(id);
+    if (!root || sections.length === 0) return;
+    let raf = 0;
+    const recompute = () => {
+      try {
+        const els = sections
+          .map((s) => ({ id: s.id, el: root.querySelector(`#section-${s.id}`) as HTMLElement | null }))
+          .filter((x): x is { id: string; el: HTMLElement } => !!x.el);
+        if (!els.length) return;
+        const rootTop = root.getBoundingClientRect().top;
+        const trigger = rootTop + Math.min(180, root.clientHeight * 0.28);
+        // pick last section whose top is above trigger; fallback to first
+        let currentId = els[0].id;
+        for (const { id, el } of els) {
+          if (el.getBoundingClientRect().top - trigger <= 0) currentId = id;
+          else break;
         }
-      },
-      { root, rootMargin: "-30% 0px -60% 0px", threshold: [0, 0.25, 0.5, 1] },
-    );
-    els.forEach((e) => io.observe(e));
-    return () => io.disconnect();
+        // near-bottom guard: snap to last section
+        // near-bottom guard: snap to last section (only when content actually scrolls)
+        const scrollable = root.scrollHeight - root.clientHeight;
+        if (scrollable > 8 && root.scrollTop + root.clientHeight >= root.scrollHeight - 4) {
+          currentId = els[els.length - 1].id;
+        }
+        setActiveId((prev) => (prev === currentId ? prev : currentId));
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.warn("[agpeya] section tracking failed", err);
+      }
+    };
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(recompute);
+    };
+    recompute();
+    root.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      cancelAnimationFrame(raf);
+      root.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
   }, [sections]);
 
   // Auto-center active chip in the rail
@@ -591,7 +612,7 @@ function PrayerReader() {
         )}
         style={{ paddingTop: "max(env(safe-area-inset-top), 0px)" }}
       >
-        <div className="mx-auto flex max-w-[560px] items-center justify-between px-4 py-3">
+        <div className="mx-auto flex max-w-[640px] items-center justify-between px-3 py-3">
           <Link
             to="/agpeya"
             aria-label="رجوع للأجبية"
@@ -645,7 +666,7 @@ function PrayerReader() {
           <div
             ref={chipsRef}
             className={cn(
-              "mx-auto flex max-w-[560px] gap-1.5 overflow-x-auto px-3 pb-2 no-scrollbar",
+              "mx-auto flex max-w-[640px] gap-1.5 overflow-x-auto px-3 pb-2 no-scrollbar",
             )}
           >
             {sections.map((s) => {
@@ -656,12 +677,11 @@ function PrayerReader() {
                   type="button"
                   data-chip={s.id}
                   onClick={() => jumpTo(s.id)}
+                  aria-current={active ? "true" : undefined}
                   className={cn(
-                    "shrink-0 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-[12px] font-bold transition-all active:scale-95",
+                    "shrink-0 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-[12px] font-bold transition-all duration-300 active:scale-95",
                     active
-                      ? dark
-                        ? "border-[#f0d78c] bg-gradient-to-br from-[#f0d78c] to-[#c79356] text-[#1a1208] shadow"
-                        : "border-[#1f4032] bg-gradient-to-br from-[#1f4032] to-[#234a3a] text-white shadow"
+                      ? "border-[#8a6bbf] bg-gradient-to-br from-[#7a5cb0] to-[#5a3d92] text-white shadow-[0_6px_18px_-8px_rgba(122,92,176,0.7)] ring-1 ring-[#b89dd9]/40"
                       : dark
                         ? "border-white/10 bg-white/5 text-white/75"
                         : "border-[#c79356]/30 bg-white/55 text-[#5b3a18]",
@@ -677,7 +697,7 @@ function PrayerReader() {
         {/* Progress bar */}
         <div className={cn("h-[3px] w-full", dark ? "bg-white/5" : "bg-[#c79356]/15")}>
           <div
-            className={cn("h-full transition-[width] duration-150", dark ? "bg-[#f0d78c]" : "bg-[#1f4032]")}
+            className="h-full bg-gradient-to-r from-[#7a5cb0] via-[#9b7fd4] to-[#5a3d92] transition-[width] duration-150"
             style={{ width: `${Math.round(progress * 100)}%` }}
           />
         </div>
@@ -700,7 +720,7 @@ function PrayerReader() {
         />
 
         <article
-          className="relative mx-auto max-w-[560px] px-4 pb-44 pt-5 font-arabic-serif"
+          className="relative mx-auto max-w-[640px] px-3 pb-44 pt-5 sm:px-5 font-arabic-serif"
           style={{ fontSize, lineHeight }}
         >
           {/* Draft notice */}
@@ -772,7 +792,7 @@ function PrayerReader() {
       {/* Floating reader controls */}
       <div
         dir="rtl"
-        className="fixed inset-x-0 z-40 mx-auto flex w-full max-w-[560px] items-center justify-center px-4"
+        className="fixed inset-x-0 z-40 mx-auto flex w-full max-w-[640px] items-center justify-center px-3"
         style={{ bottom: "max(env(safe-area-inset-bottom), 16px)" }}
       >
         <div
