@@ -402,11 +402,9 @@ function HomeScreen() {
           </div>
         </header>
 
-        {/* HERO STACK CAROUSEL — Apple Wallet style */}
+        {/* HERO STACK CAROUSEL — Apple Wallet style, autoplay + infinite */}
         <HeroStack
           cards={heroCards}
-          index={heroIndex}
-          onIndex={setHeroIndex}
           savedSet={savedSet}
           onToggleSaved={toggleSaved}
         />
