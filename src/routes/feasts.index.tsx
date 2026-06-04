@@ -172,7 +172,14 @@ function FeastsHome() {
                         decoding="async"
                         draggable={false}
                         className="absolute inset-0 h-full w-full object-cover object-center select-none"
+                        style={{
+                          WebkitMaskImage:
+                            "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.25) 18%, rgba(0,0,0,0.7) 42%, #000 70%)",
+                          maskImage:
+                            "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.25) 18%, rgba(0,0,0,0.7) 42%, #000 70%)",
+                        }}
                       />
+                      <div className="absolute inset-y-0 left-0 w-1/2 bg-[linear-gradient(to_right,#ffffff_0%,rgba(255,255,255,0.6)_55%,transparent_100%)] pointer-events-none" />
                       <div className="absolute inset-0 ring-1 ring-inset ring-[#ead9b1]/70 rounded-2xl pointer-events-none" />
                     </div>
                     <div className="min-w-0 text-right">
