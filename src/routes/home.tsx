@@ -34,7 +34,7 @@ import newsYouth from "@/assets/home/news-youth.jpg";
 import newsMass from "@/assets/home/news-mass.jpg";
 
 import logoBible from "@/assets/home/logo-bible.png";
-import { CopticWatermark } from "@/components/coptic";
+import { CopticWatermark, CopticCross } from "@/components/coptic";
 
 export const Route = createFileRoute("/home")({
   ssr: false,
@@ -402,40 +402,57 @@ function HomeScreen() {
           onToggleSaved={toggleSaved}
         />
 
-        {/* PRIMARY STACKED CAROUSEL — Apple Wallet style */}
+        {/* PRIMARY STACKED CAROUSEL — auto-rotating cover flow, infinite */}
         <section className="mt-7">
           <div className="mb-3 flex items-center justify-between px-1">
             <h2 className="text-[14px] font-extrabold text-[#3a2a18] tracking-tight flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-[#b8893a]" />
+              <CopticCross className="text-[#b8893a]" size={14} />
               اكتشف رحلتك اليوم
             </h2>
-            <span className="text-[11px] font-bold text-[#7a4a26]">اسحب →</span>
           </div>
-          <PrimaryStack cards={primary} />
+          <Coverflow
+            items={primary}
+            direction={1}
+            height={228}
+            cardWidthPct={68}
+            peekPct={64}
+            getKey={(c) => c.key}
+            renderCard={(c) => (
+              <Link to={c.to as any} aria-label={c.title} className="block">
+                <PrimaryArtCardFull {...c} />
+              </Link>
+            )}
+          />
         </section>
 
-        {/* DAILY CAROUSEL */}
-        <section className="mt-5 -mx-4">
-          <div className="mb-2.5 flex items-center justify-between px-5">
+        {/* DAILY — opposite-direction auto cover flow */}
+        <section className="mt-5">
+          <div className="mb-2.5 flex items-center justify-between px-1">
             <h2 className="text-[14px] font-extrabold text-[#3a2a18] tracking-tight flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-[#b8893a]" />
+              <CopticCross className="text-[#b8893a]" size={14} />
               تابع رحلتك الروحية
             </h2>
           </div>
-          <div className="flex gap-3 overflow-x-auto px-4 pb-4 snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-            {daily.map((d) => (
-              <Link key={d.key} to={d.to as any} className="snap-start shrink-0 active:scale-[0.97] transition-transform">
+          <Coverflow
+            items={daily}
+            direction={-1}
+            height={150}
+            cardWidthPct={72}
+            peekPct={66}
+            getKey={(d) => d.key}
+            renderCard={(d) => (
+              <Link to={d.to as any} aria-label={d.title} className="block">
                 <DailyCard {...d} />
               </Link>
-            ))}
-          </div>
+            )}
+          />
         </section>
 
         {/* CHURCH NEWS — featured */}
         <section className="mt-4">
           <div className="mb-3 flex items-center justify-between px-1">
             <h2 className="text-[14px] font-extrabold text-[#3a2a18] tracking-tight flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-[#b8893a]" />
+              <CopticCross className="text-[#b8893a]" size={14} />
               أخبار كنيستك
             </h2>
             <span className="text-[11px] font-bold text-[#7a4a26]">عرض الكل</span>
@@ -553,12 +570,12 @@ function HeroStack({
   };
 
   const currentMod = ((index % total) + total) % total;
-  const visible = Math.min(4, total);
+  const slots = [-1, 0, 1];
 
   return (
     <section className="mt-5 select-none">
       <div
-        className="relative h-[268px] w-full"
+        className="relative h-[268px] w-full overflow-hidden"
         style={{ perspective: 1200 }}
         onTouchStart={onTouchStart as any}
         onTouchMove={onTouchMove as any}
@@ -568,25 +585,26 @@ function HeroStack({
         onMouseUp={onTouchEnd}
         onMouseLeave={() => { if (startX.current != null) onTouchEnd(); }}
       >
-        {Array.from({ length: visible }).map((_, rel) => {
-          const cardIdx = (currentMod + rel) % total;
+        {slots.map((s) => {
+          const cardIdx = ((index + s) % total + total) % total;
           const c = cards[cardIdx];
-          const isFront = rel === 0;
-          const scale = 1 - rel * 0.06;
-          const translateY = rel * 12;
-          const translateX = isFront ? dx : 0;
+          const isFront = s === 0;
+          const baseXPct = s * 78; // peek offset for prev/next
+          const tx = isFront ? dx : 0;
+          const scale = isFront ? 1 : 0.84;
+          const opacity = isFront ? 1 : 0.55;
+          const z = isFront ? 30 : 10;
           const rotate = isFront ? dx * 0.02 : 0;
-          const opacity = rel <= 2 ? 1 : 0.4;
-          const z = 30 - rel;
           return (
             <div
-              key={`${c.id}-${rel}`}
-              className="absolute inset-x-0 top-0 ease-[cubic-bezier(0.22,1,0.36,1)]"
+              key={`${c.id}-${s}`}
+              className="absolute top-0 left-1/2 w-[86%]"
               style={{
-                transform: `translate3d(${translateX}px, ${translateY}px, 0) scale(${scale}) rotate(${rotate}deg)`,
+                transform: `translate(calc(-50% + ${baseXPct}% + ${tx}px), 0) scale(${scale}) rotate(${rotate}deg)`,
                 zIndex: z,
                 opacity,
                 transition: startX.current != null && isFront ? "none" : "transform 450ms cubic-bezier(0.22,1,0.36,1), opacity 350ms",
+                filter: isFront ? "none" : "blur(0.3px)",
               }}
             >
               <HeroCardView
@@ -601,6 +619,118 @@ function HeroStack({
         })}
       </div>
     </section>
+  );
+}
+
+// ===== Auto-rotating Cover Flow (used for Primary + Daily) =====
+function Coverflow<T>({
+  items, direction, height, cardWidthPct, peekPct, renderCard, getKey, intervalMs = 5000,
+}: {
+  items: T[];
+  direction: 1 | -1;
+  height: number;
+  cardWidthPct: number; // width of active card as % of container
+  peekPct: number; // horizontal offset for prev/next, in % of container
+  renderCard: (item: T, isActive: boolean) => React.ReactNode;
+  getKey: (item: T) => string;
+  intervalMs?: number;
+}) {
+  const total = items.length;
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const pauseTimer = useRef<number | null>(null);
+  const startX = useRef<number | null>(null);
+  const [dx, setDx] = useState(0);
+
+  useEffect(() => {
+    if (paused || total <= 1) return;
+    const id = window.setInterval(() => setIndex((i) => i + direction), intervalMs);
+    const onVis = () => { if (document.hidden) setPaused(true); };
+    document.addEventListener("visibilitychange", onVis);
+    return () => { clearInterval(id); document.removeEventListener("visibilitychange", onVis); };
+  }, [paused, total, direction, intervalMs]);
+
+  const pauseTemporarily = () => {
+    setPaused(true);
+    if (pauseTimer.current) window.clearTimeout(pauseTimer.current);
+    pauseTimer.current = window.setTimeout(() => setPaused(false), 8000);
+  };
+  useEffect(() => () => { if (pauseTimer.current) window.clearTimeout(pauseTimer.current); }, []);
+
+  const onStart = (e: React.TouchEvent | React.MouseEvent) => {
+    startX.current = "touches" in e ? e.touches[0].clientX : e.clientX;
+    setDx(0);
+  };
+  const onMove = (e: React.TouchEvent | React.MouseEvent) => {
+    if (startX.current == null) return;
+    const x = "touches" in e ? e.touches[0].clientX : e.clientX;
+    setDx(x - startX.current);
+  };
+  const onEnd = () => {
+    if (Math.abs(dx) > 50) {
+      setIndex((i) => i + (dx < 0 ? 1 : -1));
+      pauseTemporarily();
+    }
+    startX.current = null;
+    setDx(0);
+  };
+
+  const currentMod = ((index % total) + total) % total;
+  const slots = [-1, 0, 1];
+
+  return (
+    <div
+      className="relative w-full select-none overflow-hidden"
+      style={{ height, perspective: 1200 }}
+      onTouchStart={onStart as any}
+      onTouchMove={onMove as any}
+      onTouchEnd={onEnd}
+      onMouseDown={onStart as any}
+      onMouseMove={(e) => { if (startX.current != null) onMove(e); }}
+      onMouseUp={onEnd}
+      onMouseLeave={() => { if (startX.current != null) onEnd(); }}
+    >
+      {slots.map((s) => {
+        const cardIdx = ((index + s) % total + total) % total;
+        const item = items[cardIdx];
+        const isFront = s === 0;
+        const baseXPct = s * peekPct;
+        const tx = isFront ? dx : 0;
+        const scale = isFront ? 1 : 0.82;
+        const opacity = isFront ? 1 : 0.5;
+        const z = isFront ? 30 : 10;
+        return (
+          <div
+            key={`${getKey(item)}-${s}`}
+            className="absolute top-0 left-1/2"
+            style={{
+              width: `${cardWidthPct}%`,
+              transform: `translate(calc(-50% + ${baseXPct}% + ${tx}px), 0) scale(${scale})`,
+              zIndex: z,
+              opacity,
+              transition: startX.current != null && isFront ? "none" : "transform 450ms cubic-bezier(0.22,1,0.36,1), opacity 350ms",
+              filter: isFront ? "none" : "blur(0.3px)",
+            }}
+          >
+            {renderCard(item, isFront)}
+          </div>
+        );
+      })}
+      {/* indicators */}
+      <div className="absolute inset-x-0 bottom-1 flex items-center justify-center gap-1.5 pointer-events-none">
+        {items.map((it, i) => (
+          <span
+            key={getKey(it)}
+            className="h-1.5 rounded-full transition-all"
+            style={{
+              width: i === currentMod ? 18 : 5,
+              background: i === currentMod ? "#b8893a" : "rgba(120,80,30,0.25)",
+              boxShadow: i === currentMod ? "0 0 6px rgba(184,137,58,0.55)" : "none",
+            }}
+          />
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -726,74 +856,11 @@ function HeroCardView({
   );
 }
 
-// ===== Primary Art Card =====
-function PrimaryArtCard({
-  title, sub, image, accent, glyph,
-}: {
-  title: string;
-  sub: string;
-  image: string;
-  accent: string;
-  glyph: "Ⲁ" | "Ⲱ";
-}) {
-  return (
-    <div
-      className="relative h-[230px] w-[165px] overflow-hidden rounded-[28px] border border-white/15"
-      style={{
-        boxShadow: `0 24px 48px -22px rgba(0,0,0,0.85), 0 0 0 1px ${accent}22, inset 0 0 30px ${accent}22, inset 0 1px 0 rgba(255,255,255,0.18)`,
-        background: "#0a0612",
-      }}
-    >
-      <img src={image} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
-      {/* gradient */}
-      <div
-        aria-hidden
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(180deg, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.05) 40%, rgba(0,0,0,0.70) 85%, rgba(0,0,0,0.95) 100%)",
-        }}
-      />
-      {/* glow ring */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 rounded-[28px]"
-        style={{ boxShadow: `inset 0 0 24px ${accent}55` }}
-      />
-      {/* coptic glyph */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute top-2 left-3 select-none font-black leading-none"
-        style={{ fontSize: 52, color: "rgba(255,255,255,0.10)" }}
-      >
-        {glyph}
-      </span>
-      <div className="absolute inset-x-3 bottom-3 text-right">
-        <h3
-          className="text-[15px] font-extrabold leading-tight text-white"
-          style={{ textShadow: "0 2px 8px rgba(0,0,0,0.85)" }}
-        >
-          {title}
-        </h3>
-        <p className="mt-0.5 text-[11px] font-medium leading-snug text-white/85" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.7)" }}>
-          {sub}
-        </p>
-        <div
-          className="mt-2 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold text-white border"
-          style={{ background: `${accent}30`, borderColor: `${accent}66`, backdropFilter: "blur(6px)" }}
-        >
-          افتح
-          <ChevronLeft className="h-3 w-3" />
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function DailyCard({ title, sub, image, accent }: { title: string; sub: string; image: string; accent: string }) {
   return (
     <div
-      className="relative h-[110px] w-[230px] overflow-hidden rounded-[22px] border border-white/12"
+      className="relative h-[130px] w-full overflow-hidden rounded-[22px] border border-white/12"
       style={{
         boxShadow: `0 14px 28px -16px rgba(0,0,0,0.75), inset 0 0 20px ${accent}22, inset 0 1px 0 rgba(255,255,255,0.12)`,
         background: "#0a0612",
@@ -871,89 +938,6 @@ function FeaturedNewsCard({
   );
 }
 
-// ===== Primary Cover Flow Carousel — center card with peek sides =====
-function PrimaryStack({ cards }: { cards: { key: string; title: string; sub: string; image: string; to: string; accent: string; glyph: "Ⲁ" | "Ⲱ" }[] }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [active, setActive] = useState(0);
-
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    let raf = 0;
-    const update = () => {
-      const center = el.scrollLeft + el.clientWidth / 2;
-      const items = Array.from(el.querySelectorAll<HTMLElement>("[data-cf-card]"));
-      let best = 0;
-      let bestDist = Infinity;
-      items.forEach((it, i) => {
-        const c = it.offsetLeft + it.offsetWidth / 2;
-        const d = Math.abs(c - center);
-        if (d < bestDist) { bestDist = d; best = i; }
-      });
-      setActive(best);
-    };
-    const onScroll = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(update);
-    };
-    el.addEventListener("scroll", onScroll, { passive: true });
-    // Initial center on the first card
-    requestAnimationFrame(() => {
-      const first = el.querySelector<HTMLElement>("[data-cf-card]");
-      if (first) {
-        const target = first.offsetLeft + first.offsetWidth / 2 - el.clientWidth / 2;
-        el.scrollTo({ left: target, behavior: "auto" });
-      }
-      update();
-    });
-    return () => { el.removeEventListener("scroll", onScroll); cancelAnimationFrame(raf); };
-  }, [cards.length]);
-
-  return (
-    <div className="relative -mx-4">
-      <div
-        ref={containerRef}
-        dir="ltr"
-        className="flex items-center gap-3 overflow-x-auto snap-x snap-mandatory px-[18%] pb-6 pt-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-        style={{ scrollBehavior: "smooth" }}
-      >
-        {cards.map((c, i) => {
-          const isActive = i === active;
-          return (
-            <Link
-              key={c.key}
-              to={c.to as any}
-              data-cf-card
-              aria-label={c.title}
-              className="snap-center shrink-0 w-[64%] active:scale-[0.98]"
-              style={{
-                transform: isActive ? "scale(1)" : "scale(0.86)",
-                opacity: isActive ? 1 : 0.65,
-                transition: "transform 320ms cubic-bezier(0.22,1,0.36,1), opacity 320ms",
-              }}
-            >
-              <PrimaryArtCardFull {...c} />
-            </Link>
-          );
-        })}
-      </div>
-      {/* indicators */}
-      <div className="mt-1 flex items-center justify-center gap-1.5">
-        {cards.map((_, i) => (
-          <span
-            key={i}
-            className="h-1.5 rounded-full transition-all"
-            style={{
-              width: i === active ? 20 : 6,
-              background: i === active ? "#e7c97a" : "rgba(255,255,255,0.25)",
-              boxShadow: i === active ? "0 0 8px rgba(231,201,122,0.6)" : "none",
-            }}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
 
 function PrimaryArtCardFull({ title, sub, image, accent, glyph }: { title: string; sub: string; image: string; accent: string; glyph: "Ⲁ" | "Ⲱ" }) {
   return (
@@ -1121,12 +1105,34 @@ function ShareSheetHost() {
     close();
   };
 
+  // Save image silently (no auto-download UX prompt) — used by external flows.
+  const ensureImage = async (download: boolean) => {
+    try {
+      const blob = await getShareBlob(req);
+      if (!blob) return;
+      if (download) {
+        const u = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = u; a.download = "alpha-coptic.jpg";
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(u), 1000);
+      }
+    } catch {}
+  };
+
+  const shareToExternal = async (href: string) => {
+    setBusy(true);
+    await ensureImage(true); // auto-download branded image so user can attach
+    setBusy(false);
+    openExternal(href);
+  };
+
   const options: { key: string; label: string; color: string; emoji: string; onClick: () => void }[] = [
-    { key: "wa", label: "واتساب", color: "#25D366", emoji: "💬", onClick: () => openExternal(`https://wa.me/?text=${encoded}`) },
-    { key: "tg", label: "تيليجرام", color: "#229ED9", emoji: "✈️", onClick: () => openExternal(`https://t.me/share/url?url=${url}&text=${encoded}`) },
-    { key: "fb", label: "فيسبوك", color: "#1877F2", emoji: "📘", onClick: () => openExternal(`https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${encoded}`) },
+    { key: "wa", label: "واتساب", color: "#25D366", emoji: "💬", onClick: () => shareToExternal(`https://wa.me/?text=${encoded}`) },
+    { key: "tg", label: "تيليجرام", color: "#229ED9", emoji: "✈️", onClick: () => shareToExternal(`https://t.me/share/url?url=${url}&text=${encoded}`) },
+    { key: "fb", label: "فيسبوك", color: "#1877F2", emoji: "📘", onClick: () => shareToExternal(`https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${encoded}`) },
     { key: "ig", label: "إنستجرام", color: "#E1306C", emoji: "📷", onClick: async () => { await doSaveImage(); } },
-    { key: "native", label: "مشاركة", color: "#e7c97a", emoji: "🔗", onClick: doNative },
+    { key: "native", label: "مشاركة", color: "#d88a2a", emoji: "🔗", onClick: doNative },
     { key: "copy", label: "نسخ النص", color: "#8a6ec1", emoji: "📋", onClick: doCopy },
   ];
 
@@ -1137,36 +1143,39 @@ function ShareSheetHost() {
       className="fixed inset-0 z-[60] flex items-end justify-center"
       onClick={close}
     >
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in" />
+      <div className="absolute inset-0 bg-[#3a2a18]/45 backdrop-blur-sm animate-in fade-in" />
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-[440px] rounded-t-[28px] border-t border-x border-white/12 bg-gradient-to-b from-[#1a1230] to-[#0c0918] px-4 pt-3 pb-[max(env(safe-area-inset-bottom),20px)]"
-        style={{ boxShadow: "0 -20px 40px -10px rgba(0,0,0,0.7)" }}
+        className="relative w-full max-w-[440px] rounded-t-[24px] border-t border-x border-[#efe2c4] bg-gradient-to-b from-[#fbf3e1] to-[#f4ead8] px-4 pt-2.5 pb-[max(env(safe-area-inset-bottom),14px)]"
+        style={{ boxShadow: "0 -16px 32px -10px rgba(120,80,30,0.35), inset 0 1px 0 rgba(255,255,255,0.9)" }}
       >
-        <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-white/15" />
+        <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-[#d8c190]" />
         <div className="flex items-center justify-between px-1">
-          <h3 className="text-[14px] font-extrabold text-white">مشاركة</h3>
-          <button aria-label="إغلاق" onClick={close} className="grid h-8 w-8 place-items-center rounded-full bg-white/8 text-white/70">
-            <X className="h-4 w-4" />
+          <h3 className="text-[13px] font-extrabold text-[#3a2a18] flex items-center gap-1.5">
+            <CopticCross className="text-[#b8893a]" size={12} />
+            مشاركة
+          </h3>
+          <button aria-label="إغلاق" onClick={close} className="grid h-7 w-7 place-items-center rounded-full bg-[#ecdcb6] text-[#7a4a26]">
+            <X className="h-3.5 w-3.5" />
           </button>
         </div>
-        <p className="mt-1 px-1 text-[11.5px] text-white/60 line-clamp-2 text-right">{req.title} — {req.body.slice(0, 80)}…</p>
+        <p className="mt-1 px-1 text-[11px] text-[#6a543a] line-clamp-1 text-right">{req.title} — {req.body.slice(0, 70)}…</p>
 
-        <div className="mt-4 grid grid-cols-3 gap-3">
+        <div className="mt-3 grid grid-cols-6 gap-2">
           {options.map((o) => (
             <button
               key={o.key}
               disabled={busy}
               onClick={o.onClick}
-              className="flex flex-col items-center gap-1.5 rounded-2xl border border-white/10 bg-white/[0.04] p-3 active:scale-[0.96] transition disabled:opacity-50"
+              className="flex flex-col items-center gap-1 rounded-xl p-1.5 active:scale-[0.94] transition disabled:opacity-50"
             >
               <span
-                className="grid h-12 w-12 place-items-center rounded-full text-[22px]"
+                className="grid h-10 w-10 place-items-center rounded-full text-[18px]"
                 style={{ background: `${o.color}22`, border: `1px solid ${o.color}66` }}
               >
                 {o.emoji}
               </span>
-              <span className="text-[11px] font-bold text-white">{o.label}</span>
+              <span className="text-[9.5px] font-bold text-[#3a2a18] leading-tight text-center">{o.label}</span>
             </button>
           ))}
         </div>
@@ -1174,9 +1183,9 @@ function ShareSheetHost() {
         <button
           onClick={doSaveImage}
           disabled={busy}
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.05] py-3 text-[12.5px] font-bold text-white active:scale-[0.99] transition disabled:opacity-50"
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-[#efe2c4] bg-white/60 py-2.5 text-[12px] font-bold text-[#3a2a18] active:scale-[0.99] transition disabled:opacity-50"
         >
-          <Link2 className="h-4 w-4 text-[#e7c97a]" />
+          <Link2 className="h-3.5 w-3.5 text-[#b8893a]" />
           حفظ صورة المشاركة
         </button>
       </div>
