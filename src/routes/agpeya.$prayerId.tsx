@@ -77,7 +77,7 @@ function buildInfoBody(p: AgpeyaPrayer): string {
 }
 
 function PrayerReader() {
-  const { prayer } = Route.useLoaderData();
+  const { prayer } = Route.useLoaderData() as { prayer: AgpeyaPrayer };
   const prayerId = prayer.id;
   const navigate = useNavigate();
 
