@@ -213,7 +213,7 @@ function AgpeyaHome() {
               aria-label="رجوع"
               className="grid h-10 w-10 place-items-center rounded-full bg-white/85 backdrop-blur-md border border-white/70 text-[#5b3a18] shadow-[0_6px_14px_-8px_rgba(120,80,30,0.35)] active:scale-95"
             >
-              <ChevronLeft className="h-4.5 w-4.5 -scale-x-100" />
+              <ChevronLeft className="h-[18px] w-[18px] -scale-x-100" />
             </Link>
             <div className="pt-1 text-center">
               <h1 className="font-arabic-serif text-[26px] font-extrabold leading-tight text-[#5b3a18] drop-shadow-[0_1px_0_rgba(255,255,255,0.7)]">
@@ -226,7 +226,7 @@ function AgpeyaHome() {
               aria-label="المحفوظات"
               className="grid h-10 w-10 place-items-center rounded-full bg-white/85 backdrop-blur-md border border-white/70 text-[#5b3a18] shadow-[0_6px_14px_-8px_rgba(120,80,30,0.35)] active:scale-95"
             >
-              <Bookmark className="h-4.5 w-4.5" />
+              <Bookmark className="h-[18px] w-[18px]" />
             </button>
           </div>
         </div>
