@@ -186,7 +186,7 @@ function EventDetails() {
                   params={{ eventId: r.id }}
                   className="block min-w-[160px] active:scale-[0.98] transition-transform"
                 >
-                  <GlassSurface className="overflow-hidden p-0">
+                  <GlassSurface className="overflow-hidden p-0 bg-white border-[#ead9b1]">
                     <div
                       className="h-24 bg-cover bg-center"
                       style={{ backgroundImage: `url(${r.image})` }}
