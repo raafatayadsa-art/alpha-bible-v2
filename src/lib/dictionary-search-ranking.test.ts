@@ -52,7 +52,7 @@ describe("rankAndDedupe — exact → starts-with → contains → description",
       row("هارون", { short_meaning_ar: "ذكر موسى بن عمران" }), // description
     ];
 
-    const out = rankAndDedupe(rows, "موسى بن عمران");
+    const out = rankAndDedupe(rows, "موسى بن عمران", { strict: false });
     const titles = out.map((r) => r.row.word);
 
     expect(titles[0]).toBe("موسى بن عمران");
