@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { ReactNode } from "react";
 import { ChevronRight } from "lucide-react";
 import { BottomDock } from "@/components/bible/BottomDock";
@@ -6,11 +6,9 @@ import { CopticWatermark, CopticCross } from "@/components/coptic";
 
 export function ProfileSubShell({
   title,
-  accent = "#b8893a",
   children,
 }: {
   title: string;
-  accent?: string;
   children: ReactNode;
 }) {
   return (
@@ -69,6 +67,14 @@ export function PCard({
   );
 }
 
-export const Route = createFileRoute("/profile/_shell")({
-  // shell helper not a real route — keep file out of router by exporting fake route?
-});
+export function Field({
+  label, value, hint,
+}: { label: string; value: string; hint?: string }) {
+  return (
+    <div className="px-4 py-3 border-b border-[#efe2c4]/70 last:border-b-0">
+      <div className="text-[10.5px] text-[#9a7e5a] font-semibold">{label}</div>
+      <div className="mt-0.5 text-[14px] text-[#3a2a18] font-bold">{value}</div>
+      {hint && <div className="text-[10.5px] text-[#9a7e5a] mt-0.5">{hint}</div>}
+    </div>
+  );
+}
