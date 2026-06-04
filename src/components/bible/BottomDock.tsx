@@ -29,7 +29,7 @@ export function BottomDock({
   const lastYRef = useRef<number>(typeof window !== "undefined" ? window.scrollY : 0);
 
   useEffect(() => {
-    const IDLE_MS = 5000;
+    const IDLE_MS = 3000;
 
     const armTimer = () => {
       if (timerRef.current) clearTimeout(timerRef.current);
@@ -45,11 +45,12 @@ export function BottomDock({
       const y = window.scrollY;
       const prev = lastYRef.current;
       lastYRef.current = y;
-      // Scroll up (or near top) → reveal. Scroll down → just re-arm idle timer.
+      // Scroll up (or near top) → reveal. Scroll down → keep hidden (no re-arm).
       if (y < prev - 2 || y < 8) {
         reveal();
-      } else {
-        armTimer();
+      } else if (y > prev + 2) {
+        setAutoHidden(true);
+        if (timerRef.current) clearTimeout(timerRef.current);
       }
     };
 
@@ -80,7 +81,7 @@ export function BottomDock({
   useEffect(() => {
     setAutoHidden(false);
     if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => setAutoHidden(true), 5000);
+    timerRef.current = setTimeout(() => setAutoHidden(true), 3000);
   }, [pathname]);
 
   const isHidden = hidden || autoHidden;

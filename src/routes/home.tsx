@@ -6,6 +6,7 @@ import {
   Play, Pause, X, Link2, Calendar,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { BottomDock } from "@/components/bible/BottomDock";
 
 // Hero stack art
 import artVerse from "@/assets/home/art-verse.jpg";
@@ -492,29 +493,8 @@ function HomeScreen() {
       {/* Share Sheet host */}
       <ShareSheetHost />
 
-      {/* Bottom dock */}
-      <nav
-        aria-label="التنقل السفلي"
-        className="fixed inset-x-0 bottom-0 z-50 transition-all duration-[250ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
-        style={{
-          paddingBottom: "max(env(safe-area-inset-bottom), 8px)",
-          transform: dockVisible ? "translateY(0)" : "translateY(120%)",
-          opacity: dockVisible ? 1 : 0,
-          pointerEvents: dockVisible ? "auto" : "none",
-        }}
-      >
-        <div className="mx-auto w-full max-w-[440px] px-3">
-          <div className="relative rounded-[28px] border border-[#efe2c4] bg-gradient-to-b from-[#fbf3e1]/95 to-[#f4ead8]/95 shadow-[0_-12px_36px_-16px_rgba(120,80,30,0.35),inset_0_1px_0_rgba(255,255,255,0.85)] backdrop-blur-2xl">
-            <div className="grid grid-cols-5 items-end px-2 pt-2.5 pb-2">
-              <DockItem icon={HomeIcon} label="الرئيسية" active to="/home" />
-              <DockItem icon={HandHeart} label="الصلاة" to="/agpeya" />
-              <DockItem label="الكتاب المقدس" raised to="/books" />
-              <DockItem icon={Users} label="المجتمع" />
-              <DockItem icon={UserIcon} label="المزيد" />
-            </div>
-          </div>
-        </div>
-      </nav>
+      {/* Unified Bottom Navigation */}
+      <BottomDock />
     </div>
   );
 }
