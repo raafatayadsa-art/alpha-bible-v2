@@ -38,6 +38,7 @@ import {
   useSavedAgpeya,
 } from "@/features/agpeya";
 import type { AgpeyaPrayer } from "@/features/agpeya";
+import { CopticWatermark } from "@/components/coptic";
 import { cn } from "@/lib/utils";
 
 /* ---------- Lifecycle states ---------- */
@@ -623,12 +624,13 @@ function PrayerReader() {
     <div
       dir="rtl"
       className={cn(
-        "min-h-dvh flex flex-col transition-colors",
+        "relative min-h-dvh flex flex-col transition-colors",
         dark
           ? "bg-[#08131f] text-[#e8e2cf]"
           : "bg-[radial-gradient(120%_60%_at_50%_-10%,#fff5dd_0%,#fbeac6_45%,#f3d9a5_100%)] text-[#3a2410]",
       )}
     >
+      <CopticWatermark tone={dark ? "dark" : "light"} />
       {/* Top bar */}
       <header
         className={cn(

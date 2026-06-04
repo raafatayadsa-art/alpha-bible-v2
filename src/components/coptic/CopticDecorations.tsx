@@ -21,19 +21,59 @@ export function CopticCross({ className = "", size = 24 }: { className?: string;
   );
 }
 
-export function CopticWatermark({ className = "" }: { className?: string }) {
+/**
+ * Unified Alpha–Omega watermark — the core visual signature of Alpha Coptic.
+ * Fixed full-viewport, extremely subtle (≈2% opacity), Ⲁ on the right and Ⲱ
+ * on the left (RTL-natural pairing). Drop once per screen at the root.
+ *
+ * Variants:
+ * - tone: "light" (default, warm gold) or "dark" (champagne on dark bg)
+ * - position: "fixed" (default, viewport-wide) or "absolute" (parent must be relative)
+ */
+export function CopticWatermark({
+  className = "",
+  tone = "light",
+  position = "fixed",
+}: {
+  className?: string;
+  tone?: "light" | "dark";
+  position?: "fixed" | "absolute";
+}) {
+  const color = tone === "dark" ? "#f0d78c" : "#8a5a1f";
+  const opacity = tone === "dark" ? 0.035 : 0.025;
   return (
     <div
       className={cn(
-        "pointer-events-none absolute inset-0 overflow-hidden select-none",
+        "pointer-events-none inset-0 overflow-hidden select-none z-0",
+        position === "fixed" ? "fixed" : "absolute",
         className,
       )}
       aria-hidden
     >
-      <span className="absolute -top-2 right-3 text-[120px] font-bold text-[#b8893a]/[0.06] leading-none">
+      <span
+        className="absolute font-bold leading-none"
+        style={{
+          right: "-6vw",
+          top: "50%",
+          transform: "translateY(-50%)",
+          fontSize: "min(78vw, 78vh)",
+          color,
+          opacity,
+        }}
+      >
         Ⲁ
       </span>
-      <span className="absolute -bottom-6 left-3 text-[120px] font-bold text-[#6a4ab5]/[0.06] leading-none">
+      <span
+        className="absolute font-bold leading-none"
+        style={{
+          left: "-6vw",
+          top: "50%",
+          transform: "translateY(-50%)",
+          fontSize: "min(78vw, 78vh)",
+          color,
+          opacity,
+        }}
+      >
         Ⲱ
       </span>
     </div>

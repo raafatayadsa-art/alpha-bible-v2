@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { Menu, Bell, Search, Sparkles, Share2, Bookmark, ChevronLeft, SkipBack, SkipForward, Play, Pause, Home as HomeIcon, HandHeart, Users, User as UserIcon } from "lucide-react";
 import logoBible from "@/assets/home/logo-bible.png";
 import { supabase } from "@/integrations/supabase/client";
+import { CopticWatermark } from "@/components/coptic";
 
 
 import heroImg from "@/assets/home/hero.png";
@@ -161,6 +162,7 @@ function HomeScreen() {
             "radial-gradient(80% 60% at 0% 80%, rgba(214,168,98,0.18), transparent 65%)",
         }}
       />
+      <CopticWatermark />
 
       <div className="relative mx-auto w-full max-w-[440px] px-4 pb-36 pt-[max(env(safe-area-inset-top),12px)]">
         {/* Top bar */}

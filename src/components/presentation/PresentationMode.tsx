@@ -173,18 +173,32 @@ export function PresentationMode({
       aria-modal="true"
       aria-label="وضع العرض الكنسي"
     >
-      {/* Coptic identity ornaments — subtle */}
+      {/* Alpha–Omega signature — large, opposite sides, extremely subtle */}
       <span
         aria-hidden
-        className="pointer-events-none absolute top-4 right-6 text-[36px] font-bold opacity-15 leading-none z-0"
-        style={{ color: accent }}
+        className="pointer-events-none absolute font-bold leading-none select-none z-0"
+        style={{
+          right: "-4vw",
+          top: "50%",
+          transform: "translateY(-50%)",
+          fontSize: "min(70vw, 70vh)",
+          color: accent,
+          opacity: dark ? 0.05 : 0.035,
+        }}
       >
         Ⲁ
       </span>
       <span
         aria-hidden
-        className="pointer-events-none absolute top-4 left-6 text-[36px] font-bold opacity-15 leading-none z-0"
-        style={{ color: accent }}
+        className="pointer-events-none absolute font-bold leading-none select-none z-0"
+        style={{
+          left: "-4vw",
+          top: "50%",
+          transform: "translateY(-50%)",
+          fontSize: "min(70vw, 70vh)",
+          color: accent,
+          opacity: dark ? 0.05 : 0.035,
+        }}
       >
         Ⲱ
       </span>
