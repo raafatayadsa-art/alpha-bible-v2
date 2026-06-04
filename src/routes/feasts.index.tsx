@@ -153,28 +153,31 @@ function FeastsHome() {
               key={f.id}
               to="/feasts/$eventId"
               params={{ eventId: f.id }}
-              className="group block transition-transform duration-300 ease-out hover:-translate-y-1 focus-visible:-translate-y-1 hover:scale-[1.015] focus-visible:scale-[1.015] active:scale-[0.99] active:translate-y-0 focus:outline-none"
+              className="group block transition-transform duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform hover:-translate-y-0.5 focus-visible:-translate-y-0.5 hover:scale-[1.02] focus-visible:scale-[1.02] active:scale-[0.985] active:translate-y-0 focus:outline-none"
             >
               <div className="relative pr-3">
                 <span
-                  className="absolute top-1/2 -translate-y-1/2 right-0 h-2 w-2 rounded-full"
+                  className={cn(
+                    "absolute top-1/2 -translate-y-1/2 right-0 h-2 w-2 rounded-full",
+                    isToday && "animate-pulse",
+                  )}
                   style={{ background: ACCENT_COLORS[f.accent], boxShadow: `0 0 0 3px ${ACCENT_COLORS[f.accent]}22` }}
                   aria-hidden
                 />
                 <GlassSurface
                   className={cn(
-                    "relative overflow-hidden p-0 bg-white border-[#ead9b1] shadow-[0_14px_30px_-22px_rgba(120,80,30,0.55)] transition-shadow duration-300 ease-out group-hover:shadow-[0_24px_44px_-22px_rgba(120,80,30,0.55)] group-focus-visible:shadow-[0_24px_44px_-22px_rgba(120,80,30,0.55)]",
+                    "relative overflow-hidden p-0 bg-white border-[#ead9b1] shadow-[0_10px_24px_-20px_rgba(120,80,30,0.5)] transition-shadow duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:shadow-[0_22px_40px_-22px_rgba(120,80,30,0.6)] group-focus-visible:shadow-[0_22px_40px_-22px_rgba(120,80,30,0.6)] group-active:shadow-[0_10px_24px_-20px_rgba(120,80,30,0.5)]",
                     isToday && "border-[#d9bf86] ring-1 ring-inset ring-[#ead9b1]",
                   )}
                 >
-                  {/* Image bleeds in from the left edge — gentle parallax on hover/focus */}
+                  {/* Image bleeds in from the left edge — subtle parallax on hover/focus */}
                   <img
                     src={f.image}
                     alt=""
                     loading="lazy"
                     decoding="async"
                     draggable={false}
-                    className="absolute inset-y-0 left-0 h-full w-[44%] object-cover object-center select-none transition-transform duration-500 ease-out group-hover:scale-[1.06] group-hover:-translate-x-1 group-focus-visible:scale-[1.06] group-focus-visible:-translate-x-1"
+                    className="absolute inset-y-0 left-0 h-full w-[44%] object-cover object-center select-none transition-transform duration-[300ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform group-hover:scale-[1.035] group-hover:-translate-x-0.5 group-focus-visible:scale-[1.035] group-focus-visible:-translate-x-0.5 group-active:scale-[1.02]"
                   />
                   {/* Beige→white fade from text into image */}
                   <div
