@@ -389,12 +389,20 @@ function KatamerosHome() {
 
 /* ---------- subcomponents ---------- */
 
-function StatusBadge({ status }: { status: ReadingStatus }) {
+function StatusBadge({ status, tone }: { status: ReadingStatus; tone?: string }) {
   if (status === "completed") {
+    const c = tone ?? "#1f6e54";
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-[#e7f3ec] border border-[#bcdcc9] text-[#1f6e54] text-[10px] font-bold px-2 h-6">
+      <span
+        className="inline-flex items-center gap-1 rounded-full text-[10px] font-bold px-2 h-6 border"
+        style={{
+          background: `${c}14`,
+          borderColor: `${c}40`,
+          color: c,
+        }}
+      >
         <CheckCircle2 className="h-3 w-3" />
-        مكتمل
+        تمت القراءة
       </span>
     );
   }
