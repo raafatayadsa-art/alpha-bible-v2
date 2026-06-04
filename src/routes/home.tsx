@@ -572,10 +572,12 @@ function HeroStack({
   const currentMod = ((index % total) + total) % total;
   const visible = Math.min(4, total);
 
+  const slots = [-1, 0, 1];
+
   return (
     <section className="mt-5 select-none">
       <div
-        className="relative h-[268px] w-full"
+        className="relative h-[268px] w-full overflow-hidden"
         style={{ perspective: 1200 }}
         onTouchStart={onTouchStart as any}
         onTouchMove={onTouchMove as any}
@@ -585,25 +587,26 @@ function HeroStack({
         onMouseUp={onTouchEnd}
         onMouseLeave={() => { if (startX.current != null) onTouchEnd(); }}
       >
-        {Array.from({ length: visible }).map((_, rel) => {
-          const cardIdx = (currentMod + rel) % total;
+        {slots.map((s) => {
+          const cardIdx = ((index + s) % total + total) % total;
           const c = cards[cardIdx];
-          const isFront = rel === 0;
-          const scale = 1 - rel * 0.06;
-          const translateY = rel * 12;
-          const translateX = isFront ? dx : 0;
+          const isFront = s === 0;
+          const baseXPct = s * 78; // peek offset for prev/next
+          const tx = isFront ? dx : 0;
+          const scale = isFront ? 1 : 0.84;
+          const opacity = isFront ? 1 : 0.55;
+          const z = isFront ? 30 : 10;
           const rotate = isFront ? dx * 0.02 : 0;
-          const opacity = rel <= 2 ? 1 : 0.4;
-          const z = 30 - rel;
           return (
             <div
-              key={`${c.id}-${rel}`}
-              className="absolute inset-x-0 top-0 ease-[cubic-bezier(0.22,1,0.36,1)]"
+              key={`${c.id}-${s}`}
+              className="absolute top-0 left-1/2 w-[86%]"
               style={{
-                transform: `translate3d(${translateX}px, ${translateY}px, 0) scale(${scale}) rotate(${rotate}deg)`,
+                transform: `translate(calc(-50% + ${baseXPct}% + ${tx}px), 0) scale(${scale}) rotate(${rotate}deg)`,
                 zIndex: z,
                 opacity,
                 transition: startX.current != null && isFront ? "none" : "transform 450ms cubic-bezier(0.22,1,0.36,1), opacity 350ms",
+                filter: isFront ? "none" : "blur(0.3px)",
               }}
             >
               <HeroCardView
@@ -618,6 +621,118 @@ function HeroStack({
         })}
       </div>
     </section>
+  );
+}
+
+// ===== Auto-rotating Cover Flow (used for Primary + Daily) =====
+function Coverflow<T>({
+  items, direction, height, cardWidthPct, peekPct, renderCard, getKey, intervalMs = 5000,
+}: {
+  items: T[];
+  direction: 1 | -1;
+  height: number;
+  cardWidthPct: number; // width of active card as % of container
+  peekPct: number; // horizontal offset for prev/next, in % of container
+  renderCard: (item: T, isActive: boolean) => React.ReactNode;
+  getKey: (item: T) => string;
+  intervalMs?: number;
+}) {
+  const total = items.length;
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const pauseTimer = useRef<number | null>(null);
+  const startX = useRef<number | null>(null);
+  const [dx, setDx] = useState(0);
+
+  useEffect(() => {
+    if (paused || total <= 1) return;
+    const id = window.setInterval(() => setIndex((i) => i + direction), intervalMs);
+    const onVis = () => { if (document.hidden) setPaused(true); };
+    document.addEventListener("visibilitychange", onVis);
+    return () => { clearInterval(id); document.removeEventListener("visibilitychange", onVis); };
+  }, [paused, total, direction, intervalMs]);
+
+  const pauseTemporarily = () => {
+    setPaused(true);
+    if (pauseTimer.current) window.clearTimeout(pauseTimer.current);
+    pauseTimer.current = window.setTimeout(() => setPaused(false), 8000);
+  };
+  useEffect(() => () => { if (pauseTimer.current) window.clearTimeout(pauseTimer.current); }, []);
+
+  const onStart = (e: React.TouchEvent | React.MouseEvent) => {
+    startX.current = "touches" in e ? e.touches[0].clientX : e.clientX;
+    setDx(0);
+  };
+  const onMove = (e: React.TouchEvent | React.MouseEvent) => {
+    if (startX.current == null) return;
+    const x = "touches" in e ? e.touches[0].clientX : e.clientX;
+    setDx(x - startX.current);
+  };
+  const onEnd = () => {
+    if (Math.abs(dx) > 50) {
+      setIndex((i) => i + (dx < 0 ? 1 : -1));
+      pauseTemporarily();
+    }
+    startX.current = null;
+    setDx(0);
+  };
+
+  const currentMod = ((index % total) + total) % total;
+  const slots = [-1, 0, 1];
+
+  return (
+    <div
+      className="relative w-full select-none overflow-hidden"
+      style={{ height, perspective: 1200 }}
+      onTouchStart={onStart as any}
+      onTouchMove={onMove as any}
+      onTouchEnd={onEnd}
+      onMouseDown={onStart as any}
+      onMouseMove={(e) => { if (startX.current != null) onMove(e); }}
+      onMouseUp={onEnd}
+      onMouseLeave={() => { if (startX.current != null) onEnd(); }}
+    >
+      {slots.map((s) => {
+        const cardIdx = ((index + s) % total + total) % total;
+        const item = items[cardIdx];
+        const isFront = s === 0;
+        const baseXPct = s * peekPct;
+        const tx = isFront ? dx : 0;
+        const scale = isFront ? 1 : 0.82;
+        const opacity = isFront ? 1 : 0.5;
+        const z = isFront ? 30 : 10;
+        return (
+          <div
+            key={`${getKey(item)}-${s}`}
+            className="absolute top-0 left-1/2"
+            style={{
+              width: `${cardWidthPct}%`,
+              transform: `translate(calc(-50% + ${baseXPct}% + ${tx}px), 0) scale(${scale})`,
+              zIndex: z,
+              opacity,
+              transition: startX.current != null && isFront ? "none" : "transform 450ms cubic-bezier(0.22,1,0.36,1), opacity 350ms",
+              filter: isFront ? "none" : "blur(0.3px)",
+            }}
+          >
+            {renderCard(item, isFront)}
+          </div>
+        );
+      })}
+      {/* indicators */}
+      <div className="absolute inset-x-0 bottom-1 flex items-center justify-center gap-1.5 pointer-events-none">
+        {items.map((it, i) => (
+          <span
+            key={getKey(it)}
+            className="h-1.5 rounded-full transition-all"
+            style={{
+              width: i === currentMod ? 18 : 5,
+              background: i === currentMod ? "#b8893a" : "rgba(120,80,30,0.25)",
+              boxShadow: i === currentMod ? "0 0 6px rgba(184,137,58,0.55)" : "none",
+            }}
+          />
+        ))}
+      </div>
+    </div>
   );
 }
 
