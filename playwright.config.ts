@@ -17,8 +17,14 @@ export default defineConfig({
   },
   projects: [
     {
-      name: "iphone-13",
-      use: { ...devices["iPhone 13"] },
+      name: "mobile-chromium",
+      use: {
+        ...devices["Pixel 5"],
+        // Override to iPhone-13-ish viewport while keeping Chromium engine
+        viewport: { width: 390, height: 844 },
+        isMobile: true,
+        hasTouch: true,
+      },
     },
   ],
   webServer: process.env.E2E_BASE_URL
