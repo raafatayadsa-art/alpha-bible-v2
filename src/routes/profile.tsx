@@ -327,72 +327,175 @@ function ProfileHero() {
   );
 }
 
-// ===== Premium Membership Card (tap to expand) =====
+// ===== Premium Orthodox Membership Certificate =====
 function MembershipCard() {
   return (
-    <Link to={"/profile/membership" as any} className="block active:scale-[0.99] transition-transform mt-3">
-      <GlassCard accent="#d88a2a" className="p-3.5">
-        {/* manuscript dot texture */}
+    <Link
+      to={"/profile/membership" as any}
+      className="block active:scale-[0.99] transition-transform mt-3 group"
+      aria-label="فتح بطاقة العضوية الكاملة"
+    >
+      <div
+        className="relative overflow-hidden rounded-[24px]"
+        style={{
+          background:
+            "radial-gradient(120% 80% at 50% 0%, #fff7e3 0%, #fbf0d4 45%, #f1dfb3 100%)",
+          boxShadow:
+            "0 28px 50px -22px rgba(120,80,30,0.55), 0 8px 18px -10px rgba(216,138,42,0.45), inset 0 1px 0 rgba(255,255,255,0.9), inset 0 0 0 1px rgba(216,138,42,0.35)",
+        }}
+      >
+        {/* Manuscript parchment texture */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-[0.05] rounded-[22px]"
+          className="pointer-events-none absolute inset-0 opacity-[0.08]"
           style={{
             backgroundImage:
-              "radial-gradient(circle at 20% 30%, #b8893a 0.6px, transparent 1px), radial-gradient(circle at 70% 80%, #b8893a 0.6px, transparent 1px)",
-            backgroundSize: "14px 14px, 18px 18px",
+              "radial-gradient(circle at 18% 28%, #8a5a1c 0.6px, transparent 1px), radial-gradient(circle at 72% 78%, #8a5a1c 0.5px, transparent 1px), radial-gradient(circle at 50% 50%, #b8893a 0.4px, transparent 1px)",
+            backgroundSize: "12px 12px, 16px 16px, 22px 22px",
           }}
         />
-        <div aria-hidden className="pointer-events-none absolute -right-3 -bottom-5 text-[120px] leading-none font-bold text-[#d88a2a] opacity-[0.06] select-none">☧</div>
+        {/* Aged parchment shading */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(70% 50% at 0% 0%, rgba(184,137,58,0.18), transparent 60%)," +
+              "radial-gradient(70% 50% at 100% 100%, rgba(184,137,58,0.16), transparent 60%)",
+          }}
+        />
 
-        {/* Header strip */}
-        <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-dashed border-[#d88a2a]/35">
-          <span className="inline-flex items-center gap-1 text-[9.5px] font-extrabold tracking-wider text-[#b8893a] uppercase">
-            <CopticCross size={10} /> Alpha Coptic
-          </span>
-          <span className="inline-flex items-center gap-1 text-[9.5px] font-bold text-[#b8893a]">
-            بطاقة عضوية ذكية <QrCode className="h-3 w-3" />
-          </span>
+        {/* Alpha & Omega watermark */}
+        <div aria-hidden className="pointer-events-none absolute inset-0 flex items-center justify-between px-4 text-[#b8893a]/[0.09] font-bold text-[88px] leading-none select-none">
+          <span>Ⲱ</span>
+          <span>Ⲁ</span>
         </div>
+        {/* Center Chi-Rho watermark */}
+        <div aria-hidden className="pointer-events-none absolute inset-0 grid place-items-center text-[150px] leading-none font-bold text-[#d88a2a]/[0.05] select-none">☧</div>
 
-        <div className="flex items-center gap-3.5">
-          {/* QR with center brand chip */}
-          <div className="relative shrink-0 grid place-items-center rounded-xl bg-[#fbf3e1] p-1.5 border border-[#efe2c4] shadow-[inset_0_0_0_1px_rgba(216,138,42,0.25),0_6px_14px_-8px_rgba(120,80,30,0.5)]">
-            <img src={QR_URL} alt="QR العضوية" className="h-[78px] w-[78px]" loading="lazy" />
-            <span
-              className="absolute inset-0 m-auto grid h-[22px] w-[22px] place-items-center rounded-md text-[11px] font-extrabold"
-              style={{
-                background: "linear-gradient(135deg,#fbf3e1,#f0d78c)",
-                color: "#3a2a18",
-                boxShadow: "0 0 0 1.5px #fbf3e1, 0 0 0 2.5px #b8893a, 0 2px 6px rgba(0,0,0,0.25)",
-              }}
-              aria-hidden
-            >
-              ⲁ
+        {/* Double gold inner border frame */}
+        <div aria-hidden className="pointer-events-none absolute inset-2 rounded-[18px] border border-[#d88a2a]/40" />
+        <div aria-hidden className="pointer-events-none absolute inset-[7px] rounded-[16px] border border-[#d88a2a]/20" />
+
+        {/* Ornamental corner flourishes */}
+        {[
+          { p: "top-1.5 left-1.5", r: 0 },
+          { p: "top-1.5 right-1.5", r: 90 },
+          { p: "bottom-1.5 right-1.5", r: 180 },
+          { p: "bottom-1.5 left-1.5", r: 270 },
+        ].map((c, i) => (
+          <svg
+            key={i}
+            aria-hidden
+            viewBox="0 0 24 24"
+            className={`pointer-events-none absolute ${c.p} h-5 w-5 text-[#b8893a]/70`}
+            style={{ transform: `rotate(${c.r}deg)` }}
+          >
+            <path d="M2 2 L10 2 M2 2 L2 10 M4 4 Q9 4 9 9" fill="none" stroke="currentColor" strokeWidth="0.9" strokeLinecap="round" />
+            <circle cx="9" cy="9" r="1" fill="currentColor" />
+          </svg>
+        ))}
+
+        <div className="relative p-4 pt-3.5">
+          {/* Header strip */}
+          <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-dashed border-[#d88a2a]/45">
+            <span className="inline-flex items-center gap-1.5 text-[9.5px] font-extrabold tracking-[0.18em] text-[#8a5a1c] uppercase">
+              <CopticCross size={11} /> Alpha Coptic · شهادة عضوية
+            </span>
+            <span className="inline-flex items-center gap-1 text-[9.5px] font-bold text-[#8a5a1c]">
+              <QrCode className="h-3 w-3" /> ذكية
             </span>
           </div>
 
-          <div className="flex-1 min-w-0 text-right">
-            <h3 className="text-[13.5px] font-extrabold text-[#3a2a18] truncate leading-tight">{MEMBER.name}</h3>
-            <p className="text-[10.5px] text-[#9a7e5a] mt-0.5 truncate">{MEMBER.role}</p>
-            <div className="mt-1.5 grid grid-cols-1 gap-y-0.5 text-[10px]">
-              <Row icon={<Hash className="h-2.5 w-2.5" />} label="رقم العضوية" value={MEMBER.membershipNo} mono />
-              <Row icon={<Church className="h-2.5 w-2.5" />} label="الكنيسة" value={MEMBER.church} />
-              <Row
-                icon={<span className="h-1.5 w-1.5 rounded-full bg-[#2f7a4a] shadow-[0_0_6px_rgba(47,122,74,0.8)]" />}
-                label="الحالة"
-                value={MEMBER.status}
-                valueClass="text-[#2f7a4a]"
-              />
-              <Row icon={<Calendar className="h-2.5 w-2.5" />} label="الانضمام" value={MEMBER.joinDate} />
+          <div className="flex items-center gap-3.5">
+            {/* Premium framed QR */}
+            <div className="relative shrink-0">
+              <div
+                className="relative rounded-[14px] p-[3px]"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #f7e7b8 0%, #d8a23a 40%, #fff4d0 55%, #b8893a 100%)",
+                  boxShadow:
+                    "0 8px 18px -8px rgba(120,80,30,0.6), inset 0 1px 0 rgba(255,255,255,0.7)",
+                }}
+              >
+                <div
+                  className="rounded-[12px] p-1.5"
+                  style={{
+                    background: "#fff7e3",
+                    boxShadow: "inset 0 0 0 1px rgba(216,138,42,0.45), inset 0 2px 6px rgba(120,80,30,0.18)",
+                  }}
+                >
+                  <img src={QR_URL} alt="QR العضوية" className="block h-[82px] w-[82px]" loading="lazy" />
+                </div>
+                <span
+                  className="absolute inset-0 m-auto grid h-[24px] w-[24px] place-items-center rounded-md text-[12px] font-extrabold"
+                  style={{
+                    background: "linear-gradient(135deg,#fff7e3,#f0d78c)",
+                    color: "#3a2a18",
+                    boxShadow: "0 0 0 1.5px #fff7e3, 0 0 0 2.5px #b8893a, 0 2px 6px rgba(0,0,0,0.3)",
+                  }}
+                  aria-hidden
+                >
+                  ⲁ
+                </span>
+              </div>
+              <p className="mt-1.5 text-center text-[8.5px] font-bold tracking-wider text-[#8a5a1c]/80 uppercase">
+                Scan ID
+              </p>
+            </div>
+
+            <div className="flex-1 min-w-0 text-right">
+              <h3 className="text-[18px] font-extrabold text-[#2a1a08] leading-tight truncate" style={{ letterSpacing: "-0.01em" }}>
+                {MEMBER.name}
+              </h3>
+              <span
+                className="mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10.5px] font-extrabold text-[#5a3a0e]"
+                style={{
+                  background: "linear-gradient(135deg, #fff4d0, #f0d78c)",
+                  boxShadow: "inset 0 0 0 1px rgba(184,137,58,0.55), 0 2px 4px -2px rgba(120,80,30,0.4)",
+                }}
+              >
+                <Crown className="h-2.5 w-2.5" /> {MEMBER.role}
+              </span>
+
+              <div className="mt-1.5 flex items-center justify-end gap-1.5">
+                <span
+                  className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9.5px] font-extrabold text-white"
+                  style={{
+                    background: "linear-gradient(135deg, #2dbb7a, #14704a)",
+                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.35), 0 0 10px rgba(46,204,113,0.45), 0 2px 4px -2px rgba(20,112,74,0.6)",
+                  }}
+                >
+                  <BadgeCheck className="h-2.5 w-2.5" strokeWidth={2.8} /> عضوية موثقة
+                </span>
+              </div>
+
+              <div className="mt-2 grid grid-cols-1 gap-y-0.5 text-[10px]">
+                <Row icon={<Hash className="h-2.5 w-2.5" />} label="رقم العضوية" value={MEMBER.membershipNo} mono />
+                <Row icon={<Church className="h-2.5 w-2.5" />} label="الكنيسة" value={MEMBER.church} />
+                <Row icon={<Calendar className="h-2.5 w-2.5" />} label="الانضمام" value={MEMBER.joinDate} />
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="mt-2.5 pt-2 border-t border-dashed border-[#d88a2a]/35 flex items-center justify-between">
-          <span className="text-[9.5px] text-[#9a7e5a]">اضغط لفتح البطاقة الكاملة</span>
-          <ChevronLeft className="h-3.5 w-3.5 text-[#b8893a]" />
+          {/* Tap hint footer */}
+          <div className="mt-3 pt-2.5 border-t border-dashed border-[#d88a2a]/45 flex items-center justify-between gap-2">
+            <span
+              className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-extrabold text-[#5a3a0e]"
+              style={{
+                background: "linear-gradient(135deg, #fff4d0, #f0d78c)",
+                boxShadow: "inset 0 0 0 1px rgba(184,137,58,0.5), 0 2px 6px -2px rgba(120,80,30,0.35)",
+              }}
+            >
+              <QrCode className="h-3 w-3" /> اضغط لفتح البطاقة الكاملة
+            </span>
+            <span className="grid h-6 w-6 place-items-center rounded-full bg-[#3a2a18] text-[#f0d78c] shadow-[0_4px_10px_-4px_rgba(58,42,24,0.7)] group-active:scale-95 transition-transform">
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </span>
+          </div>
         </div>
-      </GlassCard>
+      </div>
     </Link>
   );
 }
