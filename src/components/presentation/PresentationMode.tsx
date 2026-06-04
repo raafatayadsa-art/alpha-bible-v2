@@ -290,138 +290,154 @@ export function PresentationMode({
         </div>
       </main>
 
-      {/* Compact footer control bar */}
+      {/* Compact premium green-glass footer control bar */}
       <footer
         className={`relative z-10 px-4 transition-opacity duration-300 ease-out ${chromeOpacity}`}
         style={{ paddingBottom: "max(env(safe-area-inset-bottom), 12px)", paddingTop: 6 }}
       >
-        <div
-          className={`mx-auto w-fit rounded-full border backdrop-blur-2xl px-1.5 py-1 flex items-center gap-1 ${
-            dark
-              ? "bg-[#2a2014]/55 border-[#c9a96b]/25 shadow-[0_18px_50px_-22px_rgba(0,0,0,0.55)]"
-              : "bg-[#f6ecd4]/55 border-[#e6d2a6]/55 shadow-[0_18px_50px_-22px_rgba(120,80,30,0.30)]"
-          }`}
-        >
-          {/* Play / Pause — primary, larger */}
-          <button
-            type="button"
-            aria-label={playing ? "إيقاف التمرير" : "بدء التمرير"}
-            onClick={() => setPlaying((p) => !p)}
-            className={`grid h-10 w-10 place-items-center rounded-full text-white bg-gradient-to-br from-[#d9b878] to-[#8a6322] border border-white/25 active:scale-95 transition-all ${
-              playing
-                ? "shadow-[0_0_16px_rgba(184,137,58,0.85),0_0_30px_rgba(184,137,58,0.45)] ring-1 ring-[#f0d78c]/55"
-                : "shadow-[0_6px_14px_-6px_rgba(120,80,30,0.6)] ring-1 ring-[#f0d78c]/30"
-            }`}
-          >
-            {playing ? <Pause className="h-4 w-4 fill-white" /> : <Play className="h-4 w-4 fill-white translate-x-[1px]" />}
-          </button>
-
-          <span className={`mx-0.5 h-5 w-px ${dark ? "bg-[#c9a96b]/25" : "bg-[#b8893a]/20"}`} />
-
-          {/* Speed menu */}
-          <Popover>
-            <PopoverTrigger asChild>
+        {(() => {
+          const barBg = dark
+            ? "bg-[#0e2a22]/55 border-[#5aa78a]/30 shadow-[0_18px_50px_-22px_rgba(0,30,20,0.65)]"
+            : "bg-[#e6f2ea]/55 border-[#9ec9b4]/55 shadow-[0_18px_50px_-22px_rgba(20,80,55,0.30)]";
+          const ctrlBtn = dark
+            ? "bg-white/[0.05] border-[#7fc2a4]/25 text-[#dff3e8] backdrop-blur hover:bg-white/[0.08]"
+            : "bg-white/55 border-[#9ec9b4]/55 text-[#1f4a38] backdrop-blur hover:bg-white/70";
+          const textShadow = dark
+            ? { textShadow: "0 1px 2px rgba(0,0,0,0.55)" }
+            : { textShadow: "0 1px 1px rgba(20,60,40,0.18)" };
+          const activeBtn =
+            "bg-gradient-to-br from-[#5aa78a] to-[#2f6e54] text-white border-white/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_0_14px_rgba(90,167,138,0.55)]";
+          const popBg = dark
+            ? "bg-[#102a22]/90 border-[#5aa78a]/30 text-[#dff3e8]"
+            : "bg-[#f1faf4]/95 border-[#9ec9b4]/60 text-[#1f4a38]";
+          return (
+            <div
+              className={`mx-auto w-fit rounded-full border backdrop-blur-2xl px-1.5 py-1 flex items-center gap-1 ${barBg}`}
+            >
               <button
                 type="button"
-                aria-label="السرعة"
-                className={`h-8 px-2.5 rounded-full text-[11px] font-bold border inline-flex items-center gap-1 ${glassBtn}`}
+                aria-label={playing ? "إيقاف التمرير" : "بدء التمرير"}
+                onClick={() => setPlaying((p) => !p)}
+                className={`grid h-10 w-10 place-items-center rounded-full text-white bg-gradient-to-br from-[#5aa78a] to-[#1f5a42] border border-white/25 active:scale-95 transition-all ${
+                  playing
+                    ? "shadow-[0_0_16px_rgba(90,167,138,0.85),0_0_30px_rgba(47,110,84,0.45)] ring-1 ring-[#bfe5d3]/60"
+                    : "shadow-[0_6px_14px_-6px_rgba(20,80,55,0.6)] ring-1 ring-[#bfe5d3]/35"
+                }`}
               >
-                <Gauge className="h-3.5 w-3.5" />
-                <span>{SPEED_LABEL[speed]}</span>
+                {playing ? <Pause className="h-4 w-4 fill-white" /> : <Play className="h-4 w-4 fill-white translate-x-[1px]" />}
               </button>
-            </PopoverTrigger>
-            <PopoverContent
-              side="top"
-              align="center"
-              sideOffset={10}
-              className={`w-auto p-1 rounded-2xl border backdrop-blur-2xl ${
-                dark ? "bg-[#2a2014]/85 border-[#c9a96b]/25 text-[#f0e3bd]" : "bg-[#fff7e3]/95 border-[#e6d2a6]/55 text-[#5b3a18]"
-              }`}
-            >
-              <div dir="rtl" className="flex flex-col gap-0.5 min-w-24">
-                {(Object.keys(SPEED_LABEL) as Speed[]).map((s) => (
+
+              <span className={`mx-0.5 h-5 w-px ${dark ? "bg-[#7fc2a4]/30" : "bg-[#2f6e54]/20"}`} />
+
+              <Popover>
+                <PopoverTrigger asChild>
                   <button
-                    key={s}
                     type="button"
-                    onClick={() => setSpeed(s)}
-                    className={`h-8 px-3 rounded-full text-[12px] font-bold text-right transition-all ${
-                      speed === s
-                        ? "bg-gradient-to-br from-[#d9b878] to-[#b8893a] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]"
-                        : "hover:bg-[#b8893a]/10"
-                    }`}
+                    aria-label="السرعة"
+                    style={textShadow}
+                    className={`h-8 px-2.5 rounded-full text-[11px] font-bold border inline-flex items-center gap-1 active:scale-95 transition-transform ${ctrlBtn}`}
                   >
-                    {SPEED_LABEL[s]}
+                    <Gauge className="h-3.5 w-3.5" />
+                    <span>{SPEED_LABEL[speed]}</span>
                   </button>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
+                </PopoverTrigger>
+                <PopoverContent
+                  side="top"
+                  align="center"
+                  sideOffset={10}
+                  className={`w-auto p-1 rounded-2xl border backdrop-blur-2xl ${popBg}`}
+                >
+                  <div dir="rtl" className="flex flex-col gap-0.5 min-w-24">
+                    {(Object.keys(SPEED_LABEL) as Speed[]).map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => setSpeed(s)}
+                        className={`h-8 px-3 rounded-full text-[12px] font-bold text-right transition-all ${
+                          speed === s ? activeBtn : "hover:bg-[#2f6e54]/10"
+                        }`}
+                      >
+                        {SPEED_LABEL[s]}
+                      </button>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
 
-          {/* Line spacing menu */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <button
-                type="button"
-                aria-label="تباعد الأسطر"
-                className={`h-8 px-2.5 rounded-full text-[11px] font-bold border inline-flex items-center gap-1 ${glassBtn}`}
-              >
-                <Rows3 className="h-3.5 w-3.5" />
-                <span>{SPACING_LABEL[spacing]}</span>
-              </button>
-            </PopoverTrigger>
-            <PopoverContent
-              side="top"
-              align="center"
-              sideOffset={10}
-              className={`w-auto p-1 rounded-2xl border backdrop-blur-2xl ${
-                dark ? "bg-[#2a2014]/85 border-[#c9a96b]/25 text-[#f0e3bd]" : "bg-[#fff7e3]/95 border-[#e6d2a6]/55 text-[#5b3a18]"
-              }`}
-            >
-              <div dir="rtl" className="flex flex-col gap-0.5 min-w-24">
-                {(Object.keys(SPACING_LABEL) as Spacing[]).map((s) => (
+              <Popover>
+                <PopoverTrigger asChild>
                   <button
-                    key={s}
                     type="button"
-                    onClick={() => setSpacing(s)}
-                    className={`h-8 px-3 rounded-full text-[12px] font-bold text-right transition-all ${
-                      spacing === s
-                        ? "bg-gradient-to-br from-[#d9b878] to-[#b8893a] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]"
-                        : "hover:bg-[#b8893a]/10"
-                    }`}
+                    aria-label="تباعد الأسطر"
+                    style={textShadow}
+                    className={`h-8 px-2.5 rounded-full text-[11px] font-bold border inline-flex items-center gap-1 active:scale-95 transition-transform ${ctrlBtn}`}
                   >
-                    {SPACING_LABEL[s]}
+                    <Rows3 className="h-3.5 w-3.5" />
+                    <span>{SPACING_LABEL[spacing]}</span>
                   </button>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
+                </PopoverTrigger>
+                <PopoverContent
+                  side="top"
+                  align="center"
+                  sideOffset={10}
+                  className={`w-auto p-1 rounded-2xl border backdrop-blur-2xl ${popBg}`}
+                >
+                  <div dir="rtl" className="flex flex-col gap-0.5 min-w-24">
+                    {(Object.keys(SPACING_LABEL) as Spacing[]).map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => setSpacing(s)}
+                        className={`h-8 px-3 rounded-full text-[12px] font-bold text-right transition-all ${
+                          spacing === s ? activeBtn : "hover:bg-[#2f6e54]/10"
+                        }`}
+                      >
+                        {SPACING_LABEL[s]}
+                      </button>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
 
-          <span className={`mx-0.5 h-5 w-px ${dark ? "bg-[#c9a96b]/25" : "bg-[#b8893a]/20"}`} />
+              <span className={`mx-0.5 h-5 w-px ${dark ? "bg-[#7fc2a4]/30" : "bg-[#2f6e54]/20"}`} />
 
-          {/* Font size */}
-          <button
-            type="button"
-            aria-label="تصغير الخط"
-            onClick={() => setFontScale((s) => Math.max(0.7, s - 0.1))}
-            className={`grid h-8 w-8 place-items-center rounded-full border active:scale-95 transition-transform ${glassBtn}`}
-          >
-            <Minus className="h-3.5 w-3.5" />
-          </button>
-          <span
-            className="text-[11px] font-bold tabular-nums w-9 text-center opacity-80"
-            aria-live="polite"
-          >
-            {Math.round(fontScale * 100)}%
-          </span>
-          <button
-            type="button"
-            aria-label="تكبير الخط"
-            onClick={() => setFontScale((s) => Math.min(2, s + 0.1))}
-            className={`grid h-8 w-8 place-items-center rounded-full border active:scale-95 transition-transform ${glassBtn}`}
-          >
-            <Plus className="h-3.5 w-3.5" />
-          </button>
-        </div>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="حجم الخط"
+                    style={textShadow}
+                    className={`grid h-8 w-8 place-items-center rounded-full border active:scale-95 transition-transform ${ctrlBtn}`}
+                  >
+                    <Type className="h-3.5 w-3.5" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent
+                  side="top"
+                  align="center"
+                  sideOffset={10}
+                  className={`w-64 p-3 rounded-2xl border backdrop-blur-2xl ${popBg}`}
+                >
+                  <div dir="ltr" className="flex items-center gap-3">
+                    <span className="text-[11px] font-bold opacity-70">A</span>
+                    <Slider
+                      value={[Math.round(fontScale * 100)]}
+                      min={70}
+                      max={200}
+                      step={5}
+                      onValueChange={(v) => setFontScale((v[0] ?? 100) / 100)}
+                      className="flex-1"
+                    />
+                    <span className="text-[15px] font-extrabold opacity-90">A</span>
+                  </div>
+                  <div className="mt-1.5 text-center text-[11px] font-bold opacity-70 tabular-nums">
+                    {Math.round(fontScale * 100)}%
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
+          );
+        })()}
       </footer>
     </div>
   );
