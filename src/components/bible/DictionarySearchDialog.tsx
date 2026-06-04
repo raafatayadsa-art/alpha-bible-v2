@@ -73,6 +73,7 @@ export function DictionarySearchDialog({
   const [term, setTerm] = useState("");
   const [results, setResults] = useState<LookupDictionaryRow[] | null>(null);
   const [loading, setLoading] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const reqIdRef = useRef(0);
 
@@ -80,10 +81,16 @@ export function DictionarySearchDialog({
     if (open) {
       setTerm("");
       setResults(null);
+      setExpanded(false);
       reqIdRef.current++;
       setTimeout(() => inputRef.current?.focus(), 150);
     }
   }, [open]);
+
+  useEffect(() => {
+    // Any new keystroke resets back to strict mode.
+    setExpanded(false);
+  }, [term]);
 
   useEffect(() => {
     if (!open) return;
@@ -116,9 +123,11 @@ export function DictionarySearchDialog({
   }, [open, onClose]);
 
   const ranked = useMemo(
-    () => (results ? rankAndDedupe(results, term) : []),
-    [results, term],
+    () =>
+      results ? rankAndDedupe(results, term, { strict: !expanded }) : [],
+    [results, term, expanded],
   );
+
 
   return (
     <>
@@ -187,18 +196,27 @@ export function DictionarySearchDialog({
             {term.trim() && !loading && ranked.length === 0 && (
               <div className="grid place-items-center py-10 text-center">
                 <BookOpen className="h-5 w-5 text-[#c79356]" />
-                <p className="mt-2 text-[13px] font-bold text-[#eaf6ec]">لا توجد نتائج</p>
-                <p className="mt-1 text-[11.5px] text-[#cfe4d5]/80">
-                  جرّب صيغة أخرى أو كلمة مختلفة
+                <p className="mt-2 text-[13px] font-bold text-[#eaf6ec]">
+                  لا توجد نتيجة مطابقة لهذه الكلمة
                 </p>
+                {!expanded && (
+                  <button
+                    type="button"
+                    onClick={() => setExpanded(true)}
+                    className="mt-3 rounded-full border border-[#7af0b8]/40 bg-[#0a2a20]/60 px-4 py-1.5 text-[12px] font-bold text-[#e7c97a] active:scale-95 transition-transform"
+                  >
+                    البحث الموسع
+                  </button>
+                )}
               </div>
             )}
 
             {term.trim() && ranked.length > 0 && (
               <p className="px-1 pb-1 text-[11px] text-[#cfe4d5]/70">
-                {ranked.length} نتيجة
+                {expanded ? `${ranked.length} نتيجة (بحث موسّع)` : `${ranked.length} نتيجة`}
               </p>
             )}
+
 
             {ranked.map(({ row }, i) => (
               <button

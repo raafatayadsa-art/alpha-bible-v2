@@ -57,10 +57,25 @@ function levenshtein(a: string, b: string): number {
   return dp[b.length];
 }
 
+export type RankOptions = {
+  /**
+   * Strict mode (default): only return entries whose normalized title equals
+   * the query, or starts with `query + " "` (a standalone-word boundary).
+   * This avoids matching unrelated words that merely share a prefix
+   * (e.g. "موسى" must not return "موسيقى").
+   *
+   * Set to false for the "البحث الموسع" (expanded search) fallback, which
+   * also allows contains-in-title, description, and fuzzy matches.
+   */
+  strict?: boolean;
+};
+
 export function rankAndDedupe<T extends LookupRow>(
   rows: T[],
   rawQuery: string,
+  options: RankOptions = {},
 ): Ranked<T>[] {
+  const strict = options.strict ?? true;
   const q = normalizeAr(rawQuery.trim());
   if (!q || !rows?.length) return [];
 
@@ -73,11 +88,23 @@ export function rankAndDedupe<T extends LookupRow>(
     );
 
     let bucket: Ranked["bucket"];
-    if (titleN === q) bucket = 0;
-    else if (titleN.startsWith(q)) bucket = 1;
-    else if (titleN.includes(q)) bucket = 2;
-    else if (meaningN.includes(q)) bucket = 3;
-    else bucket = 4;
+    if (titleN === q) {
+      bucket = 0;
+    } else if (titleN.startsWith(q + " ")) {
+      // Standalone-word boundary: "موسى النبي" matches, "موسيقى" does not.
+      bucket = 1;
+    } else if (!strict && titleN.startsWith(q)) {
+      bucket = 1;
+    } else if (!strict && titleN.includes(q)) {
+      bucket = 2;
+    } else if (!strict && meaningN.includes(q)) {
+      bucket = 3;
+    } else if (!strict) {
+      bucket = 4;
+    } else {
+      // Strict mode: drop anything that isn't an exact / standalone-prefix hit.
+      continue;
+    }
 
     let score = bucket * 10;
     if (row.category && ENTITY_BOOST_RE.test(row.category)) score -= 0.4;
@@ -115,3 +142,4 @@ export function rankAndDedupe<T extends LookupRow>(
   }
   return out;
 }
+

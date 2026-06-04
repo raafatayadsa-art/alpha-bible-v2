@@ -25,7 +25,8 @@ describe("rankAndDedupe — exact → starts-with → contains → description",
       row("موسى النبي"), // starts-with → bucket 1
     ];
 
-    const out = rankAndDedupe(rows, "موسى");
+    const out = rankAndDedupe(rows, "موسى", { strict: false });
+
     const titles = out.map((r) => r.row.word);
 
     expect(titles[0]).toBe("موسى");
@@ -51,7 +52,7 @@ describe("rankAndDedupe — exact → starts-with → contains → description",
       row("هارون", { short_meaning_ar: "ذكر موسى بن عمران" }), // description
     ];
 
-    const out = rankAndDedupe(rows, "موسى بن عمران");
+    const out = rankAndDedupe(rows, "موسى بن عمران", { strict: false });
     const titles = out.map((r) => r.row.word);
 
     expect(titles[0]).toBe("موسى بن عمران");
@@ -85,3 +86,33 @@ describe("rankAndDedupe — exact → starts-with → contains → description",
     expect(out.map((r) => r.row.word)).toEqual(["موسى"]);
   });
 });
+
+describe("rankAndDedupe — strict mode (default)", () => {
+  it("returns only exact and standalone-word starts-with matches", () => {
+    const rows: LookupRow[] = [
+      row("موسى"), // exact
+      row("موسى النبي"), // standalone starts-with
+      row("موسى بن عمران"), // standalone starts-with
+      row("موسيقى"), // shares prefix but is a different word
+      row("الموسيقي"), // contains, must NOT match
+      row("الآلات الموسيقية"), // contains, must NOT match
+      row("موسوريت"), // shares letters, must NOT match
+      row("سفر موسى"), // contains but not at start, must NOT match
+      row("هارون", { short_meaning_ar: "أخو موسى" }), // description, must NOT match
+    ];
+    const out = rankAndDedupe(rows, "موسى");
+    const titles = out.map((r) => r.row.word);
+    expect(titles).toEqual(["موسى", "موسى النبي", "موسى بن عمران"]);
+  });
+
+  it("returns empty array when no exact or standalone-prefix title exists", () => {
+    const rows: LookupRow[] = [
+      row("موسيقى"),
+      row("سفر موسى"),
+      row("هارون", { short_meaning_ar: "أخو موسى" }),
+    ];
+    const out = rankAndDedupe(rows, "موسى");
+    expect(out).toEqual([]);
+  });
+});
+
