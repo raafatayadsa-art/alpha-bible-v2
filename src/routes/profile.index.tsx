@@ -82,11 +82,6 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 function ProfileHero() {
   return (
     <div className="relative mt-2 overflow-hidden rounded-[26px] border border-[#efe2c4] shadow-[0_22px_44px_-22px_rgba(120,80,30,0.6)]">
-      <div className="absolute inset-x-0 top-3 z-20 flex justify-center pointer-events-none">
-        <span className="rounded-full bg-[#b91c1c] px-3 py-1 text-[11px] font-extrabold tracking-wide text-white shadow-[0_8px_20px_-10px_rgba(127,29,29,0.7)]">
-          HERO TEST
-        </span>
-      </div>
 
       <div
         aria-hidden
