@@ -408,31 +408,20 @@ function HomeScreen() {
           onToggleSaved={toggleSaved}
         />
 
-        {/* PRIMARY MODULE CAROUSEL */}
-        <section className="mt-6 -mx-4">
-          <div className="mb-2.5 flex items-center justify-between px-5">
+        {/* PRIMARY STACKED CAROUSEL — Apple Wallet style */}
+        <section className="mt-7">
+          <div className="mb-3 flex items-center justify-between px-1">
             <h2 className="text-[14px] font-extrabold text-white tracking-tight flex items-center gap-1.5">
               <Sparkles className="h-3.5 w-3.5 text-[#e7c97a]" />
               اكتشف رحلتك اليوم
             </h2>
             <span className="text-[11px] font-bold text-[#e7c97a]/80">اسحب →</span>
           </div>
-          <div className="flex gap-3 overflow-x-auto px-4 pb-4 snap-x snap-mandatory scroll-px-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-            {primary.map((c) => (
-              <Link
-                key={c.key}
-                to={c.to as any}
-                aria-label={c.title}
-                className="snap-start shrink-0 active:scale-[0.97] transition-transform duration-200"
-              >
-                <PrimaryArtCard {...c} />
-              </Link>
-            ))}
-          </div>
+          <PrimaryStack cards={primary} />
         </section>
 
         {/* DAILY CAROUSEL */}
-        <section className="mt-3 -mx-4">
+        <section className="mt-5 -mx-4">
           <div className="mb-2.5 flex items-center justify-between px-5">
             <h2 className="text-[14px] font-extrabold text-white tracking-tight flex items-center gap-1.5">
               <Sparkles className="h-3.5 w-3.5 text-[#e7c97a]" />
@@ -448,21 +437,49 @@ function HomeScreen() {
           </div>
         </section>
 
-        {/* CHURCH NEWS */}
-        <section className="mt-3">
-          <div className="mb-2.5 flex items-center justify-between px-1">
+        {/* CHURCH NEWS — featured */}
+        <section className="mt-4">
+          <div className="mb-3 flex items-center justify-between px-1">
             <h2 className="text-[14px] font-extrabold text-white tracking-tight flex items-center gap-1.5">
               <Sparkles className="h-3.5 w-3.5 text-[#e7c97a]" />
               أخبار كنيستك
             </h2>
+            <span className="text-[11px] font-bold text-[#e7c97a]/80">عرض الكل</span>
           </div>
-          <div className="flex flex-col gap-2.5">
-            {news.map(({ key, ...n }) => (
-              <NewsCard key={key} {...n} />
-            ))}
+          <div className="flex flex-col gap-3.5">
+            <FeaturedNewsCard
+              title="قداس الأحد الإلهي"
+              sub="يبدأ القداس الإلهي الساعة 8:00 صباحًا في الكاتدرائية الكبرى."
+              image={newsMass}
+              date="الأحد 8 يونيو"
+              category="قداس"
+              accent="#e7c97a"
+            />
+            <FeaturedNewsCard
+              title="اجتماع الشباب الأسبوعي"
+              sub="درس روحي وتسبحة وحوار مفتوح مع الآباء الكهنة."
+              image={newsYouth}
+              date="الجمعة 7:00 م"
+              category="شباب"
+              accent="#8a6ec1"
+            />
+            <FeaturedNewsCard
+              title="إعلان جديد من الكنيسة"
+              sub="تغيير موعد اجتماع الأسرة هذا الأسبوع — يُرجى الاطلاع على التفاصيل."
+              image={newsCandle}
+              date="هذا الأسبوع"
+              category="إعلان"
+              accent="#c98a3c"
+            />
           </div>
         </section>
       </div>
+
+      {/* Floating Mini Player */}
+      <MiniPlayer dockVisible={dockVisible} />
+
+      {/* Share Sheet host */}
+      <ShareSheetHost />
 
       {/* Bottom dock */}
       <nav
