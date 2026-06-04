@@ -487,7 +487,7 @@ function HomeScreen() {
         }}
       >
         <div className="mx-auto w-full max-w-[440px] px-3">
-          <div className="relative rounded-[28px] border border-white/10 bg-gradient-to-b from-[#1a1230]/85 to-[#0c0918]/90 shadow-[0_-12px_36px_-16px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-2xl">
+          <div className="relative rounded-[28px] border border-[#efe2c4] bg-gradient-to-b from-[#fbf3e1]/95 to-[#f4ead8]/95 shadow-[0_-12px_36px_-16px_rgba(120,80,30,0.35),inset_0_1px_0_rgba(255,255,255,0.85)] backdrop-blur-2xl">
             <div className="grid grid-cols-5 items-end px-2 pt-2.5 pb-2">
               <DockItem icon={HomeIcon} label="الرئيسية" active to="/home" />
               <DockItem icon={HandHeart} label="الصلاة" to="/agpeya" />
