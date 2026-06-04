@@ -169,9 +169,7 @@ export function PresentationMode({
 
   const chromeOpacity = chromeVisible
     ? "opacity-100"
-    : playing
-      ? "opacity-[0.12]"
-      : "opacity-25";
+    : "opacity-0 pointer-events-none";
 
   const titleSize = 30 * fontScale;
   const bodySize = 22 * fontScale;
