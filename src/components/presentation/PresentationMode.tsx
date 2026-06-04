@@ -1,14 +1,5 @@
-import { useEffect, useState } from "react";
-import {
-  X,
-  ChevronLeft,
-  ChevronRight,
-  Plus,
-  Minus,
-  Moon,
-  Sun,
-  Cast,
-} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { X, Plus, Minus, Moon, Sun, Cast, Play, Pause } from "lucide-react";
 import { CopticCross } from "@/components/coptic";
 
 export type PresentationSection = {
@@ -24,6 +15,18 @@ export type PresentationContent = {
   sections: PresentationSection[];
 };
 
+type Speed = "slow" | "medium" | "fast";
+const SPEED_PX_PER_SEC: Record<Speed, number> = {
+  slow: 20,
+  medium: 45,
+  fast: 90,
+};
+const SPEED_LABEL: Record<Speed, string> = {
+  slow: "بطيء",
+  medium: "متوسط",
+  fast: "سريع",
+};
+
 export function PresentationMode({
   open,
   onOpenChange,
@@ -33,22 +36,34 @@ export function PresentationMode({
   onOpenChange: (v: boolean) => void;
   content: PresentationContent;
 }) {
-  const [index, setIndex] = useState(0);
   const [fontScale, setFontScale] = useState(1);
   const [dark, setDark] = useState(false);
-  const total = content.sections.length;
-  const section = content.sections[Math.min(index, Math.max(0, total - 1))];
+  const [playing, setPlaying] = useState(false);
+  const [speed, setSpeed] = useState<Speed>("medium");
 
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const rafRef = useRef<number | null>(null);
+  const lastTsRef = useRef<number | null>(null);
+
+  // Reset scroll on open
   useEffect(() => {
-    if (open) setIndex(0);
+    if (open) {
+      setPlaying(false);
+      requestAnimationFrame(() => {
+        if (scrollerRef.current) scrollerRef.current.scrollTop = 0;
+      });
+    }
   }, [open, content.title]);
 
+  // Keyboard + body scroll lock
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onOpenChange(false);
-      if (e.key === "ArrowRight") setIndex((i) => Math.max(0, i - 1)); // RTL: right = prev
-      if (e.key === "ArrowLeft") setIndex((i) => Math.min(total - 1, i + 1));
+      if (e.key === " ") {
+        e.preventDefault();
+        setPlaying((p) => !p);
+      }
       if (e.key === "+" || e.key === "=") setFontScale((s) => Math.min(2, s + 0.1));
       if (e.key === "-") setFontScale((s) => Math.max(0.7, s - 0.1));
     };
@@ -58,7 +73,48 @@ export function PresentationMode({
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
     };
-  }, [open, total, onOpenChange]);
+  }, [open, onOpenChange]);
+
+  // Auto-scroll using rAF on the actual scroll container
+  useEffect(() => {
+    if (!open || !playing) {
+      if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+      lastTsRef.current = null;
+      return;
+    }
+    const el = scrollerRef.current;
+    if (!el) return;
+
+    const pxPerSec = SPEED_PX_PER_SEC[speed];
+    let acc = 0;
+
+    const step = (ts: number) => {
+      if (lastTsRef.current == null) lastTsRef.current = ts;
+      const dt = (ts - lastTsRef.current) / 1000;
+      lastTsRef.current = ts;
+      acc += dt * pxPerSec;
+      if (acc >= 1) {
+        const delta = Math.floor(acc);
+        acc -= delta;
+        const maxScroll = el.scrollHeight - el.clientHeight;
+        const next = Math.min(maxScroll, el.scrollTop + delta);
+        el.scrollTop = next;
+        if (next >= maxScroll - 0.5) {
+          setPlaying(false);
+          return;
+        }
+      }
+      rafRef.current = requestAnimationFrame(step);
+    };
+
+    rafRef.current = requestAnimationFrame(step);
+    return () => {
+      if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+      lastTsRef.current = null;
+    };
+  }, [open, playing, speed]);
 
   if (!open) return null;
 
@@ -70,7 +126,7 @@ export function PresentationMode({
     ? "bg-white/10 border-white/15 text-[#f3e6c4]"
     : "bg-white/85 border-[#efe2c4] text-[#3a2a18]";
 
-  const titleSize = 28 * fontScale;
+  const titleSize = 30 * fontScale;
   const bodySize = 22 * fontScale;
   const sectionTitleSize = 24 * fontScale;
 
@@ -85,30 +141,23 @@ export function PresentationMode({
       {/* Coptic identity ornaments — subtle */}
       <span
         aria-hidden
-        className="pointer-events-none absolute top-6 right-8 text-[44px] font-bold opacity-15 leading-none"
+        className="pointer-events-none absolute top-4 right-6 text-[36px] font-bold opacity-15 leading-none z-0"
         style={{ color: accent }}
       >
         Ⲁ
       </span>
       <span
         aria-hidden
-        className="pointer-events-none absolute top-6 left-8 text-[44px] font-bold opacity-15 leading-none"
+        className="pointer-events-none absolute top-4 left-6 text-[36px] font-bold opacity-15 leading-none z-0"
         style={{ color: accent }}
       >
         Ⲱ
       </span>
-      <span
-        aria-hidden
-        className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-bold tracking-[0.4em] opacity-30"
-        style={{ color: accent }}
-      >
-        ALPHA · وضع العرض الكنسي
-      </span>
 
-      {/* Header bar (visible only on phone — kept slim for projection) */}
+      {/* Slim header */}
       <header
         className="relative z-10 flex items-center justify-between px-4"
-        style={{ paddingTop: "max(env(safe-area-inset-top), 14px)", paddingBottom: 8 }}
+        style={{ paddingTop: "max(env(safe-area-inset-top), 12px)", paddingBottom: 6 }}
       >
         <div className="inline-flex items-center gap-2 text-[12px] font-bold opacity-70">
           <CopticCross size={14} />
@@ -125,15 +174,6 @@ export function PresentationMode({
           </button>
           <button
             type="button"
-            aria-label="بث للشاشة (قريباً)"
-            title="Chromecast / AirPlay — قريباً"
-            disabled
-            className={`grid h-9 w-9 place-items-center rounded-full border opacity-40 ${glassBtn}`}
-          >
-            <Cast className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
             aria-label="إغلاق العرض"
             onClick={() => onOpenChange(false)}
             className={`grid h-9 w-9 place-items-center rounded-full border active:scale-90 transition-transform ${glassBtn}`}
@@ -143,9 +183,12 @@ export function PresentationMode({
         </div>
       </header>
 
-      {/* Stage */}
-      <main className="relative z-10 flex-1 overflow-y-auto px-6 sm:px-12 md:px-20 lg:px-32 py-6 flex flex-col items-center justify-center text-center">
-        <div className="max-w-[1100px] w-full">
+      {/* Scrollable stage — the real auto-scroll container */}
+      <main
+        ref={scrollerRef}
+        className="relative z-10 flex-1 overflow-y-auto px-6 sm:px-12 md:px-20 lg:px-32 py-8 scroll-smooth"
+      >
+        <div className="max-w-[1100px] mx-auto w-full text-center">
           <p
             className="font-bold tracking-[0.25em] opacity-60 mb-3"
             style={{ fontSize: 13 * fontScale, color: accent }}
@@ -153,47 +196,59 @@ export function PresentationMode({
             {content.subtitle ?? "ألفا · للأقباط الأرثوذكس"}
           </p>
           <h1
-            className="font-arabic-serif font-extrabold leading-tight mb-6"
+            className="font-arabic-serif font-extrabold leading-tight mb-4"
             style={{ fontSize: titleSize }}
           >
             {content.title}
           </h1>
           <div
-            className="mx-auto h-[2px] w-24 rounded-full mb-6"
+            className="mx-auto h-[2px] w-24 rounded-full mb-8"
             style={{ background: accent, opacity: 0.5 }}
           />
-          {section?.title && (
-            <h2
-              className="font-arabic-serif font-extrabold mb-5"
-              style={{ fontSize: sectionTitleSize, color: accent }}
-            >
-              {section.title}
-            </h2>
-          )}
-          <div
-            className="font-arabic-serif leading-[2.1] whitespace-pre-wrap"
-            style={{ fontSize: bodySize }}
+
+          {content.sections.map((section, i) => (
+            <section key={section.id ?? i} className="mb-12 last:mb-0">
+              {section.title && (
+                <h2
+                  className="font-arabic-serif font-extrabold mb-5"
+                  style={{ fontSize: sectionTitleSize, color: accent }}
+                >
+                  {section.title}
+                </h2>
+              )}
+              <div
+                className="font-arabic-serif leading-[2.1] whitespace-pre-wrap text-center"
+                style={{ fontSize: bodySize }}
+              >
+                {section.body}
+              </div>
+              {section.meta && (
+                <p
+                  className="mt-5 font-bold opacity-70"
+                  style={{ fontSize: 14 * fontScale, color: accent }}
+                >
+                  {section.meta}
+                </p>
+              )}
+            </section>
+          ))}
+
+          <p
+            className="mt-12 text-[10px] font-bold tracking-[0.4em] opacity-30"
+            style={{ color: accent }}
           >
-            {section?.body}
-          </div>
-          {section?.meta && (
-            <p
-              className="mt-6 font-bold opacity-70"
-              style={{ fontSize: 14 * fontScale, color: accent }}
-            >
-              {section.meta}
-            </p>
-          )}
+            ALPHA · وضع العرض الكنسي
+          </p>
         </div>
       </main>
 
-      {/* Phone controls (visible — content area above is intended for projection) */}
+      {/* Minimal footer controls: Play/Pause · Speed · Font · Close already in header */}
       <footer
         className="relative z-10 px-4"
-        style={{ paddingBottom: "max(env(safe-area-inset-bottom), 14px)", paddingTop: 8 }}
+        style={{ paddingBottom: "max(env(safe-area-inset-bottom), 12px)", paddingTop: 6 }}
       >
         <div
-          className={`mx-auto max-w-[520px] rounded-2xl border backdrop-blur-xl px-3 py-2.5 flex items-center justify-between gap-2 ${
+          className={`mx-auto max-w-[560px] rounded-2xl border backdrop-blur-xl px-3 py-2.5 flex items-center justify-between gap-2 ${
             dark
               ? "bg-white/10 border-white/15"
               : "bg-white/85 border-[#efe2c4] shadow-[0_12px_28px_-16px_rgba(120,80,30,0.5)]"
@@ -201,21 +256,40 @@ export function PresentationMode({
         >
           <button
             type="button"
-            aria-label="السابق"
-            onClick={() => setIndex((i) => Math.max(0, i - 1))}
-            disabled={index <= 0}
-            className={`inline-flex items-center gap-1.5 h-10 px-3 rounded-xl text-[12px] font-bold border active:scale-95 transition-transform disabled:opacity-40 ${glassBtn}`}
+            aria-label={playing ? "إيقاف التمرير" : "بدء التمرير"}
+            onClick={() => setPlaying((p) => !p)}
+            className={`inline-flex items-center gap-1.5 h-10 px-4 rounded-xl text-[12px] font-bold border active:scale-95 transition-transform ${glassBtn}`}
           >
-            <ChevronRight className="h-4 w-4" />
-            السابق
+            {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+            {playing ? "إيقاف" : "تشغيل"}
           </button>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1">
+            {(Object.keys(SPEED_LABEL) as Speed[]).map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setSpeed(s)}
+                aria-pressed={speed === s}
+                className={`h-9 px-2.5 rounded-lg text-[11px] font-bold border transition-colors ${
+                  speed === s
+                    ? dark
+                      ? "bg-[#f0d78c] text-[#1a1208] border-[#f0d78c]"
+                      : "bg-[#b8893a] text-white border-[#b8893a]"
+                    : glassBtn
+                }`}
+              >
+                {SPEED_LABEL[s]}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-1">
             <button
               type="button"
               aria-label="تصغير الخط"
               onClick={() => setFontScale((s) => Math.max(0.7, s - 0.1))}
-              className={`grid h-10 w-10 place-items-center rounded-xl border active:scale-95 transition-transform ${glassBtn}`}
+              className={`grid h-9 w-9 place-items-center rounded-lg border active:scale-95 transition-transform ${glassBtn}`}
             >
               <Minus className="h-4 w-4" />
             </button>
@@ -229,31 +303,12 @@ export function PresentationMode({
               type="button"
               aria-label="تكبير الخط"
               onClick={() => setFontScale((s) => Math.min(2, s + 0.1))}
-              className={`grid h-10 w-10 place-items-center rounded-xl border active:scale-95 transition-transform ${glassBtn}`}
+              className={`grid h-9 w-9 place-items-center rounded-lg border active:scale-95 transition-transform ${glassBtn}`}
             >
               <Plus className="h-4 w-4" />
             </button>
           </div>
-
-          <button
-            type="button"
-            aria-label="التالي"
-            onClick={() => setIndex((i) => Math.min(total - 1, i + 1))}
-            disabled={index >= total - 1}
-            className={`inline-flex items-center gap-1.5 h-10 px-3 rounded-xl text-[12px] font-bold border active:scale-95 transition-transform disabled:opacity-40 ${glassBtn}`}
-          >
-            التالي
-            <ChevronLeft className="h-4 w-4" />
-          </button>
         </div>
-        {total > 1 && (
-          <p
-            className="mt-1.5 text-center text-[11px] font-bold opacity-60"
-            style={{ color: accent }}
-          >
-            {index + 1} / {total}
-          </p>
-        )}
       </footer>
     </div>
   );
