@@ -16,8 +16,12 @@ import { Route as BooksRouteImport } from './routes/books'
 import { Route as BibleRouteImport } from './routes/bible'
 import { Route as BookRouteImport } from './routes/$book'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SynaxariumIndexRouteImport } from './routes/synaxarium.index'
+import { Route as FeastsIndexRouteImport } from './routes/feasts.index'
 import { Route as AgpeyaIndexRouteImport } from './routes/agpeya.index'
 import { Route as BookIndexRouteImport } from './routes/$book.index'
+import { Route as SynaxariumSaintIdRouteImport } from './routes/synaxarium.$saintId'
+import { Route as FeastsEventIdRouteImport } from './routes/feasts.$eventId'
 import { Route as AgpeyaSavedRouteImport } from './routes/agpeya.saved'
 import { Route as AgpeyaPrayerIdRouteImport } from './routes/agpeya.$prayerId'
 import { Route as BookChapterRouteImport } from './routes/$book.$chapter'
@@ -57,6 +61,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SynaxariumIndexRoute = SynaxariumIndexRouteImport.update({
+  id: '/synaxarium/',
+  path: '/synaxarium/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeastsIndexRoute = FeastsIndexRouteImport.update({
+  id: '/feasts/',
+  path: '/feasts/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AgpeyaIndexRoute = AgpeyaIndexRouteImport.update({
   id: '/agpeya/',
   path: '/agpeya/',
@@ -66,6 +80,16 @@ const BookIndexRoute = BookIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => BookRoute,
+} as any)
+const SynaxariumSaintIdRoute = SynaxariumSaintIdRouteImport.update({
+  id: '/synaxarium/$saintId',
+  path: '/synaxarium/$saintId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeastsEventIdRoute = FeastsEventIdRouteImport.update({
+  id: '/feasts/$eventId',
+  path: '/feasts/$eventId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AgpeyaSavedRoute = AgpeyaSavedRouteImport.update({
   id: '/agpeya/saved',
@@ -94,8 +118,12 @@ export interface FileRoutesByFullPath {
   '/$book/$chapter': typeof BookChapterRoute
   '/agpeya/$prayerId': typeof AgpeyaPrayerIdRoute
   '/agpeya/saved': typeof AgpeyaSavedRoute
+  '/feasts/$eventId': typeof FeastsEventIdRoute
+  '/synaxarium/$saintId': typeof SynaxariumSaintIdRoute
   '/$book/': typeof BookIndexRoute
   '/agpeya/': typeof AgpeyaIndexRoute
+  '/feasts/': typeof FeastsIndexRoute
+  '/synaxarium/': typeof SynaxariumIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -107,8 +135,12 @@ export interface FileRoutesByTo {
   '/$book/$chapter': typeof BookChapterRoute
   '/agpeya/$prayerId': typeof AgpeyaPrayerIdRoute
   '/agpeya/saved': typeof AgpeyaSavedRoute
+  '/feasts/$eventId': typeof FeastsEventIdRoute
+  '/synaxarium/$saintId': typeof SynaxariumSaintIdRoute
   '/$book': typeof BookIndexRoute
   '/agpeya': typeof AgpeyaIndexRoute
+  '/feasts': typeof FeastsIndexRoute
+  '/synaxarium': typeof SynaxariumIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -122,8 +154,12 @@ export interface FileRoutesById {
   '/$book/$chapter': typeof BookChapterRoute
   '/agpeya/$prayerId': typeof AgpeyaPrayerIdRoute
   '/agpeya/saved': typeof AgpeyaSavedRoute
+  '/feasts/$eventId': typeof FeastsEventIdRoute
+  '/synaxarium/$saintId': typeof SynaxariumSaintIdRoute
   '/$book/': typeof BookIndexRoute
   '/agpeya/': typeof AgpeyaIndexRoute
+  '/feasts/': typeof FeastsIndexRoute
+  '/synaxarium/': typeof SynaxariumIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -138,8 +174,12 @@ export interface FileRouteTypes {
     | '/$book/$chapter'
     | '/agpeya/$prayerId'
     | '/agpeya/saved'
+    | '/feasts/$eventId'
+    | '/synaxarium/$saintId'
     | '/$book/'
     | '/agpeya/'
+    | '/feasts/'
+    | '/synaxarium/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -151,8 +191,12 @@ export interface FileRouteTypes {
     | '/$book/$chapter'
     | '/agpeya/$prayerId'
     | '/agpeya/saved'
+    | '/feasts/$eventId'
+    | '/synaxarium/$saintId'
     | '/$book'
     | '/agpeya'
+    | '/feasts'
+    | '/synaxarium'
   id:
     | '__root__'
     | '/'
@@ -165,8 +209,12 @@ export interface FileRouteTypes {
     | '/$book/$chapter'
     | '/agpeya/$prayerId'
     | '/agpeya/saved'
+    | '/feasts/$eventId'
+    | '/synaxarium/$saintId'
     | '/$book/'
     | '/agpeya/'
+    | '/feasts/'
+    | '/synaxarium/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -179,7 +227,11 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   AgpeyaPrayerIdRoute: typeof AgpeyaPrayerIdRoute
   AgpeyaSavedRoute: typeof AgpeyaSavedRoute
+  FeastsEventIdRoute: typeof FeastsEventIdRoute
+  SynaxariumSaintIdRoute: typeof SynaxariumSaintIdRoute
   AgpeyaIndexRoute: typeof AgpeyaIndexRoute
+  FeastsIndexRoute: typeof FeastsIndexRoute
+  SynaxariumIndexRoute: typeof SynaxariumIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -233,6 +285,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/synaxarium/': {
+      id: '/synaxarium/'
+      path: '/synaxarium'
+      fullPath: '/synaxarium/'
+      preLoaderRoute: typeof SynaxariumIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/feasts/': {
+      id: '/feasts/'
+      path: '/feasts'
+      fullPath: '/feasts/'
+      preLoaderRoute: typeof FeastsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/agpeya/': {
       id: '/agpeya/'
       path: '/agpeya'
@@ -246,6 +312,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/$book/'
       preLoaderRoute: typeof BookIndexRouteImport
       parentRoute: typeof BookRoute
+    }
+    '/synaxarium/$saintId': {
+      id: '/synaxarium/$saintId'
+      path: '/synaxarium/$saintId'
+      fullPath: '/synaxarium/$saintId'
+      preLoaderRoute: typeof SynaxariumSaintIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/feasts/$eventId': {
+      id: '/feasts/$eventId'
+      path: '/feasts/$eventId'
+      fullPath: '/feasts/$eventId'
+      preLoaderRoute: typeof FeastsEventIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/agpeya/saved': {
       id: '/agpeya/saved'
@@ -293,7 +373,11 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   AgpeyaPrayerIdRoute: AgpeyaPrayerIdRoute,
   AgpeyaSavedRoute: AgpeyaSavedRoute,
+  FeastsEventIdRoute: FeastsEventIdRoute,
+  SynaxariumSaintIdRoute: SynaxariumSaintIdRoute,
   AgpeyaIndexRoute: AgpeyaIndexRoute,
+  FeastsIndexRoute: FeastsIndexRoute,
+  SynaxariumIndexRoute: SynaxariumIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
