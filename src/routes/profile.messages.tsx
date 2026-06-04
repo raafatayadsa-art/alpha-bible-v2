@@ -18,7 +18,7 @@ import {
   Bell,
 } from "lucide-react";
 import { BottomDock } from "@/components/bible/BottomDock";
-import { CopticWatermark, CopticCross } from "@/components/coptic";
+import { CopticWatermark, CopticCross, CopticSeparator } from "@/components/coptic";
 
 type Category = "كاهن" | "خدمة" | "عضوية" | "طلبات" | "إشعار";
 
@@ -36,10 +36,10 @@ type Msg = {
 };
 
 const COLORS: Record<Category, string> = {
-  "كاهن": "#8a6ec1",
-  "خدمة": "#4a9e6e",
-  "عضوية": "#4a86c1",
-  "طلبات": "#c98a3c",
+  "كاهن": "#8a6ec1",   // purple (gold trim added per-card)
+  "خدمة": "#4a86c1",   // soft blue
+  "عضوية": "#2f9d6e",  // emerald
+  "طلبات": "#c98a3c",  // amber
   "إشعار": "#b85a5a",
 };
 
@@ -193,13 +193,13 @@ function FilterChips({ value, onChange, counts }: {
             <button
               key={f}
               onClick={() => onChange(f)}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-bold transition"
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10.5px] font-bold transition"
               style={
                 active
                   ? {
                       background: "linear-gradient(180deg,#4d3c70,#2a1d45)",
                       color: "#f7e7b8",
-                      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.18), 0 6px 14px -8px rgba(40,25,75,0.7)",
+                      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.18), 0 4px 10px -6px rgba(40,25,75,0.7)",
                       border: "1px solid rgba(240,215,140,0.35)",
                     }
                   : {
@@ -212,7 +212,7 @@ function FilterChips({ value, onChange, counts }: {
             >
               {f}
               <span
-                className="text-[9.5px] px-1 rounded-full"
+                className="text-[9px] px-1 rounded-full leading-[1.4]"
                 style={{
                   background: active ? "rgba(240,215,140,0.25)" : "rgba(58,42,24,0.08)",
                   color: active ? "#f7e7b8" : "#6a543a",
@@ -240,7 +240,7 @@ function MessageCard({ m, onOpen }: { m: Msg; onOpen: () => void }) {
         className="relative rounded-[20px] overflow-hidden p-3.5"
         style={{
           background: m.unread
-            ? "linear-gradient(180deg, #fffaec 0%, #fbf3e1 100%)"
+            ? `linear-gradient(180deg, #fffaec 0%, #fbf3e1 100%), linear-gradient(180deg, ${color}10, transparent)`
             : "linear-gradient(180deg, rgba(255,255,255,0.6) 0%, rgba(244,234,216,0.6) 100%)",
           border: `1px solid ${m.unread ? "#efe2c4" : "rgba(239,226,196,0.6)"}`,
           boxShadow: m.unread
@@ -248,6 +248,26 @@ function MessageCard({ m, onOpen }: { m: Msg; onOpen: () => void }) {
             : "0 6px 14px -12px rgba(120,80,30,0.4), inset 0 1px 0 rgba(255,255,255,0.5)",
         }}
       >
+        {/* Type accent stripe (right side, RTL leading edge) */}
+        <span
+          aria-hidden
+          className="absolute top-2 bottom-2 right-0 w-[3px] rounded-full"
+          style={{
+            background:
+              m.category === "كاهن"
+                ? `linear-gradient(180deg, #e7c97a, ${color})`
+                : `linear-gradient(180deg, ${color}, ${color}80)`,
+            opacity: m.unread ? 0.95 : 0.55,
+          }}
+        />
+        {/* Priest gold halo trim */}
+        {m.category === "كاهن" && m.unread && (
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-0 rounded-[20px]"
+            style={{ boxShadow: "inset 0 0 0 1px rgba(231,201,122,0.55)" }}
+          />
+        )}
         {m.unread && (
           <span
             aria-hidden
@@ -416,6 +436,58 @@ function DetailSheet({ msg, onClose, onToggleSave, onDelete, onMarkRead }: {
             )
           )}
 
+          {/* Contextual actions (shown only when relevant) */}
+          {(msg.category === "طلبات" || msg.category === "عضوية") && (
+            <div className="mt-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="h-px flex-1 bg-gradient-to-l from-[#b8893a]/40 to-transparent" />
+                <span className="text-[10px] font-bold text-[#9a7e5a]">إجراءات</span>
+                <span className="h-px flex-1 bg-gradient-to-r from-[#b8893a]/40 to-transparent" />
+              </div>
+
+              {msg.category === "طلبات" && (
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={() => onMarkRead(msg.id)}
+                    className="py-2.5 rounded-xl text-[11.5px] font-extrabold text-white"
+                    style={{ background: "linear-gradient(180deg,#3fb37c,#2f9d6e)", boxShadow: "0 8px 18px -10px rgba(47,157,110,0.7)" }}
+                  >
+                    قبول
+                  </button>
+                  <button
+                    onClick={() => onMarkRead(msg.id)}
+                    className="py-2.5 rounded-xl text-[11.5px] font-extrabold text-white"
+                    style={{ background: "linear-gradient(180deg,#d06b6b,#b85a5a)", boxShadow: "0 8px 18px -10px rgba(184,90,90,0.6)" }}
+                  >
+                    رفض
+                  </button>
+                  <button
+                    onClick={() => onMarkRead(msg.id)}
+                    className="py-2.5 rounded-xl text-[11.5px] font-extrabold text-[#3a2a18] bg-white/70 border border-[#efe2c4]"
+                  >
+                    عرض الطلب
+                  </button>
+                </div>
+              )}
+
+              {msg.category === "عضوية" && (
+                <Link
+                  to={"/profile/membership" as any}
+                  className="flex items-center justify-center gap-2 w-full mt-1 py-3 rounded-2xl text-[13px] font-extrabold text-[#f7e7b8]"
+                  style={{
+                    background: "linear-gradient(180deg,#3a8c66,#2f7d5a)",
+                    border: "1px solid rgba(240,215,140,0.4)",
+                    boxShadow: "0 12px 24px -14px rgba(47,125,90,0.7)",
+                  }}
+                >
+                  فتح العضوية
+                  <ChevronLeft className="h-4 w-4" />
+                </Link>
+              )}
+            </div>
+          )}
+
+
           <div className="mt-4 grid grid-cols-3 gap-2">
             <button
               onClick={() => onToggleSave(msg.id)}
@@ -519,7 +591,9 @@ function MessagesScreen() {
 
         <FilterChips value={filter} onChange={setFilter} counts={counts} />
 
-        <div className="mt-4 space-y-2.5">
+        <CopticSeparator className="my-3" />
+
+        <div className="space-y-2.5">
           {filtered.length === 0 ? (
             <EmptyState />
           ) : (
