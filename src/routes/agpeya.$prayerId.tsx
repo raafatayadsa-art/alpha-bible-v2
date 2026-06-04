@@ -649,7 +649,7 @@ function PrayerReader() {
               {isSaved(prayerId) && (
                 <span className={cn(
                   "rounded-full px-1.5 py-0.5 text-[9px] font-bold",
-                  dark ? "bg-[#f0d78c]/20 text-[#f0d78c]" : "bg-[#1f4032]/10 text-[#1f4032]",
+                  dark ? "bg-[#f0d78c]/20 text-[#f0d78c]" : "bg-[#5a3d92]/10 text-[#5a3d92]",
                 )}>
                   محفوظة
                 </span>
