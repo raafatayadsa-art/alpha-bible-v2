@@ -257,9 +257,9 @@ function FeastsHome() {
               params={{ saintId: saint.id }}
               className="block mt-5 active:scale-[0.99] transition-transform"
             >
-              <GlassSurface className="p-3 bg-white border-[#ead9b1] shadow-[0_14px_30px_-22px_rgba(120,80,30,0.55)]">
-                <div className="flex items-center gap-3">
-                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-[#f4ead8] ring-1 ring-inset ring-[#ead9b1]">
+              <GlassSurface className="p-3.5 bg-white border-[#ead9b1] shadow-[0_14px_30px_-22px_rgba(120,80,30,0.55)]">
+                <div className="flex items-center gap-3.5">
+                  <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-[#f4ead8] ring-1 ring-inset ring-[#ead9b1] shadow-[0_8px_18px_-12px_rgba(120,80,30,0.55)]">
                     <img
                       src={saint.image}
                       alt=""
@@ -270,22 +270,23 @@ function FeastsHome() {
                     />
                   </div>
                   <div className="flex-1 text-right min-w-0">
-                    <div className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#b8893a]">
+                    <div className="inline-flex items-center gap-1.5 text-[10.5px] font-bold text-[#b8893a]">
                       <CopticCross size={11} />
                       سنكسار اليوم
                       <span className="text-[#b8893a]/60">Ⲁ Ⲱ</span>
                     </div>
-                    <div className="font-arabic-serif text-[14.5px] font-extrabold text-[#3a2a18] leading-tight mt-0.5 line-clamp-1">
+                    <div className="font-arabic-serif text-[17px] font-extrabold text-[#3a2a18] leading-tight mt-1 line-clamp-2">
                       {saint.name}
                     </div>
-                    <div className="text-[12px] text-[#5a4630] leading-snug line-clamp-1 mt-0.5">
+                    <div className="text-[12px] text-[#5a4630] leading-snug line-clamp-1 mt-1">
                       {saint.summary}
                     </div>
+                    <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-l from-[#6a4ab5] to-[#8c6fd1] text-white px-3.5 h-8 text-[11.5px] font-bold shadow-[0_8px_16px_-8px_rgba(106,74,181,0.6)]">
+                      <BookOpen className="h-3.5 w-3.5" />
+                      افتح السنكسار
+                      <ChevronLeft className="h-3 w-3" />
+                    </span>
                   </div>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[#fff7e0] border border-[#ead9b1] px-2.5 h-8 text-[11px] font-bold text-[#3a2a18] shrink-0">
-                    <BookOpen className="h-3 w-3 text-[#b8893a]" />
-                    افتح
-                  </span>
                 </div>
               </GlassSurface>
             </Link>
