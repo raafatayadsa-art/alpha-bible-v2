@@ -39,8 +39,8 @@ export function CopticWatermark({
   tone?: "light" | "dark";
   position?: "fixed" | "absolute";
 }) {
-  const color = tone === "dark" ? "#f0d78c" : "#8a5a1f";
-  const opacity = tone === "dark" ? 0.035 : 0.025;
+  const color = tone === "dark" ? "#f0d78c" : "#7a4a14";
+  const opacity = tone === "dark" ? 0.035 : 0.055;
   return (
     <div
       className={cn(
