@@ -73,6 +73,7 @@ export function DictionarySearchDialog({
   const [term, setTerm] = useState("");
   const [results, setResults] = useState<LookupDictionaryRow[] | null>(null);
   const [loading, setLoading] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const reqIdRef = useRef(0);
 
@@ -80,10 +81,16 @@ export function DictionarySearchDialog({
     if (open) {
       setTerm("");
       setResults(null);
+      setExpanded(false);
       reqIdRef.current++;
       setTimeout(() => inputRef.current?.focus(), 150);
     }
   }, [open]);
+
+  useEffect(() => {
+    // Any new keystroke resets back to strict mode.
+    setExpanded(false);
+  }, [term]);
 
   useEffect(() => {
     if (!open) return;
@@ -116,9 +123,11 @@ export function DictionarySearchDialog({
   }, [open, onClose]);
 
   const ranked = useMemo(
-    () => (results ? rankAndDedupe(results, term) : []),
-    [results, term],
+    () =>
+      results ? rankAndDedupe(results, term, { strict: !expanded }) : [],
+    [results, term, expanded],
   );
+
 
   return (
     <>
