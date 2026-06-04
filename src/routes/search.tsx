@@ -32,14 +32,16 @@ function norm(s: string): string {
 }
 
 type Category = "bible" | "agpeya" | "katameros" | "synaxarium" | "feasts" | "meditations";
+type Scope = "all" | Category;
 
-const CATEGORIES: { id: Category; label: string; icon: typeof BookOpen; to: string; tint: string; iconBg: string }[] = [
-  { id: "bible",      label: "الكتاب المقدس", icon: BookOpen,     to: "/bible",       tint: "from-[#fff4d6] to-[#fbe4a8]", iconBg: "bg-[#caa15f]" },
-  { id: "agpeya",     label: "الأجبية",        icon: HandHeart,    to: "/agpeya",      tint: "from-[#eef6ef] to-[#cfe6d2]", iconBg: "bg-[#6c9a72]" },
-  { id: "katameros",  label: "القطمارس",       icon: ScrollText,   to: "/katameros",   tint: "from-[#f3ecff] to-[#dccbf3]", iconBg: "bg-[#8a6ec1]" },
-  { id: "synaxarium", label: "السنكسار",       icon: Cross,        to: "/synaxarium",  tint: "from-[#fff0e6] to-[#f6cfb1]", iconBg: "bg-[#c97a3c]" },
-  { id: "feasts",     label: "المناسبات",      icon: CalendarHeart,to: "/feasts",      tint: "from-[#fde9ef] to-[#f6c2d0]", iconBg: "bg-[#c95680]" },
-  { id: "meditations",label: "التأملات",       icon: Sparkles,     to: "/home",        tint: "from-[#eaf4ff] to-[#c6dffb]", iconBg: "bg-[#5b8fd1]" },
+const SCOPES: { id: Scope; label: string; placeholder: string }[] = [
+  { id: "all",        label: "الكل",         placeholder: "ابحث في كل شيء..." },
+  { id: "bible",      label: "الكتاب",       placeholder: "ابحث في الكتاب المقدس..." },
+  { id: "agpeya",     label: "الأجبية",      placeholder: "ابحث في الأجبية..." },
+  { id: "katameros",  label: "القطمارس",     placeholder: "ابحث في القطمارس..." },
+  { id: "synaxarium", label: "السنكسار",     placeholder: "ابحث في السنكسار..." },
+  { id: "feasts",     label: "المناسبات",    placeholder: "ابحث في المناسبات..." },
+  { id: "meditations",label: "التأملات",     placeholder: "ابحث في التأملات..." },
 ];
 
 const POPULAR = ["يوحنا", "القيامة", "صلاة الشكر", "الأنبا أنطونيوس", "القديسة العذراء", "المزمور"];
