@@ -16,6 +16,7 @@ import {
   Pressable,
   ProgressBar,
 } from "@/components/bible";
+import { CopticWatermark } from "@/components/coptic";
 
 
 export const Route = createFileRoute("/bible")({
@@ -50,6 +51,7 @@ function BibleHome() {
             "radial-gradient(80% 60% at 0% 80%, rgba(214,168,98,0.18), transparent 65%)",
         }}
       />
+      <CopticWatermark />
 
       <div className="relative mx-auto w-full max-w-[440px] px-4 pt-[max(env(safe-area-inset-top),12px)] pb-36">
         <header className="flex items-center justify-between gap-2 pt-2">
