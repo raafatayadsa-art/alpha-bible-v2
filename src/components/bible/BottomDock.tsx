@@ -49,7 +49,7 @@ export function BottomDock({
               raised
               label="الكتاب المقدس"
               to="/bible"
-              active={isActive("/bible") || isActive("/books") || pathname.split("/").length >= 2}
+              active={isActive("/bible") || isActive("/books")}
             />
             <DockItem icon={BookOpen} label="المكتبة" to="/books" active={isActive("/books")} />
             <DockItem icon={UserIcon} label="الملف الشخصي" to="/profile" active={isActive("/profile")} />
