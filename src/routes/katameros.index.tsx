@@ -466,8 +466,8 @@ function ReadingCard({
 
   return (
     <div id={`reading-${reading.id}`} className="scroll-mt-4">
-      <GlassSurface
-        className="p-0 border shadow-[0_10px_24px_-20px_rgba(120,80,30,0.5)] overflow-hidden transition-all duration-300 [@media(hover:hover)]:hover:shadow-[0_18px_32px_-22px_rgba(120,80,30,0.55)]"
+      <div
+        className="rounded-2xl border backdrop-blur-xl shadow-[0_10px_24px_-20px_rgba(120,80,30,0.5)] overflow-hidden transition-all duration-300 [@media(hover:hover)]:hover:shadow-[0_18px_32px_-22px_rgba(120,80,30,0.55)]"
         style={surfaceStyle ?? { background: "#ffffff", borderColor: "#ead9b1" }}
       >
         <div className="flex items-center gap-3 p-3">
