@@ -597,8 +597,58 @@ const HIGHLIGHT_STOPWORDS = new Set(
   ].map(normalizeAr),
 );
 
-const STRONG_CATEGORY_RE =
-  /(person|place|نبي|رسول|قديس|ملك|كاهن|شخص|تلميذ|بطريرك|مدين|قري|نهر|جبل|بحر|ارض|منطق|بلد|اقليم|موقع|بريه|واد|اسم|سفر)/i;
+// Everyday words the reader does not need a dictionary popup for.
+// Even if an entry exists in alpha_dictionary, skip highlighting it.
+// Includes the user-specified exclusion list + close variants.
+const EVERYDAY_BLACKLIST = new Set(
+  [
+    "قال","كان","من","في","الى","رجل","امراه","ابن","اخ","يوم","ارض",
+    "قالت","قالوا","يقول","تقول","كانت","كانوا","يكون",
+    "بنت","ابنه","اخت","اب","ام","ولد","اولاد","اطفال","ناس","شعب","قوم","اهل",
+    "ليل","نهار","صباح","مساء","ساعه","لحظه","وقت","حين","مره",
+    "بيت","باب","يد","عين","فم","راس","قلب","وجه","جسم",
+    "كبير","صغير","حسن","جميل","قوي","ضعيف","جديد","قديم",
+    "اول","ثاني","واحد","اثنان","ثلاثه",
+    "هنا","هناك","الان","اليوم","امس","غدا","قبل","بعد","فوق","تحت","امام","خلف",
+    "ماء","نار","هواء","ريح","تراب","حجر","طريق",
+  ].map(normalizeAr),
+);
+
+// HIGH priority: always highlight. People, places, tribes, nations,
+// historical events, biblical objects, theological terms.
+const HIGH_PRIORITY_RE =
+  /(person|place|tribe|nation|event|object|theolog|نبي|رسول|قديس|ملك|كاهن|شخص|تلميذ|بطريرك|رئيس|قاضي|مدين|قري|نهر|جبل|بحر|ارض|منطق|بلد|اقليم|موقع|بريه|واد|سبط|قبيله|امه|حدث|معركه|حرب|سبي|خروج|عيد|تابوت|هيكل|مذبح|خيمه|اسم|سفر|لاهوت|عقيده|ايمان|خلاص|فداء|قيامه|صلب|ميلاد)/i;
+
+// MEDIUM priority: only when the entry adds clear value — uncommon
+// biblical / liturgical terms, ancient measurements, symbolic terms.
+const MEDIUM_PRIORITY_RE =
+  /(liturg|measure|symbol|ritual|طقس|ليتورج|كنسي|رمز|سر|تشبيه|مقياس|وزن|كيل|عمله|نقد|قدس|روحي|نبوه|نبوءه)/i;
+
+/**
+ * Reusable highlight-quality filter. Single source of truth deciding
+ * whether a dictionary entry is worth highlighting inside Bible verses.
+ * Manual dictionary search bypasses this filter.
+ */
+export function isHighlightWorthyEntry(e: DictionaryEntry): boolean {
+  const key = dictionaryEntryKey(e);
+  if (!key || key.length < 3) return false;
+  if (HIGHLIGHT_STOPWORDS.has(key)) return false;
+  if (EVERYDAY_BLACKLIST.has(key)) return false;
+
+  const cat = (e.category ?? "").toString();
+  const meaning = (e.shortMeaning ?? e.fullMeaning ?? "").trim();
+
+  // bible_names entries are persons by construction.
+  if (e.source === "bible_names_dictionary") return meaning.length > 0;
+
+  if (cat && HIGH_PRIORITY_RE.test(cat)) return meaning.length > 0;
+  if (cat && MEDIUM_PRIORITY_RE.test(cat)) return meaning.length >= 8;
+
+  // Generic / uncategorized — reader experience first, skip.
+  return false;
+}
+
+const STRONG_CATEGORY_RE = HIGH_PRIORITY_RE;
 
 /** Returns true if the lookup_dictionary rows justify highlighting. */
 export function isStrongDictHit(word: string, rows: LookupDictionaryRow[]): boolean {
@@ -606,8 +656,6 @@ export function isStrongDictHit(word: string, rows: LookupDictionaryRow[]): bool
   for (const r of rows) {
     if (r.category && STRONG_CATEGORY_RE.test(r.category)) return true;
   }
-  // Generic / uncategorized rows: require length ≥ 4 AND a meaningful
-  // short meaning (≥ 12 chars) to avoid noisy single-line hits.
   if (word.length < 4) return false;
   for (const r of rows) {
     const m = (r.short_meaning_ar ?? "").trim();
@@ -617,10 +665,8 @@ export function isStrongDictHit(word: string, rows: LookupDictionaryRow[]): bool
 }
 
 /**
- * Build the set of chapter words that highlight. Strict rule:
- *   normalized form is an exact key in `bible_names_dictionary` (with meaning).
- *
- * No RPC, no alpha_dictionary auto-highlight, no prefix/fuzzy match.
+ * Build the set of chapter words to highlight. Applies the reusable
+ * quality filter across BOTH bible_names_dictionary and alpha_dictionary.
  */
 export async function bulkLookupMatched(
   normalizedWords: string[],
@@ -635,11 +681,10 @@ export async function bulkLookupMatched(
     return matched;
   }
   const known = new Set<string>();
-  for (const e of namesDictionaryEntries(entries)) {
+  for (const e of entries) {
+    if (!isHighlightWorthyEntry(e)) continue;
     const k = dictionaryEntryKey(e);
     if (!k) continue;
-    if (k.length < 3) continue;
-    if (HIGHLIGHT_STOPWORDS.has(k)) continue;
     known.add(k);
   }
   const seen = new Set<string>();
@@ -648,6 +693,7 @@ export async function bulkLookupMatched(
     seen.add(w);
     if (w.length < 3) continue;
     if (HIGHLIGHT_STOPWORDS.has(w)) continue;
+    if (EVERYDAY_BLACKLIST.has(w)) continue;
     if (/^\d+$/.test(w)) continue;
     if (known.has(w)) matched.add(w);
   }
