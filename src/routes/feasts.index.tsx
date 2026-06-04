@@ -114,7 +114,7 @@ function FeastsHome() {
                 )}
               </div>
             </div>
-            <div className="px-4 pb-4 -mt-6 flex justify-end relative z-10">
+            <div className="px-4 pb-4 -mt-6 flex justify-start relative z-10">
               <span className="inline-flex items-center gap-2 rounded-full bg-white border border-[#ead9b1] px-4 h-10 text-[12px] font-bold text-[#3a2a18] shadow-[0_10px_18px_-12px_rgba(120,80,30,0.55)]">
                 <BookOpen className="h-3.5 w-3.5 text-[#6a4ab5]" />
                 تعرف على المناسبة
