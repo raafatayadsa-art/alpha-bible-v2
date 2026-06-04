@@ -389,8 +389,11 @@ function PrayerReader() {
   const { prev, next } = useMemo(() => adjacentAgpeyaPrayers(prayerId), [prayerId]);
   const sections = useMemo(() => buildSections(prayer), [prayer]);
 
-  const [fontSize, setFontSize] = useAgpeyaFontSize();
-  const [lineHeight, setLineHeight] = useAgpeyaLineHeight();
+  const { prefs, setPrefs } = useTypographyPrefs();
+  const fontSize = prefs.fontSize;
+  const lineHeight = prefs.lineHeight;
+  const setFontSize = (n: number) => setPrefs({ ...prefs, fontSize: n });
+  const setLineHeight = (n: number) => setPrefs({ ...prefs, lineHeight: n });
   const [theme, setTheme] = useAgpeyaTheme();
   const [progress, setProgress] = useState(0);
   const [notice, setNotice] = useState<string | null>(null);
