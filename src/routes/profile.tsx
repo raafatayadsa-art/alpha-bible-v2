@@ -27,7 +27,7 @@ const MEMBER = {
   verified: true,
 };
 
-const QR_URL = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&bgcolor=fbf3e1&color=3a2a18&data=${encodeURIComponent(
+const QR_URL = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&ecc=H&margin=2&bgcolor=fbf3e1&color=2a1a0d&data=${encodeURIComponent(
   `alpha://member/${MEMBER.membershipNo}`,
 )}`;
 
