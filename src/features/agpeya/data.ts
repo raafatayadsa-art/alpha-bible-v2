@@ -22,24 +22,24 @@ function emptyTabs(): AgpeyaPrayer["tabs"] {
 
 export const AGPEYA_PRAYERS: AgpeyaPrayer[] = [
   // ===== Day =====
-  { id: "baker", title: "صلاة باكر", subtitle: "الساعة الأولى من النهار", hour: 6, section: "day", accent: "dawn", tabs: emptyTabs() },
-  { id: "third", title: "الثالثة", subtitle: "الساعة الثالثة من النهار", hour: 9, section: "day", accent: "dawn", tabs: emptyTabs() },
-  { id: "sixth", title: "السادسة", subtitle: "الساعة السادسة من النهار", hour: 12, section: "day", accent: "noon", tabs: emptyTabs() },
-  { id: "ninth", title: "التاسعة", subtitle: "الساعة التاسعة من النهار", hour: 15, section: "day", accent: "noon", tabs: emptyTabs() },
-  { id: "vespers", title: "الغروب", subtitle: "الساعة الحادية عشرة", hour: 17, section: "day", accent: "evening", tabs: emptyTabs() },
-  { id: "compline", title: "النوم", subtitle: "الساعة الثانية عشرة", hour: 20, section: "day", accent: "evening", tabs: emptyTabs() },
+  { id: "baker", title: "صلاة باكر", subtitle: "بداية اليوم بالصلاة والتسبيح", description: "بداية اليوم بالصلاة والتسبيح", hour: 6, clock: "06:00 ص", durationMin: 35, psalmsCount: 12, gospelCount: 3, section: "day", accent: "dawn", tabs: emptyTabs() },
+  { id: "third", title: "صلاة الثالثة", subtitle: "تذكار حلول الروح القدس", description: "تذكار حلول الروح القدس", hour: 9, clock: "09:00 ص", durationMin: 25, psalmsCount: 12, gospelCount: 1, section: "day", accent: "midmorning", tabs: emptyTabs() },
+  { id: "sixth", title: "صلاة السادسة", subtitle: "تذكار صلب السيد المسيح", description: "تذكار صلب السيد المسيح", hour: 12, clock: "12:00 م", durationMin: 25, psalmsCount: 12, gospelCount: 1, section: "day", accent: "noon", tabs: emptyTabs() },
+  { id: "ninth", title: "صلاة التاسعة", subtitle: "تذكار موت السيد المسيح في الجسد", description: "تذكار موت السيد المسيح في الجسد", hour: 15, clock: "03:00 م", durationMin: 22, psalmsCount: 12, gospelCount: 1, section: "day", accent: "evening", tabs: emptyTabs() },
+  { id: "vespers", title: "صلاة الغروب", subtitle: "تذكار إنزال السيد المسيح عن الصليب", description: "تذكار إنزال السيد المسيح عن الصليب", hour: 17, clock: "06:00 م", durationMin: 20, psalmsCount: 12, gospelCount: 1, section: "day", accent: "evening", tabs: emptyTabs() },
+  { id: "compline", title: "صلاة النوم", subtitle: "تذكار دفن السيد المسيح", description: "تذكار دفن السيد المسيح", hour: 20, clock: "09:00 م", durationMin: 22, psalmsCount: 12, gospelCount: 1, section: "day", accent: "compline", tabs: emptyTabs() },
 
   // ===== Night =====
-  { id: "veil", title: "الستار", subtitle: "صلاة الستار", hour: 21, section: "night", accent: "night", tabs: emptyTabs() },
-  { id: "midnight-1", title: "نصف الليل الأولى", subtitle: "الخدمة الأولى", hour: 0, section: "night", accent: "night", tabs: emptyTabs() },
-  { id: "midnight-2", title: "نصف الليل الثانية", subtitle: "الخدمة الثانية", hour: 1, section: "night", accent: "night", tabs: emptyTabs() },
-  { id: "midnight-3", title: "نصف الليل الثالثة", subtitle: "الخدمة الثالثة", hour: 2, section: "night", accent: "night", tabs: emptyTabs() },
+  { id: "veil", title: "صلاة الستار", subtitle: "صلاة قبل النوم — للرهبان", description: "صلاة الستار للرهبان والمتعبدين", hour: 22, clock: "10:00 م", durationMin: 18, psalmsCount: 6, gospelCount: 1, section: "night", accent: "veil", tabs: emptyTabs() },
+  { id: "midnight-1", title: "نصف الليل الأولى", subtitle: "الخدمة الأولى", description: "الخدمة الأولى من نصف الليل", hour: 0, clock: "12:00 ص", durationMin: 20, psalmsCount: 12, gospelCount: 1, section: "night", accent: "midnight", tabs: emptyTabs() },
+  { id: "midnight-2", title: "نصف الليل الثانية", subtitle: "الخدمة الثانية", description: "الخدمة الثانية من نصف الليل", hour: 2, clock: "02:00 ص", durationMin: 20, psalmsCount: 12, gospelCount: 1, section: "night", accent: "midnight", tabs: emptyTabs() },
+  { id: "midnight-3", title: "نصف الليل الثالثة", subtitle: "الخدمة الثالثة", description: "الخدمة الثالثة من نصف الليل", hour: 4, clock: "04:00 ص", durationMin: 20, psalmsCount: 12, gospelCount: 1, section: "night", accent: "midnight", tabs: emptyTabs() },
 
   // ===== Extra =====
-  { id: "misc", title: "صلوات متفرقة", section: "extra", accent: "extra", tabs: { text: { body: PLACEHOLDER }, info: { body: PLACEHOLDER } } },
-  { id: "david-repentance", title: "توبة داود", subtitle: "المزمور الخمسين", section: "extra", accent: "extra", tabs: { text: { body: PLACEHOLDER }, psalms: { body: PLACEHOLDER }, info: { body: PLACEHOLDER } } },
-  { id: "thanksgiving", title: "صلاة الشكر", section: "extra", accent: "extra", tabs: { text: { body: PLACEHOLDER }, info: { body: PLACEHOLDER } } },
-  { id: "creed", title: "قانون الإيمان", section: "extra", accent: "extra", tabs: { text: { body: PLACEHOLDER }, info: { body: PLACEHOLDER } } },
+  { id: "misc", title: "صلوات متفرقة", subtitle: "صلوات متنوعة", description: "صلوات متنوعة", section: "extra", accent: "extra", tabs: { text: { body: PLACEHOLDER }, info: { body: PLACEHOLDER } } },
+  { id: "david-repentance", title: "توبة داود", subtitle: "(المزمور 50)", description: "المزمور الخمسين", section: "extra", accent: "extra", tabs: { text: { body: PLACEHOLDER }, psalms: { body: PLACEHOLDER }, info: { body: PLACEHOLDER } } },
+  { id: "thanksgiving", title: "صلاة الشكر", subtitle: "تسبيح وامتنان", description: "تسبيح وامتنان", section: "extra", accent: "extra", tabs: { text: { body: PLACEHOLDER }, info: { body: PLACEHOLDER } } },
+  { id: "creed", title: "قانون الإيمان", subtitle: "إيمان الكنيسة", description: "إيمان الكنيسة", section: "extra", accent: "extra", tabs: { text: { body: PLACEHOLDER }, info: { body: PLACEHOLDER } } },
 ];
 
 export function getAgpeyaPrayer(id: string): AgpeyaPrayer | undefined {

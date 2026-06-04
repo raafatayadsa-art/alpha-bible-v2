@@ -14,11 +14,23 @@ export interface AgpeyaPrayer {
   title: string;
   /** Short subtitle e.g. "الساعة السادسة صباحًا" */
   subtitle?: string;
+  /** Longer one-line description shown on the hero card. */
+  description?: string;
   /** Liturgical hour in 24h clock; used to pick "current" prayer. */
   hour?: number;
+  /** Human label for the hour, e.g. "06:00 ص". */
+  clock?: string;
+  /** Estimated reading duration in minutes. */
+  durationMin?: number;
+  /** Number of psalms in this prayer. */
+  psalmsCount?: number;
+  /** Number of gospel pericopes (قطع) in this prayer. */
+  gospelCount?: number;
+  /** Short reference line e.g. "12 مزمور — 3 قطع — 35 دقيقة" override. */
+  metaLine?: string;
   section: AgpeyaSectionKey;
   /** Optional accent token used by the card. */
-  accent?: "dawn" | "noon" | "evening" | "night" | "extra";
+  accent?: "dawn" | "midmorning" | "noon" | "evening" | "compline" | "veil" | "midnight" | "extra";
   /** Per-tab content. Tabs with no entry are hidden. */
   tabs: Partial<Record<AgpeyaTabKey, AgpeyaTabContent>>;
 }
