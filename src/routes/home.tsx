@@ -172,49 +172,40 @@ async function buildShareImage(opts: {
   return await new Promise<Blob | null>((res) => canvas.toBlob(res, "image/jpeg", 0.92));
 }
 
-async function shareWithImage(opts: {
+type ShareRequest = {
   title: string;
   body: string;
   meta?: string;
   imageSrc: string;
   accent: string;
-}) {
-  const { title, body, meta, imageSrc, accent } = opts;
-  const shareText = `${title}\n\n${body}${meta ? `\n— ${meta}` : ""}\n\nحمّل تطبيق ألفا القبطي:\nApp Store: https://apps.apple.com/app/alpha-coptic\nGoogle Play: https://play.google.com/store/apps/details?id=app.alpha.coptic`;
-  const cacheKey = `${imageSrc}|${accent}|${title}|${body}|${meta ?? ""}`;
-  try {
-    let blob: Blob | null | undefined = shareImageCache.get(cacheKey);
-    if (!blob) {
-      let pending = shareImageInflight.get(cacheKey);
-      if (!pending) {
-        pending = buildShareImage(opts).then((b) => {
-          if (b) shareImageCache.set(cacheKey, b);
-          shareImageInflight.delete(cacheKey);
-          return b;
-        }).catch((e) => {
-          shareImageInflight.delete(cacheKey);
-          throw e;
-        });
-        shareImageInflight.set(cacheKey, pending);
-      }
-      blob = await pending;
-    }
-    if (blob && (navigator as any).canShare?.({ files: [new File([blob], "alpha.jpg", { type: "image/jpeg" })] })) {
-      const file = new File([blob], "alpha.jpg", { type: "image/jpeg" });
-      await (navigator as any).share({ title, text: shareText, files: [file] });
-      return;
-    }
-  } catch {}
-  try {
-    if (navigator.share) {
-      await navigator.share({ title, text: shareText });
-      return;
-    }
-  } catch {}
-  try {
-    await navigator.clipboard.writeText(shareText);
-  } catch {}
+};
+
+// Open a global share sheet; rendered by HomeScreen.
+function openShareSheet(req: ShareRequest) {
+  window.dispatchEvent(new CustomEvent<ShareRequest>("alpha-share-open", { detail: req }));
 }
+
+async function getShareBlob(req: ShareRequest): Promise<Blob | null> {
+  const cacheKey = `${req.imageSrc}|${req.accent}|${req.title}|${req.body}|${req.meta ?? ""}`;
+  const cached = shareImageCache.get(cacheKey);
+  if (cached) return cached;
+  let pending = shareImageInflight.get(cacheKey);
+  if (!pending) {
+    pending = buildShareImage(req).then((b) => {
+      if (b) shareImageCache.set(cacheKey, b);
+      shareImageInflight.delete(cacheKey);
+      return b;
+    }).catch((e) => { shareImageInflight.delete(cacheKey); throw e; });
+    shareImageInflight.set(cacheKey, pending);
+  }
+  return pending;
+}
+
+function shareText(req: ShareRequest) {
+  return `${req.title}\n\n${req.body}${req.meta ? `\n— ${req.meta}` : ""}\n\nحمّل تطبيق ألفا القبطي:\nApp Store: https://apps.apple.com/app/alpha-coptic\nGoogle Play: https://play.google.com/store/apps/details?id=app.alpha.coptic`;
+}
+
+const APP_URL = "https://alpha-bible.lovable.app";
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
