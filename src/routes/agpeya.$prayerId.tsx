@@ -565,15 +565,18 @@ function PrayerReader() {
     if (!root) return;
     const el = root.querySelector(`#section-${id}`) as HTMLElement | null;
     if (!el) return;
-    // Immediate visual feedback
+    // Immediate visual feedback + lock against scroll-tracking flicker
     setActiveId(id);
+    lockUntilRef.current = Date.now() + 700;
     try {
       const rootRect = root.getBoundingClientRect();
       const elRect = el.getBoundingClientRect();
-      const offset = 16;
-      const top = root.scrollTop + (elRect.top - rootRect.top) - offset;
+      // Section header has its own breathing room; small gap is enough since
+      // the sticky page header sits OUTSIDE this scroll container.
+      const offset = 12;
+      const target = root.scrollTop + (elRect.top - rootRect.top) - offset;
       const max = Math.max(0, root.scrollHeight - root.clientHeight);
-      root.scrollTo({ top: Math.max(0, Math.min(max, top)), behavior: "smooth" });
+      root.scrollTo({ top: Math.max(0, Math.min(max, target)), behavior: "smooth" });
     } catch (err) {
       // eslint-disable-next-line no-console
       console.warn("[agpeya] jumpTo failed", err);
