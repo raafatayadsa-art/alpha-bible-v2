@@ -213,7 +213,7 @@ function FeastsHome() {
 
 function QuickAction({ icon, label, sub, tone }: { icon: React.ReactNode; label: string; sub: string; tone: string }) {
   return (
-    <div className="rounded-2xl bg-white/85 border border-[#efe2c4] p-2 text-center flex flex-col items-center gap-1 shadow-[0_6px_14px_-10px_rgba(120,80,30,0.4)]">
+    <div className="rounded-2xl bg-white border border-[#ead9b1] p-2 text-center flex flex-col items-center gap-1 shadow-[0_8px_18px_-12px_rgba(120,80,30,0.5)]">
       <span className="grid h-8 w-8 place-items-center rounded-lg" style={{ background: `${tone}14`, color: tone }}>
         {icon}
       </span>
