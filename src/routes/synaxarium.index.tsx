@@ -60,6 +60,7 @@ function SynaxariumHome() {
   const upcoming = list.filter((s) => s.id !== today.id);
   const navigate = useNavigate();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const [query, setQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const topRef = useRef<HTMLDivElement | null>(null);
