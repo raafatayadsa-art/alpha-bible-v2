@@ -80,106 +80,215 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 // ===== Compact Hero =====
 function ProfileHero() {
   return (
-    <div className="relative mt-2 overflow-hidden rounded-[24px] border border-[#efe2c4] shadow-[0_18px_36px_-20px_rgba(120,80,30,0.55)]">
+    <div className="relative mt-2 overflow-hidden rounded-[26px] border border-[#efe2c4] shadow-[0_22px_44px_-22px_rgba(120,80,30,0.6)]">
       <div
         aria-hidden
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(120% 80% at 50% 0%, rgba(231,201,122,0.55), transparent 65%)," +
-            "linear-gradient(180deg,#2a1a0d 0%,#3a2818 60%,#1e120a 100%)",
+            "radial-gradient(110% 70% at 50% 0%, rgba(231,201,122,0.55), transparent 60%)," +
+            "radial-gradient(80% 60% at 50% 110%, rgba(216,138,42,0.35), transparent 60%)," +
+            "linear-gradient(180deg,#241408 0%,#3a2818 55%,#180d05 100%)",
         }}
       />
-      <div aria-hidden className="absolute inset-0 flex items-center justify-between px-4 opacity-[0.07] text-[#f0d78c] font-bold text-[90px] leading-none select-none">
+
+      {/* Alpha / Omega watermark */}
+      <div aria-hidden className="absolute inset-0 flex items-center justify-between px-3 opacity-[0.09] text-[#f0d78c] font-bold text-[120px] leading-none select-none">
         <span>Ⲱ</span>
         <span>Ⲁ</span>
       </div>
-      <div className="absolute top-2 left-1/2 -translate-x-1/2 text-[#f0d78c]/50">
-        <CopticCross size={14} />
-      </div>
+
+      {/* Soft gold light rays */}
       <div
         aria-hidden
-        className="absolute inset-x-0 top-0 h-[120px] opacity-50 mix-blend-screen"
+        className="absolute inset-x-0 top-0 h-[180px] opacity-60 mix-blend-screen"
         style={{
           background:
-            "conic-gradient(from 270deg at 50% 0%, transparent 0deg, rgba(240,215,140,0.18) 18deg, transparent 36deg, rgba(240,215,140,0.22) 60deg, transparent 90deg, rgba(240,215,140,0.18) 130deg, transparent 170deg, rgba(240,215,140,0.22) 210deg, transparent 250deg)",
+            "conic-gradient(from 270deg at 50% 0%, transparent 0deg, rgba(240,215,140,0.22) 14deg, transparent 32deg, rgba(240,215,140,0.28) 56deg, transparent 88deg, rgba(240,215,140,0.22) 128deg, transparent 168deg, rgba(240,215,140,0.28) 208deg, transparent 248deg, rgba(240,215,140,0.22) 290deg, transparent 330deg)",
         }}
       />
 
-      <div className="relative px-4 pt-4 pb-3.5 flex items-center gap-3.5 text-right">
-        {/* Avatar */}
-        <div className="relative shrink-0">
+      {/* Coptic geometry arc */}
+      <svg aria-hidden viewBox="0 0 320 60" className="absolute inset-x-0 top-1 mx-auto w-[88%] h-[42px] text-[#f0d78c]/40" fill="none" stroke="currentColor" strokeWidth="0.7">
+        <path d="M10 50 Q160 -8 310 50" />
+        <path d="M30 52 Q160 8 290 52" opacity="0.55" />
+        <circle cx="60" cy="34" r="1.4" fill="currentColor" stroke="none" />
+        <circle cx="260" cy="34" r="1.4" fill="currentColor" stroke="none" />
+      </svg>
+
+      {/* Top Coptic cross */}
+      <div className="absolute top-2 left-1/2 -translate-x-1/2 text-[#f0d78c]">
+        <CopticCross size={18} />
+      </div>
+
+      <div className="relative px-4 pt-10 pb-5 flex flex-col items-center text-center">
+        {/* Halo + Avatar */}
+        <div className="relative">
           <div
             aria-hidden
-            className="absolute inset-0 -m-2 rounded-full"
+            className="absolute inset-0 -m-[18px] rounded-full"
             style={{
-              background: "conic-gradient(from 90deg, #e7c97a, #d88a2a, #f0d78c, #b8893a, #e7c97a)",
-              filter: "blur(6px)",
-              opacity: 0.85,
+              background:
+                "conic-gradient(from 0deg, #e7c97a, #f7e7b8 16%, #d88a2a 28%, #f0d78c 44%, #b8893a 60%, #f0d78c 74%, #d88a2a 86%, #e7c97a)",
+              filter: "blur(2px)",
+              opacity: 0.95,
+              maskImage:
+                "radial-gradient(circle, transparent 56%, black 60%, black 78%, transparent 82%)",
+              WebkitMaskImage:
+                "radial-gradient(circle, transparent 56%, black 60%, black 78%, transparent 82%)",
             }}
           />
-          <div className="relative h-[64px] w-[64px] rounded-full border-2 border-[#f0d78c] overflow-hidden bg-gradient-to-b from-[#5a3a1e] to-[#3a2418] grid place-items-center">
-            <span className="text-[26px] font-bold text-[#f0d78c]">{MEMBER.name.charAt(0)}</span>
+          <div
+            aria-hidden
+            className="absolute inset-0 -m-[26px] rounded-full"
+            style={{
+              background: "radial-gradient(circle, rgba(240,215,140,0.55), transparent 65%)",
+              filter: "blur(10px)",
+            }}
+          />
+          {/* Ornament dot+cross ring */}
+          <svg
+            aria-hidden
+            viewBox="0 0 120 120"
+            className="absolute inset-0 -m-[14px] h-[calc(100%+28px)] w-[calc(100%+28px)] text-[#f0d78c]/90"
+          >
+            {Array.from({ length: 12 }).map((_, i) => {
+              const a = (i * 360) / 12;
+              const rad = (a * Math.PI) / 180;
+              const r = 56;
+              const cx = 60 + r * Math.cos(rad);
+              const cy = 60 + r * Math.sin(rad);
+              return <circle key={i} cx={cx} cy={cy} r={i % 3 === 0 ? 1.6 : 1} fill="currentColor" />;
+            })}
+            {[0, 90, 180, 270].map((a) => {
+              const rad = (a * Math.PI) / 180;
+              const r = 56;
+              const cx = 60 + r * Math.cos(rad);
+              const cy = 60 + r * Math.sin(rad);
+              return (
+                <g key={a} stroke="currentColor" strokeWidth="0.9" strokeLinecap="round">
+                  <line x1={cx - 2.5} y1={cy} x2={cx + 2.5} y2={cy} />
+                  <line x1={cx} y1={cy - 2.5} x2={cx} y2={cy + 2.5} />
+                </g>
+              );
+            })}
+          </svg>
+
+          {/* Avatar */}
+          <div className="relative h-[104px] w-[104px] rounded-full border-[3px] border-[#f0d78c] overflow-hidden bg-gradient-to-b from-[#5a3a1e] to-[#2a1810] grid place-items-center shadow-[0_12px_30px_-10px_rgba(0,0,0,0.7)]">
+            <span className="text-[42px] font-bold text-[#f0d78c] drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]">{MEMBER.name.charAt(0)}</span>
+            <div aria-hidden className="absolute inset-x-0 top-0 h-1/2" style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.18), transparent)" }} />
           </div>
+
+          {/* Emerald verified badge */}
           {MEMBER.verified && (
-            <span className="absolute -bottom-0.5 -right-0.5 grid h-5 w-5 place-items-center rounded-full bg-gradient-to-b from-[#f0d78c] to-[#b8893a] border-2 border-[#1e120a]">
-              <BadgeCheck className="h-3 w-3 text-[#1e120a]" strokeWidth={2.5} />
+            <span
+              className="absolute -bottom-1 -right-1 grid h-7 w-7 place-items-center rounded-full border-2 border-[#1e120a]"
+              style={{
+                background: "radial-gradient(120% 90% at 30% 20%, #5ee0a0, #1f9e63 60%, #14704a 100%)",
+                boxShadow:
+                  "inset 0 1px 0 rgba(255,255,255,0.4), 0 0 14px rgba(46,204,113,0.65), 0 6px 14px -6px rgba(20,112,74,0.8)",
+              }}
+              aria-label="عضو موثق"
+            >
+              <BadgeCheck className="h-4 w-4 text-white" strokeWidth={2.8} />
             </span>
           )}
         </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-end gap-1.5">
-            <h1 className="text-[17px] font-extrabold text-[#f7e7b8] truncate">{MEMBER.name}</h1>
-          </div>
-          <p className="mt-0.5 text-[11px] text-[#e7c97a]/85 flex items-center justify-end gap-1.5 truncate">
-            <Crown className="h-3 w-3" /> {MEMBER.role}
-          </p>
-          <p className="mt-0.5 text-[10.5px] text-[#d8c190]/75 truncate">{MEMBER.church}</p>
-          {MEMBER.verified && (
-            <span className="mt-1.5 inline-flex items-center gap-1 rounded-full border border-[#f0d78c]/45 bg-gradient-to-b from-[#f0d78c]/15 to-[#b8893a]/10 px-2 py-0.5 text-[10px] font-bold text-[#f0d78c]">
-              <BadgeCheck className="h-2.5 w-2.5" strokeWidth={2.5} /> عضو موثق
-            </span>
-          )}
-        </div>
+        <h1 className="mt-4 text-[19px] font-extrabold text-[#f7e7b8] drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
+          {MEMBER.name}
+        </h1>
+        <p className="mt-1 text-[12px] text-[#e7c97a]/90 flex items-center justify-center gap-1.5">
+          <Crown className="h-3 w-3" /> {MEMBER.role}
+        </p>
+        <p className="mt-0.5 text-[11px] text-[#d8c190]/75">{MEMBER.church}</p>
+
+        {MEMBER.verified && (
+          <span
+            className="mt-2.5 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold text-white border"
+            style={{
+              background: "linear-gradient(135deg, rgba(94,224,160,0.28), rgba(31,158,99,0.4))",
+              borderColor: "rgba(94,224,160,0.55)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.28), 0 0 14px rgba(46,204,113,0.35)",
+              backdropFilter: "blur(8px)",
+            }}
+          >
+            <BadgeCheck className="h-3 w-3" strokeWidth={2.8} /> عضو كنسي موثق
+          </span>
+        )}
       </div>
     </div>
   );
 }
 
-// ===== Horizontal Smart Membership Card =====
+// ===== Premium Membership Card (tap to expand) =====
 function MembershipCard() {
   return (
-    <GlassCard accent="#d88a2a" className="mt-3 p-3">
-      <div aria-hidden className="pointer-events-none absolute -right-3 -bottom-5 text-[110px] leading-none font-bold text-[#d88a2a] opacity-[0.05] select-none">
-        ☧
-      </div>
-      <div className="flex items-center gap-3">
-        {/* Reduced QR */}
-        <div className="shrink-0 grid place-items-center rounded-xl bg-[#fbf3e1] p-1 border border-[#efe2c4] shadow-[inset_0_0_0_1px_rgba(216,138,42,0.22)]">
-          <img src={QR_URL} alt="QR العضوية" className="h-[66px] w-[66px]" loading="lazy" />
-        </div>
-        {/* Info */}
-        <div className="flex-1 min-w-0 text-right">
-          <div className="flex items-center justify-end gap-1.5 text-[10px] font-bold text-[#b8893a]">
+    <Link to={"/profile/membership" as any} className="block active:scale-[0.99] transition-transform mt-3">
+      <GlassCard accent="#d88a2a" className="p-3.5">
+        {/* manuscript dot texture */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-[0.05] rounded-[22px]"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 20% 30%, #b8893a 0.6px, transparent 1px), radial-gradient(circle at 70% 80%, #b8893a 0.6px, transparent 1px)",
+            backgroundSize: "14px 14px, 18px 18px",
+          }}
+        />
+        <div aria-hidden className="pointer-events-none absolute -right-3 -bottom-5 text-[120px] leading-none font-bold text-[#d88a2a] opacity-[0.06] select-none">☧</div>
+
+        {/* Header strip */}
+        <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-dashed border-[#d88a2a]/35">
+          <span className="inline-flex items-center gap-1 text-[9.5px] font-extrabold tracking-wider text-[#b8893a] uppercase">
+            <CopticCross size={10} /> Alpha Coptic
+          </span>
+          <span className="inline-flex items-center gap-1 text-[9.5px] font-bold text-[#b8893a]">
             بطاقة عضوية ذكية <QrCode className="h-3 w-3" />
+          </span>
+        </div>
+
+        <div className="flex items-center gap-3.5">
+          {/* QR with center brand chip */}
+          <div className="relative shrink-0 grid place-items-center rounded-xl bg-[#fbf3e1] p-1.5 border border-[#efe2c4] shadow-[inset_0_0_0_1px_rgba(216,138,42,0.25),0_6px_14px_-8px_rgba(120,80,30,0.5)]">
+            <img src={QR_URL} alt="QR العضوية" className="h-[78px] w-[78px]" loading="lazy" />
+            <span
+              className="absolute inset-0 m-auto grid h-[22px] w-[22px] place-items-center rounded-md text-[11px] font-extrabold"
+              style={{
+                background: "linear-gradient(135deg,#fbf3e1,#f0d78c)",
+                color: "#3a2a18",
+                boxShadow: "0 0 0 1.5px #fbf3e1, 0 0 0 2.5px #b8893a, 0 2px 6px rgba(0,0,0,0.25)",
+              }}
+              aria-hidden
+            >
+              ⲁ
+            </span>
           </div>
-          <h3 className="mt-0.5 text-[12.5px] font-extrabold text-[#3a2a18] truncate">{MEMBER.name}</h3>
-          <div className="mt-1 grid grid-cols-1 gap-y-0.5 text-[10px]">
-            <Row icon={<Hash className="h-2.5 w-2.5" />} label="رقم العضوية" value={MEMBER.membershipNo} mono />
-            <Row icon={<Church className="h-2.5 w-2.5" />} label="الكنيسة" value={MEMBER.church} />
-            <Row icon={<Crown className="h-2.5 w-2.5" />} label="الدور" value={MEMBER.role} />
-            <Row
-              icon={<span className="h-1.5 w-1.5 rounded-full bg-[#2f7a4a] shadow-[0_0_5px_rgba(47,122,74,0.7)]" />}
-              label="الحالة"
-              value={MEMBER.status}
-              valueClass="text-[#2f7a4a]"
-            />
-            <Row icon={<Calendar className="h-2.5 w-2.5" />} label="الانضمام" value={MEMBER.joinDate} />
+
+          <div className="flex-1 min-w-0 text-right">
+            <h3 className="text-[13.5px] font-extrabold text-[#3a2a18] truncate leading-tight">{MEMBER.name}</h3>
+            <p className="text-[10.5px] text-[#9a7e5a] mt-0.5 truncate">{MEMBER.role}</p>
+            <div className="mt-1.5 grid grid-cols-1 gap-y-0.5 text-[10px]">
+              <Row icon={<Hash className="h-2.5 w-2.5" />} label="رقم العضوية" value={MEMBER.membershipNo} mono />
+              <Row icon={<Church className="h-2.5 w-2.5" />} label="الكنيسة" value={MEMBER.church} />
+              <Row
+                icon={<span className="h-1.5 w-1.5 rounded-full bg-[#2f7a4a] shadow-[0_0_6px_rgba(47,122,74,0.8)]" />}
+                label="الحالة"
+                value={MEMBER.status}
+                valueClass="text-[#2f7a4a]"
+              />
+              <Row icon={<Calendar className="h-2.5 w-2.5" />} label="الانضمام" value={MEMBER.joinDate} />
+            </div>
           </div>
         </div>
-      </div>
-    </GlassCard>
+
+        <div className="mt-2.5 pt-2 border-t border-dashed border-[#d88a2a]/35 flex items-center justify-between">
+          <span className="text-[9.5px] text-[#9a7e5a]">اضغط لفتح البطاقة الكاملة</span>
+          <ChevronLeft className="h-3.5 w-3.5 text-[#b8893a]" />
+        </div>
+      </GlassCard>
+    </Link>
   );
 }
 
