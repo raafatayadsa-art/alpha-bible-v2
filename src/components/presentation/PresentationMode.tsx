@@ -169,9 +169,7 @@ export function PresentationMode({
 
   const chromeOpacity = chromeVisible
     ? "opacity-100"
-    : playing
-      ? "opacity-[0.12]"
-      : "opacity-25";
+    : "opacity-0 pointer-events-none";
 
   const titleSize = 30 * fontScale;
   const bodySize = 22 * fontScale;
@@ -345,7 +343,7 @@ export function PresentationMode({
                   side="top"
                   align="center"
                   sideOffset={10}
-                  className={`w-auto p-1 rounded-2xl border backdrop-blur-2xl ${popBg}`}
+                  className={`z-[200] w-auto p-1 rounded-2xl border backdrop-blur-2xl ${popBg}`}
                 >
                   <div dir="rtl" className="flex flex-col gap-0.5 min-w-24">
                     {(Object.keys(SPEED_LABEL) as Speed[]).map((s) => (
@@ -380,7 +378,7 @@ export function PresentationMode({
                   side="top"
                   align="center"
                   sideOffset={10}
-                  className={`w-auto p-1 rounded-2xl border backdrop-blur-2xl ${popBg}`}
+                  className={`z-[200] w-auto p-1 rounded-2xl border backdrop-blur-2xl ${popBg}`}
                 >
                   <div dir="rtl" className="flex flex-col gap-0.5 min-w-24">
                     {(Object.keys(SPACING_LABEL) as Spacing[]).map((s) => (
@@ -416,7 +414,7 @@ export function PresentationMode({
                   side="top"
                   align="center"
                   sideOffset={10}
-                  className={`w-64 p-3 rounded-2xl border backdrop-blur-2xl ${popBg}`}
+                  className={`z-[200] w-64 p-3 rounded-2xl border backdrop-blur-2xl ${popBg}`}
                 >
                   <div dir="ltr" className="flex items-center gap-3">
                     <span className="text-[11px] font-bold opacity-70">A</span>
