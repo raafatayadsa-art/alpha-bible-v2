@@ -130,29 +130,29 @@ function PrayerCard({ p }: { p: AgpeyaPrayer }) {
       to="/agpeya/$prayerId"
       params={{ prayerId: p.id }}
       className={cn(
-        "group relative block rounded-[22px] border p-4 pt-5",
-        "shadow-[0_14px_28px_-18px_rgba(120,80,30,0.40),inset_0_1px_0_rgba(255,255,255,0.55)]",
+        "group relative block rounded-[26px] border p-5 pt-6 min-h-[168px]",
+        "shadow-[0_18px_34px_-18px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.6)]",
         "transition-transform duration-200 active:scale-[0.97]",
         tokens.card,
       )}
     >
-      <div className="flex flex-col items-center text-center gap-2.5">
-        <span className={cn("grid h-14 w-14 place-items-center rounded-full border border-white/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_6px_14px_-8px_rgba(120,80,30,0.35)]", tokens.iconBg)}>
-          <Icon className={cn("h-7 w-7", tokens.iconColor)} />
+      <div className="flex flex-col items-center text-center gap-3">
+        <span className={cn("grid h-[68px] w-[68px] place-items-center rounded-full border border-white/65 shadow-[inset_0_1px_0_rgba(255,255,255,0.85),0_8px_18px_-10px_rgba(120,80,30,0.4)]", tokens.iconBg)}>
+          <Icon className={cn("h-9 w-9", tokens.iconColor)} />
         </span>
-        <div className="space-y-0.5">
-          <div className={cn("font-arabic-serif text-[17px] font-extrabold leading-tight", tokens.title)}>
+        <div className="space-y-1">
+          <div className={cn("font-arabic-serif text-[19px] font-extrabold leading-tight", tokens.title)}>
             {p.title}
           </div>
           {(p.clock || p.subtitle) && (
-            <div className={cn("text-[11.5px] leading-snug", tokens.meta)}>
+            <div className={cn("text-[12.5px] font-medium leading-snug", tokens.meta)}>
               {p.section === "extra" ? p.subtitle : p.clock}
             </div>
           )}
         </div>
       </div>
-      <span className={cn("absolute bottom-2.5 right-2.5 grid h-6 w-6 place-items-center rounded-full text-[10px]", tokens.chev)}>
-        <ChevronLeft className="h-3 w-3" />
+      <span className={cn("absolute bottom-3 right-3 grid h-7 w-7 place-items-center rounded-full text-[10px] shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]", tokens.chev)}>
+        <ChevronLeft className="h-3.5 w-3.5" />
       </span>
     </Link>
   );
