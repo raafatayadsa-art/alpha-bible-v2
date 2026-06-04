@@ -10,6 +10,7 @@ import {
 
 import appCss from "../styles.css?url";
 import { DictionaryDebugBadge } from "@/components/DictionaryDebugBadge";
+import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
   return (
