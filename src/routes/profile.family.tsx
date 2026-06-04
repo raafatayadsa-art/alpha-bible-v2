@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { ProfileSubShell } from "@/components/profile/Shell";
 import { CopticCross, CopticSeparator } from "@/components/coptic";
+import alphaLogoAsset from "@/assets/alpha-logo.png";
 
 type Role =
   | "الأب"
