@@ -509,68 +509,157 @@ function Row({ icon, label, value, mono, valueClass = "text-[#3a2a18]" }: { icon
   );
 }
 
-// ===== Featured Messages Hero Card =====
+// ===== Featured Messages Hero Card — Premium Inbox =====
 function MessagesHero() {
   const unread = 3;
   return (
-    <Link to={"/profile/messages" as any} className="block active:scale-[0.99] transition-transform">
+    <Link
+      to={"/profile/messages" as any}
+      className="block active:scale-[0.985] transition-transform"
+    >
       <div
-        className="relative overflow-hidden rounded-[24px] border border-[#efe2c4]"
+        className="relative overflow-hidden rounded-[22px]"
         style={{
           background:
-            "radial-gradient(120% 80% at 100% 0%, rgba(216,138,42,0.30), transparent 60%)," +
-            "linear-gradient(180deg, #4a3a6a 0%, #3a2a55 55%, #2a1d45 100%)",
-          boxShadow: "0 22px 44px -22px rgba(74,58,106,0.7), 0 0 0 1px rgba(255,255,255,0.08) inset, inset 0 1px 0 rgba(255,255,255,0.18)",
+            "radial-gradient(140% 90% at 100% 0%, rgba(216,138,42,0.32), transparent 55%)," +
+            "linear-gradient(180deg, #4d3c70 0%, #3a2a55 55%, #261a40 100%)",
+          boxShadow:
+            "0 20px 40px -22px rgba(40,25,75,0.7), 0 0 0 1px rgba(240,215,140,0.22) inset, inset 0 1px 0 rgba(255,255,255,0.18)",
         }}
       >
-        {/* Church silhouettes */}
+        {/* Subtle church silhouette + manuscript dot texture */}
         <div
           aria-hidden
-          className="absolute inset-0 opacity-[0.18] mix-blend-screen"
+          className="absolute inset-0 pointer-events-none opacity-[0.10]"
           style={{
-            background:
-              "radial-gradient(40% 60% at 12% 100%, rgba(231,201,122,0.5), transparent 60%)," +
-              "radial-gradient(35% 55% at 88% 100%, rgba(231,201,122,0.45), transparent 60%)",
+            backgroundImage:
+              "radial-gradient(rgba(240,215,140,0.55) 0.6px, transparent 0.6px)",
+            backgroundSize: "9px 9px",
+            maskImage:
+              "linear-gradient(180deg, transparent 0%, #000 40%, #000 100%)",
           }}
         />
-        <div aria-hidden className="absolute right-3 top-3 text-[#f0d78c]/50">
-          <CopticCross size={14} />
+        <svg
+          aria-hidden
+          viewBox="0 0 320 80"
+          preserveAspectRatio="none"
+          className="absolute inset-x-0 bottom-0 w-full h-14 opacity-[0.14]"
+        >
+          <path
+            d="M0,80 L0,55 L30,55 L30,42 L48,42 L48,55 L70,55 L70,30 L78,22 L86,30 L86,55 L120,55 L120,40 L140,40 L140,28 L150,18 L160,28 L160,40 L180,40 L180,55 L210,55 L210,32 L222,22 L234,32 L234,55 L270,55 L270,45 L290,45 L290,55 L320,55 L320,80 Z"
+            fill="#f0d78c"
+          />
+          <line x1="150" y1="6" x2="150" y2="20" stroke="#f0d78c" strokeWidth="1.5" />
+          <line x1="144" y1="11" x2="156" y2="11" stroke="#f0d78c" strokeWidth="1.5" />
+          <line x1="82" y1="12" x2="82" y2="22" stroke="#f0d78c" strokeWidth="1.2" />
+          <line x1="78" y1="16" x2="86" y2="16" stroke="#f0d78c" strokeWidth="1.2" />
+          <line x1="228" y1="12" x2="228" y2="22" stroke="#f0d78c" strokeWidth="1.2" />
+          <line x1="224" y1="16" x2="232" y2="16" stroke="#f0d78c" strokeWidth="1.2" />
+        </svg>
+        <div aria-hidden className="absolute right-3 top-3 text-[#f0d78c]/45">
+          <CopticCross size={12} />
         </div>
-        <div aria-hidden className="pointer-events-none absolute -left-3 -bottom-4 text-[120px] leading-none font-bold text-[#f0d78c]/[0.06] select-none">✉</div>
 
-        <div className="relative p-4 flex items-center gap-3.5 text-right">
-          <div
-            className="relative shrink-0 grid h-14 w-14 place-items-center rounded-2xl border overflow-hidden"
-            style={{
-              background: "radial-gradient(120% 90% at 30% 20%, rgba(240,215,140,0.45), rgba(216,138,42,0.18) 70%)",
-              borderColor: "rgba(240,215,140,0.45)",
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -6px 10px rgba(216,138,42,0.3), 0 8px 18px -8px rgba(216,138,42,0.6)",
-            }}
-          >
-            <MessageSquare className="h-6 w-6 text-[#f7e7b8]" strokeWidth={2.3} />
+        <div className="relative p-3.5 text-right">
+          {/* Header row: title + gold unread pill */}
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-[14px] font-extrabold text-[#f7e7b8] tracking-tight">
+              رسائل الكنيسة
+            </h3>
             {unread > 0 && (
-              <span className="absolute -top-1 -right-1 grid h-5 min-w-[20px] place-items-center rounded-full bg-gradient-to-b from-[#ff6b6b] to-[#c0392b] text-white text-[10px] font-extrabold px-1 border-2 border-[#3a2a55] shadow-[0_4px_10px_rgba(192,57,43,0.6)]">
-                {unread}
+              <span
+                className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-[3px] rounded-full text-[#3a2a10]"
+                style={{
+                  background:
+                    "linear-gradient(180deg, #fbecb2 0%, #e7c97a 55%, #c98a3c 100%)",
+                  boxShadow:
+                    "inset 0 1px 0 rgba(255,255,255,0.7), 0 4px 10px -2px rgba(216,138,42,0.55)",
+                }}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-[#3a2a10]" />
+                {unread} رسائل جديدة
               </span>
             )}
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between gap-2">
-              <h3 className="text-[15px] font-extrabold text-[#f7e7b8]">رسائل الكنيسة</h3>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-l from-[#f0d78c] to-[#d88a2a] text-[#2a1d45]">
-                {unread} جديد
-              </span>
+
+          {/* Body row: refined 3D icon + message preview */}
+          <div className="mt-2.5 flex items-stretch gap-3">
+            <div
+              className="relative shrink-0 grid place-items-center rounded-[14px] overflow-hidden"
+              style={{
+                width: 44,
+                height: 44,
+                background:
+                  "radial-gradient(120% 90% at 30% 20%, rgba(247,231,184,0.55), rgba(120,75,170,0.35) 65%, rgba(58,42,85,0.9) 100%)",
+                boxShadow:
+                  "inset 0 1px 0 rgba(255,255,255,0.55), inset 0 -6px 10px rgba(58,42,85,0.55), 0 6px 14px -6px rgba(216,138,42,0.55), 0 0 0 1px rgba(240,215,140,0.5)",
+              }}
+            >
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none">
+                <defs>
+                  <linearGradient id="msgGold" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#fff4cf" />
+                    <stop offset="55%" stopColor="#f0d78c" />
+                    <stop offset="100%" stopColor="#c98a3c" />
+                  </linearGradient>
+                </defs>
+                <rect
+                  x="3" y="5.5" width="18" height="13" rx="2.5"
+                  fill="url(#msgGold)" stroke="#7a5418" strokeWidth="0.6"
+                />
+                <path
+                  d="M3.5 6.5 L12 13 L20.5 6.5"
+                  stroke="#5a3d10" strokeWidth="1.1" fill="none" strokeLinecap="round" strokeLinejoin="round"
+                />
+                <path d="M12 2.5 L12 5" stroke="#f0d78c" strokeWidth="1" strokeLinecap="round" />
+                <path d="M11 3.5 L13 3.5" stroke="#f0d78c" strokeWidth="1" strokeLinecap="round" />
+              </svg>
             </div>
-            <p className="text-[11.5px] text-[#e7c97a]/85 mt-1 truncate">
-              أبونا داود: «اجتماع الخدام يوم السبت بعد القداس…»
-            </p>
-            <div className="mt-1.5 flex items-center gap-1.5 text-[9.5px]">
-              <span className="px-1.5 py-0.5 rounded-full bg-white/10 text-[#f7e7b8] border border-white/15">كاهن</span>
-              <span className="px-1.5 py-0.5 rounded-full bg-white/10 text-[#f7e7b8] border border-white/15">خدمة</span>
-              <span className="px-1.5 py-0.5 rounded-full bg-white/10 text-[#f7e7b8] border border-white/15">عضوية</span>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[12px] font-bold text-[#f7e7b8] truncate">
+                  الأب داود
+                </span>
+                <span className="text-[9.5px] text-[#e7c97a]/70 shrink-0">
+                  منذ ٢٠ دقيقة
+                </span>
+              </div>
+              <p className="text-[11.5px] text-[#e7c97a]/90 mt-0.5 truncate leading-snug">
+                اجتماع الخدام السبت القادم بعد القداس…
+              </p>
             </div>
+
+            <ChevronLeft className="h-4 w-4 text-[#f0d78c]/70 shrink-0 self-center" />
           </div>
-          <ChevronLeft className="h-4 w-4 text-[#f0d78c]/70 shrink-0" />
+
+          {/* Glassy category chips */}
+          <div className="mt-2.5 flex items-center gap-1.5 flex-wrap">
+            {[
+              { label: "كاهن", dot: "#f0d78c" },
+              { label: "خدمة", dot: "#9fd6ff" },
+              { label: "عضوية", dot: "#a8f0c6" },
+              { label: "إشعار", dot: "#f6b6b6" },
+            ].map((c) => (
+              <span
+                key={c.label}
+                className="inline-flex items-center gap-1 px-2 py-[2px] rounded-full text-[9.5px] font-semibold text-[#f7e7b8]"
+                style={{
+                  background:
+                    "linear-gradient(180deg, rgba(255,255,255,0.16), rgba(255,255,255,0.06))",
+                  border: "1px solid rgba(240,215,140,0.25)",
+                  backdropFilter: "blur(6px)",
+                  WebkitBackdropFilter: "blur(6px)",
+                }}
+              >
+                <span
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{ background: c.dot }}
+                />
+                {c.label}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     </Link>
