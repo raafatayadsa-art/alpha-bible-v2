@@ -176,10 +176,14 @@ function ProfileHero() {
 function MembershipCard() {
   return (
     <GlassCard accent="#d88a2a" className="mt-4 p-4">
-      <div className="flex items-stretch gap-4">
-        {/* QR */}
-        <div className="shrink-0 grid place-items-center rounded-2xl bg-[#fbf3e1] p-2 border border-[#efe2c4] shadow-[inset_0_0_0_1px_rgba(216,138,42,0.18)]">
-          <img src={QR_URL} alt="QR العضوية" className="h-[96px] w-[96px]" loading="lazy" />
+      {/* faint manuscript watermark */}
+      <div aria-hidden className="pointer-events-none absolute -right-4 -bottom-6 text-[140px] leading-none font-bold text-[#d88a2a] opacity-[0.05] select-none">
+        ☧
+      </div>
+      <div className="flex items-stretch gap-3">
+        {/* QR (reduced ~18%) */}
+        <div className="shrink-0 grid place-items-center rounded-2xl bg-[#fbf3e1] p-1.5 border border-[#efe2c4] shadow-[inset_0_0_0_1px_rgba(216,138,42,0.22),0_4px_10px_-6px_rgba(120,80,30,0.4)]">
+          <img src={QR_URL} alt="QR العضوية" className="h-[78px] w-[78px]" loading="lazy" />
         </div>
         {/* Info */}
         <div className="flex-1 min-w-0 flex flex-col justify-between text-right">
@@ -187,25 +191,27 @@ function MembershipCard() {
             <div className="flex items-center gap-1.5 text-[10.5px] font-bold text-[#b8893a]">
               <QrCode className="h-3 w-3" /> بطاقة عضوية ذكية
             </div>
-            <h3 className="mt-0.5 text-[14px] font-extrabold text-[#3a2a18] truncate">{MEMBER.name}</h3>
-            <p className="text-[11px] text-[#6a543a] mt-0.5 truncate">{MEMBER.church}</p>
+            <h3 className="mt-0.5 text-[13.5px] font-extrabold text-[#3a2a18] truncate">{MEMBER.church}</h3>
+            <p className="text-[11px] text-[#6a543a] mt-0.5 flex items-center gap-1 truncate">
+              <Crown className="h-3 w-3 text-[#b8893a]" /> {MEMBER.role}
+            </p>
           </div>
-          <div className="grid grid-cols-2 gap-y-1 gap-x-2 text-[10.5px] mt-2">
-            <div>
-              <div className="text-[#9a7e5a]">رقم العضوية</div>
-              <div className="text-[#3a2a18] font-bold tabular-nums">{MEMBER.membershipNo}</div>
+          <div className="grid grid-cols-1 gap-y-0.5 text-[10.5px] mt-1.5">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[#9a7e5a]">رقم العضوية</span>
+              <span className="text-[#3a2a18] font-bold tabular-nums truncate">{MEMBER.membershipNo}</span>
             </div>
-            <div>
-              <div className="text-[#9a7e5a]">الحالة</div>
-              <div className="text-[#2f7a4a] font-bold flex items-center gap-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#2f7a4a]" /> {MEMBER.status}
-              </div>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[#9a7e5a]">الحالة</span>
+              <span className="text-[#2f7a4a] font-bold flex items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#2f7a4a] shadow-[0_0_6px_rgba(47,122,74,0.7)]" /> {MEMBER.status}
+              </span>
             </div>
-            <div className="col-span-2">
-              <div className="text-[#9a7e5a]">تاريخ الانضمام</div>
-              <div className="text-[#3a2a18] font-bold flex items-center gap-1">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[#9a7e5a]">تاريخ الانضمام</span>
+              <span className="text-[#3a2a18] font-bold flex items-center gap-1">
                 <Calendar className="h-3 w-3 text-[#b8893a]" /> {MEMBER.joinDate}
-              </div>
+              </span>
             </div>
           </div>
         </div>
@@ -216,32 +222,46 @@ function MembershipCard() {
 
 // ===== Nav Card =====
 function NavCard({
-  to, icon: Icon, title, subtitle, accent, badge,
+  to, icon: Icon, title, subtitle, accent, badge, glyph,
 }: {
-  to: string; icon: any; title: string; subtitle: string; accent: string; badge?: string;
+  to: string; icon: any; title: string; subtitle: string; accent: string; badge?: string; glyph?: string;
 }) {
   return (
     <Link to={to as any} className="block active:scale-[0.985] transition-transform">
       <GlassCard accent={accent} className="p-3.5">
-        <div className="flex items-center gap-3">
-          {/* 3D icon */}
+        {glyph && (
           <div
-            className="shrink-0 grid h-12 w-12 place-items-center rounded-2xl border"
+            aria-hidden
+            className="pointer-events-none absolute -left-3 top-1/2 -translate-y-1/2 text-[88px] leading-none font-bold select-none opacity-[0.06]"
+            style={{ color: accent }}
+          >
+            {glyph}
+          </div>
+        )}
+        <div className="flex items-center gap-3">
+          {/* 3D metallic icon */}
+          <div
+            className="relative shrink-0 grid h-12 w-12 place-items-center rounded-2xl border overflow-hidden"
             style={{
-              background: `linear-gradient(160deg, ${accent}38, ${accent}14)`,
-              borderColor: `${accent}55`,
-              boxShadow: `inset 0 1px 0 rgba(255,255,255,0.6), 0 6px 14px -8px ${accent}88`,
+              background: `radial-gradient(120% 90% at 30% 20%, ${accent}66, ${accent}1a 70%)`,
+              borderColor: `${accent}66`,
+              boxShadow: `inset 0 1px 0 rgba(255,255,255,0.75), inset 0 -6px 10px ${accent}33, 0 8px 18px -8px ${accent}99`,
             }}
           >
-            <Icon className="h-5 w-5" style={{ color: accent }} strokeWidth={2.2} />
+            <div
+              aria-hidden
+              className="absolute inset-x-0 top-0 h-1/2 rounded-t-2xl"
+              style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.55), transparent)" }}
+            />
+            <Icon className="relative h-5 w-5 drop-shadow-[0_1px_1px_rgba(0,0,0,0.25)]" style={{ color: accent }} strokeWidth={2.4} />
           </div>
           <div className="flex-1 min-w-0 text-right">
             <div className="flex items-center gap-2 justify-between">
               <h3 className="text-[14px] font-extrabold text-[#3a2a18] truncate">{title}</h3>
               {badge && (
                 <span
-                  className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white"
-                  style={{ background: accent }}
+                  className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white shadow-[0_2px_6px_-2px_rgba(0,0,0,0.4)]"
+                  style={{ background: `linear-gradient(180deg, ${accent}, ${accent}cc)` }}
                 >
                   {badge}
                 </span>
@@ -262,22 +282,29 @@ function MessagesCard() {
   return (
     <Link to={"/profile/messages" as any} className="block active:scale-[0.99] transition-transform">
       <GlassCard accent="#8a6ec1" className="p-4">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -left-4 -bottom-6 text-[120px] leading-none font-bold text-[#8a6ec1] opacity-[0.06] select-none"
+        >
+          ✉
+        </div>
         <div className="flex items-center gap-3">
           <div
-            className="shrink-0 grid h-12 w-12 place-items-center rounded-2xl border"
+            className="relative shrink-0 grid h-12 w-12 place-items-center rounded-2xl border overflow-hidden"
             style={{
-              background: "linear-gradient(160deg, #8a6ec138, #d88a2a22)",
+              background: "radial-gradient(120% 90% at 30% 20%, #8a6ec166, #8a6ec11a 70%)",
               borderColor: "#8a6ec166",
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6), 0 6px 14px -8px #8a6ec188",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.75), inset 0 -6px 10px #8a6ec133, 0 8px 18px -8px #8a6ec199",
             }}
           >
-            <MessageSquare className="h-5 w-5 text-[#8a6ec1]" strokeWidth={2.2} />
+            <div aria-hidden className="absolute inset-x-0 top-0 h-1/2 rounded-t-2xl" style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.55), transparent)" }} />
+            <MessageSquare className="relative h-5 w-5 text-[#8a6ec1] drop-shadow-[0_1px_1px_rgba(0,0,0,0.25)]" strokeWidth={2.4} />
           </div>
           <div className="flex-1 min-w-0 text-right">
             <div className="flex items-center gap-2 justify-between">
               <h3 className="text-[14px] font-extrabold text-[#3a2a18]">رسائل الكنيسة</h3>
               {unread > 0 && (
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-l from-[#8a6ec1] to-[#d88a2a] text-white">
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-l from-[#8a6ec1] to-[#d88a2a] text-white shadow-[0_2px_6px_-2px_rgba(0,0,0,0.4)]">
                   {unread} جديد
                 </span>
               )}
@@ -297,6 +324,8 @@ function MessagesCard() {
     </Link>
   );
 }
+
+
 
 function ProfileScreen() {
   return (
