@@ -316,7 +316,7 @@ function HomeScreen() {
             <div className="flex items-center gap-3 rounded-3xl bg-[#fbf3e1] border border-[#efe2c4] p-2.5 shadow-[0_10px_24px_-14px_rgba(120,80,30,0.30)]">
               <img src={continueImg} alt="" className="h-[78px] w-[110px] rounded-2xl object-cover" draggable={false} />
               <div className="flex-1 text-right">
-                <h3 className="text-[14px] font-extrabold text-[#3a2a18]">استكمل رحلتك</h3>
+                <h3 className="text-[14px] font-extrabold text-[#3a2a18]">الكتاب المقدس</h3>
                 <p className="mt-0.5 text-[11px] text-[#6a543a] leading-snug">خطة قراءة الكتاب المقدس<br />اليوم 5 من 30 يوم</p>
                 <div className="mt-2 flex items-center gap-2">
                   <div className="h-1.5 flex-1 rounded-full bg-[#ecdcb6] overflow-hidden">
