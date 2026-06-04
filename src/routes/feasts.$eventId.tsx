@@ -84,7 +84,14 @@ function EventDetails() {
       >
         {/* Hero */}
         <div className="relative h-[280px] overflow-hidden">
-          <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${event.image})` }} />
+          <img
+            src={event.image}
+            alt={event.title}
+            loading="eager"
+            decoding="async"
+            draggable={false}
+            className="absolute inset-0 h-full w-full object-cover object-center select-none"
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-[#faf3e3] via-[#faf3e3]/30 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent" />
 
