@@ -454,6 +454,10 @@ function PrayerReader() {
     };
   }, [prayerId]);
 
+  // Lock active section during programmatic smooth scroll so the tapped chip
+  // stays highlighted until the scroll settles (prevents flicker on iPhone).
+  const lockUntilRef = useRef<number>(0);
+
   // Scroll-driven active section tracking (more reliable than IO across browsers)
   useEffect(() => {
     const root = scrollerRef.current;
@@ -461,6 +465,7 @@ function PrayerReader() {
     let raf = 0;
     const recompute = () => {
       try {
+        if (Date.now() < lockUntilRef.current) return;
         const els = sections
           .map((s) => ({ id: s.id, el: root.querySelector(`#section-${s.id}`) as HTMLElement | null }))
           .filter((x): x is { id: string; el: HTMLElement } => !!x.el);
@@ -473,7 +478,6 @@ function PrayerReader() {
           if (el.getBoundingClientRect().top - trigger <= 0) currentId = id;
           else break;
         }
-        // near-bottom guard: snap to last section
         // near-bottom guard: snap to last section (only when content actually scrolls)
         const scrollable = root.scrollHeight - root.clientHeight;
         if (scrollable > 8 && root.scrollTop + root.clientHeight >= root.scrollHeight - 4) {
@@ -561,15 +565,18 @@ function PrayerReader() {
     if (!root) return;
     const el = root.querySelector(`#section-${id}`) as HTMLElement | null;
     if (!el) return;
-    // Immediate visual feedback
+    // Immediate visual feedback + lock against scroll-tracking flicker
     setActiveId(id);
+    lockUntilRef.current = Date.now() + 700;
     try {
       const rootRect = root.getBoundingClientRect();
       const elRect = el.getBoundingClientRect();
-      const offset = 16;
-      const top = root.scrollTop + (elRect.top - rootRect.top) - offset;
+      // Section header has its own breathing room; small gap is enough since
+      // the sticky page header sits OUTSIDE this scroll container.
+      const offset = 12;
+      const target = root.scrollTop + (elRect.top - rootRect.top) - offset;
       const max = Math.max(0, root.scrollHeight - root.clientHeight);
-      root.scrollTo({ top: Math.max(0, Math.min(max, top)), behavior: "smooth" });
+      root.scrollTo({ top: Math.max(0, Math.min(max, target)), behavior: "smooth" });
     } catch (err) {
       // eslint-disable-next-line no-console
       console.warn("[agpeya] jumpTo failed", err);
