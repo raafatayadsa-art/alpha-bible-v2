@@ -39,23 +39,49 @@ function GlassCard({
   accent = "#b8893a",
   className = "",
   glow = true,
+  sceneUrl,
 }: {
   children: React.ReactNode;
   accent?: string;
   className?: string;
   glow?: boolean;
+  sceneUrl?: string;
 }) {
   return (
     <div
-      className={`relative rounded-[26px] border border-[#efe2c4] bg-gradient-to-b from-[#fbf3e1]/95 to-[#f4ead8]/95 backdrop-blur-xl shadow-[0_18px_38px_-22px_rgba(120,80,30,0.55),inset_0_1px_0_rgba(255,255,255,0.7)] overflow-hidden ${className}`}
-      style={glow ? { boxShadow: `0 18px 38px -22px rgba(120,80,30,0.55), 0 0 0 1px rgba(255,255,255,0.4) inset, 0 0 28px -14px ${accent}66` } : undefined}
+      className={`relative rounded-[26px] border border-[#efe2c4] bg-gradient-to-b from-[#fbf3e1]/95 to-[#f4ead8]/95 backdrop-blur-xl overflow-hidden ${className}`}
+      style={
+        glow
+          ? {
+              boxShadow: `0 22px 44px -22px rgba(120,80,30,0.6), 0 6px 18px -10px ${accent}66, 0 0 0 1px rgba(255,255,255,0.45) inset, 0 0 32px -14px ${accent}88, inset 0 1px 0 rgba(255,255,255,0.8)`,
+            }
+          : undefined
+      }
     >
+      {/* subtle Orthodox scene */}
+      {sceneUrl && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-[0.07] mix-blend-multiply"
+          style={{ backgroundImage: `url(${sceneUrl})`, backgroundSize: "cover", backgroundPosition: "center" }}
+        />
+      )}
+      {/* top glass reflection */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-1/2 rounded-t-[26px]"
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.18) 40%, transparent 100%)",
+        }}
+      />
       {/* gold edge */}
-      <div className="pointer-events-none absolute inset-0 rounded-[26px]" style={{ boxShadow: `inset 0 0 0 1px ${accent}26` }} />
-      {children}
+      <div className="pointer-events-none absolute inset-0 rounded-[26px]" style={{ boxShadow: `inset 0 0 0 1px ${accent}33` }} />
+      <div className="relative">{children}</div>
     </div>
   );
 }
+
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
