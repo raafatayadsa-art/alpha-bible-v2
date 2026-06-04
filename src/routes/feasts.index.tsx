@@ -95,28 +95,36 @@ function FeastsHome() {
         {/* Today hero */}
         <Link to="/feasts/$eventId" params={{ eventId: today.id }} className="block mt-3 active:scale-[0.99] transition-transform">
           <GlassSurface className="overflow-hidden p-0 bg-white border-[#ead9b1] shadow-[0_18px_40px_-22px_rgba(120,80,30,0.55)]">
-            <div className="relative h-[210px] overflow-hidden">
+            <div className="relative h-[220px] overflow-hidden">
+              {/* Image bleeds into card from the right (~68%) */}
               <img
                 src={today.image}
                 alt={today.title}
                 loading="eager"
                 decoding="async"
                 draggable={false}
-                className="absolute inset-y-0 right-0 h-full w-[72%] object-cover object-center select-none"
+                className="absolute inset-y-0 right-0 h-full w-[68%] object-cover object-center select-none"
+              />
+              {/* Strong beige→white fade from text side into image */}
+              <div
+                className="absolute inset-0 pointer-events-none"
                 style={{
-                  WebkitMaskImage:
-                    "linear-gradient(to left, #000 55%, rgba(0,0,0,0.55) 75%, rgba(0,0,0,0.15) 90%, transparent 100%)",
-                  maskImage:
-                    "linear-gradient(to left, #000 55%, rgba(0,0,0,0.55) 75%, rgba(0,0,0,0.15) 90%, transparent 100%)",
+                  background:
+                    "linear-gradient(to left, rgba(255,255,255,0) 0%, rgba(255,253,247,0.15) 30%, rgba(255,251,240,0.7) 48%, #fffaee 62%, #ffffff 78%)",
                 }}
               />
-              <div className="absolute inset-0 bg-[linear-gradient(to_left,transparent_0%,rgba(255,255,255,0.18)_28%,rgba(255,255,255,0.72)_52%,#ffffff_75%)]" />
-              <div className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-[#3a2a18] border border-[#ead9b1] shadow-[0_4px_10px_-8px_rgba(120,80,30,0.5)]">
+              {/* Soft top/bottom polish */}
+              <div className="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-white/70 to-transparent pointer-events-none" />
+              <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-white/80 to-transparent pointer-events-none" />
+
+              <div className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-white/90 backdrop-blur px-2.5 py-1 text-[11px] font-bold text-[#3a2a18] border border-[#ead9b1] shadow-[0_4px_10px_-8px_rgba(120,80,30,0.5)]">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#6a4ab5]" />
                 اليوم
               </div>
-              <div className="absolute inset-y-0 left-0 w-[58%] p-4 flex flex-col justify-center">
-                <h2 className="font-arabic-serif text-[22px] font-extrabold text-[#3a2a18] leading-tight text-right">
+
+              {/* Text overlays the faded area on the left */}
+              <div className="absolute inset-y-0 left-0 right-[35%] p-5 flex flex-col justify-center">
+                <h2 className="font-arabic-serif text-[22px] font-extrabold text-[#3a2a18] leading-tight text-right drop-shadow-[0_1px_0_rgba(255,255,255,0.8)]">
                   {today.title}
                 </h2>
                 <p className="text-[12px] text-[#6a543a] mt-1 text-right">{today.subtitle}</p>
@@ -126,15 +134,14 @@ function FeastsHome() {
                 {today.scriptureRef && (
                   <p className="text-[11px] font-bold text-[#b8893a] mt-1 text-right">{today.scriptureRef}</p>
                 )}
+                <span className="mt-3 self-end inline-flex items-center gap-2 rounded-full bg-white border border-[#ead9b1] px-3.5 h-9 text-[11.5px] font-bold text-[#3a2a18] shadow-[0_10px_18px_-12px_rgba(120,80,30,0.55)]">
+                  <BookOpen className="h-3.5 w-3.5 text-[#6a4ab5]" />
+                  تعرف على المناسبة
+                </span>
               </div>
             </div>
-            <div className="px-4 pb-4 -mt-6 flex justify-start relative z-10">
-              <span className="inline-flex items-center gap-2 rounded-full bg-white border border-[#ead9b1] px-4 h-10 text-[12px] font-bold text-[#3a2a18] shadow-[0_10px_18px_-12px_rgba(120,80,30,0.55)]">
-                <BookOpen className="h-3.5 w-3.5 text-[#6a4ab5]" />
-                تعرف على المناسبة
-              </span>
-            </div>
           </GlassSurface>
+
         </Link>
 
         {/* List */}
@@ -152,36 +159,40 @@ function FeastsHome() {
                   style={{ background: ACCENT_COLORS[f.accent], boxShadow: `0 0 0 3px ${ACCENT_COLORS[f.accent]}22` }}
                   aria-hidden
                 />
-                <GlassSurface className="p-2 bg-white border-[#ead9b1] shadow-[0_14px_30px_-22px_rgba(120,80,30,0.55)]">
-                  <div className="grid grid-cols-[42px_110px_minmax(0,1fr)_38px] gap-2 items-center">
+                <GlassSurface className="relative overflow-hidden p-0 bg-white border-[#ead9b1] shadow-[0_14px_30px_-22px_rgba(120,80,30,0.55)]">
+                  {/* Image bleeds in from the left edge */}
+                  <img
+                    src={f.image}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    draggable={false}
+                    className="absolute inset-y-0 left-0 h-full w-[44%] object-cover object-center select-none"
+                  />
+                  {/* Beige→white fade from text into image */}
+                  <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      background:
+                        "linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,251,240,0.2) 22%, rgba(255,250,238,0.75) 40%, #fffaee 56%, #ffffff 70%)",
+                    }}
+                  />
+                  <div className="absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-white/50 to-transparent pointer-events-none" />
+                  <div className="absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-white/50 to-transparent pointer-events-none" />
+
+                  <div className="relative grid grid-cols-[52px_minmax(0,1fr)_44%] items-center gap-3 p-3 min-h-[96px]">
+                    {/* RIGHT: date */}
                     <div className="text-center">
                       <div className="text-[9.5px] font-bold text-[#b8893a] leading-none">{f.gregorianDate}</div>
                       <div
-                        className="font-arabic-serif text-[26px] font-extrabold leading-none mt-1"
+                        className="font-arabic-serif text-[28px] font-extrabold leading-none mt-1"
                         style={{ color: ACCENT_COLORS[f.accent] }}
                       >
                         {f.copticDay}
                       </div>
                       <div className="text-[9.5px] text-[#6a543a] mt-1 leading-none">{f.copticYear}</div>
                     </div>
-                    <div className="relative h-[82px] w-[110px] overflow-hidden rounded-2xl bg-[#f4ead8]">
-                      <img
-                        src={f.image}
-                        alt=""
-                        loading="lazy"
-                        decoding="async"
-                        draggable={false}
-                        className="absolute inset-0 h-full w-full object-cover object-center select-none"
-                        style={{
-                          WebkitMaskImage:
-                            "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.25) 18%, rgba(0,0,0,0.7) 42%, #000 70%)",
-                          maskImage:
-                            "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.25) 18%, rgba(0,0,0,0.7) 42%, #000 70%)",
-                        }}
-                      />
-                      <div className="absolute inset-y-0 left-0 w-1/2 bg-[linear-gradient(to_right,#ffffff_0%,rgba(255,255,255,0.6)_55%,transparent_100%)] pointer-events-none" />
-                      <div className="absolute inset-0 ring-1 ring-inset ring-[#ead9b1]/70 rounded-2xl pointer-events-none" />
-                    </div>
+                    {/* CENTER: title + description */}
                     <div className="min-w-0 text-right">
                       <div className="font-arabic-serif text-[15.5px] font-extrabold text-[#3a2a18] leading-tight line-clamp-1">
                         {f.title}
@@ -189,16 +200,14 @@ function FeastsHome() {
                       <div className="text-[12.5px] text-[#5a4630] line-clamp-2 mt-1 leading-relaxed">
                         {f.subtitle}
                       </div>
+                      <div className="mt-1.5 inline-flex items-center gap-1 text-[10.5px] font-bold" style={{ color: ACCENT_COLORS[f.accent] }}>
+                        <CopticCross size={10} />
+                        <span>اقرأ المزيد</span>
+                        <ChevronLeft className="h-3 w-3" />
+                      </div>
                     </div>
-                    <div className="flex flex-col items-center gap-1">
-                      <span
-                        className="grid h-9 w-9 place-items-center rounded-xl"
-                        style={{ background: `${ACCENT_COLORS[f.accent]}14`, color: ACCENT_COLORS[f.accent] }}
-                      >
-                        <CopticCross size={16} />
-                      </span>
-                      <ChevronLeft className="h-4 w-4 text-[#6a543a]" />
-                    </div>
+                    {/* LEFT spacer: reserves space over the image side */}
+                    <div aria-hidden />
                   </div>
                 </GlassSurface>
               </div>
