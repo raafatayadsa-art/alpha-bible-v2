@@ -616,8 +616,8 @@ function PrayerReader() {
     } catch { /* ignore */ }
   };
 
-  const speeds: AgpeyaSpeed[] = ["slow", "medium", "fast"];
-  const speedLabel: Record<AgpeyaSpeed, string> = { slow: "بطيء", medium: "متوسط", fast: "سريع" };
+
+
 
   return (
     <div
