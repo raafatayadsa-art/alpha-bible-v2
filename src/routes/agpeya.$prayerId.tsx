@@ -973,7 +973,7 @@ function IconButton({
         "grid h-10 w-10 place-items-center rounded-full border transition-all active:scale-95",
         dark
           ? active ? "border-[#f0d78c] bg-[#f0d78c] text-[#1a1208]" : "border-white/15 bg-white/5 text-[#f0d78c]"
-          : active ? "border-[#1f4032] bg-[#1f4032] text-white" : "border-[#c79356]/35 bg-white/60 text-[#8a5a1f]",
+          : active ? "border-[#5a3d92] bg-gradient-to-br from-[#7a5cb0] to-[#5a3d92] text-white" : "border-[#c79356]/35 bg-white/60 text-[#8a5a1f]",
       )}
     >
       {children}
