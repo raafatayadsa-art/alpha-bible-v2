@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as DiagnosticsRouteImport } from './routes/diagnostics'
@@ -31,6 +32,11 @@ import { Route as BookChapterRouteImport } from './routes/$book.$chapter'
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -127,6 +133,7 @@ export interface FileRoutesByFullPath {
   '/diagnostics': typeof DiagnosticsRoute
   '/home': typeof HomeRoute
   '/onboarding': typeof OnboardingRoute
+  '/profile': typeof ProfileRoute
   '/search': typeof SearchRoute
   '/$book/$chapter': typeof BookChapterRoute
   '/agpeya/$prayerId': typeof AgpeyaPrayerIdRoute
@@ -146,6 +153,7 @@ export interface FileRoutesByTo {
   '/diagnostics': typeof DiagnosticsRoute
   '/home': typeof HomeRoute
   '/onboarding': typeof OnboardingRoute
+  '/profile': typeof ProfileRoute
   '/search': typeof SearchRoute
   '/$book/$chapter': typeof BookChapterRoute
   '/agpeya/$prayerId': typeof AgpeyaPrayerIdRoute
@@ -167,6 +175,7 @@ export interface FileRoutesById {
   '/diagnostics': typeof DiagnosticsRoute
   '/home': typeof HomeRoute
   '/onboarding': typeof OnboardingRoute
+  '/profile': typeof ProfileRoute
   '/search': typeof SearchRoute
   '/$book/$chapter': typeof BookChapterRoute
   '/agpeya/$prayerId': typeof AgpeyaPrayerIdRoute
@@ -189,6 +198,7 @@ export interface FileRouteTypes {
     | '/diagnostics'
     | '/home'
     | '/onboarding'
+    | '/profile'
     | '/search'
     | '/$book/$chapter'
     | '/agpeya/$prayerId'
@@ -208,6 +218,7 @@ export interface FileRouteTypes {
     | '/diagnostics'
     | '/home'
     | '/onboarding'
+    | '/profile'
     | '/search'
     | '/$book/$chapter'
     | '/agpeya/$prayerId'
@@ -228,6 +239,7 @@ export interface FileRouteTypes {
     | '/diagnostics'
     | '/home'
     | '/onboarding'
+    | '/profile'
     | '/search'
     | '/$book/$chapter'
     | '/agpeya/$prayerId'
@@ -249,6 +261,7 @@ export interface RootRouteChildren {
   DiagnosticsRoute: typeof DiagnosticsRoute
   HomeRoute: typeof HomeRoute
   OnboardingRoute: typeof OnboardingRoute
+  ProfileRoute: typeof ProfileRoute
   SearchRoute: typeof SearchRoute
   AgpeyaPrayerIdRoute: typeof AgpeyaPrayerIdRoute
   AgpeyaSavedRoute: typeof AgpeyaSavedRoute
@@ -267,6 +280,13 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -411,6 +431,7 @@ const rootRouteChildren: RootRouteChildren = {
   DiagnosticsRoute: DiagnosticsRoute,
   HomeRoute: HomeRoute,
   OnboardingRoute: OnboardingRoute,
+  ProfileRoute: ProfileRoute,
   SearchRoute: SearchRoute,
   AgpeyaPrayerIdRoute: AgpeyaPrayerIdRoute,
   AgpeyaSavedRoute: AgpeyaSavedRoute,
