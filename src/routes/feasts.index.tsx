@@ -122,19 +122,19 @@ function FeastsHome() {
                 اليوم
               </div>
 
-              {/* Text overlays the faded area on the left */}
-              <div className="absolute inset-y-0 left-0 right-[35%] p-5 flex flex-col justify-center">
+              {/* Text overlays the faded area on the left, with extra breathing room away from the fade */}
+              <div className="absolute inset-y-0 left-0 right-[42%] p-6 pl-7 flex flex-col justify-center">
                 <h2 className="font-arabic-serif text-[22px] font-extrabold text-[#3a2a18] leading-tight text-right drop-shadow-[0_1px_0_rgba(255,255,255,0.8)]">
                   {today.title}
                 </h2>
-                <p className="text-[12px] text-[#6a543a] mt-1 text-right">{today.subtitle}</p>
+                <p className="text-[12px] text-[#6a543a] mt-1.5 text-right">{today.subtitle}</p>
                 {today.scripture && (
-                  <p className="text-[12px] text-[#3a2a18] mt-2 leading-relaxed line-clamp-3 text-right">{today.scripture}</p>
+                  <p className="text-[12px] text-[#3a2a18] mt-3 leading-relaxed line-clamp-3 text-right">{today.scripture}</p>
                 )}
                 {today.scriptureRef && (
-                  <p className="text-[11px] font-bold text-[#b8893a] mt-1 text-right">{today.scriptureRef}</p>
+                  <p className="text-[11px] font-bold text-[#b8893a] mt-1.5 text-right">{today.scriptureRef}</p>
                 )}
-                <span className="mt-3 self-end inline-flex items-center gap-2 rounded-full bg-white border border-[#ead9b1] px-3.5 h-9 text-[11.5px] font-bold text-[#3a2a18] shadow-[0_10px_18px_-12px_rgba(120,80,30,0.55)]">
+                <span className="mt-4 self-end inline-flex items-center gap-2 rounded-full bg-white border border-[#ead9b1] px-3.5 h-9 text-[11.5px] font-bold text-[#3a2a18] shadow-[0_10px_18px_-12px_rgba(120,80,30,0.55)]">
                   <BookOpen className="h-3.5 w-3.5 text-[#6a4ab5]" />
                   تعرف على المناسبة
                 </span>
@@ -145,13 +145,18 @@ function FeastsHome() {
         </Link>
 
         {/* List */}
-        <div className="mt-5 space-y-2.5">
-          {list.map((f) => (
+        <div className="mt-5 space-y-3">
+          {list.map((f) => {
+            const isToday = f.id === today.id;
+            return (
             <Link
               key={f.id}
               to="/feasts/$eventId"
               params={{ eventId: f.id }}
-              className="block active:scale-[0.99] transition-transform"
+              className={cn(
+                "block active:scale-[0.99] transition-transform",
+                isToday && "scale-[1.04] origin-right my-1",
+              )}
             >
               <div className="relative pr-3">
                 <span
@@ -159,7 +164,12 @@ function FeastsHome() {
                   style={{ background: ACCENT_COLORS[f.accent], boxShadow: `0 0 0 3px ${ACCENT_COLORS[f.accent]}22` }}
                   aria-hidden
                 />
-                <GlassSurface className="relative overflow-hidden p-0 bg-white border-[#ead9b1] shadow-[0_14px_30px_-22px_rgba(120,80,30,0.55)]">
+                <GlassSurface
+                  className={cn(
+                    "relative overflow-hidden p-0 bg-white border-[#ead9b1] shadow-[0_14px_30px_-22px_rgba(120,80,30,0.55)]",
+                    isToday && "border-[#d9bf86] shadow-[0_22px_44px_-22px_rgba(106,74,181,0.45)] ring-1 ring-inset ring-[#ead9b1]",
+                  )}
+                >
                   {/* Image bleeds in from the left edge */}
                   <img
                     src={f.image}
@@ -180,21 +190,42 @@ function FeastsHome() {
                   <div className="absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-white/50 to-transparent pointer-events-none" />
                   <div className="absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-white/50 to-transparent pointer-events-none" />
 
-                  <div className="relative grid grid-cols-[52px_minmax(0,1fr)_44%] items-center gap-3 p-3 min-h-[96px]">
-                    {/* RIGHT: date */}
-                    <div className="text-center">
-                      <div className="text-[9.5px] font-bold text-[#b8893a] leading-none">{f.gregorianDate}</div>
+                  <div className={cn(
+                    "relative grid grid-cols-[64px_minmax(0,1fr)_44%] items-center gap-3 p-3",
+                    isToday ? "min-h-[110px]" : "min-h-[96px]",
+                  )}>
+                    {/* RIGHT: distinct date block */}
+                    <div
+                      className="relative rounded-2xl border bg-white/95 backdrop-blur px-1.5 py-2 text-center shadow-[0_6px_14px_-10px_rgba(120,80,30,0.45)]"
+                      style={{ borderColor: `${ACCENT_COLORS[f.accent]}40` }}
+                    >
                       <div
-                        className="font-arabic-serif text-[28px] font-extrabold leading-none mt-1"
+                        className="text-[8.5px] font-extrabold uppercase tracking-wide leading-none"
+                        style={{ color: ACCENT_COLORS[f.accent] }}
+                      >
+                        {f.gregorianDate}
+                      </div>
+                      <div
+                        className="font-arabic-serif text-[26px] font-extrabold leading-none mt-1"
                         style={{ color: ACCENT_COLORS[f.accent] }}
                       >
                         {f.copticDay}
                       </div>
-                      <div className="text-[9.5px] text-[#6a543a] mt-1 leading-none">{f.copticYear}</div>
+                      <div className="mx-auto mt-1 h-px w-6" style={{ background: `${ACCENT_COLORS[f.accent]}55` }} />
+                      <div className="text-[9px] text-[#6a543a] mt-1 leading-none">{f.copticYear}</div>
                     </div>
                     {/* CENTER: title + description */}
                     <div className="min-w-0 text-right">
-                      <div className="font-arabic-serif text-[15.5px] font-extrabold text-[#3a2a18] leading-tight line-clamp-1">
+                      {isToday && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-[#6a4ab5] text-white text-[9.5px] font-bold px-2 py-0.5 mb-1">
+                          <span className="h-1.5 w-1.5 rounded-full bg-white" />
+                          اليوم
+                        </span>
+                      )}
+                      <div className={cn(
+                        "font-arabic-serif font-extrabold text-[#3a2a18] leading-tight line-clamp-1",
+                        isToday ? "text-[16.5px]" : "text-[15.5px]",
+                      )}>
                         {f.title}
                       </div>
                       <div className="text-[12.5px] text-[#5a4630] line-clamp-2 mt-1 leading-relaxed">
@@ -212,8 +243,10 @@ function FeastsHome() {
                 </GlassSurface>
               </div>
             </Link>
-          ))}
+            );
+          })}
         </div>
+
 
         {/* Synaxarium Today */}
         {(() => {
@@ -224,9 +257,9 @@ function FeastsHome() {
               params={{ saintId: saint.id }}
               className="block mt-5 active:scale-[0.99] transition-transform"
             >
-              <GlassSurface className="p-3 bg-white border-[#ead9b1] shadow-[0_14px_30px_-22px_rgba(120,80,30,0.55)]">
-                <div className="flex items-center gap-3">
-                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-[#f4ead8] ring-1 ring-inset ring-[#ead9b1]">
+              <GlassSurface className="p-3.5 bg-white border-[#ead9b1] shadow-[0_14px_30px_-22px_rgba(120,80,30,0.55)]">
+                <div className="flex items-center gap-3.5">
+                  <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-[#f4ead8] ring-1 ring-inset ring-[#ead9b1] shadow-[0_8px_18px_-12px_rgba(120,80,30,0.55)]">
                     <img
                       src={saint.image}
                       alt=""
@@ -237,22 +270,23 @@ function FeastsHome() {
                     />
                   </div>
                   <div className="flex-1 text-right min-w-0">
-                    <div className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#b8893a]">
+                    <div className="inline-flex items-center gap-1.5 text-[10.5px] font-bold text-[#b8893a]">
                       <CopticCross size={11} />
                       سنكسار اليوم
                       <span className="text-[#b8893a]/60">Ⲁ Ⲱ</span>
                     </div>
-                    <div className="font-arabic-serif text-[14.5px] font-extrabold text-[#3a2a18] leading-tight mt-0.5 line-clamp-1">
+                    <div className="font-arabic-serif text-[17px] font-extrabold text-[#3a2a18] leading-tight mt-1 line-clamp-2">
                       {saint.name}
                     </div>
-                    <div className="text-[12px] text-[#5a4630] leading-snug line-clamp-1 mt-0.5">
+                    <div className="text-[12px] text-[#5a4630] leading-snug line-clamp-1 mt-1">
                       {saint.summary}
                     </div>
+                    <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-l from-[#6a4ab5] to-[#8c6fd1] text-white px-3.5 h-8 text-[11.5px] font-bold shadow-[0_8px_16px_-8px_rgba(106,74,181,0.6)]">
+                      <BookOpen className="h-3.5 w-3.5" />
+                      افتح السنكسار
+                      <ChevronLeft className="h-3 w-3" />
+                    </span>
                   </div>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[#fff7e0] border border-[#ead9b1] px-2.5 h-8 text-[11px] font-bold text-[#3a2a18] shrink-0">
-                    <BookOpen className="h-3 w-3 text-[#b8893a]" />
-                    افتح
-                  </span>
                 </div>
               </GlassSurface>
             </Link>
