@@ -68,9 +68,9 @@ const BookIndexRoute = BookIndexRouteImport.update({
   getParentRoute: () => BookRoute,
 } as any)
 const AgpeyaSavedRoute = AgpeyaSavedRouteImport.update({
-  id: '/saved',
-  path: '/saved',
-  getParentRoute: () => AgpeyaRoute,
+  id: '/agpeya/saved',
+  path: '/agpeya/saved',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AgpeyaPrayerIdRoute = AgpeyaPrayerIdRouteImport.update({
   id: '/agpeya/$prayerId',
@@ -178,6 +178,7 @@ export interface RootRouteChildren {
   HomeRoute: typeof HomeRoute
   OnboardingRoute: typeof OnboardingRoute
   AgpeyaPrayerIdRoute: typeof AgpeyaPrayerIdRoute
+  AgpeyaSavedRoute: typeof AgpeyaSavedRoute
   AgpeyaIndexRoute: typeof AgpeyaIndexRoute
 }
 
@@ -248,10 +249,10 @@ declare module '@tanstack/react-router' {
     }
     '/agpeya/saved': {
       id: '/agpeya/saved'
-      path: '/saved'
+      path: '/agpeya/saved'
       fullPath: '/agpeya/saved'
       preLoaderRoute: typeof AgpeyaSavedRouteImport
-      parentRoute: typeof AgpeyaRoute
+      parentRoute: typeof rootRouteImport
     }
     '/agpeya/$prayerId': {
       id: '/agpeya/$prayerId'
@@ -291,18 +292,9 @@ const rootRouteChildren: RootRouteChildren = {
   HomeRoute: HomeRoute,
   OnboardingRoute: OnboardingRoute,
   AgpeyaPrayerIdRoute: AgpeyaPrayerIdRoute,
+  AgpeyaSavedRoute: AgpeyaSavedRoute,
   AgpeyaIndexRoute: AgpeyaIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
