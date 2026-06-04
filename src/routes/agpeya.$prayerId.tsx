@@ -19,6 +19,11 @@ import {
   MessageCircle,
 } from "lucide-react";
 import {
+  PresentationMode,
+  DisplayButton,
+  type PresentationContent,
+} from "@/components/presentation/PresentationMode";
+import {
   adjacentAgpeyaPrayers,
   AGPEYA_DRAFT_NOTICE,
   AgpeyaErrorState,
