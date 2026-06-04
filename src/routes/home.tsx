@@ -615,66 +615,72 @@ function HeroCardView({
 }) {
   return (
     <article
-      className="relative h-[300px] w-full overflow-hidden rounded-[32px] border border-white/15 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.8),0_0_0_1px_rgba(231,201,122,0.15)]"
+      className="relative h-[252px] w-full overflow-hidden rounded-[32px] border border-white/15 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.8),0_0_0_1px_rgba(231,201,122,0.15)]"
       style={{
         background: "#0a0612",
       }}
     >
-      <img
-        src={card.image}
-        alt=""
-        draggable={false}
-        className="absolute inset-0 h-full w-full object-cover"
-        style={{ filter: "saturate(1.05)" }}
-      />
-      {/* dark gradient for legibility */}
-      <div
-        aria-hidden
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.05) 35%, rgba(0,0,0,0.55) 75%, rgba(0,0,0,0.92) 100%)",
-        }}
-      />
-      {/* accent glow border */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 rounded-[32px]"
-        style={{
-          boxShadow: `inset 0 0 40px ${card.accent}33, inset 0 1px 0 rgba(255,255,255,0.15)`,
-        }}
-      />
-      {/* coptic glyph */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute top-4 left-4 select-none font-black leading-none"
-        style={{ fontSize: 72, color: "rgba(255,255,255,0.08)" }}
+      <Link
+        to={card.to as any}
+        aria-label={card.title}
+        className="absolute inset-0 z-0"
       >
-        Ⲁ
-      </span>
+        <img
+          src={card.image}
+          alt=""
+          draggable={false}
+          className="absolute inset-0 h-full w-full object-cover"
+          style={{ filter: "saturate(1.05)" }}
+        />
+        {/* dark gradient for legibility */}
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.05) 35%, rgba(0,0,0,0.55) 75%, rgba(0,0,0,0.92) 100%)",
+          }}
+        />
+        {/* accent glow border */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-[32px]"
+          style={{
+            boxShadow: `inset 0 0 40px ${card.accent}33, inset 0 1px 0 rgba(255,255,255,0.15)`,
+          }}
+        />
+        {/* coptic glyph */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute top-4 left-4 select-none font-black leading-none"
+          style={{ fontSize: 64, color: "rgba(255,255,255,0.08)" }}
+        >
+          Ⲁ
+        </span>
+      </Link>
 
       {/* badge */}
-      <div className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/35 backdrop-blur-md px-3 py-1.5">
+      <div className="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/35 backdrop-blur-md px-3 py-1.5">
         <Sparkles className="h-3 w-3" style={{ color: card.accent }} />
         <span className="text-[11px] font-bold text-white">{card.badge}</span>
       </div>
 
       {/* body */}
-      <div className="absolute inset-x-0 bottom-0 px-5 pb-4 pt-5">
+      <div className="absolute inset-x-0 bottom-0 z-10 px-5 pb-3.5 pt-4 pointer-events-none">
         <p
-          className="text-right font-extrabold text-white leading-[1.7] text-[15px]"
+          className="text-right font-extrabold text-white leading-[1.55] text-[14px] line-clamp-3"
           style={{ textShadow: "0 2px 8px rgba(0,0,0,0.7)" }}
         >
           {card.body}
         </p>
         {card.meta && (
-          <p className="mt-1.5 text-right text-[12px] font-bold" style={{ color: card.accent }}>
+          <p className="mt-1 text-right text-[11.5px] font-bold" style={{ color: card.accent }}>
             {card.meta}
           </p>
         )}
 
         {/* actions */}
-        <div className="mt-3 flex items-center justify-between">
+        <div className="mt-2.5 flex items-center justify-between pointer-events-auto">
           <button
             aria-label={saved ? "إزالة الحفظ" : "حفظ"}
             onClick={onToggleSaved}
@@ -699,30 +705,21 @@ function HeroCardView({
             ))}
           </div>
 
-          <div className="flex items-center gap-1.5">
-            <Link
-              to={card.to as any}
-              aria-label="افتح"
-              className="grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md active:scale-95 transition"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Link>
-            <button
-              aria-label="مشاركة"
-              onClick={() =>
-                openShareSheet({
-                  title: card.title,
-                  body: card.body,
-                  meta: card.meta,
-                  imageSrc: card.image,
-                  accent: card.accent,
-                })
-              }
-              className="grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md active:scale-95 transition"
-            >
-              <Share2 className="h-4 w-4" />
-            </button>
-          </div>
+          <button
+            aria-label="مشاركة"
+            onClick={() =>
+              openShareSheet({
+                title: card.title,
+                body: card.body,
+                meta: card.meta,
+                imageSrc: card.image,
+                accent: card.accent,
+              })
+            }
+            className="grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md active:scale-95 transition"
+          >
+            <Share2 className="h-4 w-4" />
+          </button>
         </div>
       </div>
     </article>
