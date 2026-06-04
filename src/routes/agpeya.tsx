@@ -347,9 +347,6 @@ function AgpeyaHome() {
 
       <BottomDock />
 
-      {/* tiny helper: hide bookmark double-tap state from focus ring */}
-      {/* `isSaved`/`toggle` reserved for header bookmark wiring in next phase */}
-      <span hidden>{isSaved("baker") ? "" : ""}{typeof toggle === "function" ? "" : ""}</span>
     </div>
   );
 }
