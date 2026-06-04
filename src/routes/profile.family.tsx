@@ -117,28 +117,73 @@ function MintBackdrop() {
 function SummaryCard({ members }: { members: Member[] }) {
   const verified = members.filter((m) => m.verified).length;
   const pending = members.filter((m) => !m.verified).length;
+  const owner = members.find((m) => m.role === "الأب");
   return (
     <div
-      className="relative overflow-hidden rounded-[26px] p-4"
+      className="relative overflow-hidden rounded-[28px] pt-9 pb-4 px-4 mt-5"
       style={{
         background:
-          "linear-gradient(180deg, rgba(255,255,255,0.78) 0%, rgba(238,248,240,0.72) 100%)",
-        border: "1px solid rgba(200,222,206,0.7)",
-        backdropFilter: "blur(22px)",
-        WebkitBackdropFilter: "blur(22px)",
+          "radial-gradient(120% 70% at 50% 0%, rgba(251,236,178,0.35), transparent 55%)," +
+          "radial-gradient(90% 60% at 100% 100%, rgba(180,220,190,0.35), transparent 65%)," +
+          "linear-gradient(180deg, rgba(252,250,240,0.92) 0%, rgba(236,246,238,0.85) 100%)",
+        border: "1px solid rgba(201,180,120,0.45)",
+        backdropFilter: "blur(24px)",
+        WebkitBackdropFilter: "blur(24px)",
         boxShadow:
-          "0 22px 44px -24px rgba(60,110,80,0.4), 0 0 30px -16px rgba(216,170,80,0.35), inset 0 1px 0 rgba(255,255,255,0.85)",
+          "0 26px 50px -26px rgba(60,110,80,0.45), 0 0 36px -18px rgba(216,170,80,0.4), inset 0 1px 0 rgba(255,255,255,0.9)",
       }}
     >
-      {/* Coptic Ⲁ Ⲱ watermark */}
-      <span aria-hidden className="absolute -top-3 -left-1 text-[64px] leading-none font-bold text-[#3f7d5a]/[0.08] select-none">Ⲱ</span>
-      <span aria-hidden className="absolute -bottom-4 -right-1 text-[72px] leading-none font-bold text-[#8a5a14]/[0.09] select-none">Ⲁ</span>
+      {/* Golden light rays */}
+      <span
+        aria-hidden
+        className="absolute inset-x-0 top-0 h-32 pointer-events-none"
+        style={{
+          background:
+            "conic-gradient(from 220deg at 50% 0%, transparent 0deg, rgba(231,201,122,0.22) 30deg, transparent 60deg, rgba(231,201,122,0.18) 95deg, transparent 130deg, rgba(231,201,122,0.2) 165deg, transparent 200deg)",
+          maskImage: "linear-gradient(180deg, #000 0%, transparent 90%)",
+          WebkitMaskImage: "linear-gradient(180deg, #000 0%, transparent 90%)",
+        }}
+      />
+      {/* Church silhouette */}
+      <svg
+        aria-hidden
+        viewBox="0 0 200 60"
+        className="absolute inset-x-0 bottom-0 w-full h-16 opacity-[0.08] pointer-events-none"
+        preserveAspectRatio="xMidYMax meet"
+      >
+        <path
+          d="M0 60 L0 42 L30 42 L30 30 L45 30 L45 22 L55 14 L65 22 L65 30 L80 30 L80 18 L92 18 L92 12 L96 12 L96 6 L100 2 L104 6 L104 12 L108 12 L108 18 L120 18 L120 30 L135 30 L135 22 L145 14 L155 22 L155 30 L170 30 L170 42 L200 42 L200 60 Z"
+          fill="#1f3a2a"
+        />
+      </svg>
+      {/* Ⲁ Ⲱ watermark */}
+      <span aria-hidden className="absolute top-10 left-3 text-[58px] leading-none font-bold text-[#3f7d5a]/[0.07] select-none">Ⲱ</span>
+      <span aria-hidden className="absolute bottom-3 right-3 text-[64px] leading-none font-bold text-[#8a5a14]/[0.08] select-none">Ⲁ</span>
 
       {/* Gold ornamental top hairline */}
       <span aria-hidden className="absolute left-6 right-6 top-0 h-px"
-        style={{ background: "linear-gradient(90deg, transparent, rgba(216,170,80,0.55), transparent)" }} />
+        style={{ background: "linear-gradient(90deg, transparent, rgba(216,170,80,0.6), transparent)" }} />
 
-      <div className="flex items-center gap-2.5">
+      {/* Alpha logo crest at top center */}
+      <div
+        className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 grid place-items-center h-14 w-14 rounded-full"
+        style={{
+          background:
+            "radial-gradient(120% 90% at 30% 20%, rgba(255,247,215,0.98), rgba(231,201,122,0.6) 65%, rgba(201,138,60,0.4))",
+          border: "1.5px solid rgba(201,138,60,0.6)",
+          boxShadow:
+            "0 0 22px rgba(231,201,122,0.7), inset 0 1px 0 rgba(255,255,255,0.85), 0 10px 22px -10px rgba(201,138,60,0.55)",
+        }}
+      >
+        <img
+          src={alphaLogoAsset}
+          alt="Alpha"
+          className="h-9 w-9 object-contain"
+          style={{ filter: "drop-shadow(0 1px 2px rgba(122,74,20,0.35))" }}
+        />
+      </div>
+
+      <div className="relative flex items-center gap-2.5">
         <div
           className="grid h-11 w-11 place-items-center rounded-2xl shrink-0"
           style={{
@@ -152,23 +197,43 @@ function SummaryCard({ members }: { members: Member[] }) {
         </div>
         <div className="flex-1 min-w-0 text-right">
           <div className="flex items-center justify-end gap-1.5">
-            <h2 className="text-[14px] font-extrabold text-[#1f3a2a] truncate">عائلة عاطف صبحي</h2>
+            <h2 className="text-[14px] font-extrabold text-[#1f3a2a] truncate">
+              {owner ? `عائلة ${owner.name}` : "عائلتي"}
+            </h2>
             <Sparkles className="h-3 w-3 text-[#b8893a]" />
           </div>
-          <div className="text-[10.5px] text-[#5a7766]">إدارة أفراد العائلة المرتبطين بالكنيسة</div>
+          <div className="text-[10.5px] text-[#5a7766]">عضوية عائلية في كنيسة ألفا</div>
         </div>
       </div>
 
-      <div className="my-3 h-px bg-gradient-to-r from-transparent via-[#b8893a]/30 to-transparent" />
+      <div className="relative my-3.5 h-px bg-gradient-to-r from-transparent via-[#b8893a]/40 to-transparent" />
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="relative grid grid-cols-3 gap-2">
         <Stat label="إجمالي" value={members.length} icon={Users} color="#3f7d5a" />
         <Stat label="موثّق" value={verified} icon={ShieldCheck} color="#3f9d6e" />
         <Stat label="بانتظار" value={pending} icon={ShieldAlert} color="#b8893a" />
       </div>
+
+      {owner && (
+        <div
+          className="relative mt-3 flex items-center justify-between gap-2 px-3 py-2 rounded-2xl"
+          style={{
+            background: "linear-gradient(180deg, rgba(251,236,178,0.55), rgba(231,201,122,0.3))",
+            border: "1px solid rgba(201,138,60,0.35)",
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.7)",
+          }}
+        >
+          <span className="inline-flex items-center gap-1.5 text-[10.5px] font-bold text-[#7a4a14]">
+            <Crown className="h-3.5 w-3.5" />
+            رب الأسرة
+          </span>
+          <span className="text-[11.5px] font-extrabold text-[#1f3a2a] truncate">{owner.name}</span>
+        </div>
+      )}
     </div>
   );
 }
+
 
 function Stat({
   label, value, icon: Icon, color,
