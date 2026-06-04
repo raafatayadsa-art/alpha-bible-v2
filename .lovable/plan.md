@@ -1,98 +1,124 @@
-# Agpeya UX Completion Plan
 
-Scope: finish the Agpeya reader and supporting flows on top of the **already approved** home screen and design system. No Supabase, no backend, no redesign, no nav changes.
+# Agpeya Reader — Prayer Journey Update
 
-## 1. Placeholder Content (realistic, Coptic-faithful)
+Scope: edit ONE file — `src/routes/agpeya.$prayerId.tsx`. No route changes, no data-shape changes, no edits to Home, Bottom Nav, Bible Reader, Dictionary, or Highlights.
 
-Replace the single `PLACEHOLDER` string in `src/features/agpeya/data.ts` with a structured per-prayer placeholder dataset:
+## What changes
 
-- **text tab** — opening rite (Our Father, Thanksgiving, Psalm 50 incipit) as multi-paragraph Arabic prose, clearly marked as a draft excerpt.
-- **psalms tab** — list of psalm objects `{ number, title, verses: string[] }` matching `psalmsCount`, with 4–6 sample verses each (labeled placeholder).
-- **gospel tab** — `{ reference, intro, passage, conclusion }` shaped pericope(s) matching `gospelCount`.
-- **fragments tab** ("قطع وذكصولوجيات") — 2–3 short Coptic-tradition fragments (Trisagion, Doxology snippet, intercession).
-- **info tab** — structured metadata: meaning, commemoration, hour, recommended posture, sources note.
+### 1. Replace top tabs with a fixed Section Progress Nav
+- Today: 5 tabs (`نص الصلاة / المزامير / الإنجيل / القطع / معلومات`) split the prayer into 5 separate scroll views.
+- New: tabs row is removed. The prayer renders as ONE continuous scroll containing all sections in this order:
+  1. مقدمة الساعة (from `tabs.text.body`, first paragraph)
+  2. صلاة الشكر (from `tabs.text.body`, remaining paragraphs)
+  3. المزمور ٥٠ (only if present — fallback skip)
+  4. المزامير (from `tabs.psalms`)
+  5. الإنجيل (from `tabs.gospel`)
+  6. القطع (from `tabs.fragments`)
+  7. قانون الإيمان (static fragment if `creed` is in fragments, else skipped)
+  8. التحليل / الختام (from `tabs.info` rendered as closing meta card)
+- A **sticky chip rail** below the header replaces the tab pill row. Each chip is a section anchor:
+  - Tap → smooth-scrolls to that section.
+  - Active chip auto-highlights based on IntersectionObserver of section headers.
+  - Horizontally scrollable, RTL, with the active chip auto-centered into view.
+- The existing thin top progress bar stays (overall scroll %).
 
-All content prefixed once at the top with a visible "محتوى تجريبي — قيد المراجعة" notice in the reader. No invented liturgical claims — generic, clearly-marked draft text.
+### 2. Reading cards (Bible-Reader philosophy)
+- Each section becomes its own card with soft elevation, glass border, generous spacing — matches the existing `GlassSurface` look from `src/components/bible/primitives.tsx`.
+- Psalms: one card per psalm (already structured — extract from existing `PsalmsTab`).
+- Gospel: one card per pericope (already structured).
+- Fragments: one card per fragment (already structured).
+- Text body: split paragraphs into 1–2 cards (intro / صلاة الشكر).
+- Info: single closing "معلومات الصلاة" card.
+- Each card keeps existing typography (`font-arabic-serif`, `fontSize`, `lineHeight` from reader settings).
 
-## 2. Reader Screen (`src/routes/agpeya.$prayerId.tsx`)
+### 3. Remove in-reader search
+- Delete the search icon button, the expandable search bar, `searchOpen`, `query`, `matchCount`, `navigateToScrollNextMatch`, and `<Highlighted>` highlight wrapping. Render plain text instead.
+- Imports of `Search`, `ChevronUp`, `ChevronDown`, `splitForHighlight` removed.
 
-Keep current shell (sticky header, tabs, floating control bar, progress bar). Wire the four content tabs to render the new structured placeholder data:
+### 4. Keep & polish bottom reading controls
+- Existing floating control pill (font size, theme, line height, speed, play/pause) is preserved.
+- Visual polish only: stronger glass blur, slightly larger touch targets (min 40px), refined shadow, safe-area aware (already uses `env(safe-area-inset-bottom)`).
 
-- **Psalms tab** — collapsible psalm cards (number + title header, verses list with verse numbers, Coptic cross divider).
-- **Gospel tab** — pericope card with reference chip, intro line, passage body, conclusion line.
-- **Passages / Fragments tab** — stacked fragment cards with title + body.
-- **Information tab** — definition list (meaning, hour, commemoration, duration, psalms/gospel counts, sources).
-- Empty-tab fallback: friendly Arabic empty state with small icon when a prayer omits a tab.
+### 5. Swipe navigation
+- Add touch handlers on the scroll container:
+  - Swipe Left (RTL: dx < −60, |dy| < 40) → navigate to `next` prayer.
+  - Swipe Right (dx > 60) → navigate to `prev` prayer.
+- Existing prev/next bottom buttons remain as backup.
 
-## 3. Search Inside Prayer
+### 6. iPhone-first layout & safe areas
+- Container width capped at `max-w-[560px]` (was 640px), `px-4` reading gutters.
+- Header padding uses `pt-[max(env(safe-area-inset-top),0.5rem)]` to clear notch / Dynamic Island.
+- Floating controls already use `env(safe-area-inset-bottom)`; bump min spacing.
+- Section padding bottom increases (`pb-44`) so last card clears controls + bottom nav.
 
-Add a search icon in the reader header that toggles an inline search bar:
+### 7. Coptic identity (subtle)
+- Keep the existing faint `CopticCross` watermark.
+- Add small Ⲁ / Ⲱ glyphs as decorative chip dividers in the section nav (very low opacity).
+- Section card headers get a tiny Coptic cross icon (already used in PsalmsTab pattern).
+- No new clutter.
 
-- Filters visible content of the active tab (psalm verses, gospel passage, fragments, info entries).
-- Highlights matches with `<mark>` styled via design tokens.
-- Match counter + prev/next arrows; Esc clears.
-- Pure client-side, scoped to current prayer + current tab.
+### 8. Preserved — DO NOT touch
+- Routes (`/agpeya/$prayerId`).
+- Share menu + Telegram/WhatsApp/copy-link flow.
+- Save (bookmark) flow.
+- Bottom nav, Home, Bible Reader, Dictionary, Highlights.
+- Prayer data structure (`AgpeyaPrayer` / `tabs` map) — only the rendering changes; tabs are flattened in the component, not in data.
+- Continue-reading storage (`savePrayerPosition`) — keep saving scroll %, drop the `tab` field by always writing `tab: availableTabs[0]` for backward compat.
 
-## 4. Continue Reading Flow
+## Technical sketch
 
-Already partially wired via `ab.agpeya.last` and `readLastOpenedPrayer`. Finalize:
+```text
+PrayerReader()
+├── header (sticky, safe-area top)
+│   ├── back / title / [share, save]   ← no search button
+│   ├── SectionNav (chip rail, sticky, IntersectionObserver-driven active)
+│   └── thin progress bar (scroll %)
+├── main (scroller, onTouchStart/End for swipe)
+│   ├── Coptic watermark
+│   ├── Draft notice
+│   ├── <SectionCard id="intro">         intro paragraph
+│   ├── <SectionCard id="thanksgiving">  remaining text paragraphs
+│   ├── <SectionCard id="psalm-50">      if present
+│   ├── <SectionCard id="psalms">        map → one card per psalm
+│   ├── <SectionCard id="gospel">        map → one card per pericope
+│   ├── <SectionCard id="fragments">     map → one card per fragment
+│   ├── <SectionCard id="creed">         if available
+│   └── <SectionCard id="info">          closing meta
+│   └── Prev / Next prayer buttons (kept)
+└── floating reading controls (kept, polished)
+└── Share dialog (kept)
+```
 
-- Home "متابعة القراءة" tile shows last prayer title, tab label, and percentage.
-- Tapping opens the reader at the saved tab and scroll position (already implemented — verify).
-- Add a dismiss (×) affordance to clear last-read.
+### Section list derivation
+```ts
+const sections = useMemo(() => buildSections(prayer), [prayer]);
+// returns [{ id, label, render: () => JSX }] filtered to non-empty
+```
+`SectionNav` and the article map over the same `sections` array — single source of truth.
 
-## 5. Saved Prayers Flow
+### Active section tracking
+`IntersectionObserver` on each `<section id={id}>` with `rootMargin: "-30% 0px -60% 0px"` → sets `activeId` → chip rail scrolls active chip into view via `scrollIntoView({ inline: "center" })`.
 
-- New route `src/routes/agpeya.saved.tsx` (Saved Prayers list screen) reachable from the bookmark icon already present in the Agpeya home header.
-- Renders list of saved prayers using the existing card style; empty state with icon + CTA "تصفح الصلوات".
-- Reader's save button already toggles — keep, add subtle "محفوظة" badge in header when saved.
-
-## 6. Share Prayer Flow
-
-Already uses `navigator.share` with clipboard fallback. Add:
-
-- Share sheet fallback dialog (when `navigator.share` unavailable) with: copy link, copy text excerpt, share to WhatsApp/Telegram (URL schemes).
-- Toast confirmation in Arabic.
-
-## 7. Empty / Loading / Error States
-
-Unified small components in `src/features/agpeya/states.tsx`:
-
-- **AgpeyaSkeleton** — reader skeleton (header bar, 3 tab pills, 6 shimmer lines) used as `pendingComponent`.
-- **AgpeyaEmpty** — icon + title + subtitle + optional CTA (used for empty saved list, empty tab).
-- **AgpeyaError** — icon + message + "إعادة المحاولة" button (wired to `router.invalidate()` + `reset()`).
-- **AgpeyaNotFound** — used as `notFoundComponent` with link back to Agpeya home.
-- Home: skeleton row while last-read is hydrating from localStorage.
-
-## 8. Coptic Visual Identity (light touch, no redesign)
-
-Within existing tokens only:
-
-- Reuse Alpha logo mark in reader header watermark (very low opacity) and on empty states.
-- Coptic cross divider (SVG, existing gold accent token) between psalm cards and as section breaks.
-- Keep all current colors, spacing, hero, and bottom nav untouched.
-
-## Files Touched
-
-- `src/features/agpeya/data.ts` — structured placeholder dataset.
-- `src/features/agpeya/types.ts` — extend tab content types (psalms[], gospel object, fragments[], info entries).
-- `src/features/agpeya/states.tsx` — new (skeleton/empty/error/notfound).
-- `src/features/agpeya/search.ts` — new (in-prayer search hook + highlight helper).
-- `src/routes/agpeya.$prayerId.tsx` — wire structured tabs, search bar, share dialog fallback, saved badge, use unified state components.
-- `src/routes/agpeya.saved.tsx` — new route.
-- `src/routes/agpeya.tsx` — wire bookmark icon to `/agpeya/saved`, add dismiss to continue tile, skeleton on hydrate.
-- `src/assets/agpeya/` — small Coptic cross SVG (inline component, no asset upload needed).
-
-## Out of Scope (explicitly)
-
-- No Supabase, server functions, or migrations.
-- No changes to Bottom Navigation, Alpha branding, Home screen, Bible/Dictionary/Church routes.
-- No redesign of the approved Agpeya home cards, hero, colors, or spacing.
-- No audio player UI (state shape already exists; deferred).
+### Swipe
+```ts
+const start = useRef<{x:number;y:number}|null>(null);
+onTouchStart = e => start.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+onTouchEnd = e => {
+  if (!start.current) return;
+  const dx = e.changedTouches[0].clientX - start.current.x;
+  const dy = e.changedTouches[0].clientY - start.current.y;
+  if (Math.abs(dy) < 40 && Math.abs(dx) > 60) {
+    if (dx < 0 && next) navigate({ to: "/agpeya/$prayerId", params: { prayerId: next.id }});
+    if (dx > 0 && prev) navigate({ to: "/agpeya/$prayerId", params: { prayerId: prev.id }});
+  }
+  start.current = null;
+};
+```
 
 ## Risks
+- Section nav IntersectionObserver must be cleaned up on prayer change.
+- Swipe must not trigger on small horizontal text drags (60px threshold + vertical guard mitigates).
+- Removing search state requires removing all dependent code (highlight, match nav) — straightforward but file is large; surgical line edits.
 
-- Placeholder liturgical text must stay clearly marked as draft to avoid being mistaken for verified Agpeya content (per `.cursor/rules/alpha-content.mdc`).
-- Search highlighting must not break RTL layout — will use logical CSS only.
-
-Ready to implement on approval.
+## Out of scope
+Bottom nav, Home, Bible Reader, Dictionary, Highlight system, data shape, routes, Supabase, audio playback.
