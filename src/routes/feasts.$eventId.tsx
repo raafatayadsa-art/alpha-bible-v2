@@ -127,7 +127,7 @@ function EventDetails() {
         </div>
 
         <div className="px-4 -mt-4">
-          <GlassSurface className="p-4">
+          <GlassSurface className="p-4 bg-white border-[#ead9b1] shadow-[0_18px_40px_-22px_rgba(120,80,30,0.55)]">
             <h1 className="font-arabic-serif text-[22px] font-extrabold text-[#3a2a18] leading-tight">
               {event.title}
             </h1>
@@ -144,7 +144,7 @@ function EventDetails() {
             </div>
 
             {event.scripture && (
-              <div className="mt-4 relative rounded-2xl bg-[#fbf3e1] border border-[#efe2c4] p-4 pr-10">
+              <div className="mt-4 relative rounded-2xl bg-[#fff7e0] border border-[#ead9b1] p-4 pr-10">
                 <span className="absolute top-3 right-3 text-[#b8893a]/50 text-3xl leading-none font-serif">”</span>
                 <p className="text-[13px] text-[#3a2a18] leading-relaxed text-center">{event.scripture}</p>
                 {event.scriptureRef && (
