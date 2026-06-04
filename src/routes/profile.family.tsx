@@ -4,6 +4,7 @@ import {
   UserPlus,
   BadgeCheck,
   ShieldCheck,
+  ShieldAlert,
   Users,
   Crown,
   X,
@@ -11,6 +12,7 @@ import {
   Mail,
   Calendar as CalendarIcon,
   IdCard,
+  Sparkles,
 } from "lucide-react";
 import { ProfileSubShell } from "@/components/profile/Shell";
 import { CopticCross, CopticSeparator } from "@/components/coptic";
@@ -34,7 +36,40 @@ type Member = {
   initial: string;
 };
 
-const ROLE_COLORS: Record<Role, string> = {
+type Tint = {
+  bg: string;
+  ring: string;
+  glow: string;
+  accent: string;
+};
+
+// Tint palette — soft mint/sky/gold/amber tones over cream
+const TINT_VERIFIED: Tint = {
+  bg: "linear-gradient(180deg, rgba(228,244,232,0.92) 0%, rgba(214,236,221,0.88) 100%)",
+  ring: "rgba(120,180,140,0.35)",
+  glow: "rgba(95,165,120,0.35)",
+  accent: "#3f9d6e",
+};
+const TINT_PENDING: Tint = {
+  bg: "linear-gradient(180deg, rgba(250,240,215,0.94) 0%, rgba(245,228,190,0.9) 100%)",
+  ring: "rgba(216,170,80,0.38)",
+  glow: "rgba(216,170,80,0.35)",
+  accent: "#b8893a",
+};
+const TINT_CHILD: Tint = {
+  bg: "linear-gradient(180deg, rgba(230,238,250,0.94) 0%, rgba(224,228,248,0.9) 100%)",
+  ring: "rgba(140,160,210,0.38)",
+  glow: "rgba(140,160,210,0.35)",
+  accent: "#5a78b8",
+};
+const TINT_OWNER: Tint = {
+  bg: "linear-gradient(180deg, rgba(251,236,178,0.96) 0%, rgba(231,201,122,0.92) 100%)",
+  ring: "rgba(201,138,60,0.5)",
+  glow: "rgba(201,138,60,0.45)",
+  accent: "#8a5a14",
+};
+
+const ROLE_LABEL_COLORS: Record<Role, string> = {
   "الأب": "#8a5a14",
   "الأم": "#a07ec4",
   "ابن": "#4a86c1",
@@ -45,6 +80,13 @@ const ROLE_COLORS: Record<Role, string> = {
   "أخت": "#b8893a",
 };
 
+function tintFor(m: Member): Tint {
+  if (m.role === "الأب") return TINT_OWNER;
+  if (!m.verified) return TINT_PENDING;
+  if (m.role === "ابن" || m.role === "ابنة") return TINT_CHILD;
+  return TINT_VERIFIED;
+}
+
 const SEED: Member[] = [
   { id: 1, name: "عاطف صبحي",   role: "الأب", status: "عضو فعّال", verified: true,  initial: "ع" },
   { id: 2, name: "ماري لويس",   role: "الأم", status: "عضو فعّال", verified: true,  initial: "م" },
@@ -54,119 +96,171 @@ const SEED: Member[] = [
 
 const ROLES: Role[] = ["الأب", "الأم", "ابن", "ابنة", "جد", "جدة", "أخ", "أخت"];
 
-function SummaryCard({ members }: { members: Member[] }) {
-  const verified = members.filter((m) => m.verified).length;
-  const parents = members.filter((m) => m.role === "الأب" || m.role === "الأم").length;
-  const children = members.filter((m) => m.role === "ابن" || m.role === "ابنة").length;
+/* ---------- Mint cream background overlay (Family-only) ---------- */
+function MintBackdrop() {
   return (
     <div
-      className="relative overflow-hidden rounded-[24px] border border-[#efe2c4] p-4"
+      aria-hidden
+      className="fixed inset-0 -z-[5] pointer-events-none"
       style={{
         background:
-          "radial-gradient(120% 90% at 20% 0%, rgba(231,201,122,0.45), transparent 65%)," +
-          "linear-gradient(180deg, #fbf3e1 0%, #f4ead8 100%)",
+          "radial-gradient(110% 60% at 50% 0%, rgba(200,232,210,0.55), transparent 60%)," +
+          "radial-gradient(90% 70% at 100% 100%, rgba(231,201,122,0.18), transparent 65%)," +
+          "linear-gradient(180deg, rgba(238,248,240,0.85) 0%, rgba(232,244,232,0.78) 50%, rgba(222,236,222,0.82) 100%)",
+      }}
+    />
+  );
+}
+
+/* ---------- Premium Summary Card ---------- */
+function SummaryCard({ members }: { members: Member[] }) {
+  const verified = members.filter((m) => m.verified).length;
+  const pending = members.filter((m) => !m.verified).length;
+  return (
+    <div
+      className="relative overflow-hidden rounded-[26px] p-4"
+      style={{
+        background:
+          "linear-gradient(180deg, rgba(255,255,255,0.78) 0%, rgba(238,248,240,0.72) 100%)",
+        border: "1px solid rgba(200,222,206,0.7)",
+        backdropFilter: "blur(22px)",
+        WebkitBackdropFilter: "blur(22px)",
         boxShadow:
-          "0 18px 36px -22px rgba(120,80,30,0.55), inset 0 1px 0 rgba(255,255,255,0.7)",
+          "0 22px 44px -24px rgba(60,110,80,0.4), 0 0 30px -16px rgba(216,170,80,0.35), inset 0 1px 0 rgba(255,255,255,0.85)",
       }}
     >
       {/* Coptic Ⲁ Ⲱ watermark */}
-      <span aria-hidden className="absolute -top-3 -left-1 text-[64px] leading-none font-bold text-[#8a5a14]/[0.07] select-none">Ⲱ</span>
-      <span aria-hidden className="absolute -bottom-4 -right-1 text-[72px] leading-none font-bold text-[#8a5a14]/[0.07] select-none">Ⲁ</span>
+      <span aria-hidden className="absolute -top-3 -left-1 text-[64px] leading-none font-bold text-[#3f7d5a]/[0.08] select-none">Ⲱ</span>
+      <span aria-hidden className="absolute -bottom-4 -right-1 text-[72px] leading-none font-bold text-[#8a5a14]/[0.09] select-none">Ⲁ</span>
 
-      <div className="flex items-center gap-2">
+      {/* Gold ornamental top hairline */}
+      <span aria-hidden className="absolute left-6 right-6 top-0 h-px"
+        style={{ background: "linear-gradient(90deg, transparent, rgba(216,170,80,0.55), transparent)" }} />
+
+      <div className="flex items-center gap-2.5">
         <div
-          className="grid h-10 w-10 place-items-center rounded-xl"
+          className="grid h-11 w-11 place-items-center rounded-2xl shrink-0"
           style={{
-            background: "radial-gradient(120% 90% at 30% 20%, rgba(216,168,58,0.55), rgba(184,137,58,0.18) 70%)",
-            border: "1px solid rgba(216,168,58,0.55)",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
+            background:
+              "radial-gradient(120% 90% at 30% 20%, rgba(251,236,178,0.95), rgba(216,170,80,0.5) 70%)",
+            border: "1px solid rgba(201,138,60,0.55)",
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.8), 0 8px 18px -10px rgba(201,138,60,0.55)",
           }}
         >
-          <Crown className="h-4.5 w-4.5 text-[#7a4a14]" />
+          <Crown className="h-5 w-5 text-[#7a4a14]" />
         </div>
-        <div className="text-right">
-          <div className="text-[13px] font-extrabold text-[#3a2a18]">عائلة عاطف صبحي</div>
-          <div className="text-[10.5px] text-[#9a7e5a]">إدارة أفراد العائلة المرتبطين بالكنيسة</div>
+        <div className="flex-1 min-w-0 text-right">
+          <div className="flex items-center justify-end gap-1.5">
+            <h2 className="text-[14px] font-extrabold text-[#1f3a2a] truncate">عائلة عاطف صبحي</h2>
+            <Sparkles className="h-3 w-3 text-[#b8893a]" />
+          </div>
+          <div className="text-[10.5px] text-[#5a7766]">إدارة أفراد العائلة المرتبطين بالكنيسة</div>
         </div>
       </div>
 
-      <div className="mt-3 grid grid-cols-3 gap-2">
-        <Stat label="إجمالي" value={members.length} icon={Users} color="#b8893a" />
+      <div className="my-3 h-px bg-gradient-to-r from-transparent via-[#b8893a]/30 to-transparent" />
+
+      <div className="grid grid-cols-3 gap-2">
+        <Stat label="إجمالي" value={members.length} icon={Users} color="#3f7d5a" />
         <Stat label="موثّق" value={verified} icon={ShieldCheck} color="#3f9d6e" />
-        <Stat label="هيكل" value={`${parents}/${children}`} icon={Crown} color="#a07ec4" small />
+        <Stat label="بانتظار" value={pending} icon={ShieldAlert} color="#b8893a" />
       </div>
     </div>
   );
 }
 
 function Stat({
-  label, value, icon: Icon, color, small = false,
-}: { label: string; value: number | string; icon: any; color: string; small?: boolean }) {
+  label, value, icon: Icon, color,
+}: { label: string; value: number | string; icon: any; color: string }) {
   return (
     <div
-      className="rounded-2xl border border-[#efe2c4] bg-white/65 backdrop-blur-xl px-2.5 py-2 text-center"
-      style={{ boxShadow: `inset 0 1px 0 rgba(255,255,255,0.6), 0 4px 12px -8px ${color}55` }}
+      className="rounded-2xl px-2.5 py-2.5 text-center"
+      style={{
+        background: "linear-gradient(180deg, rgba(255,255,255,0.85), rgba(245,252,247,0.7))",
+        border: `1px solid ${color}33`,
+        boxShadow: `inset 0 1px 0 rgba(255,255,255,0.8), 0 6px 14px -10px ${color}66`,
+      }}
     >
-      <Icon className="mx-auto h-3.5 w-3.5" style={{ color }} />
-      <div className={`mt-0.5 font-extrabold text-[#3a2a18] ${small ? "text-[14px]" : "text-[16px]"}`}>{value}</div>
-      <div className="text-[9.5px] text-[#9a7e5a]">{label}</div>
+      <Icon className="mx-auto h-4 w-4" style={{ color }} />
+      <div className="mt-0.5 font-extrabold text-[16px] text-[#1f3a2a]">{value}</div>
+      <div className="text-[9.5px] text-[#5a7766]">{label}</div>
     </div>
   );
 }
 
+/* ---------- Member Card ---------- */
 function MemberCard({ m }: { m: Member }) {
-  const color = ROLE_COLORS[m.role];
+  const tint = tintFor(m);
+  const roleColor = ROLE_LABEL_COLORS[m.role];
   return (
     <div
-      className="relative overflow-hidden rounded-[20px] border border-[#efe2c4] p-3.5"
+      className="relative overflow-hidden rounded-[22px] p-3.5 transition active:scale-[0.985]"
       style={{
-        background: "linear-gradient(180deg, #fbf3e1 0%, #f4ead8 100%)",
-        boxShadow: `0 12px 26px -18px rgba(120,80,30,0.5), 0 0 18px -14px ${color}66, inset 0 1px 0 rgba(255,255,255,0.7)`,
+        background: tint.bg,
+        border: `1px solid ${tint.ring}`,
+        backdropFilter: "blur(18px)",
+        WebkitBackdropFilter: "blur(18px)",
+        boxShadow: `0 14px 28px -20px ${tint.glow}, 0 0 20px -14px ${tint.glow}, inset 0 1px 0 rgba(255,255,255,0.85)`,
       }}
     >
       {/* leading-edge accent (RTL right) */}
       <span
         aria-hidden
         className="absolute top-2 bottom-2 right-0 w-[3px] rounded-full"
-        style={{ background: `linear-gradient(180deg, ${color}, ${color}80)`, opacity: 0.9 }}
+        style={{ background: `linear-gradient(180deg, ${tint.accent}, ${tint.accent}80)`, opacity: 0.9 }}
       />
+      {/* faint Ⲁ watermark */}
+      <span aria-hidden className="absolute -bottom-3 -left-1 text-[44px] leading-none font-bold select-none"
+        style={{ color: tint.accent, opacity: 0.07 }}>Ⲁ</span>
+
       <div className="flex items-center gap-3">
         <div className="relative shrink-0">
           <div
-            className="grid h-12 w-12 place-items-center rounded-full font-extrabold text-[15px] text-[#3a2a18]"
+            className="grid h-12 w-12 place-items-center rounded-full font-extrabold text-[15px] text-[#1f3a2a]"
             style={{
-              background: `radial-gradient(120% 90% at 30% 20%, ${color}55, ${color}1a 70%)`,
-              border: `1.5px solid ${color}80`,
-              boxShadow: `inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -5px 9px ${color}33`,
+              background: `radial-gradient(120% 90% at 30% 20%, ${tint.accent}55, ${tint.accent}1a 70%)`,
+              border: `1.5px solid ${tint.accent}80`,
+              boxShadow: `inset 0 1px 0 rgba(255,255,255,0.7), inset 0 -5px 9px ${tint.accent}33`,
             }}
           >
             {m.initial}
           </div>
-          {m.verified && (
+          {m.verified ? (
             <span
               className="absolute -bottom-0.5 -right-0.5 grid h-4 w-4 place-items-center rounded-full bg-white"
               style={{ boxShadow: "0 2px 6px rgba(63,157,110,0.5)" }}
             >
               <BadgeCheck className="h-3.5 w-3.5 text-[#3f9d6e]" />
             </span>
+          ) : (
+            <span
+              className="absolute -bottom-0.5 -right-0.5 grid h-4 w-4 place-items-center rounded-full bg-white"
+              style={{ boxShadow: "0 2px 6px rgba(184,137,58,0.5)" }}
+            >
+              <ShieldAlert className="h-3 w-3 text-[#b8893a]" />
+            </span>
           )}
         </div>
 
         <div className="flex-1 min-w-0 text-right">
           <div className="flex items-center justify-between gap-2">
-            <h3 className="text-[14px] font-extrabold text-[#3a2a18] truncate">{m.name}</h3>
+            <h3 className="text-[14px] font-extrabold text-[#1f3a2a] truncate">{m.name}</h3>
             <span
               className="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0"
-              style={{ background: `${color}1f`, color, border: `1px solid ${color}40` }}
+              style={{
+                background: `${roleColor}1f`,
+                color: roleColor,
+                border: `1px solid ${roleColor}40`,
+              }}
             >
               {m.role}
             </span>
           </div>
-          <div className="mt-1 flex items-center justify-end gap-2 text-[10.5px]">
+          <div className="mt-1 flex items-center justify-end gap-1.5 text-[10.5px] flex-wrap">
             <span
               className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full"
               style={{
-                background: m.status === "عضو فعّال" ? "rgba(63,157,110,0.12)" : "rgba(154,126,90,0.12)",
+                background: m.status === "عضو فعّال" ? "rgba(63,157,110,0.14)" : "rgba(154,126,90,0.12)",
                 color: m.status === "عضو فعّال" ? "#2f7d5a" : "#6a543a",
                 border: `1px solid ${m.status === "عضو فعّال" ? "rgba(63,157,110,0.35)" : "rgba(154,126,90,0.35)"}`,
               }}
@@ -174,9 +268,16 @@ function MemberCard({ m }: { m: Member }) {
               <IdCard className="h-3 w-3" />
               {m.status}
             </span>
-            <span className={`inline-flex items-center gap-1 ${m.verified ? "text-[#2f7d5a]" : "text-[#b85a5a]"}`}>
+            <span
+              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full"
+              style={{
+                background: m.verified ? "rgba(63,157,110,0.12)" : "rgba(184,137,58,0.14)",
+                color: m.verified ? "#2f7d5a" : "#8a5a14",
+                border: `1px solid ${m.verified ? "rgba(63,157,110,0.32)" : "rgba(184,137,58,0.4)"}`,
+              }}
+            >
               <ShieldCheck className="h-3 w-3" />
-              {m.verified ? "موثّق من الكنيسة" : "غير موثّق"}
+              {m.verified ? "موثّق" : "قيد التوثيق"}
             </span>
           </div>
         </div>
@@ -185,6 +286,7 @@ function MemberCard({ m }: { m: Member }) {
   );
 }
 
+/* ---------- Add Sheet ---------- */
 function AddSheet({
   open, onClose, onSubmit,
 }: { open: boolean; onClose: () => void; onSubmit: (m: Omit<Member, "id" | "verified" | "initial" | "status">) => void }) {
@@ -197,14 +299,14 @@ function AddSheet({
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
-      <div className="absolute inset-0 bg-[#2a1d0d]/55 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-[#1a2a20]/55 backdrop-blur-sm" onClick={onClose} />
       <div
         dir="rtl"
         className="relative w-full max-w-[440px] rounded-t-[28px] overflow-hidden"
         style={{
-          background: "linear-gradient(180deg,#fbf3e1 0%, #f4ead8 100%)",
-          border: "1px solid #efe2c4",
-          boxShadow: "0 -22px 50px -10px rgba(120,80,30,0.45)",
+          background: "linear-gradient(180deg, #f4faf5 0%, #eaf2ec 100%)",
+          border: "1px solid rgba(200,222,206,0.7)",
+          boxShadow: "0 -22px 50px -10px rgba(60,110,80,0.45)",
           paddingBottom: "max(env(safe-area-inset-bottom), 16px)",
         }}
       >
@@ -212,14 +314,14 @@ function AddSheet({
           <span className="h-1 w-10 rounded-full bg-[#b8893a]/30 absolute left-0 right-0 top-2 mx-auto" />
           <div className="flex items-center gap-2">
             <CopticCross className="text-[#b8893a]" size={14} />
-            <h2 className="text-[15px] font-extrabold text-[#3a2a18]">إضافة فرد للعائلة</h2>
+            <h2 className="text-[15px] font-extrabold text-[#1f3a2a]">إضافة فرد للعائلة</h2>
           </div>
           <button
             onClick={onClose}
             aria-label="إغلاق"
-            className="grid h-9 w-9 place-items-center rounded-full bg-white/80 border border-[#efe2c4]"
+            className="grid h-9 w-9 place-items-center rounded-full bg-white/80 border border-[#d6e8dd]"
           >
-            <X className="h-4 w-4 text-[#3a2a18]" />
+            <X className="h-4 w-4 text-[#1f3a2a]" />
           </button>
         </div>
 
@@ -230,7 +332,7 @@ function AddSheet({
           <Field label="تاريخ الميلاد" icon={CalendarIcon} value={dob} onChange={setDob} placeholder="" type="date" />
 
           <div>
-            <div className="mb-1.5 text-[11px] font-bold text-[#6a543a]">صلة القرابة</div>
+            <div className="mb-1.5 text-[11px] font-bold text-[#3f6a55]">صلة القرابة</div>
             <div className="flex flex-wrap gap-1.5">
               {ROLES.map((r) => {
                 const active = role === r;
@@ -248,9 +350,9 @@ function AddSheet({
                             border: "1px solid rgba(216,138,42,0.4)",
                           }
                         : {
-                            background: "rgba(255,255,255,0.7)",
-                            color: "#3a2a18",
-                            border: "1px solid #efe2c4",
+                            background: "rgba(255,255,255,0.75)",
+                            color: "#1f3a2a",
+                            border: "1px solid #d6e8dd",
                           }
                     }
                   >
@@ -266,15 +368,15 @@ function AddSheet({
             onClick={() => { onSubmit({ name: name.trim(), role }); onClose(); setName(""); setMobile(""); setEmail(""); setDob(""); }}
             className="mt-2 w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-[13px] font-extrabold text-[#f7e7b8] disabled:opacity-50"
             style={{
-              background: "linear-gradient(180deg,#4d3c70,#2a1d45)",
+              background: "linear-gradient(180deg,#2f5a44,#1f3a2a)",
               border: "1px solid rgba(240,215,140,0.4)",
-              boxShadow: "0 14px 28px -14px rgba(40,25,75,0.7)",
+              boxShadow: "0 14px 28px -14px rgba(30,60,42,0.7)",
             }}
           >
             <UserPlus className="h-4 w-4" />
             حفظ الفرد الجديد
           </button>
-          <p className="text-center text-[10px] text-[#9a7e5a]">
+          <p className="text-center text-[10px] text-[#5a7766]">
             سيتم إرسال طلب التحقق إلى إدارة الكنيسة لتوثيق العضو.
           </p>
         </div>
@@ -288,15 +390,15 @@ function Field({
 }: { label: string; icon: any; value: string; onChange: (v: string) => void; placeholder?: string; type?: string }) {
   return (
     <label className="block">
-      <div className="mb-1 text-[11px] font-bold text-[#6a543a]">{label}</div>
-      <div className="flex items-center gap-2 px-3 py-2.5 rounded-2xl border border-[#efe2c4] bg-white/80 backdrop-blur-xl">
+      <div className="mb-1 text-[11px] font-bold text-[#3f6a55]">{label}</div>
+      <div className="flex items-center gap-2 px-3 py-2.5 rounded-2xl border border-[#d6e8dd] bg-white/85 backdrop-blur-xl">
         <Icon className="h-4 w-4 text-[#b8893a] shrink-0" />
         <input
           type={type}
           value={value}
           placeholder={placeholder}
           onChange={(e) => onChange(e.target.value)}
-          className="flex-1 bg-transparent outline-none text-[13px] text-[#3a2a18] placeholder:text-[#b8a378] text-right"
+          className="flex-1 bg-transparent outline-none text-[13px] text-[#1f3a2a] placeholder:text-[#9bb5a5] text-right"
         />
       </div>
     </label>
@@ -328,7 +430,8 @@ function FamilyScreen() {
 
   return (
     <ProfileSubShell title="العائلة">
-      <p className="-mt-3 mb-3 text-center text-[11px] text-[#6a543a]">
+      <MintBackdrop />
+      <p className="-mt-3 mb-3 text-center text-[11px] text-[#3f6a55]">
         إدارة أفراد العائلة المرتبطين بالكنيسة
       </p>
 
@@ -337,8 +440,8 @@ function FamilyScreen() {
       <CopticSeparator className="my-4" />
 
       <div className="flex items-center justify-between mb-2 px-1">
-        <h2 className="text-[13px] font-extrabold text-[#3a2a18]">أفراد العائلة</h2>
-        <span className="text-[10.5px] text-[#9a7e5a]">{members.length} فرد</span>
+        <h2 className="text-[13px] font-extrabold text-[#1f3a2a]">أفراد العائلة</h2>
+        <span className="text-[10.5px] text-[#5a7766]">{members.length} فرد</span>
       </div>
 
       <div className="space-y-2.5">
@@ -349,18 +452,20 @@ function FamilyScreen() {
 
       <button
         onClick={() => setAddOpen(true)}
-        className="mt-5 w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-[13px] font-extrabold text-[#3a2a10]"
+        className="mt-5 w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-[13px] font-extrabold text-[#3a2a10] transition active:scale-[0.985]"
         style={{
-          background: "linear-gradient(180deg,#fbecb2,#e7c97a 55%,#c98a3c)",
-          border: "1px solid rgba(216,138,42,0.45)",
-          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.7), 0 14px 28px -14px rgba(216,138,42,0.6)",
+          background:
+            "linear-gradient(180deg, rgba(251,236,178,0.95), rgba(231,201,122,0.95) 55%, rgba(201,138,60,0.95))",
+          border: "1px solid rgba(201,138,60,0.5)",
+          boxShadow:
+            "inset 0 1px 0 rgba(255,255,255,0.75), 0 14px 28px -14px rgba(201,138,60,0.6), 0 0 22px -14px rgba(63,157,110,0.45)",
         }}
       >
         <UserPlus className="h-4 w-4" />
         + إضافة فرد جديد
       </button>
 
-      <p className="mt-3 text-center text-[10px] text-[#9a7e5a]">
+      <p className="mt-3 text-center text-[10px] text-[#5a7766]">
         الأفراد ينتمون إلى منظومة الكنيسة، وليست مجرد جهات اتصال.
       </p>
 
