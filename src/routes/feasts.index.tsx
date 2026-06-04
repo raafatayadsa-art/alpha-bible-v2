@@ -96,7 +96,7 @@ function FeastsHome() {
           <GlassSurface className="overflow-hidden p-0 bg-white border-[#ead9b1] shadow-[0_18px_40px_-22px_rgba(120,80,30,0.55)]">
             <div className="relative h-[200px]">
               <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${today.image})` }} />
-              <div className="absolute inset-0 bg-gradient-to-r from-white via-white/55 to-transparent" />
+              <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff_0%,#ffffff_45%,rgba(255,255,255,0.6)_65%,transparent_100%)]" />
               <div className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-[#3a2a18] border border-[#ead9b1] shadow-[0_4px_10px_-8px_rgba(120,80,30,0.5)]">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#6a4ab5]" />
                 اليوم
