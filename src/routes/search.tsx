@@ -34,6 +34,16 @@ function norm(s: string): string {
 type Category = "bible" | "agpeya" | "katameros" | "synaxarium" | "feasts" | "meditations";
 type Scope = "all" | Category;
 
+const SCOPE_COLORS: Record<Scope, { color: string; text: string; bg: string; border: string; activeBg: string; glow: string }> = {
+  all:         { color: "#8a7558", text: "text-[#8a7558]",      bg: "bg-[#8a7558]/10",       border: "border-[#8a7558]/15",    activeBg: "bg-[#8a7558]/22",    glow: "shadow-[0_0_12px_-3px_rgba(138,117,88,0.35)]" },
+  bible:       { color: "#caa15f", text: "text-[#caa15f]",      bg: "bg-[#caa15f]/12",       border: "border-[#caa15f]/20",    activeBg: "bg-[#caa15f]/24",    glow: "shadow-[0_0_14px_-3px_rgba(202,161,95,0.45)]" },
+  agpeya:      { color: "#8a6ec1", text: "text-[#7a5fb0]",      bg: "bg-[#8a6ec1]/10",       border: "border-[#8a6ec1]/18",    activeBg: "bg-[#8a6ec1]/22",    glow: "shadow-[0_0_14px_-3px_rgba(138,110,193,0.4)]" },
+  katameros:   { color: "#4a9e6e", text: "text-[#3d8a60]",      bg: "bg-[#4a9e6e]/10",       border: "border-[#4a9e6e]/18",    activeBg: "bg-[#4a9e6e]/22",    glow: "shadow-[0_0_14px_-3px_rgba(74,158,110,0.4)]" },
+  synaxarium:  { color: "#a85450", text: "text-[#a85450]",      bg: "bg-[#a85450]/10",       border: "border-[#a85450]/18",    activeBg: "bg-[#a85450]/22",    glow: "shadow-[0_0_14px_-3px_rgba(168,84,80,0.4)]" },
+  feasts:      { color: "#c98a3c", text: "text-[#b87c32]",      bg: "bg-[#c98a3c]/10",       border: "border-[#c98a3c]/18",    activeBg: "bg-[#c98a3c]/22",    glow: "shadow-[0_0_14px_-3px_rgba(201,138,60,0.4)]" },
+  meditations: { color: "#5b8fd1", text: "text-[#4a7ec0]",      bg: "bg-[#5b8fd1]/10",       border: "border-[#5b8fd1]/18",    activeBg: "bg-[#5b8fd1]/22",    glow: "shadow-[0_0_14px_-3px_rgba(91,143,209,0.4)]" },
+};
+
 const SCOPES: { id: Scope; label: string; placeholder: string }[] = [
   { id: "all",        label: "الكل",         placeholder: "ابحث في كل شيء..." },
   { id: "bible",      label: "الكتاب",       placeholder: "ابحث في الكتاب المقدس..." },
