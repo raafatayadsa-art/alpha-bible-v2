@@ -1,12 +1,13 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Home as HomeIcon, HandHeart, BookOpen, User as UserIcon } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import logoBible from "@/assets/home/logo-bible.png";
 import { cn } from "@/lib/utils";
 
 /**
  * Persistent floating Alpha Bible bottom navigation.
- * Supports a light parchment theme and a dark navy glass theme (spiritualMode)
- * that harmonizes with the auto-scroll controller.
+ * Auto-hides after 5s of no interaction; reappears on scroll-up, tap,
+ * or any user input. The external `hidden` prop still forces it hidden.
  */
 export function BottomDock({
   className = "",
@@ -22,17 +23,79 @@ export function BottomDock({
   const isActive = (match: string | RegExp) =>
     typeof match === "string" ? pathname === match || pathname.startsWith(match + "/") : match.test(pathname);
 
+  // ===== Auto-hide after idle =====
+  const [autoHidden, setAutoHidden] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastYRef = useRef<number>(typeof window !== "undefined" ? window.scrollY : 0);
+
+  useEffect(() => {
+    const IDLE_MS = 5000;
+
+    const armTimer = () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => setAutoHidden(true), IDLE_MS);
+    };
+
+    const reveal = () => {
+      setAutoHidden(false);
+      armTimer();
+    };
+
+    const onScroll = () => {
+      const y = window.scrollY;
+      const prev = lastYRef.current;
+      lastYRef.current = y;
+      // Scrolling up (or near top) → reveal. Scrolling down → keep current state but reset idle timer.
+      if (y < prev - 2 || y < 8) {
+        reveal();
+      } else {
+        armTimer();
+      }
+    };
+
+    const onActivity = () => reveal();
+
+    // Start the idle timer immediately on mount.
+    armTimer();
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("touchstart", onActivity, { passive: true });
+    window.addEventListener("pointerdown", onActivity, { passive: true });
+    window.addEventListener("keydown", onActivity);
+    window.addEventListener("wheel", onScroll, { passive: true });
+
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("touchstart", onActivity);
+      window.removeEventListener("pointerdown", onActivity);
+      window.removeEventListener("keydown", onActivity);
+      window.removeEventListener("wheel", onScroll);
+    };
+  }, []);
+
+  // Reset on route change so the dock is visible when entering a new screen.
+  useEffect(() => {
+    setAutoHidden(false);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => setAutoHidden(true), 5000);
+  }, [pathname]);
+
+  const isHidden = hidden || autoHidden;
+
   return (
     <nav
       dir="rtl"
       aria-label="التنقل السفلي"
+      aria-hidden={isHidden}
       className={cn(
-        "fixed inset-x-0 bottom-0 z-50 pointer-events-none transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-        hidden ? "translate-y-[120%] opacity-0" : "translate-y-0 opacity-100",
+        "fixed inset-x-0 bottom-0 z-50 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        isHidden ? "translate-y-[140%] opacity-0 pointer-events-none" : "translate-y-0 opacity-100 pointer-events-none",
         className,
       )}
       style={{ paddingBottom: "max(env(safe-area-inset-bottom), 8px)" }}
     >
+
       <div className="mx-auto w-full max-w-[420px] px-3 pointer-events-auto">
         <div
           className={cn(
