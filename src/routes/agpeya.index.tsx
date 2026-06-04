@@ -11,6 +11,7 @@ import {
 } from "@/features/agpeya";
 import type { AgpeyaPrayer } from "@/features/agpeya";
 import { BottomDock } from "@/components/bible/BottomDock";
+import { CopticWatermark } from "@/components/coptic";
 import { cn } from "@/lib/utils";
 import headerStill from "@/assets/agpeya/header-still.jpg";
 import heroSunrise from "@/assets/agpeya/hero-sunrise.jpg";
@@ -191,6 +192,7 @@ function AgpeyaHome() {
 
   return (
     <div dir="rtl" className="relative min-h-dvh bg-[#fbf3e1] pb-32">
+      <CopticWatermark />
       {/* ===== Premium Header ===== */}
       <header className="relative">
         <div className="relative h-[230px] overflow-hidden">
