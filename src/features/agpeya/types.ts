@@ -2,11 +2,47 @@ export type AgpeyaSectionKey = "day" | "night" | "extra";
 
 export type AgpeyaTabKey = "text" | "psalms" | "gospel" | "fragments" | "info";
 
+/** Structured psalm entry. */
+export interface AgpeyaPsalm {
+  number: number;
+  title?: string;
+  /** Verse strings WITHOUT leading numbering — UI numbers them. */
+  verses: string[];
+}
+
+/** Structured gospel pericope. */
+export interface AgpeyaGospelPassage {
+  reference: string;        // e.g. "إنجيل معلمنا متى الإصحاح ٥"
+  intro?: string;           // e.g. "مبارك الآتي باسم الرب..."
+  passage: string;          // multi-paragraph body
+  conclusion?: string;      // e.g. "والمجد لله دائماً"
+}
+
+/** Standalone liturgical fragment (Trisagion, Doxology, etc.). */
+export interface AgpeyaFragment {
+  title: string;
+  body: string;
+}
+
+/** Definition-list entry for the Info tab. */
+export interface AgpeyaInfoEntry {
+  label: string;
+  value: string;
+}
+
 export interface AgpeyaTabContent {
   /** Plain Arabic prose. Paragraphs are separated by blank lines. */
   body?: string;
   /** Optional list of references e.g. مز ١، مز ٢. */
   references?: string[];
+  /** Psalms tab — structured list. */
+  psalms?: AgpeyaPsalm[];
+  /** Gospel tab — structured pericope(s). */
+  gospel?: AgpeyaGospelPassage[];
+  /** Fragments tab — short standalone pieces. */
+  fragments?: AgpeyaFragment[];
+  /** Info tab — definition entries. */
+  info?: AgpeyaInfoEntry[];
 }
 
 /** Audio metadata placeholder — playback not implemented yet. */
@@ -20,27 +56,16 @@ export interface AgpeyaAudioMeta {
 export interface AgpeyaPrayer {
   id: string;
   title: string;
-  /** Short subtitle e.g. "الساعة السادسة صباحًا" */
   subtitle?: string;
-  /** Longer one-line description shown on the hero card. */
   description?: string;
-  /** Liturgical hour in 24h clock; used to pick "current" prayer. */
   hour?: number;
-  /** Human label for the hour, e.g. "06:00 ص". */
   clock?: string;
-  /** Estimated reading duration in minutes. */
   durationMin?: number;
-  /** Number of psalms in this prayer. */
   psalmsCount?: number;
-  /** Number of gospel pericopes (قطع) in this prayer. */
   gospelCount?: number;
-  /** Short reference line e.g. "12 مزمور — 3 قطع — 35 دقيقة" override. */
   metaLine?: string;
   section: AgpeyaSectionKey;
-  /** Optional accent token used by the card. */
   accent?: "dawn" | "midmorning" | "noon" | "evening" | "compline" | "veil" | "midnight" | "extra";
-  /** Per-tab content. Tabs with no entry are hidden. */
   tabs: Partial<Record<AgpeyaTabKey, AgpeyaTabContent>>;
-  /** Optional audio recitation metadata (not yet wired to a player). */
   audio?: AgpeyaAudioMeta;
 }

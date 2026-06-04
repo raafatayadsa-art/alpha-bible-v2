@@ -13,12 +13,26 @@ import {
   Pause,
   Gauge,
   Rows3,
+  Search,
+  X,
+  Copy,
+  Send,
+  MessageCircle,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import {
   adjacentAgpeyaPrayers,
+  AGPEYA_DRAFT_NOTICE,
+  AgpeyaErrorState,
+  AgpeyaNotFoundState,
+  AgpeyaSkeleton,
+  CopticCross,
+  CopticDivider,
   getAgpeyaPrayer,
   readPrayerPosition,
   savePrayerPosition,
+  splitForHighlight,
   SPEED_PX_PER_SEC,
   useAgpeyaAudio,
   useAgpeyaFontSize,
@@ -26,69 +40,32 @@ import {
   useAgpeyaSpeed,
   useAgpeyaTheme,
   useSavedAgpeya,
+  type AgpeyaFragment,
+  type AgpeyaGospelPassage,
+  type AgpeyaInfoEntry,
+  type AgpeyaPsalm,
   type AgpeyaSpeed,
 } from "@/features/agpeya";
 import type { AgpeyaPrayer, AgpeyaTabKey } from "@/features/agpeya";
 import { cn } from "@/lib/utils";
 
-/* ---------- Lifecycle states (declared before Route for code-splitter) ---------- */
-
-function ReaderShell({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      dir="rtl"
-      className="min-h-dvh flex flex-col items-center justify-center px-6 text-center bg-[radial-gradient(120%_60%_at_50%_-10%,#fff5dd_0%,#fbeac6_45%,#f3d9a5_100%)] text-[#3a2410]"
-    >
-      {children}
-    </div>
-  );
-}
+/* ---------- Lifecycle states ---------- */
 
 function ReaderPending() {
-  return (
-    <ReaderShell>
-      <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#c79356] border-t-transparent" aria-label="جار التحميل" />
-      <p className="mt-4 text-[13px] font-semibold text-[#8a5a1f]">جار تحميل الصلاة…</p>
-    </ReaderShell>
-  );
+  return <AgpeyaSkeleton />;
 }
 
 function ReaderNotFound() {
-  return (
-    <ReaderShell>
-      <h1 className="font-arabic-serif text-[22px] font-extrabold text-[#5b3a18]">الصلاة غير موجودة</h1>
-      <p className="mt-2 text-[13px] text-[#8a5a1f]">تعذر العثور على هذه الصلاة في الأجبية.</p>
-      <Link
-        to="/agpeya"
-        className="mt-5 inline-flex items-center gap-2 rounded-full bg-gradient-to-br from-[#e7b35a] to-[#b87a22] px-4 py-2 text-[13px] font-bold text-white shadow"
-      >
-        العودة للأجبية
-      </Link>
-    </ReaderShell>
-  );
+  return <AgpeyaNotFoundState />;
 }
 
 function ReaderError({ error, reset }: ErrorComponentProps) {
   const router = useRouter();
   return (
-    <ReaderShell>
-      <h1 className="font-arabic-serif text-[22px] font-extrabold text-[#5b3a18]">حدث خطأ غير متوقع</h1>
-      <p className="mt-2 max-w-sm text-[12.5px] text-[#8a5a1f]">
-        {error?.message ?? "تعذر تحميل هذه الصلاة. حاول مرة أخرى."}
-      </p>
-      <div className="mt-5 flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => { router.invalidate(); reset(); }}
-          className="rounded-full bg-gradient-to-br from-[#e7b35a] to-[#b87a22] px-4 py-2 text-[13px] font-bold text-white shadow"
-        >
-          إعادة المحاولة
-        </button>
-        <Link to="/agpeya" className="rounded-full border border-[#c79356]/40 bg-white/70 px-4 py-2 text-[13px] font-bold text-[#5b3a18]">
-          الأجبية
-        </Link>
-      </div>
-    </ReaderShell>
+    <AgpeyaErrorState
+      message={error?.message}
+      onRetry={() => { router.invalidate(); reset(); }}
+    />
   );
 }
 
@@ -122,20 +99,205 @@ const TABS: { key: AgpeyaTabKey; label: string }[] = [
   { key: "info", label: "معلومات" },
 ];
 
-/** Build a readable info-tab body from prayer metadata as a graceful fallback. */
-function buildInfoBody(p: AgpeyaPrayer): string {
-  const lines: string[] = [];
-  if (p.description) lines.push(p.description);
-  if (p.subtitle && p.subtitle !== p.description) lines.push(p.subtitle);
-  const meta: string[] = [];
-  if (p.clock) meta.push(`الساعة: ${p.clock}`);
-  if (p.psalmsCount) meta.push(`عدد المزامير: ${p.psalmsCount}`);
-  if (p.gospelCount) meta.push(`عدد القطع الإنجيلية: ${p.gospelCount}`);
-  if (p.durationMin) meta.push(`زمن القراءة التقريبي: ${p.durationMin} دقيقة`);
-  if (meta.length) lines.push("", meta.join("\n"));
-  if (p.audio?.available) lines.push("", "التسجيل الصوتي قيد الإعداد.");
-  return lines.join("\n");
+/* ---------- Highlight helper ---------- */
+
+function Highlighted({ text, query, dark }: { text: string; query: string; dark: boolean }) {
+  if (!query.trim()) return <>{text}</>;
+  const parts = splitForHighlight(text, query);
+  return (
+    <>
+      {parts.map((p, i) =>
+        p.match ? (
+          <mark
+            key={i}
+            className={cn(
+              "rounded px-0.5 py-0",
+              dark ? "bg-[#f0d78c] text-[#1a1208]" : "bg-[#ffe79a] text-[#3a2410]",
+            )}
+          >
+            {p.text}
+          </mark>
+        ) : (
+          <span key={i}>{p.text}</span>
+        ),
+      )}
+    </>
+  );
 }
+
+/* ---------- Tab renderers ---------- */
+
+function TextTab({ body, query, dark }: { body: string; query: string; dark: boolean }) {
+  const paragraphs = body.split(/\n\s*\n/);
+  return (
+    <>
+      {paragraphs.map((para, i) => (
+        <p key={i} className={cn("mb-5", dark ? "text-[#e8e2cf]" : "text-[#2a1a08]")}>
+          <Highlighted text={para} query={query} dark={dark} />
+        </p>
+      ))}
+    </>
+  );
+}
+
+function PsalmsTab({ psalms, query, dark }: { psalms: AgpeyaPsalm[]; query: string; dark: boolean }) {
+  return (
+    <div className="space-y-6">
+      {psalms.map((ps, i) => (
+        <section key={i}>
+          <header className="mb-3 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className={cn(
+                "grid h-9 w-9 place-items-center rounded-full text-[12px] font-extrabold tabular-nums",
+                dark ? "bg-[#f0d78c] text-[#1a1208]" : "bg-gradient-to-br from-[#e7b35a] to-[#b87a22] text-white",
+              )}>
+                {ps.number}
+              </span>
+              <div>
+                <div className={cn("font-arabic-serif text-[15px] font-bold", dark ? "text-[#f0d78c]" : "text-[#5b3a18]")}>
+                  مزمور {ps.number}
+                </div>
+                {ps.title && (
+                  <div className={cn("text-[11.5px]", dark ? "text-white/55" : "text-[#8a5a1f]")}>
+                    {ps.title}
+                  </div>
+                )}
+              </div>
+            </div>
+            <CopticCross className={cn("h-4 w-4", dark ? "text-[#f0d78c]/70" : "text-[#c79356]")} />
+          </header>
+          <ol className="space-y-2.5">
+            {ps.verses.map((v, vi) => (
+              <li key={vi} className="flex gap-2">
+                <span className={cn("shrink-0 select-none text-[11px] font-bold tabular-nums leading-relaxed", dark ? "text-[#f0d78c]/70" : "text-[#c79356]")}>
+                  {vi + 1}
+                </span>
+                <span className={cn(dark ? "text-[#e8e2cf]" : "text-[#2a1a08]")}>
+                  <Highlighted text={v} query={query} dark={dark} />
+                </span>
+              </li>
+            ))}
+          </ol>
+          {i < psalms.length - 1 && <CopticDivider dark={dark} />}
+        </section>
+      ))}
+    </div>
+  );
+}
+
+function GospelTab({ gospel, query, dark }: { gospel: AgpeyaGospelPassage[]; query: string; dark: boolean }) {
+  return (
+    <div className="space-y-6">
+      {gospel.map((g, i) => (
+        <article
+          key={i}
+          className={cn(
+            "rounded-2xl border p-5",
+            dark ? "border-white/10 bg-white/5" : "border-[#c79356]/30 bg-white/55",
+          )}
+        >
+          <div className={cn(
+            "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold mb-3",
+            dark ? "bg-[#f0d78c]/15 text-[#f0d78c]" : "bg-[#1f4032]/10 text-[#1f4032]",
+          )}>
+            <CopticCross className="h-3 w-3" />
+            {g.reference}
+          </div>
+          {g.intro && (
+            <p className={cn("mb-4 text-[13.5px] italic", dark ? "text-white/65" : "text-[#7a5a32]")}>
+              <Highlighted text={g.intro} query={query} dark={dark} />
+            </p>
+          )}
+          {g.passage.split(/\n\s*\n/).map((para, pi) => (
+            <p key={pi} className={cn("mb-4", dark ? "text-[#e8e2cf]" : "text-[#2a1a08]")}>
+              <Highlighted text={para} query={query} dark={dark} />
+            </p>
+          ))}
+          {g.conclusion && (
+            <p className={cn("mt-3 text-[12.5px] text-center font-bold", dark ? "text-[#f0d78c]" : "text-[#1f4032]")}>
+              {g.conclusion}
+            </p>
+          )}
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function FragmentsTab({ fragments, query, dark }: { fragments: AgpeyaFragment[]; query: string; dark: boolean }) {
+  return (
+    <div className="space-y-4">
+      {fragments.map((f, i) => (
+        <article
+          key={i}
+          className={cn(
+            "rounded-2xl border p-4",
+            dark ? "border-white/10 bg-white/5" : "border-[#c79356]/30 bg-white/55",
+          )}
+        >
+          <h3 className={cn("font-arabic-serif text-[15px] font-bold mb-2 flex items-center gap-2", dark ? "text-[#f0d78c]" : "text-[#5b3a18]")}>
+            <CopticCross className="h-3.5 w-3.5" />
+            {f.title}
+          </h3>
+          {f.body.split(/\n+/).map((line, li) => (
+            <p key={li} className={cn("mb-2", dark ? "text-[#e8e2cf]" : "text-[#2a1a08]")}>
+              <Highlighted text={line} query={query} dark={dark} />
+            </p>
+          ))}
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function InfoTab({ info, query, dark }: { info: AgpeyaInfoEntry[]; query: string; dark: boolean }) {
+  return (
+    <dl className={cn(
+      "divide-y rounded-2xl border",
+      dark ? "divide-white/10 border-white/10 bg-white/5" : "divide-[#c79356]/20 border-[#c79356]/30 bg-white/55",
+    )}>
+      {info.map((entry, i) => (
+        <div key={i} className="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-baseline sm:gap-4">
+          <dt className={cn("shrink-0 text-[12px] font-bold", dark ? "text-[#f0d78c]/85" : "text-[#8a5a1f]")}>
+            {entry.label}
+          </dt>
+          <dd className={cn("text-[13.5px] flex-1", dark ? "text-[#e8e2cf]" : "text-[#2a1a08]")}>
+            <Highlighted text={entry.value} query={query} dark={dark} />
+          </dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+/** Build a metadata-derived info list as a graceful fallback. */
+function buildInfoFromMeta(p: AgpeyaPrayer): AgpeyaInfoEntry[] {
+  const out: AgpeyaInfoEntry[] = [];
+  if (p.description) out.push({ label: "المعنى", value: p.description });
+  if (p.clock) out.push({ label: "الوقت", value: p.clock });
+  if (p.psalmsCount) out.push({ label: "عدد المزامير", value: `${p.psalmsCount} مزمور` });
+  if (p.gospelCount) out.push({ label: "عدد القطع الإنجيلية", value: `${p.gospelCount} قطعة` });
+  if (p.durationMin) out.push({ label: "زمن القراءة التقريبي", value: `${p.durationMin} دقيقة` });
+  return out;
+}
+
+/** Flatten all searchable strings of a tab for match counting. */
+function flattenTab(tab: AgpeyaTabKey, prayer: AgpeyaPrayer, infoFallback: AgpeyaInfoEntry[]): string[] {
+  const t = prayer.tabs[tab];
+  if (!t) return [];
+  switch (tab) {
+    case "text": return t.body ? [t.body] : [];
+    case "psalms": return (t.psalms ?? []).flatMap((p) => [p.title ?? "", ...p.verses]);
+    case "gospel": return (t.gospel ?? []).flatMap((g) => [g.reference, g.intro ?? "", g.passage, g.conclusion ?? ""]);
+    case "fragments": return (t.fragments ?? []).flatMap((f) => [f.title, f.body]);
+    case "info": {
+      const list = t.info && t.info.length ? t.info : infoFallback;
+      return list.flatMap((e) => [e.label, e.value]);
+    }
+  }
+}
+
+/* ---------- Reader ---------- */
 
 function PrayerReader() {
   const { prayer } = Route.useLoaderData() as { prayer: AgpeyaPrayer };
@@ -144,13 +306,16 @@ function PrayerReader() {
 
   const { prev, next } = useMemo(() => adjacentAgpeyaPrayers(prayerId), [prayerId]);
 
-  // Augment tabs: always provide an info tab built from metadata if missing.
-  const effectiveTabs = useMemo(() => {
-    const t = { ...prayer.tabs };
-    if (!t.info?.body) t.info = { body: buildInfoBody(prayer) };
-    return t;
+  const infoFallback = useMemo(() => buildInfoFromMeta(prayer), [prayer]);
+
+  // Determine which tabs have any content (structured or body).
+  const availableTabs = useMemo(() => {
+    return TABS.filter((t) => {
+      const c = prayer.tabs[t.key];
+      if (!c) return t.key === "info"; // info always available via fallback
+      return Boolean(c.body || c.psalms?.length || c.gospel?.length || c.fragments?.length || c.info?.length);
+    });
   }, [prayer]);
-  const availableTabs = TABS.filter((t) => effectiveTabs[t.key]?.body);
 
   const initial = readPrayerPosition(prayerId);
   const [tab, setTab] = useState<AgpeyaTabKey>(
@@ -162,17 +327,36 @@ function PrayerReader() {
   const [speed, setSpeed] = useAgpeyaSpeed();
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [savedNotice, setSavedNotice] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
   const { isSaved, toggle } = useSavedAgpeya();
-  // Audio scaffolding — reserved for future player. Tracks last selected prayer only.
-  const [, setAudioState] = useAgpeyaAudio();
-  useEffect(() => {
-    setAudioState({ prayerId, positionSec: 0 });
-  }, [prayerId, setAudioState]);
-  const scrollerRef = useRef<HTMLDivElement>(null);
 
+  // Search
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (searchOpen) requestAnimationFrame(() => searchInputRef.current?.focus());
+    else setQuery("");
+  }, [searchOpen]);
+
+  // Share dialog
+  const [shareOpen, setShareOpen] = useState(false);
+
+  // Audio scaffolding — reserved for future player.
+  const [, setAudioState] = useAgpeyaAudio();
+  useEffect(() => { setAudioState({ prayerId, positionSec: 0 }); }, [prayerId, setAudioState]);
+
+  const scrollerRef = useRef<HTMLDivElement>(null);
   const dark = theme === "dark";
-  const content = effectiveTabs[tab]?.body ?? "";
+
+  const matchStrings = useMemo(() => flattenTab(tab, prayer, infoFallback), [tab, prayer, infoFallback]);
+  const matchCount = useMemo(() => {
+    if (!query.trim()) return 0;
+    try {
+      const re = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
+      return matchStrings.reduce((acc, s) => acc + (s.match(re)?.length ?? 0), 0);
+    } catch { return 0; }
+  }, [matchStrings, query]);
 
   // Restore scroll position on tab change
   useEffect(() => {
@@ -241,24 +425,50 @@ function PrayerReader() {
     return () => cancelAnimationFrame(raf);
   }, [playing, speed]);
 
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+  const shareText = `${prayer.title} — الأجبية`;
+
   const handleShare = async () => {
-    const url = typeof window !== "undefined" ? window.location.href : "";
-    const shareData = { title: `${prayer.title} — الأجبية`, text: prayer.title, url };
     try {
       if (typeof navigator !== "undefined" && (navigator as any).share) {
-        await (navigator as any).share(shareData);
+        await (navigator as any).share({ title: shareText, text: shareText, url: shareUrl });
         return;
       }
-      if (typeof navigator !== "undefined" && navigator.clipboard) {
-        await navigator.clipboard.writeText(url);
-        setSavedNotice(true);
-        setTimeout(() => setSavedNotice(false), 1500);
-      }
+    } catch { /* fall through */ }
+    setShareOpen(true);
+  };
+
+  const flash = (msg: string) => {
+    setNotice(msg);
+    setTimeout(() => setNotice(null), 1500);
+  };
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      flash("تم نسخ الرابط");
+      setShareOpen(false);
     } catch { /* ignore */ }
+  };
+
+  const navigateToScrollNextMatch = (dir: 1 | -1) => {
+    const root = scrollerRef.current;
+    if (!root) return;
+    const marks = Array.from(root.querySelectorAll("mark")) as HTMLElement[];
+    if (!marks.length) return;
+    const top = root.scrollTop;
+    const sorted = marks.map((m) => m.offsetTop);
+    let target: number | undefined;
+    if (dir === 1) target = sorted.find((y) => y > top + 4);
+    else { for (let i = sorted.length - 1; i >= 0; i--) if (sorted[i] < top - 4) { target = sorted[i]; break; } }
+    if (target == null) target = dir === 1 ? sorted[0] : sorted[sorted.length - 1];
+    root.scrollTo({ top: target - 80, behavior: "smooth" });
   };
 
   const speeds: AgpeyaSpeed[] = ["slow", "medium", "fast"];
   const speedLabel: Record<AgpeyaSpeed, string> = { slow: "بطيء", medium: "متوسط", fast: "سريع" };
+
+  const currentTabContent = prayer.tabs[tab];
 
   return (
     <div
@@ -289,7 +499,14 @@ function PrayerReader() {
             <ChevronLeft className="h-4 w-4 -scale-x-100" />
           </Link>
           <div className="min-w-0 text-center px-2">
-            <h1 className="font-arabic-serif truncate text-[16px] font-bold leading-tight">{prayer.title}</h1>
+            <h1 className="font-arabic-serif truncate text-[16px] font-bold leading-tight flex items-center justify-center gap-1.5">
+              {prayer.title}
+              {isSaved(prayerId) && (
+                <span className={cn("rounded-full px-1.5 py-0.5 text-[9px] font-bold", dark ? "bg-[#f0d78c]/20 text-[#f0d78c]" : "bg-[#1f4032]/10 text-[#1f4032]")}>
+                  محفوظة
+                </span>
+              )}
+            </h1>
             {prayer.subtitle && (
               <p className={cn("truncate text-[11px]", dark ? "text-white/55" : "text-[#7a5a32]")}>
                 {prayer.subtitle}
@@ -297,6 +514,9 @@ function PrayerReader() {
             )}
           </div>
           <div className="flex items-center gap-1.5">
+            <IconButton dark={dark} ariaLabel="بحث داخل الصلاة" active={searchOpen} onClick={() => setSearchOpen((s) => !s)}>
+              <Search className="h-4 w-4" />
+            </IconButton>
             <IconButton dark={dark} ariaLabel="مشاركة" onClick={handleShare}>
               <Share2 className="h-4 w-4" />
             </IconButton>
@@ -306,14 +526,56 @@ function PrayerReader() {
               active={isSaved(prayerId)}
               onClick={() => {
                 toggle(prayerId);
-                setSavedNotice(true);
-                setTimeout(() => setSavedNotice(false), 1200);
+                flash(isSaved(prayerId) ? "تمت إزالة الحفظ" : "تم الحفظ");
               }}
             >
               <Bookmark className={cn("h-4 w-4", isSaved(prayerId) && "fill-current")} />
             </IconButton>
           </div>
         </div>
+
+        {/* Search bar */}
+        {searchOpen && (
+          <div className="mx-auto max-w-[640px] px-3 pb-2">
+            <div className={cn(
+              "flex items-center gap-2 rounded-full border px-3 py-1.5",
+              dark ? "bg-white/5 border-white/10" : "bg-white/85 border-[#c79356]/35",
+            )}>
+              <Search className={cn("h-4 w-4", dark ? "text-white/55" : "text-[#8a5a1f]")} />
+              <input
+                ref={searchInputRef}
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") setSearchOpen(false);
+                  if (e.key === "Enter") navigateToScrollNextMatch(e.shiftKey ? -1 : 1);
+                }}
+                placeholder="ابحث داخل القسم الحالي…"
+                className={cn(
+                  "flex-1 bg-transparent text-[13px] font-medium outline-none placeholder:opacity-60",
+                  dark ? "text-[#f0d78c] placeholder:text-white/40" : "text-[#3a2410] placeholder:text-[#8a5a1f]/70",
+                )}
+              />
+              {query && (
+                <span className={cn("text-[11px] tabular-nums", dark ? "text-white/55" : "text-[#8a5a1f]")}>
+                  {matchCount}
+                </span>
+              )}
+              <button type="button" onClick={() => navigateToScrollNextMatch(-1)} aria-label="السابق" disabled={!matchCount}
+                className={cn("grid h-6 w-6 place-items-center rounded-full disabled:opacity-30", dark ? "text-[#f0d78c]" : "text-[#5b3a18]")}>
+                <ChevronUp className="h-3.5 w-3.5" />
+              </button>
+              <button type="button" onClick={() => navigateToScrollNextMatch(1)} aria-label="التالي" disabled={!matchCount}
+                className={cn("grid h-6 w-6 place-items-center rounded-full disabled:opacity-30", dark ? "text-[#f0d78c]" : "text-[#5b3a18]")}>
+                <ChevronDown className="h-3.5 w-3.5" />
+              </button>
+              <button type="button" onClick={() => setSearchOpen(false)} aria-label="إغلاق البحث"
+                className={cn("grid h-6 w-6 place-items-center rounded-full", dark ? "text-[#f0d78c]" : "text-[#5b3a18]")}>
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Tabs */}
         <div className="mx-auto max-w-[640px] px-3 pb-2">
@@ -360,27 +622,57 @@ function PrayerReader() {
       {/* Reader body */}
       <main
         ref={scrollerRef}
-        className="flex-1 overflow-y-auto"
+        className="flex-1 overflow-y-auto relative"
         style={{ scrollBehavior: "smooth" }}
       >
+        {/* Faint Coptic cross watermark */}
+        <CopticCross
+          aria-hidden
+          className={cn(
+            "pointer-events-none absolute top-12 left-1/2 -translate-x-1/2 h-40 w-40 opacity-[0.04]",
+            dark ? "text-[#f0d78c]" : "text-[#5b3a18]",
+          )}
+        />
+
         <article
-          className="mx-auto max-w-[640px] px-5 py-8 font-arabic-serif"
+          className="relative mx-auto max-w-[640px] px-5 pt-5 pb-8 font-arabic-serif"
           style={{ fontSize, lineHeight }}
         >
-          {content.trim().length === 0 ? (
-            <div className={cn("rounded-2xl border px-5 py-10 text-center text-[13px]", dark ? "border-white/10 bg-white/5 text-white/65" : "border-[#c79356]/30 bg-white/55 text-[#7a5a32]")}>
-              لا يوجد محتوى لهذا القسم بعد.
-            </div>
-          ) : (
-            content
-              .split(/\n\s*\n/)
-              .map((para: string, i: number) => (
-                <p key={i} className={cn("mb-5", dark ? "text-[#e8e2cf]" : "text-[#2a1a08]")}>
-                  {para}
-                </p>
-              ))
-          )}
-          <div className={cn("mt-10 border-t pt-5 text-center text-[12px]", dark ? "border-white/10 text-white/55" : "border-[#c79356]/25 text-[#8a5a1f]")}>
+          {/* Draft notice */}
+          <div className={cn(
+            "mb-6 rounded-xl border px-3 py-2 text-[11.5px] font-semibold text-center",
+            dark ? "border-[#f0d78c]/25 bg-[#f0d78c]/5 text-[#f0d78c]" : "border-[#c79356]/40 bg-[#fff7e0] text-[#8a5a1f]",
+          )}>
+            {AGPEYA_DRAFT_NOTICE}
+          </div>
+
+          {(() => {
+            if (tab === "text") {
+              const body = currentTabContent?.body ?? "";
+              if (!body.trim()) return <EmptyTab dark={dark} />;
+              return <TextTab body={body} query={query} dark={dark} />;
+            }
+            if (tab === "psalms") {
+              const list = currentTabContent?.psalms ?? [];
+              if (!list.length) return <EmptyTab dark={dark} message="لا توجد مزامير لهذه الصلاة." />;
+              return <PsalmsTab psalms={list} query={query} dark={dark} />;
+            }
+            if (tab === "gospel") {
+              const list = currentTabContent?.gospel ?? [];
+              if (!list.length) return <EmptyTab dark={dark} message="لا يوجد إنجيل مرافق لهذه الصلاة." />;
+              return <GospelTab gospel={list} query={query} dark={dark} />;
+            }
+            if (tab === "fragments") {
+              const list = currentTabContent?.fragments ?? [];
+              if (!list.length) return <EmptyTab dark={dark} message="لا توجد قطع متاحة." />;
+              return <FragmentsTab fragments={list} query={query} dark={dark} />;
+            }
+            const info = (currentTabContent?.info && currentTabContent.info.length) ? currentTabContent.info : infoFallback;
+            return <InfoTab info={info} query={query} dark={dark} />;
+          })()}
+
+          <div className={cn("mt-10 border-t pt-5 text-center text-[12px] flex flex-col items-center gap-2", dark ? "border-white/10 text-white/55" : "border-[#c79356]/25 text-[#8a5a1f]")}>
+            <CopticCross className={cn("h-4 w-4", dark ? "text-[#f0d78c]" : "text-[#c79356]")} />
             نهاية الصلاة — بركة الرب تشملكم
           </div>
         </article>
@@ -466,7 +758,6 @@ function PrayerReader() {
 
           <span className={cn("mx-1 h-4 w-px", dark ? "bg-white/15" : "bg-[#c79356]/30")} />
 
-          {/* Speed cycle */}
           <button
             type="button"
             onClick={() => {
@@ -500,14 +791,77 @@ function PrayerReader() {
         </div>
       </div>
 
-      {savedNotice && (
+      {/* Share fallback dialog */}
+      {shareOpen && (
+        <div
+          role="dialog"
+          aria-modal
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm p-4"
+          onClick={() => setShareOpen(false)}
+        >
+          <div
+            dir="rtl"
+            onClick={(e) => e.stopPropagation()}
+            className={cn(
+              "w-full max-w-[420px] rounded-3xl border p-5 shadow-2xl",
+              dark ? "bg-[#0b1a2c] border-white/10 text-[#e8e2cf]" : "bg-white border-[#c79356]/35 text-[#3a2410]",
+            )}
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="font-arabic-serif text-[16px] font-extrabold">مشاركة الصلاة</h3>
+              <button
+                type="button"
+                aria-label="إغلاق"
+                onClick={() => setShareOpen(false)}
+                className={cn("grid h-8 w-8 place-items-center rounded-full", dark ? "bg-white/5 text-[#f0d78c]" : "bg-[#fbf3e1] text-[#5b3a18]")}
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <p className={cn("mb-4 text-[12.5px]", dark ? "text-white/65" : "text-[#7a5a32]")}>
+              {prayer.title} — الأجبية
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              <ShareBtn dark={dark} label="نسخ الرابط" icon={Copy} onClick={copyLink} />
+              <ShareBtn
+                dark={dark} label="واتساب" icon={MessageCircle}
+                onClick={() => {
+                  window.open(`https://wa.me/?text=${encodeURIComponent(shareText + " " + shareUrl)}`, "_blank");
+                  setShareOpen(false);
+                }}
+              />
+              <ShareBtn
+                dark={dark} label="تيليجرام" icon={Send}
+                onClick={() => {
+                  window.open(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`, "_blank");
+                  setShareOpen(false);
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {notice && (
         <div
           className="fixed left-1/2 top-20 z-50 -translate-x-1/2 rounded-full bg-black/80 px-4 py-2 text-[12px] font-semibold text-white shadow-lg"
           role="status"
         >
-          تم
+          {notice}
         </div>
       )}
+    </div>
+  );
+}
+
+function EmptyTab({ dark, message = "لا يوجد محتوى لهذا القسم بعد." }: { dark: boolean; message?: string }) {
+  return (
+    <div className={cn(
+      "rounded-2xl border px-5 py-10 text-center text-[13px] flex flex-col items-center gap-2",
+      dark ? "border-white/10 bg-white/5 text-white/65" : "border-[#c79356]/30 bg-white/55 text-[#7a5a32]",
+    )}>
+      <CopticCross className={cn("h-5 w-5", dark ? "text-[#f0d78c]/60" : "text-[#c79356]")} />
+      {message}
     </div>
   );
 }
@@ -548,6 +902,24 @@ function ControlBtn({
       )}
     >
       {children}
+    </button>
+  );
+}
+
+function ShareBtn({
+  label, icon: Icon, onClick, dark,
+}: { label: string; icon: React.ComponentType<{ className?: string }>; onClick: () => void; dark: boolean }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "flex flex-col items-center gap-1.5 rounded-2xl border px-3 py-3 text-[11.5px] font-bold active:scale-95 transition-transform",
+        dark ? "border-white/10 bg-white/5 text-[#f0d78c]" : "border-[#c79356]/30 bg-[#fbf3e1] text-[#5b3a18]",
+      )}
+    >
+      <Icon className="h-4 w-4" />
+      {label}
     </button>
   );
 }
