@@ -454,28 +454,47 @@ function PrayerReader() {
     };
   }, [prayerId]);
 
-  // IntersectionObserver to track active section
+  // Scroll-driven active section tracking (more reliable than IO across browsers)
   useEffect(() => {
     const root = scrollerRef.current;
-    if (!root) return;
-    const els = sections
-      .map((s) => root.querySelector(`#section-${s.id}`))
-      .filter((el): el is Element => !!el);
-    if (!els.length) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible) {
-          const id = (visible.target as HTMLElement).dataset.sectionId;
-          if (id) setActiveId(id);
+    if (!root || sections.length === 0) return;
+    let raf = 0;
+    const recompute = () => {
+      try {
+        const els = sections
+          .map((s) => ({ id: s.id, el: root.querySelector(`#section-${s.id}`) as HTMLElement | null }))
+          .filter((x): x is { id: string; el: HTMLElement } => !!x.el);
+        if (!els.length) return;
+        const rootTop = root.getBoundingClientRect().top;
+        const trigger = rootTop + Math.min(180, root.clientHeight * 0.28);
+        // pick last section whose top is above trigger; fallback to first
+        let currentId = els[0].id;
+        for (const { id, el } of els) {
+          if (el.getBoundingClientRect().top - trigger <= 0) currentId = id;
+          else break;
         }
-      },
-      { root, rootMargin: "-30% 0px -60% 0px", threshold: [0, 0.25, 0.5, 1] },
-    );
-    els.forEach((e) => io.observe(e));
-    return () => io.disconnect();
+        // near-bottom guard: snap to last section
+        if (root.scrollTop + root.clientHeight >= root.scrollHeight - 4) {
+          currentId = els[els.length - 1].id;
+        }
+        setActiveId((prev) => (prev === currentId ? prev : currentId));
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.warn("[agpeya] section tracking failed", err);
+      }
+    };
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(recompute);
+    };
+    recompute();
+    root.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      cancelAnimationFrame(raf);
+      root.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
   }, [sections]);
 
   // Auto-center active chip in the rail
