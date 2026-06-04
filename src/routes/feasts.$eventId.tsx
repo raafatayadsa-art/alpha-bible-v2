@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Bookmark, Share2, MoreVertical, BookOpen, Calendar, ChevronLeft } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Bookmark, BookmarkCheck, Share2, MoreVertical, BookOpen, Calendar, ChevronLeft } from "lucide-react";
+import { toast } from "sonner";
 import { FEASTS, getFeast } from "@/features/feasts";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { GlassSurface, BackButton } from "@/components/bible/primitives";
