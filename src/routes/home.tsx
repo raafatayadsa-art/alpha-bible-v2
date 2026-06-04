@@ -248,6 +248,23 @@ function HomeScreen() {
               }}
             />
 
+            {/* Coptic Ⲁ / Ⲱ identity — extremely subtle */}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute top-2 right-3 select-none font-black leading-none"
+              style={{ fontSize: 64, color: "rgba(122,74,38,0.10)", letterSpacing: "-0.02em" }}
+            >
+              Ⲁ
+            </span>
+            <span
+              aria-hidden
+              className="pointer-events-none absolute bottom-10 left-3 select-none font-black leading-none"
+              style={{ fontSize: 64, color: "rgba(122,74,38,0.10)", letterSpacing: "-0.02em" }}
+            >
+              Ⲱ
+            </span>
+
+
             {/* Content row: verse (left) + church (right) */}
             <div className="relative flex items-stretch gap-2 px-4 pt-5 pb-4 min-h-[210px]">
               {/* Verse text — left side (RTL: text-right inside) */}
@@ -297,10 +314,23 @@ function HomeScreen() {
                   draggable={false}
                   className="absolute -right-4 -bottom-3 w-[125%] max-w-none select-none pointer-events-none object-contain"
                   style={{
+                    transform: "perspective(600px) rotateX(6deg) rotateY(-8deg)",
+                    transformOrigin: "60% 80%",
                     filter:
-                      "drop-shadow(0 14px 18px rgba(120,70,20,0.45)) drop-shadow(0 0 22px rgba(255,200,110,0.45))",
+                      "drop-shadow(0 18px 22px rgba(120,70,20,0.50)) drop-shadow(0 4px 8px rgba(80,40,10,0.35)) drop-shadow(0 0 26px rgba(255,200,110,0.55))",
                   }}
                 />
+                {/* 3D reflective base ellipse */}
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute left-1/2 bottom-1.5 h-2.5 w-[70%] -translate-x-1/2 rounded-[50%]"
+                  style={{
+                    background:
+                      "radial-gradient(50% 100% at 50% 50%, rgba(80,40,10,0.35), transparent 70%)",
+                    filter: "blur(3px)",
+                  }}
+                />
+
               </div>
             </div>
 
