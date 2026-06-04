@@ -7,6 +7,7 @@ import {
   useSavedAgpeya,
 } from "@/features/agpeya";
 import { BottomDock } from "@/components/bible/BottomDock";
+import { CopticWatermark } from "@/components/coptic";
 
 export const Route = createFileRoute("/agpeya/saved")({
   ssr: false,
@@ -27,6 +28,7 @@ function SavedAgpeya() {
 
   return (
     <div dir="rtl" className="relative min-h-dvh bg-[#fbf3e1] pb-32">
+      <CopticWatermark />
       <header className="sticky top-0 z-30 backdrop-blur-xl border-b border-[#c79356]/25 bg-[#fbf3e1]/85">
         <div className="mx-auto flex max-w-[480px] items-center justify-between px-4 py-3">
           <Link
