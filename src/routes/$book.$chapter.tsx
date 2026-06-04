@@ -35,7 +35,6 @@ import {
   lookupEntry,
   namesDictionaryEntries,
   normalizeAr,
-  classifyEntry,
   fetchDeepByNormalized,
   lookupDictionary,
   bulkLookupMatched,
@@ -44,6 +43,7 @@ import {
   type LookupDictionaryRow,
 } from "@/lib/dictionary";
 import { setChapterDictState } from "@/lib/chapter-dict-store";
+import { normalizeEntityTab, isPersonEntity, isPlaceEntity } from "@/lib/entity-category";
 
 /**
  * HMR_EPOCH — bumps on every hot-module reload of this file (and indirectly
@@ -70,15 +70,31 @@ function parseRelatedVerses(raw?: string): { reference: string; text: string }[]
 }
 
 function isNamesPersonEntry(e: DictionaryEntry): boolean {
-  if (e.source === "bible_names_dictionary") return true;
-  if (classifyEntry(e.category) === "person") return true;
-  return /name|اسم/i.test(e.category ?? "");
+  // Only treat as a person when the normalized category (context-aware)
+  // resolves to "people". Fixes كوش / أشور being treated as persons just
+  // because they live in bible_names_dictionary.
+  const desc = (e.shortMeaning ?? e.fullMeaning ?? "").trim();
+  return isPersonEntity(e.category, e.term, desc);
 }
 
 function entryToNamesPersonSheet(e: DictionaryEntry): MeaningSheetData {
   const name = (e.term ?? "").trim();
   const meaning = (e.shortMeaning ?? e.fullMeaning ?? "").trim();
   const reference = (e.bibleReferencesRaw ?? "").trim();
+  const tab = normalizeEntityTab(e.category, name, meaning);
+
+  // Defensive: if the entry actually describes a place, route to Map.
+  if (tab === "map") {
+    return {
+      word: name,
+      kind: e.category ?? "place",
+      defaultTab: "map",
+      hideMeaningTab: true,
+      meaning: meaning || undefined,
+      mapLabel: name,
+    };
+  }
+
   return {
     word: name,
     kind: e.category ?? "person",
@@ -96,37 +112,39 @@ function entryToNamesPersonSheet(e: DictionaryEntry): MeaningSheetData {
 }
 
 function entryToSheet(e: DictionaryEntry): MeaningSheetData {
-  const kind = classifyEntry(e.category);
   const shortMeaning = (e.shortMeaning || "").trim();
   const verses = parseRelatedVerses(e.bibleReferencesRaw);
+  const tab = normalizeEntityTab(e.category, e.term, shortMeaning);
 
   const base: MeaningSheetData = {
     word: (e.term ?? "").trim(),
     kind: e.category,
-    // Short meaning only — never long descriptions.
     meaning: shortMeaning || undefined,
     fullMeaning: (e.fullMeaning || "").trim() || undefined,
     relatedVerses: verses.length ? verses : undefined,
   };
 
-  if (kind === "place") {
-    return { ...base, mapLabel: e.term };
+  if (tab === "map") {
+    return { ...base, defaultTab: "map", mapLabel: e.term };
   }
-  if (kind === "person") {
+  if (tab === "people") {
     return {
       ...base,
+      defaultTab: "people",
       relatedPeople: e.term
         ? [{ name: e.term, role: e.category, meaning: shortMeaning || undefined }]
         : undefined,
     };
   }
+  // Unknown / general — no forced tab (defaults to "meaning").
   return base;
 }
 
 /**
  * Build the sheet for a tapped highlighted word.
- * If alpha_dictionary_deep has a match, augment with person info + open the
- * "people" tab by default.
+ * If alpha_dictionary_deep has a match, augment with person info — BUT
+ * only force the People tab when the entry is actually a person. Places
+ * (كوش, أشور, ...) keep their Map default.
  */
 async function buildSheetForEntry(e: DictionaryEntry): Promise<MeaningSheetData> {
   const base = entryToSheet(e);
@@ -135,17 +153,10 @@ async function buildSheetForEntry(e: DictionaryEntry): Promise<MeaningSheetData>
   const deep = await fetchDeepByNormalized(norm);
   if (!deep) return base;
 
-  const person = {
-    name: deep.word || e.term || "",
-    role: e.category,
-    meaning: (deep.meaning || "").trim() || undefined,
-    reference: (deep.reference || "").trim() || undefined,
-  };
-
-  // Merge references from deep entry into the verses tab too.
+  const meaning = (deep.meaning || e.shortMeaning || "").trim();
+  const tab = normalizeEntityTab(e.category, e.term, meaning);
   const deepVerses = deep.reference ? parseRelatedVerses(deep.reference) : [];
   const merged = [...(base.relatedVerses ?? []), ...deepVerses];
-  // De-dupe by reference string.
   const seen = new Set<string>();
   const dedupVerses = merged.filter((v) => {
     const k = v.reference.trim();
@@ -154,10 +165,35 @@ async function buildSheetForEntry(e: DictionaryEntry): Promise<MeaningSheetData>
     return true;
   });
 
+  // Place → Map tab, regardless of the deep row.
+  if (isPlaceEntity(e.category, e.term, meaning)) {
+    return {
+      ...base,
+      defaultTab: "map",
+      mapLabel: e.term,
+      relatedVerses: dedupVerses.length ? dedupVerses : base.relatedVerses,
+    };
+  }
+
+  // Person → People tab.
+  if (tab === "people") {
+    const person = {
+      name: deep.word || e.term || "",
+      role: e.category,
+      meaning: meaning || undefined,
+      reference: (deep.reference || "").trim() || undefined,
+    };
+    return {
+      ...base,
+      defaultTab: "people",
+      relatedPeople: [person],
+      relatedVerses: dedupVerses.length ? dedupVerses : base.relatedVerses,
+    };
+  }
+
+  // Unknown / general — leave defaultTab unset.
   return {
     ...base,
-    defaultTab: "people",
-    relatedPeople: [person],
     relatedVerses: dedupVerses.length ? dedupVerses : base.relatedVerses,
   };
 }
