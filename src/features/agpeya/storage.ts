@@ -54,6 +54,19 @@ export function readLastOpenedPrayer(): (AgpeyaPosition & { prayerId: string }) 
   return safeRead<(AgpeyaPosition & { prayerId: string }) | null>(LAST_KEY, null);
 }
 
+export function clearLastOpenedPrayer() {
+  if (typeof window === "undefined") return;
+  try { window.localStorage.removeItem(LAST_KEY); } catch { /* ignore */ }
+}
+
+export function clearPrayerPosition(prayerId: string) {
+  const all = safeRead<Record<string, AgpeyaPosition>>(POS_KEY, {});
+  if (prayerId in all) {
+    delete all[prayerId];
+    safeWrite(POS_KEY, all);
+  }
+}
+
 /* ---------- Saved prayers ---------- */
 
 export function useSavedAgpeya() {
