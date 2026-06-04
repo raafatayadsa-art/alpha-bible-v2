@@ -250,7 +250,7 @@ function ScriptureReader() {
    * ---------------------------------------------------------------- */
   // Temporarily disabled — manual dictionary search still works.
   const enableSmartDictionaryHighlight = true;
-  const matchedSSKey = `ab:dict:matched:v8-names:${book}:${ch}`;
+  const matchedSSKey = `ab:dict:matched:v9-quality:${book}:${ch}`;
   const readMatchedFromSession = (): Set<string> | null => {
     if (typeof window === "undefined") return null;
     try {
