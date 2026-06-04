@@ -494,18 +494,36 @@ function HomeScreen() {
   );
 }
 
-// ===== Hero Stack — wallet-style layered swipe =====
+// ===== Hero Stack — wallet-style layered swipe, infinite loop + autoplay =====
 function HeroStack({
-  cards, index, onIndex, savedSet, onToggleSaved,
+  cards, savedSet, onToggleSaved,
 }: {
   cards: HeroCard[];
-  index: number;
-  onIndex: (i: number) => void;
   savedSet: Set<string>;
   onToggleSaved: (id: string) => void;
 }) {
+  const total = cards.length;
+  const [index, setIndex] = useState(0); // logical, grows unbounded
+  const [paused, setPaused] = useState(false);
+  const pauseTimer = useRef<number | null>(null);
   const startX = useRef<number | null>(null);
   const [dx, setDx] = useState(0);
+
+  // Auto-rotation every 5s, paused on user interaction or document hidden
+  useEffect(() => {
+    if (paused || total <= 1) return;
+    const id = window.setInterval(() => setIndex((i) => i + 1), 5000);
+    const onVis = () => { if (document.hidden) setPaused(true); };
+    document.addEventListener("visibilitychange", onVis);
+    return () => { clearInterval(id); document.removeEventListener("visibilitychange", onVis); };
+  }, [paused, total]);
+
+  const pauseTemporarily = () => {
+    setPaused(true);
+    if (pauseTimer.current) window.clearTimeout(pauseTimer.current);
+    pauseTimer.current = window.setTimeout(() => setPaused(false), 8000);
+  };
+  useEffect(() => () => { if (pauseTimer.current) window.clearTimeout(pauseTimer.current); }, []);
 
   const onTouchStart = (e: React.TouchEvent | React.MouseEvent) => {
     startX.current = "touches" in e ? e.touches[0].clientX : e.clientX;
@@ -518,12 +536,16 @@ function HeroStack({
   };
   const onTouchEnd = () => {
     if (Math.abs(dx) > 60) {
-      if (dx < 0 && index < cards.length - 1) onIndex(index + 1);
-      else if (dx > 0 && index > 0) onIndex(index - 1);
+      // RTL: swipe right (dx>0) = previous; swipe left (dx<0) = next
+      setIndex((i) => i + (dx < 0 ? 1 : -1));
+      pauseTemporarily();
     }
     startX.current = null;
     setDx(0);
   };
+
+  const currentMod = ((index % total) + total) % total;
+  const visible = Math.min(4, total);
 
   return (
     <section className="mt-5 select-none">
@@ -538,9 +560,9 @@ function HeroStack({
         onMouseUp={onTouchEnd}
         onMouseLeave={() => { if (startX.current != null) onTouchEnd(); }}
       >
-        {cards.map((c, i) => {
-          const rel = i - index;
-          if (rel < 0 || rel > 3) return null;
+        {Array.from({ length: visible }).map((_, rel) => {
+          const cardIdx = (currentMod + rel) % total;
+          const c = cards[cardIdx];
           const isFront = rel === 0;
           const scale = 1 - rel * 0.06;
           const translateY = rel * 14;
@@ -550,19 +572,19 @@ function HeroStack({
           const z = 30 - rel;
           return (
             <div
-              key={c.id}
-              className="absolute inset-x-0 top-0 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+              key={`${c.id}-${rel}`}
+              className="absolute inset-x-0 top-0 ease-[cubic-bezier(0.22,1,0.36,1)]"
               style={{
                 transform: `translate3d(${translateX}px, ${translateY}px, 0) scale(${scale}) rotate(${rotate}deg)`,
                 zIndex: z,
                 opacity,
-                transitionDuration: startX.current != null && isFront ? "0ms" : "350ms",
+                transition: startX.current != null && isFront ? "none" : "transform 450ms cubic-bezier(0.22,1,0.36,1), opacity 350ms",
               }}
             >
               <HeroCardView
                 card={c}
-                index={index}
-                total={cards.length}
+                index={currentMod}
+                total={total}
                 saved={savedSet.has(c.id)}
                 onToggleSaved={() => onToggleSaved(c.id)}
               />
