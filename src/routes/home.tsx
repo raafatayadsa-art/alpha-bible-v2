@@ -356,10 +356,10 @@ function HomeScreen() {
         className="fixed inset-0 -z-10"
         style={{
           background:
-            "radial-gradient(120% 50% at 50% 0%, rgba(80,40,120,0.55), transparent 60%)," +
-            "radial-gradient(80% 60% at 100% 30%, rgba(231,201,138,0.18), transparent 65%)," +
-            "radial-gradient(80% 60% at 0% 80%, rgba(60,30,90,0.45), transparent 65%)," +
-            "linear-gradient(180deg,#0e0a1c 0%,#161028 50%,#0c0918 100%)",
+            "radial-gradient(120% 55% at 50% 0%, rgba(231,201,122,0.35), transparent 60%)," +
+            "radial-gradient(80% 60% at 100% 30%, rgba(216,138,42,0.16), transparent 65%)," +
+            "radial-gradient(80% 60% at 0% 80%, rgba(190,150,90,0.22), transparent 65%)," +
+            "linear-gradient(180deg,#f7eed6 0%,#f4ead8 50%,#ecdcb6 100%)",
         }}
       />
       <CopticWatermark />
@@ -367,30 +367,30 @@ function HomeScreen() {
       <div className="relative mx-auto w-full max-w-[440px] px-4 pb-36 pt-[max(env(safe-area-inset-top),12px)]">
         {/* Top bar */}
         <header className="flex items-center justify-between gap-2 pt-2">
-          <button aria-label="القائمة" className="grid h-11 w-11 place-items-center rounded-full border border-white/10 bg-white/5 backdrop-blur-xl active:scale-95 transition">
-            <Menu className="h-5 w-5 text-[#f0e6d0]" />
+          <button aria-label="القائمة" className="grid h-11 w-11 place-items-center rounded-full border border-[#efe2c4] bg-white/70 backdrop-blur-xl shadow-[0_6px_14px_-10px_rgba(120,80,30,0.4)] active:scale-95 transition">
+            <Menu className="h-5 w-5 text-[#3a2a18]" />
           </button>
           <div className="flex flex-col items-center min-w-0 flex-1">
             <div className="flex items-center gap-1.5 min-w-0">
-              <Sparkles className="h-3.5 w-3.5 text-[#e7c97a] shrink-0" />
-              <h1 className="font-extrabold text-[15px] text-white whitespace-nowrap [word-break:keep-all]">
+              <Sparkles className="h-3.5 w-3.5 text-[#b8893a] shrink-0" />
+              <h1 className="font-extrabold text-[15px] text-[#3a2a18] whitespace-nowrap [word-break:keep-all]">
                 {greeting} يا {userName}
               </h1>
               <span className="text-[14px]">☀️</span>
             </div>
-            <p className="text-[11px] text-white/55 mt-0.5">نعمة الرب معك اليوم</p>
+            <p className="text-[11px] text-[#6a543a] mt-0.5">نعمة الرب معك اليوم</p>
           </div>
           <div className="flex items-center gap-1.5">
-            <button aria-label="الإشعارات" className="relative grid h-11 w-11 place-items-center rounded-full border border-white/10 bg-white/5 backdrop-blur-xl active:scale-95 transition">
-              <Bell className="h-5 w-5 text-[#f0e6d0]" />
+            <button aria-label="الإشعارات" className="relative grid h-11 w-11 place-items-center rounded-full border border-[#efe2c4] bg-white/70 backdrop-blur-xl shadow-[0_6px_14px_-10px_rgba(120,80,30,0.4)] active:scale-95 transition">
+              <Bell className="h-5 w-5 text-[#3a2a18]" />
               {notifCount > 0 && (
                 <span className="absolute top-1 right-1 grid h-4 min-w-4 px-1 place-items-center rounded-full bg-[#d88a2a] text-[10px] font-bold text-white">
                   {notifCount}
                 </span>
               )}
             </button>
-            <Link to="/search" aria-label="بحث" className="grid h-11 w-11 place-items-center rounded-full border border-white/10 bg-white/5 backdrop-blur-xl active:scale-95 transition">
-              <Search className="h-5 w-5 text-[#f0e6d0]" />
+            <Link to="/search" aria-label="بحث" className="grid h-11 w-11 place-items-center rounded-full border border-[#efe2c4] bg-white/70 backdrop-blur-xl shadow-[0_6px_14px_-10px_rgba(120,80,30,0.4)] active:scale-95 transition">
+              <Search className="h-5 w-5 text-[#3a2a18]" />
             </Link>
           </div>
         </header>
@@ -405,11 +405,11 @@ function HomeScreen() {
         {/* PRIMARY STACKED CAROUSEL — Apple Wallet style */}
         <section className="mt-7">
           <div className="mb-3 flex items-center justify-between px-1">
-            <h2 className="text-[14px] font-extrabold text-white tracking-tight flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-[#e7c97a]" />
+            <h2 className="text-[14px] font-extrabold text-[#3a2a18] tracking-tight flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-[#b8893a]" />
               اكتشف رحلتك اليوم
             </h2>
-            <span className="text-[11px] font-bold text-[#e7c97a]/80">اسحب →</span>
+            <span className="text-[11px] font-bold text-[#7a4a26]">اسحب →</span>
           </div>
           <PrimaryStack cards={primary} />
         </section>
@@ -417,8 +417,8 @@ function HomeScreen() {
         {/* DAILY CAROUSEL */}
         <section className="mt-5 -mx-4">
           <div className="mb-2.5 flex items-center justify-between px-5">
-            <h2 className="text-[14px] font-extrabold text-white tracking-tight flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-[#e7c97a]" />
+            <h2 className="text-[14px] font-extrabold text-[#3a2a18] tracking-tight flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-[#b8893a]" />
               تابع رحلتك الروحية
             </h2>
           </div>
@@ -434,11 +434,11 @@ function HomeScreen() {
         {/* CHURCH NEWS — featured */}
         <section className="mt-4">
           <div className="mb-3 flex items-center justify-between px-1">
-            <h2 className="text-[14px] font-extrabold text-white tracking-tight flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-[#e7c97a]" />
+            <h2 className="text-[14px] font-extrabold text-[#3a2a18] tracking-tight flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-[#b8893a]" />
               أخبار كنيستك
             </h2>
-            <span className="text-[11px] font-bold text-[#e7c97a]/80">عرض الكل</span>
+            <span className="text-[11px] font-bold text-[#7a4a26]">عرض الكل</span>
           </div>
           <div className="flex flex-col gap-3.5">
             <FeaturedNewsCard
@@ -487,7 +487,7 @@ function HomeScreen() {
         }}
       >
         <div className="mx-auto w-full max-w-[440px] px-3">
-          <div className="relative rounded-[28px] border border-white/10 bg-gradient-to-b from-[#1a1230]/85 to-[#0c0918]/90 shadow-[0_-12px_36px_-16px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-2xl">
+          <div className="relative rounded-[28px] border border-[#efe2c4] bg-gradient-to-b from-[#fbf3e1]/95 to-[#f4ead8]/95 shadow-[0_-12px_36px_-16px_rgba(120,80,30,0.35),inset_0_1px_0_rgba(255,255,255,0.85)] backdrop-blur-2xl">
             <div className="grid grid-cols-5 items-end px-2 pt-2.5 pb-2">
               <DockItem icon={HomeIcon} label="الرئيسية" active to="/home" />
               <DockItem icon={HandHeart} label="الصلاة" to="/agpeya" />
@@ -1012,11 +1012,11 @@ function MiniPlayer({ dockVisible }: { dockVisible: boolean }) {
     >
       <div className="mx-auto w-full max-w-[440px] px-4">
         <div
-          className="relative flex items-center gap-3 overflow-hidden rounded-[20px] border border-white/12 bg-gradient-to-r from-[#1a1230]/85 to-[#0c0918]/90 px-2.5 py-2 backdrop-blur-2xl"
-          style={{ boxShadow: "0 18px 36px -16px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.08)" }}
+          className="relative flex items-center gap-3 overflow-hidden rounded-[20px] border border-[#efe2c4] bg-gradient-to-r from-[#fbf3e1]/95 to-[#f4ead8]/95 px-2.5 py-2 backdrop-blur-2xl"
+          style={{ boxShadow: "0 18px 36px -16px rgba(120,80,30,0.35), inset 0 1px 0 rgba(255,255,255,0.8)" }}
         >
           {/* artwork */}
-          <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-[12px] border border-white/15">
+          <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-[12px] border border-[#efe2c4]">
             <img src={dailyHymn} alt="" className="h-full w-full object-cover" />
             <div className="pointer-events-none absolute inset-0" style={{ boxShadow: "inset 0 0 18px rgba(231,201,122,0.35)" }} />
           </div>
@@ -1024,7 +1024,7 @@ function MiniPlayer({ dockVisible }: { dockVisible: boolean }) {
           <div className="flex-1 min-w-0">
             <div className="overflow-hidden">
               <div
-                className="whitespace-nowrap text-[12.5px] font-bold text-white"
+                className="whitespace-nowrap text-[12.5px] font-bold text-[#3a2a18]"
                 style={{
                   display: "inline-block",
                   paddingInlineStart: "100%",
@@ -1034,7 +1034,7 @@ function MiniPlayer({ dockVisible }: { dockVisible: boolean }) {
                 {title} · {title}
               </div>
             </div>
-            <div className="mt-1.5 h-[3px] w-full overflow-hidden rounded-full bg-white/10">
+            <div className="mt-1.5 h-[3px] w-full overflow-hidden rounded-full bg-[#ecdcb6]">
               <div
                 className="h-full rounded-full"
                 style={{
@@ -1187,7 +1187,7 @@ function ShareSheetHost() {
 function DockItem({
   icon: Icon, label, active, raised, to,
 }: { icon?: any; label: string; active?: boolean; raised?: boolean; to?: string }) {
-  const color = active ? "#f0d78c" : "#e8e2cf";
+  const color = active ? "#7a4a26" : "#6a543a";
   const inner = (
     <div className="flex w-full flex-col items-center justify-end gap-1.5">
       {raised ? (
@@ -1206,7 +1206,7 @@ function DockItem({
         {label}
       </span>
       {active && !raised && (
-        <span className="h-1 w-1 rounded-full" style={{ background: "#f0d78c", boxShadow: "0 0 6px rgba(240,215,140,0.7)" }} />
+        <span className="h-1 w-1 rounded-full" style={{ background: "#b8893a", boxShadow: "0 0 6px rgba(184,137,58,0.7)" }} />
       )}
     </div>
   );
