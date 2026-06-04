@@ -231,6 +231,57 @@ export function AutoScrollControls({
         <Plus className="h-3 w-3" />
       </button>
 
+      {(setFontSize && typeof fontSize === "number") && (
+        <>
+          <span className={cn("mx-0.5 h-4 w-px", spiritualMode ? "bg-[#c9a96b]/25" : "bg-[#b8893a]/20")} />
+          <button
+            type="button"
+            aria-label="تصغير الخط"
+            onClick={() => setFontSize(Math.max(fontMin, +(fontSize - fontStep).toFixed(2)))}
+            className="grid h-6 w-6 place-items-center rounded-full active:scale-90 transition-transform disabled:opacity-40"
+            style={spiritualMode ? { color: "#f0d78c" } : undefined}
+            disabled={fontSize <= fontMin}
+          >
+            <Type className="h-2.5 w-2.5" />
+          </button>
+          <span
+            className="min-w-7 text-center text-[10.5px] font-bold tabular-nums"
+            style={spiritualMode ? { color: "#f0d78c" } : { color: "#8a6322" }}
+          >
+            {Number.isInteger(fontSize) ? fontSize : fontSize.toFixed(0)}
+          </span>
+          <button
+            type="button"
+            aria-label="تكبير الخط"
+            onClick={() => setFontSize(Math.min(fontMax, +(fontSize + fontStep).toFixed(2)))}
+            className="grid h-6 w-6 place-items-center rounded-full active:scale-90 transition-transform disabled:opacity-40"
+            style={spiritualMode ? { color: "#f0d78c" } : undefined}
+            disabled={fontSize >= fontMax}
+          >
+            <Type className="h-3.5 w-3.5" />
+          </button>
+        </>
+      )}
+
+      {(setLineHeight && typeof lineHeight === "number" && lineHeightSteps.length > 0) && (
+        <>
+          <span className={cn("mx-0.5 h-4 w-px", spiritualMode ? "bg-[#c9a96b]/25" : "bg-[#b8893a]/20")} />
+          <button
+            type="button"
+            aria-label="تباعد الأسطر"
+            onClick={() => {
+              const idx = lineHeightSteps.findIndex((s) => Math.abs(s - lineHeight) < 0.05);
+              const next = lineHeightSteps[(idx + 1) % lineHeightSteps.length] ?? lineHeightSteps[0];
+              setLineHeight(next);
+            }}
+            className="grid h-6 w-6 place-items-center rounded-full active:scale-90 transition-transform"
+            style={spiritualMode ? { color: "#f0d78c" } : undefined}
+          >
+            <Rows3 className="h-3.5 w-3.5" />
+          </button>
+        </>
+      )}
+
       <span className={cn("mx-0.5 h-4 w-px", spiritualMode ? "bg-[#c9a96b]/25" : "bg-[#b8893a]/20")} />
 
       <button
