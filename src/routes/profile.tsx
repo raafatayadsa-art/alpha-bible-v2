@@ -135,15 +135,36 @@ function ProfileHero() {
       <div className="relative px-4 pt-12 pb-5 flex flex-col items-center text-center">
         {/* Premium Orthodox Halo + Cross system */}
         <div className="relative">
-          {/* Outer glow aura */}
+          {/* Radiant outer aura — strong sacred glow */}
           <div
             aria-hidden
-            className="absolute inset-0 -m-[42px] rounded-full"
+            className="absolute inset-0 -m-[80px] rounded-full"
             style={{
-              background: "radial-gradient(circle, rgba(240,215,140,0.55), rgba(216,138,42,0.18) 45%, transparent 70%)",
-              filter: "blur(14px)",
+              background: "radial-gradient(circle, rgba(255,236,170,0.85), rgba(240,180,70,0.4) 30%, rgba(216,138,42,0.15) 55%, transparent 75%)",
+              filter: "blur(22px)",
             }}
           />
+          {/* Radiating light beams behind avatar */}
+          <div
+            aria-hidden
+            className="absolute inset-0 -m-[120px] rounded-full opacity-90 mix-blend-screen"
+            style={{
+              background:
+                "conic-gradient(from 0deg, transparent 0deg, rgba(255,240,180,0.55) 6deg, transparent 14deg, rgba(255,230,150,0.4) 26deg, transparent 38deg, rgba(255,240,180,0.5) 54deg, transparent 70deg, rgba(255,225,140,0.45) 88deg, transparent 104deg, rgba(255,240,180,0.55) 124deg, transparent 142deg, rgba(255,230,150,0.4) 162deg, transparent 180deg, rgba(255,240,180,0.55) 198deg, transparent 216deg, rgba(255,230,150,0.4) 236deg, transparent 254deg, rgba(255,240,180,0.5) 274deg, transparent 290deg, rgba(255,225,140,0.45) 308deg, transparent 324deg, rgba(255,240,180,0.55) 344deg, transparent 360deg)",
+              maskImage: "radial-gradient(circle, transparent 28%, black 38%, black 70%, transparent 88%)",
+              WebkitMaskImage: "radial-gradient(circle, transparent 28%, black 38%, black 70%, transparent 88%)",
+            }}
+          />
+          {/* Inner warm glow */}
+          <div
+            aria-hidden
+            className="absolute inset-0 -m-[36px] rounded-full"
+            style={{
+              background: "radial-gradient(circle, rgba(255,244,208,0.7), rgba(240,180,70,0.3) 50%, transparent 75%)",
+              filter: "blur(10px)",
+            }}
+          />
+
 
           {/* Premium engraved halo */}
           <svg
