@@ -191,7 +191,7 @@ export function PresentationMode({
 
       {/* Slim header */}
       <header
-        className={`relative z-10 flex items-center justify-between px-4 transition-opacity duration-500 ${chromeVisible ? "opacity-100" : "opacity-20"}`}
+        className={`relative z-10 flex items-center justify-between px-4 transition-opacity duration-300 ease-out ${chromeOpacity}`}
         style={{ paddingTop: "max(env(safe-area-inset-top), 12px)", paddingBottom: 6 }}
       >
         <div className="inline-flex items-center gap-2 text-[12px] font-bold opacity-70">
