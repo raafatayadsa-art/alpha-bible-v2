@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import {
   Menu, Bell, Search, Sparkles, Share2, Bookmark, ChevronLeft,
   Home as HomeIcon, HandHeart, Users, User as UserIcon,
+  Play, Pause, X, Link2, Calendar,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
