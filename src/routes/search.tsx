@@ -1,0 +1,418 @@
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Search, X, BookOpen, HandHeart, ScrollText, Cross, CalendarHeart, Sparkles, ArrowLeft } from "lucide-react";
+import { SAINTS } from "@/features/synaxarium/data";
+import { FEASTS } from "@/features/feasts/data";
+import { AGPEYA_PRAYERS } from "@/features/agpeya/data";
+import { TODAY_KATAMEROS } from "@/features/katameros/data";
+
+export const Route = createFileRoute("/search")({
+  ssr: false,
+  head: () => ({
+    meta: [
+      { title: "ابحث في Alpha Coptic" },
+      { name: "description", content: "بحث موحّد في الكتاب المقدس، الأجبية، القطمارس، السنكسار، والمناسبات." },
+    ],
+  }),
+  component: SearchHub,
+});
+
+// ---- text normalization for arabic search ----
+function norm(s: string): string {
+  return (s || "")
+    .toLowerCase()
+    .replace(/[\u064B-\u065F\u0670]/g, "")
+    .replace(/[إأآا]/g, "ا")
+    .replace(/ى/g, "ي")
+    .replace(/ؤ/g, "و")
+    .replace(/ئ/g, "ي")
+    .replace(/ة/g, "ه")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+type Category = "bible" | "agpeya" | "katameros" | "synaxarium" | "feasts" | "meditations";
+
+const CATEGORIES: { id: Category; label: string; icon: typeof BookOpen; to: string; tint: string; iconBg: string }[] = [
+  { id: "bible",      label: "الكتاب المقدس", icon: BookOpen,     to: "/bible",       tint: "from-[#fff4d6] to-[#fbe4a8]", iconBg: "bg-[#caa15f]" },
+  { id: "agpeya",     label: "الأجبية",        icon: HandHeart,    to: "/agpeya",      tint: "from-[#eef6ef] to-[#cfe6d2]", iconBg: "bg-[#6c9a72]" },
+  { id: "katameros",  label: "القطمارس",       icon: ScrollText,   to: "/katameros",   tint: "from-[#f3ecff] to-[#dccbf3]", iconBg: "bg-[#8a6ec1]" },
+  { id: "synaxarium", label: "السنكسار",       icon: Cross,        to: "/synaxarium",  tint: "from-[#fff0e6] to-[#f6cfb1]", iconBg: "bg-[#c97a3c]" },
+  { id: "feasts",     label: "المناسبات",      icon: CalendarHeart,to: "/feasts",      tint: "from-[#fde9ef] to-[#f6c2d0]", iconBg: "bg-[#c95680]" },
+  { id: "meditations",label: "التأملات",       icon: Sparkles,     to: "/home",        tint: "from-[#eaf4ff] to-[#c6dffb]", iconBg: "bg-[#5b8fd1]" },
+];
+
+const POPULAR = ["يوحنا", "القيامة", "صلاة الشكر", "الأنبا أنطونيوس", "القديسة العذراء", "المزمور"];
+
+const BIBLE_HINTS = [
+  { title: "إنجيل يوحنا",   to: "/يوحنا" },
+  { title: "إنجيل متى",     to: "/متى" },
+  { title: "إنجيل مرقس",    to: "/مرقس" },
+  { title: "إنجيل لوقا",    to: "/لوقا" },
+  { title: "سفر المزامير",  to: "/المزامير" },
+  { title: "سفر التكوين",   to: "/التكوين" },
+  { title: "سفر الخروج",    to: "/الخروج" },
+  { title: "سفر إشعياء",    to: "/إشعياء" },
+  { title: "سفر الأمثال",   to: "/الأمثال" },
+  { title: "سفر أعمال الرسل", to: "/أعمال" },
+  { title: "رسالة رومية",   to: "/رومية" },
+  { title: "سفر الرؤيا",    to: "/الرؤيا" },
+];
+
+const RECENT_KEY = "alpha:search:recent";
+
+type Result = {
+  id: string;
+  category: Category;
+  title: string;
+  subtitle?: string;
+  to: string;
+};
+
+function searchAll(q: string): Result[] {
+  const nq = norm(q);
+  if (!nq) return [];
+  const out: Result[] = [];
+
+  // Bible (book hints only — actual verse search lives inside /bible)
+  for (const b of BIBLE_HINTS) {
+    if (norm(b.title).includes(nq)) {
+      out.push({ id: `b:${b.title}`, category: "bible", title: b.title, subtitle: "اقرأ الأصحاحات", to: b.to });
+    }
+  }
+
+  // Agpeya
+  for (const p of AGPEYA_PRAYERS) {
+    const hay = norm(`${p.title} ${p.subtitle ?? ""} ${p.description ?? ""}`);
+    if (hay.includes(nq)) {
+      out.push({
+        id: `a:${p.id}`,
+        category: "agpeya",
+        title: p.title,
+        subtitle: p.subtitle ?? p.description,
+        to: `/agpeya/${p.id}`,
+      });
+    }
+  }
+
+  // Katameros (today's readings)
+  for (const r of TODAY_KATAMEROS.readings) {
+    const hay = norm(`${r.title} ${r.reference ?? ""} ${r.body ?? ""}`);
+    if (hay.includes(nq)) {
+      out.push({
+        id: `k:${r.id}`,
+        category: "katameros",
+        title: r.title,
+        subtitle: r.reference,
+        to: "/katameros",
+      });
+    }
+  }
+
+  // Synaxarium (saints)
+  for (const s of SAINTS) {
+    const hay = norm(`${s.name} ${s.title} ${s.summary ?? ""} ${s.bio ?? ""}`);
+    if (hay.includes(nq)) {
+      out.push({
+        id: `s:${s.id}`,
+        category: "synaxarium",
+        title: s.name,
+        subtitle: s.title,
+        to: `/synaxarium/${s.id}`,
+      });
+    }
+  }
+
+  // Feasts
+  for (const f of FEASTS) {
+    const hay = norm(`${f.title} ${f.subtitle} ${f.description ?? ""}`);
+    if (hay.includes(nq)) {
+      out.push({
+        id: `f:${f.id}`,
+        category: "feasts",
+        title: f.title,
+        subtitle: f.subtitle,
+        to: `/feasts/${f.id}`,
+      });
+    }
+  }
+
+  return out.slice(0, 60);
+}
+
+function loadRecent(): string[] {
+  try {
+    const raw = localStorage.getItem(RECENT_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr.filter((x): x is string => typeof x === "string").slice(0, 8) : [];
+  } catch {
+    return [];
+  }
+}
+
+function pushRecent(q: string) {
+  const t = q.trim();
+  if (!t) return;
+  try {
+    const cur = loadRecent().filter((x) => x !== t);
+    const next = [t, ...cur].slice(0, 8);
+    localStorage.setItem(RECENT_KEY, JSON.stringify(next));
+  } catch {
+    /* noop */
+  }
+}
+
+const CATEGORY_META: Record<Category, { label: string; icon: typeof BookOpen; iconBg: string }> = {
+  bible:      { label: "الكتاب المقدس", icon: BookOpen,      iconBg: "bg-[#caa15f]" },
+  agpeya:     { label: "الأجبية",        icon: HandHeart,     iconBg: "bg-[#6c9a72]" },
+  katameros:  { label: "القطمارس",       icon: ScrollText,    iconBg: "bg-[#8a6ec1]" },
+  synaxarium: { label: "السنكسار",       icon: Cross,         iconBg: "bg-[#c97a3c]" },
+  feasts:     { label: "المناسبات",      icon: CalendarHeart, iconBg: "bg-[#c95680]" },
+  meditations:{ label: "التأملات",       icon: Sparkles,      iconBg: "bg-[#5b8fd1]" },
+};
+
+function SearchHub() {
+  const navigate = useNavigate();
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [query, setQuery] = useState("");
+  const [recent, setRecent] = useState<string[]>([]);
+
+  useEffect(() => {
+    setRecent(loadRecent());
+    const t = setTimeout(() => inputRef.current?.focus(), 120);
+    return () => clearTimeout(t);
+  }, []);
+
+  const results = useMemo(() => searchAll(query), [query]);
+
+  const grouped = useMemo(() => {
+    const map = new Map<Category, Result[]>();
+    for (const r of results) {
+      const list = map.get(r.category) ?? [];
+      list.push(r);
+      map.set(r.category, list);
+    }
+    return map;
+  }, [results]);
+
+  const onPickRecent = (t: string) => {
+    setQuery(t);
+    inputRef.current?.focus();
+  };
+
+  const commitRecent = () => {
+    if (query.trim()) {
+      pushRecent(query);
+      setRecent(loadRecent());
+    }
+  };
+
+  return (
+    <div dir="rtl" className="min-h-screen bg-[#FAF8F3] text-[#3a2a18] pb-28">
+      {/* Header */}
+      <header
+        className="sticky top-0 z-20 backdrop-blur-xl bg-[#FAF8F3]/85 border-b border-[#ead9b1]/60"
+        style={{ paddingTop: "max(env(safe-area-inset-top), 10px)" }}
+      >
+        <div className="mx-auto max-w-[520px] px-4 pb-3">
+          <div className="flex items-center justify-between mb-3">
+            <button
+              type="button"
+              onClick={() => navigate({ to: "/home" })}
+              className="grid h-10 w-10 place-items-center rounded-full bg-white/85 border border-[#ead9b1] shadow-[0_6px_16px_-10px_rgba(120,80,30,0.4)] active:scale-95 transition-transform"
+              aria-label="رجوع"
+            >
+              <ArrowLeft className="h-4 w-4 rotate-180" />
+            </button>
+            <h1 className="font-arabic-serif text-[18px] font-extrabold">ابحث في Alpha Coptic</h1>
+            <span className="w-10" />
+          </div>
+
+          {/* Premium glass search field */}
+          <div
+            className="flex items-center gap-2 rounded-2xl bg-white/90 backdrop-blur-xl border border-[#ead9b1] px-4 h-14 shadow-[0_14px_32px_-18px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.85)] animate-fade-in"
+          >
+            <Search className="h-5 w-5 text-[#8a6322] shrink-0" />
+            <input
+              ref={inputRef}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onBlur={commitRecent}
+              placeholder="ابحث في كل شيء..."
+              className="flex-1 bg-transparent outline-none text-[15px] font-bold placeholder:font-normal placeholder:text-[#8a7558]"
+              dir="rtl"
+            />
+            {query && (
+              <button
+                type="button"
+                aria-label="مسح"
+                onClick={() => { setQuery(""); inputRef.current?.focus(); }}
+                className="grid h-7 w-7 place-items-center rounded-full bg-[#f6ecd4] text-[#5b3a18] active:scale-90 transition-transform"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-[520px] px-4 pt-5">
+        {!query.trim() ? (
+          <BeforeSearch
+            recent={recent}
+            onPickRecent={onPickRecent}
+            onClearRecent={() => { localStorage.removeItem(RECENT_KEY); setRecent([]); }}
+          />
+        ) : results.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <ResultsView grouped={grouped} onCommit={commitRecent} />
+        )}
+      </main>
+    </div>
+  );
+}
+
+function BeforeSearch({
+  recent,
+  onPickRecent,
+  onClearRecent,
+}: {
+  recent: string[];
+  onPickRecent: (t: string) => void;
+  onClearRecent: () => void;
+}) {
+  return (
+    <div className="space-y-7 animate-fade-in">
+      {/* Categories */}
+      <section>
+        <h2 className="text-[12px] font-extrabold tracking-[0.2em] text-[#8a6322] mb-3">الأقسام</h2>
+        <div className="grid grid-cols-2 gap-3">
+          {CATEGORIES.map((c) => (
+            <Link
+              key={c.id}
+              to={c.to as any}
+              className={`group relative overflow-hidden rounded-3xl border border-white/70 bg-gradient-to-br ${c.tint} p-4 min-h-[96px] flex flex-col justify-between shadow-[0_10px_24px_-16px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.8)] active:scale-[0.98] transition-transform`}
+            >
+              <div className={`grid h-10 w-10 place-items-center rounded-2xl text-white ${c.iconBg} shadow-[0_6px_14px_-8px_rgba(0,0,0,0.35)]`}>
+                <c.icon className="h-5 w-5" />
+              </div>
+              <span className="font-arabic-serif text-[15px] font-extrabold text-[#3a2a18]">{c.label}</span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* Recent */}
+      {recent.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-[12px] font-extrabold tracking-[0.2em] text-[#8a6322]">آخر عمليات البحث</h2>
+            <button
+              type="button"
+              onClick={onClearRecent}
+              className="text-[11px] font-bold text-[#8a7558] active:scale-95 transition-transform"
+            >
+              مسح
+            </button>
+          </div>
+          <ul className="rounded-2xl bg-white/85 border border-[#ead9b1] overflow-hidden divide-y divide-[#ead9b1]/60">
+            {recent.map((t) => (
+              <li key={t}>
+                <button
+                  type="button"
+                  onClick={() => onPickRecent(t)}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-right active:bg-[#fbf3e1] transition-colors"
+                >
+                  <Search className="h-4 w-4 text-[#8a6322]" />
+                  <span className="text-[14px] font-bold">{t}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* Popular */}
+      <section>
+        <h2 className="text-[12px] font-extrabold tracking-[0.2em] text-[#8a6322] mb-3">الأكثر بحثاً</h2>
+        <div className="flex flex-wrap gap-2">
+          {POPULAR.map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => onPickRecent(p)}
+              className="px-4 py-2 rounded-full bg-gradient-to-br from-[#fff7e3] to-[#f6ecd4] border border-[#e6d2a6] text-[13px] font-bold text-[#5b3a18] shadow-[0_6px_14px_-10px_rgba(120,80,30,0.4),inset_0_1px_0_rgba(255,255,255,0.85)] active:scale-95 transition-transform"
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function ResultsView({
+  grouped,
+  onCommit,
+}: {
+  grouped: Map<Category, Result[]>;
+  onCommit: () => void;
+}) {
+  const order: Category[] = ["bible", "synaxarium", "katameros", "agpeya", "feasts", "meditations"];
+  return (
+    <div className="space-y-6 animate-fade-in">
+      {order
+        .filter((c) => grouped.has(c))
+        .map((c) => {
+          const meta = CATEGORY_META[c];
+          const list = grouped.get(c)!;
+          return (
+            <section key={c}>
+              <div className="flex items-center gap-2 mb-3">
+                <span className={`grid h-7 w-7 place-items-center rounded-xl text-white ${meta.iconBg}`}>
+                  <meta.icon className="h-3.5 w-3.5" />
+                </span>
+                <h2 className="font-arabic-serif text-[15px] font-extrabold">{meta.label}</h2>
+                <span className="text-[11px] font-bold text-[#8a7558]">{list.length}</span>
+              </div>
+              <ul className="space-y-2">
+                {list.map((r) => (
+                  <li key={r.id}>
+                    <Link
+                      to={r.to as any}
+                      onClick={onCommit}
+                      className="block rounded-2xl bg-white/90 border border-[#ead9b1] px-4 py-3 shadow-[0_8px_18px_-14px_rgba(120,80,30,0.4),inset_0_1px_0_rgba(255,255,255,0.85)] active:scale-[0.99] transition-transform"
+                    >
+                      <div className="font-arabic-serif text-[15px] font-extrabold text-[#3a2a18] line-clamp-1">
+                        {r.title}
+                      </div>
+                      {r.subtitle && (
+                        <div className="text-[12px] text-[#7a5a35] mt-0.5 line-clamp-2 leading-relaxed">
+                          {r.subtitle}
+                        </div>
+                      )}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          );
+        })}
+    </div>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="mt-10 text-center animate-fade-in">
+      <div className="mx-auto grid h-16 w-16 place-items-center rounded-3xl bg-white/85 border border-[#ead9b1] shadow-[0_10px_24px_-16px_rgba(120,80,30,0.45)]">
+        <Search className="h-7 w-7 text-[#8a6322]" />
+      </div>
+      <p className="mt-4 font-arabic-serif text-[16px] font-extrabold">لا توجد نتائج</p>
+      <p className="mt-1 text-[13px] text-[#7a5a35]">جرّب كلمة بحث أخرى.</p>
+    </div>
+  );
+}

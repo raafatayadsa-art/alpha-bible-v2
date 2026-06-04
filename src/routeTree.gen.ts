@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SearchRouteImport } from './routes/search'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as DiagnosticsRouteImport } from './routes/diagnostics'
@@ -27,6 +28,11 @@ import { Route as AgpeyaSavedRouteImport } from './routes/agpeya.saved'
 import { Route as AgpeyaPrayerIdRouteImport } from './routes/agpeya.$prayerId'
 import { Route as BookChapterRouteImport } from './routes/$book.$chapter'
 
+const SearchRoute = SearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
@@ -121,6 +127,7 @@ export interface FileRoutesByFullPath {
   '/diagnostics': typeof DiagnosticsRoute
   '/home': typeof HomeRoute
   '/onboarding': typeof OnboardingRoute
+  '/search': typeof SearchRoute
   '/$book/$chapter': typeof BookChapterRoute
   '/agpeya/$prayerId': typeof AgpeyaPrayerIdRoute
   '/agpeya/saved': typeof AgpeyaSavedRoute
@@ -139,6 +146,7 @@ export interface FileRoutesByTo {
   '/diagnostics': typeof DiagnosticsRoute
   '/home': typeof HomeRoute
   '/onboarding': typeof OnboardingRoute
+  '/search': typeof SearchRoute
   '/$book/$chapter': typeof BookChapterRoute
   '/agpeya/$prayerId': typeof AgpeyaPrayerIdRoute
   '/agpeya/saved': typeof AgpeyaSavedRoute
@@ -159,6 +167,7 @@ export interface FileRoutesById {
   '/diagnostics': typeof DiagnosticsRoute
   '/home': typeof HomeRoute
   '/onboarding': typeof OnboardingRoute
+  '/search': typeof SearchRoute
   '/$book/$chapter': typeof BookChapterRoute
   '/agpeya/$prayerId': typeof AgpeyaPrayerIdRoute
   '/agpeya/saved': typeof AgpeyaSavedRoute
@@ -180,6 +189,7 @@ export interface FileRouteTypes {
     | '/diagnostics'
     | '/home'
     | '/onboarding'
+    | '/search'
     | '/$book/$chapter'
     | '/agpeya/$prayerId'
     | '/agpeya/saved'
@@ -198,6 +208,7 @@ export interface FileRouteTypes {
     | '/diagnostics'
     | '/home'
     | '/onboarding'
+    | '/search'
     | '/$book/$chapter'
     | '/agpeya/$prayerId'
     | '/agpeya/saved'
@@ -217,6 +228,7 @@ export interface FileRouteTypes {
     | '/diagnostics'
     | '/home'
     | '/onboarding'
+    | '/search'
     | '/$book/$chapter'
     | '/agpeya/$prayerId'
     | '/agpeya/saved'
@@ -237,6 +249,7 @@ export interface RootRouteChildren {
   DiagnosticsRoute: typeof DiagnosticsRoute
   HomeRoute: typeof HomeRoute
   OnboardingRoute: typeof OnboardingRoute
+  SearchRoute: typeof SearchRoute
   AgpeyaPrayerIdRoute: typeof AgpeyaPrayerIdRoute
   AgpeyaSavedRoute: typeof AgpeyaSavedRoute
   FeastsEventIdRoute: typeof FeastsEventIdRoute
@@ -249,6 +262,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/onboarding': {
       id: '/onboarding'
       path: '/onboarding'
@@ -391,6 +411,7 @@ const rootRouteChildren: RootRouteChildren = {
   DiagnosticsRoute: DiagnosticsRoute,
   HomeRoute: HomeRoute,
   OnboardingRoute: OnboardingRoute,
+  SearchRoute: SearchRoute,
   AgpeyaPrayerIdRoute: AgpeyaPrayerIdRoute,
   AgpeyaSavedRoute: AgpeyaSavedRoute,
   FeastsEventIdRoute: FeastsEventIdRoute,
@@ -403,3 +424,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
