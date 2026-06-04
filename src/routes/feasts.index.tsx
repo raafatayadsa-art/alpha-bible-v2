@@ -151,7 +151,7 @@ function FeastsHome() {
                       <div className="text-[9.5px] text-[#6a543a] mt-1 leading-none">{f.copticYear}</div>
                     </div>
                     <div
-                      className="h-[78px] w-[104px] rounded-2xl bg-cover bg-center ring-1 ring-[#ead9b1]"
+                      className="h-[72px] w-[92px] rounded-2xl bg-cover bg-center ring-1 ring-[#ead9b1]"
                       style={{ backgroundImage: `url(${f.image})` }}
                       aria-hidden
                     />
