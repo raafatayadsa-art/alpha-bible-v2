@@ -1206,7 +1206,7 @@ function DockItem({
         {label}
       </span>
       {active && !raised && (
-        <span className="h-1 w-1 rounded-full" style={{ background: "#f0d78c", boxShadow: "0 0 6px rgba(240,215,140,0.7)" }} />
+        <span className="h-1 w-1 rounded-full" style={{ background: "#b8893a", boxShadow: "0 0 6px rgba(184,137,58,0.7)" }} />
       )}
     </div>
   );
