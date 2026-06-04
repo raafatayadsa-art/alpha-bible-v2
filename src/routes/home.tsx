@@ -251,7 +251,6 @@ function HomeScreen() {
   const [notifCount] = useState(1);
   const dockVisible = useHideOnScroll();
   const [verse, setVerse] = useState<{ text: string; reference: string } | null>(null);
-  const [heroIndex, setHeroIndex] = useState(0);
   const { set: savedSet, toggle: toggleSaved } = useSavedSet("alpha.saved");
 
   useEffect(() => {
