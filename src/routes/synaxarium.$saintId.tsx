@@ -103,6 +103,27 @@ function SaintDetails() {
   const navigate = useNavigate();
   const [saved, setSaved] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [presentOpen, setPresentOpen] = useState(false);
+
+  const presentationContent: PresentationContent = useMemo(() => {
+    const paras = saint.bio.split("\n\n").filter(Boolean);
+    const sections = [
+      { title: "نبذة", body: saint.summary, meta: saint.copticDate },
+      ...paras.map((p, i) => ({
+        title: i === 0 ? "السيرة" : undefined,
+        body: p,
+      })),
+      ...(saint.quote
+        ? [{ title: "من أقواله", body: `"${saint.quote}"`, meta: saint.quoteRef }]
+        : []),
+      ...(saint.timelinePhases ?? []).map((ph) => ({
+        title: ph.label,
+        body: ph.body,
+        meta: ph.year,
+      })),
+    ];
+    return { title: saint.name, subtitle: saint.title, sections };
+  }, [saint]);
   const bioRef = useRef<HTMLElement | null>(null);
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
