@@ -77,29 +77,41 @@ function buildInfoBody(p: AgpeyaPrayer): string {
 }
 
 function PrayerReader() {
-  const { prayerId } = Route.useParams();
-  const prayer = getAgpeyaPrayer(prayerId);
+  const { prayer } = Route.useLoaderData();
+  const prayerId = prayer.id;
   const navigate = useNavigate();
-  if (!prayer) throw notFound();
 
   const { prev, next } = useMemo(() => adjacentAgpeyaPrayers(prayerId), [prayerId]);
-  const availableTabs = TABS.filter((t) => prayer.tabs[t.key]?.body);
+
+  // Augment tabs: always provide an info tab built from metadata if missing.
+  const effectiveTabs = useMemo(() => {
+    const t = { ...prayer.tabs };
+    if (!t.info?.body) t.info = { body: buildInfoBody(prayer) };
+    return t;
+  }, [prayer]);
+  const availableTabs = TABS.filter((t) => effectiveTabs[t.key]?.body);
 
   const initial = readPrayerPosition(prayerId);
   const [tab, setTab] = useState<AgpeyaTabKey>(
     initial?.tab && availableTabs.some((t) => t.key === initial.tab) ? initial.tab : availableTabs[0]?.key ?? "text",
   );
   const [fontSize, setFontSize] = useAgpeyaFontSize();
+  const [lineHeight, setLineHeight] = useAgpeyaLineHeight();
   const [theme, setTheme] = useAgpeyaTheme();
   const [speed, setSpeed] = useAgpeyaSpeed();
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [savedNotice, setSavedNotice] = useState(false);
   const { isSaved, toggle } = useSavedAgpeya();
+  // Audio scaffolding — reserved for future player. Tracks last selected prayer only.
+  const [, setAudioState] = useAgpeyaAudio();
+  useEffect(() => {
+    setAudioState({ prayerId, positionSec: 0 });
+  }, [prayerId, setAudioState]);
   const scrollerRef = useRef<HTMLDivElement>(null);
 
   const dark = theme === "dark";
-  const content = prayer.tabs[tab]?.body ?? "";
+  const content = effectiveTabs[tab]?.body ?? "";
 
   // Restore scroll position on tab change
   useEffect(() => {
