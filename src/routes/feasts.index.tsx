@@ -96,29 +96,29 @@ function FeastsHome() {
           <GlassSurface className="overflow-hidden p-0 bg-white border-[#ead9b1] shadow-[0_18px_40px_-22px_rgba(120,80,30,0.55)]">
             <div className="relative h-[200px]">
               <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${today.image})` }} />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#fbf3e1] via-[#fbf3e1]/40 to-transparent" />
-              <div className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-white/85 backdrop-blur px-2.5 py-1 text-[11px] font-bold text-[#3a2a18] border border-[#efe2c4]">
+              <div className="absolute inset-0 bg-gradient-to-l from-transparent via-white/40 to-white" />
+              <div className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-[#3a2a18] border border-[#ead9b1] shadow-[0_4px_10px_-8px_rgba(120,80,30,0.5)]">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#6a4ab5]" />
                 اليوم
               </div>
-            </div>
-            <div className="p-4 -mt-2">
-              <h2 className="font-arabic-serif text-[20px] font-extrabold text-[#3a2a18] leading-tight">
-                {today.title}
-              </h2>
-              <p className="text-[12px] text-[#6a543a] mt-1">{today.subtitle}</p>
-              {today.scripture && (
-                <p className="text-[12px] text-[#3a2a18] mt-2 leading-relaxed">{today.scripture}</p>
-              )}
-              {today.scriptureRef && (
-                <p className="text-[11px] font-bold text-[#b8893a] mt-1">{today.scriptureRef}</p>
-              )}
-              <div className="mt-3 flex justify-start">
-                <span className="inline-flex items-center gap-2 rounded-full bg-white border border-[#efe2c4] px-4 h-10 text-[12px] font-bold text-[#3a2a18] shadow-[0_6px_14px_-10px_rgba(120,80,30,0.4)]">
-                  <BookOpen className="h-3.5 w-3.5 text-[#6a4ab5]" />
-                  تعرف على المناسبة
-                </span>
+              <div className="absolute inset-y-0 right-0 w-[58%] p-4 flex flex-col justify-center">
+                <h2 className="font-arabic-serif text-[22px] font-extrabold text-[#3a2a18] leading-tight">
+                  {today.title}
+                </h2>
+                <p className="text-[12px] text-[#6a543a] mt-1">{today.subtitle}</p>
+                {today.scripture && (
+                  <p className="text-[12px] text-[#3a2a18] mt-2 leading-relaxed line-clamp-3">{today.scripture}</p>
+                )}
+                {today.scriptureRef && (
+                  <p className="text-[11px] font-bold text-[#b8893a] mt-1">{today.scriptureRef}</p>
+                )}
               </div>
+            </div>
+            <div className="px-4 pb-4 -mt-6 flex justify-end relative z-10">
+              <span className="inline-flex items-center gap-2 rounded-full bg-white border border-[#ead9b1] px-4 h-10 text-[12px] font-bold text-[#3a2a18] shadow-[0_10px_18px_-12px_rgba(120,80,30,0.55)]">
+                <BookOpen className="h-3.5 w-3.5 text-[#6a4ab5]" />
+                تعرف على المناسبة
+              </span>
             </div>
           </GlassSurface>
         </Link>
