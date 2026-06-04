@@ -312,7 +312,7 @@ function HomeScreen() {
 
         {/* Continue your journey */}
         <section className="mt-4">
-          <Pressable to="/books" ariaLabel="استكمل رحلتك">
+          <Pressable to="/books" ariaLabel="الكتاب المقدس">
             <div className="flex items-center gap-3 rounded-3xl bg-[#fbf3e1] border border-[#efe2c4] p-2.5 shadow-[0_10px_24px_-14px_rgba(120,80,30,0.30)]">
               <img src={continueImg} alt="" className="h-[78px] w-[110px] rounded-2xl object-cover" draggable={false} />
               <div className="flex-1 text-right">
