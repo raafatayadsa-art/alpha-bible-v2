@@ -190,7 +190,7 @@ function HomeScreen() {
                 )}
               </GlassChip>
             </Pressable>
-            <Pressable ariaLabel="بحث">
+            <Pressable to="/search" ariaLabel="بحث">
               <GlassChip className="h-11 w-11 grid place-items-center">
                 <Search className="h-5 w-5 text-[#3a2a18]" />
               </GlassChip>
