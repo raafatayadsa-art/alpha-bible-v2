@@ -138,28 +138,28 @@ function FeastsHome() {
                   style={{ background: ACCENT_COLORS[f.accent], boxShadow: `0 0 0 3px ${ACCENT_COLORS[f.accent]}22` }}
                   aria-hidden
                 />
-                <GlassSurface className="p-2.5">
-                  <div className="grid grid-cols-[56px_82px_1fr_auto] gap-2.5 items-center">
+                <GlassSurface className="p-2.5 bg-white border-[#ead9b1] shadow-[0_14px_30px_-22px_rgba(120,80,30,0.55)]">
+                  <div className="grid grid-cols-[48px_104px_1fr_auto] gap-2.5 items-center">
                     <div className="text-center">
-                      <div className="text-[10px] font-bold text-[#b8893a]">{f.gregorianDate}</div>
+                      <div className="text-[9.5px] font-bold text-[#b8893a] leading-none">{f.gregorianDate}</div>
                       <div
-                        className="font-arabic-serif text-[22px] font-extrabold leading-none mt-0.5"
+                        className="font-arabic-serif text-[26px] font-extrabold leading-none mt-1"
                         style={{ color: ACCENT_COLORS[f.accent] }}
                       >
                         {f.copticDay}
                       </div>
-                      <div className="text-[9.5px] text-[#6a543a] mt-0.5">{f.copticYear}</div>
+                      <div className="text-[9.5px] text-[#6a543a] mt-1 leading-none">{f.copticYear}</div>
                     </div>
                     <div
-                      className="h-[68px] w-[82px] rounded-xl bg-cover bg-center ring-1 ring-[#efe2c4]"
+                      className="h-[78px] w-[104px] rounded-2xl bg-cover bg-center ring-1 ring-[#ead9b1]"
                       style={{ backgroundImage: `url(${f.image})` }}
                       aria-hidden
                     />
                     <div className="min-w-0 text-right">
-                      <div className="font-arabic-serif text-[14.5px] font-extrabold text-[#3a2a18] leading-tight line-clamp-1">
+                      <div className="font-arabic-serif text-[15.5px] font-extrabold text-[#3a2a18] leading-tight line-clamp-1">
                         {f.title}
                       </div>
-                      <div className="text-[11.5px] text-[#6a543a] line-clamp-2 mt-0.5 leading-snug">
+                      <div className="text-[11.5px] text-[#6a543a] line-clamp-2 mt-1 leading-snug">
                         {f.subtitle}
                       </div>
                     </div>
