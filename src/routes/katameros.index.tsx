@@ -308,7 +308,7 @@ function KatamerosHome() {
                     </div>
                     <div className="text-[10.5px] text-[#6a543a] mt-0.5">{r.reference}</div>
                   </div>
-                  <StatusBadge status={st} />
+                  <StatusBadge status={st} tone={tone} />
                 </li>
               );
             })}
@@ -389,12 +389,20 @@ function KatamerosHome() {
 
 /* ---------- subcomponents ---------- */
 
-function StatusBadge({ status }: { status: ReadingStatus }) {
+function StatusBadge({ status, tone }: { status: ReadingStatus; tone?: string }) {
   if (status === "completed") {
+    const c = tone ?? "#1f6e54";
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-[#e7f3ec] border border-[#bcdcc9] text-[#1f6e54] text-[10px] font-bold px-2 h-6">
+      <span
+        className="inline-flex items-center gap-1 rounded-full text-[10px] font-bold px-2 h-6 border"
+        style={{
+          background: `${c}14`,
+          borderColor: `${c}40`,
+          color: c,
+        }}
+      >
         <CheckCircle2 className="h-3 w-3" />
-        مكتمل
+        تمت القراءة
       </span>
     );
   }
@@ -441,9 +449,27 @@ function ReadingCard({
   const Icon = READING_ICON[reading.type];
   const tone = READING_TONE[reading.type];
 
+  const isCompleted = status === "completed";
+  const isCurrent = status === "in-progress";
+
+  const surfaceStyle = isCompleted
+    ? {
+        background: `linear-gradient(180deg, ${tone}0F, ${tone}0A)`,
+        borderColor: `${tone}38`,
+      }
+    : isCurrent
+      ? {
+          background: `linear-gradient(180deg, ${tone}14, #ffffff)`,
+          borderColor: `${tone}55`,
+        }
+      : undefined;
+
   return (
     <div id={`reading-${reading.id}`} className="scroll-mt-4">
-      <GlassSurface className="p-0 bg-white border-[#ead9b1] shadow-[0_10px_24px_-20px_rgba(120,80,30,0.5)] overflow-hidden transition-shadow duration-300 [@media(hover:hover)]:hover:shadow-[0_18px_32px_-22px_rgba(120,80,30,0.55)]">
+      <div
+        className="rounded-2xl border backdrop-blur-xl shadow-[0_10px_24px_-20px_rgba(120,80,30,0.5)] overflow-hidden transition-all duration-300 [@media(hover:hover)]:hover:shadow-[0_18px_32px_-22px_rgba(120,80,30,0.55)]"
+        style={surfaceStyle ?? { background: "#ffffff", borderColor: "#ead9b1" }}
+      >
         <div className="flex items-center gap-3 p-3">
           <div
             className="grid h-11 w-11 place-items-center rounded-xl text-white shrink-0 shadow-[0_6px_14px_-8px_rgba(0,0,0,0.35)]"
@@ -467,7 +493,8 @@ function ReadingCard({
             </div>
           </div>
           <div className="flex flex-col items-end gap-1.5 shrink-0">
-            <StatusBadge status={status} />
+            <StatusBadge status={status} tone={tone} />
+
             <button
               type="button"
               onClick={expanded ? onClose : onOpen}
@@ -519,7 +546,8 @@ function ReadingCard({
             </div>
           </div>
         )}
-      </GlassSurface>
+      </div>
+
     </div>
   );
 }

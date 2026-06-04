@@ -142,10 +142,7 @@ export function AutoScrollControls({
       className={cn(
         "fixed left-1/2 z-40 -translate-x-1/2 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
         bottomClass,
-        "flex items-center gap-0.5 rounded-full border backdrop-blur-2xl px-1.5 py-1",
-        spiritualMode
-          ? "bg-[#0a1626]/55 border-white/10 shadow-[0_18px_40px_-20px_rgba(0,0,0,0.85),0_0_22px_-8px_rgba(62,180,130,0.30),inset_0_1px_0_rgba(255,255,255,0.06)]"
-          : "bg-white/60 border-[#c79356]/30 text-[#1f4032] shadow-[0_14px_30px_-16px_rgba(31,94,74,0.4),inset_0_1px_0_rgba(255,255,255,0.9)]",
+        "flex flex-col items-center gap-1",
         active
           ? "opacity-100 translate-y-0 pointer-events-auto"
           : controlled
@@ -155,31 +152,55 @@ export function AutoScrollControls({
       role="toolbar"
       aria-label="وضع القراءة"
     >
+      {/* Alpha mark above the bar */}
+      <span
+        aria-hidden
+        className={cn(
+          "text-[10px] font-extrabold tracking-[0.3em] leading-none select-none",
+          spiritualMode ? "text-[#f0d78c]/55" : "text-[#b8893a]/70",
+        )}
+        style={{ textShadow: spiritualMode ? "0 0 6px rgba(240,215,140,0.25)" : undefined }}
+      >
+        Ⲁ
+      </span>
+
+      <div
+        className={cn(
+          "flex items-center gap-0.5 rounded-full border backdrop-blur-2xl px-1.5 py-1",
+          spiritualMode
+            ? "bg-[#1a140a]/55 border-[#c9a96b]/25 shadow-[0_18px_40px_-20px_rgba(0,0,0,0.85),0_0_22px_-8px_rgba(184,137,58,0.30),inset_0_1px_0_rgba(255,255,255,0.06)]"
+            : "bg-[#fff7e3]/65 border-[#e6d2a6]/55 text-[#5b3a18] shadow-[0_14px_30px_-16px_rgba(120,80,30,0.40),inset_0_1px_0_rgba(255,255,255,0.9)]",
+        )}
+      >
       <button
         type="button"
         aria-label={spiritualMode ? "وضع النهار" : "الوضع الروحي"}
         onClick={onToggleSpiritual}
         className="grid h-7 w-7 place-items-center rounded-full active:scale-90 transition-transform"
-        style={spiritualMode ? { color: "#ffffff" } : undefined}
+        style={spiritualMode ? { color: "#f0d78c" } : undefined}
       >
         {spiritualMode ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
       </button>
 
-      <span className={cn("mx-0.5 h-4 w-px", spiritualMode ? "bg-white/15" : "bg-[#3e8a6e]/20")} />
+      <span className={cn("mx-0.5 h-4 w-px", spiritualMode ? "bg-[#c9a96b]/25" : "bg-[#b8893a]/20")} />
 
       <button
         type="button"
         aria-label="إبطاء"
         onClick={() => setSpeedIdx((i) => Math.max(0, i - 1))}
         className="grid h-6 w-6 place-items-center rounded-full active:scale-90 transition-transform disabled:opacity-40"
-        style={spiritualMode ? { color: "#ffffff" } : undefined}
+        style={spiritualMode ? { color: "#f0d78c" } : undefined}
         disabled={speedIdx === 0}
       >
         <Minus className="h-3 w-3" />
       </button>
       <span
         className="min-w-9 text-center text-[10.5px] font-bold tabular-nums"
-        style={spiritualMode ? { color: "#7af0b8", textShadow: "0 0 8px rgba(62,180,130,0.40)" } : undefined}
+        style={
+          spiritualMode
+            ? { color: "#f0d78c", textShadow: "0 0 8px rgba(184,137,58,0.40)" }
+            : { color: "#8a6322" }
+        }
       >
         {speedLabel}
       </span>
@@ -188,13 +209,13 @@ export function AutoScrollControls({
         aria-label="تسريع"
         onClick={() => setSpeedIdx((i) => Math.min(SPEEDS.length - 1, i + 1))}
         className="grid h-6 w-6 place-items-center rounded-full active:scale-90 transition-transform disabled:opacity-40"
-        style={spiritualMode ? { color: "#ffffff" } : undefined}
+        style={spiritualMode ? { color: "#f0d78c" } : undefined}
         disabled={speedIdx === SPEEDS.length - 1}
       >
         <Plus className="h-3 w-3" />
       </button>
 
-      <span className={cn("mx-0.5 h-4 w-px", spiritualMode ? "bg-white/15" : "bg-[#3e8a6e]/20")} />
+      <span className={cn("mx-0.5 h-4 w-px", spiritualMode ? "bg-[#c9a96b]/25" : "bg-[#b8893a]/20")} />
 
       <button
         type="button"
@@ -202,14 +223,16 @@ export function AutoScrollControls({
         onClick={() => setPlaying((p) => !p)}
         className={cn(
           "grid h-8 w-8 place-items-center rounded-full text-white active:scale-95 transition-all duration-300",
-          "bg-gradient-to-br from-[#3eb482] to-[#1f6e54]",
+          "bg-gradient-to-br from-[#d9b878] to-[#8a6322] border border-white/25",
           playing
-            ? "shadow-[0_0_14px_rgba(62,180,130,0.85),0_0_28px_rgba(62,180,130,0.45)] ring-1 ring-[#7af0b8]/40"
-            : "shadow-[0_6px_14px_-6px_rgba(31,94,74,0.6)] ring-1 ring-[#7af0b8]/25",
+            ? "shadow-[0_0_14px_rgba(184,137,58,0.85),0_0_28px_rgba(184,137,58,0.45)] ring-1 ring-[#f0d78c]/45"
+            : "shadow-[0_6px_14px_-6px_rgba(120,80,30,0.6)] ring-1 ring-[#f0d78c]/25",
         )}
       >
         {playing ? <Pause className="h-3.5 w-3.5 fill-white" /> : <Play className="h-3.5 w-3.5 fill-white" />}
       </button>
+      </div>
     </div>
   );
 }
+
