@@ -98,6 +98,79 @@ function useSavedSet(key: string) {
 }
 
 // ===== Premium share with auto-generated branded image =====
+// Cache generated share images by content key so repeat shares are instant.
+const shareImageCache = new Map<string, Blob>();
+const shareImageInflight = new Map<string, Promise<Blob | null>>();
+
+async function buildShareImage(opts: {
+  title: string;
+  body: string;
+  meta?: string;
+  imageSrc: string;
+  accent: string;
+}): Promise<Blob | null> {
+  const { title, body, meta, imageSrc, accent } = opts;
+  const img = await loadImage(imageSrc);
+  const W = 1080, H = 1350;
+  const canvas = document.createElement("canvas");
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("no ctx");
+  // cover-fit background
+  const ratio = Math.max(W / img.width, H / img.height);
+  const dw = img.width * ratio, dh = img.height * ratio;
+  ctx.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
+  // dark gradient overlay
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, "rgba(0,0,0,0.15)");
+  grad.addColorStop(0.55, "rgba(0,0,0,0.45)");
+  grad.addColorStop(1, "rgba(0,0,0,0.92)");
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+  // accent glow
+  const halo = ctx.createRadialGradient(W / 2, H * 0.4, 50, W / 2, H * 0.4, W * 0.7);
+  halo.addColorStop(0, `${accent}55`);
+  halo.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = halo; ctx.fillRect(0, 0, W, H);
+  // RTL text
+  ctx.direction = "rtl";
+  ctx.textAlign = "right";
+  ctx.fillStyle = "#f0d78c";
+  ctx.font = "bold 38px system-ui, -apple-system, 'SF Arabic'";
+  ctx.fillText(title, W - 70, H - 480);
+  // body
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 54px system-ui, -apple-system, 'SF Arabic'";
+  const lines = wrapText(ctx, body, W - 140);
+  let y = H - 400;
+  for (const line of lines.slice(0, 5)) {
+    ctx.fillText(line, W - 70, y);
+    y += 78;
+  }
+  if (meta) {
+    ctx.fillStyle = "#e7c97a";
+    ctx.font = "bold 32px system-ui, -apple-system, 'SF Arabic'";
+    ctx.fillText(meta, W - 70, y + 20);
+  }
+  // brand strip
+  ctx.fillStyle = "rgba(255,255,255,0.08)";
+  ctx.fillRect(0, H - 130, W, 130);
+  ctx.fillStyle = "#f0d78c";
+  ctx.font = "bold 36px system-ui";
+  ctx.textAlign = "right";
+  ctx.fillText("ألفا — التطبيق القبطي", W - 70, H - 75);
+  ctx.fillStyle = "rgba(255,255,255,0.7)";
+  ctx.font = "26px system-ui";
+  ctx.fillText("حمّل من App Store و Google Play", W - 70, H - 35);
+  // Ⲁ Ⲱ
+  ctx.fillStyle = `${accent}33`;
+  ctx.font = "bold 220px serif";
+  ctx.textAlign = "left";
+  ctx.fillText("Ⲁ", 40, 220);
+  ctx.textAlign = "right";
+  ctx.fillText("Ⲱ", W - 40, H - 200);
+  return await new Promise<Blob | null>((res) => canvas.toBlob(res, "image/jpeg", 0.92));
+}
+
 async function shareWithImage(opts: {
   title: string;
   body: string;
@@ -107,68 +180,24 @@ async function shareWithImage(opts: {
 }) {
   const { title, body, meta, imageSrc, accent } = opts;
   const shareText = `${title}\n\n${body}${meta ? `\n— ${meta}` : ""}\n\nحمّل تطبيق ألفا القبطي:\nApp Store: https://apps.apple.com/app/alpha-coptic\nGoogle Play: https://play.google.com/store/apps/details?id=app.alpha.coptic`;
+  const cacheKey = `${imageSrc}|${accent}|${title}|${body}|${meta ?? ""}`;
   try {
-    // Try to compose a branded share image
-    const img = await loadImage(imageSrc);
-    const W = 1080, H = 1350;
-    const canvas = document.createElement("canvas");
-    canvas.width = W; canvas.height = H;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("no ctx");
-    // cover-fit background
-    const ratio = Math.max(W / img.width, H / img.height);
-    const dw = img.width * ratio, dh = img.height * ratio;
-    ctx.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
-    // dark gradient overlay
-    const grad = ctx.createLinearGradient(0, 0, 0, H);
-    grad.addColorStop(0, "rgba(0,0,0,0.15)");
-    grad.addColorStop(0.55, "rgba(0,0,0,0.45)");
-    grad.addColorStop(1, "rgba(0,0,0,0.92)");
-    ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
-    // accent glow
-    const halo = ctx.createRadialGradient(W / 2, H * 0.4, 50, W / 2, H * 0.4, W * 0.7);
-    halo.addColorStop(0, `${accent}55`);
-    halo.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = halo; ctx.fillRect(0, 0, W, H);
-    // RTL text
-    ctx.direction = "rtl";
-    ctx.textAlign = "right";
-    ctx.fillStyle = "#f0d78c";
-    ctx.font = "bold 38px system-ui, -apple-system, 'SF Arabic'";
-    ctx.fillText(title, W - 70, H - 480);
-    // body
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 54px system-ui, -apple-system, 'SF Arabic'";
-    const lines = wrapText(ctx, body, W - 140);
-    let y = H - 400;
-    for (const line of lines.slice(0, 5)) {
-      ctx.fillText(line, W - 70, y);
-      y += 78;
+    let blob: Blob | null | undefined = shareImageCache.get(cacheKey);
+    if (!blob) {
+      let pending = shareImageInflight.get(cacheKey);
+      if (!pending) {
+        pending = buildShareImage(opts).then((b) => {
+          if (b) shareImageCache.set(cacheKey, b);
+          shareImageInflight.delete(cacheKey);
+          return b;
+        }).catch((e) => {
+          shareImageInflight.delete(cacheKey);
+          throw e;
+        });
+        shareImageInflight.set(cacheKey, pending);
+      }
+      blob = await pending;
     }
-    if (meta) {
-      ctx.fillStyle = "#e7c97a";
-      ctx.font = "bold 32px system-ui, -apple-system, 'SF Arabic'";
-      ctx.fillText(meta, W - 70, y + 20);
-    }
-    // brand strip
-    ctx.fillStyle = "rgba(255,255,255,0.08)";
-    ctx.fillRect(0, H - 130, W, 130);
-    ctx.fillStyle = "#f0d78c";
-    ctx.font = "bold 36px system-ui";
-    ctx.textAlign = "right";
-    ctx.fillText("ألفا — التطبيق القبطي", W - 70, H - 75);
-    ctx.fillStyle = "rgba(255,255,255,0.7)";
-    ctx.font = "26px system-ui";
-    ctx.fillText("حمّل من App Store و Google Play", W - 70, H - 35);
-    // Ⲁ Ⲱ
-    ctx.fillStyle = `${accent}33`;
-    ctx.font = "bold 220px serif";
-    ctx.textAlign = "left";
-    ctx.fillText("Ⲁ", 40, 220);
-    ctx.textAlign = "right";
-    ctx.fillText("Ⲱ", W - 40, H - 200);
-
-    const blob: Blob | null = await new Promise((res) => canvas.toBlob(res, "image/jpeg", 0.92));
     if (blob && (navigator as any).canShare?.({ files: [new File([blob], "alpha.jpg", { type: "image/jpeg" })] })) {
       const file = new File([blob], "alpha.jpg", { type: "image/jpeg" });
       await (navigator as any).share({ title, text: shareText, files: [file] });
