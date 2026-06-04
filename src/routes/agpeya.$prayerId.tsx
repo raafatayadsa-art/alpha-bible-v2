@@ -31,6 +31,67 @@ import {
 import type { AgpeyaPrayer, AgpeyaTabKey } from "@/features/agpeya";
 import { cn } from "@/lib/utils";
 
+/* ---------- Lifecycle states (declared before Route for code-splitter) ---------- */
+
+function ReaderShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      dir="rtl"
+      className="min-h-dvh flex flex-col items-center justify-center px-6 text-center bg-[radial-gradient(120%_60%_at_50%_-10%,#fff5dd_0%,#fbeac6_45%,#f3d9a5_100%)] text-[#3a2410]"
+    >
+      {children}
+    </div>
+  );
+}
+
+function ReaderPending() {
+  return (
+    <ReaderShell>
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#c79356] border-t-transparent" aria-label="جار التحميل" />
+      <p className="mt-4 text-[13px] font-semibold text-[#8a5a1f]">جار تحميل الصلاة…</p>
+    </ReaderShell>
+  );
+}
+
+function ReaderNotFound() {
+  return (
+    <ReaderShell>
+      <h1 className="font-arabic-serif text-[22px] font-extrabold text-[#5b3a18]">الصلاة غير موجودة</h1>
+      <p className="mt-2 text-[13px] text-[#8a5a1f]">تعذر العثور على هذه الصلاة في الأجبية.</p>
+      <Link
+        to="/agpeya"
+        className="mt-5 inline-flex items-center gap-2 rounded-full bg-gradient-to-br from-[#e7b35a] to-[#b87a22] px-4 py-2 text-[13px] font-bold text-white shadow"
+      >
+        العودة للأجبية
+      </Link>
+    </ReaderShell>
+  );
+}
+
+function ReaderError({ error, reset }: ErrorComponentProps) {
+  const router = useRouter();
+  return (
+    <ReaderShell>
+      <h1 className="font-arabic-serif text-[22px] font-extrabold text-[#5b3a18]">حدث خطأ غير متوقع</h1>
+      <p className="mt-2 max-w-sm text-[12.5px] text-[#8a5a1f]">
+        {error?.message ?? "تعذر تحميل هذه الصلاة. حاول مرة أخرى."}
+      </p>
+      <div className="mt-5 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => { router.invalidate(); reset(); }}
+          className="rounded-full bg-gradient-to-br from-[#e7b35a] to-[#b87a22] px-4 py-2 text-[13px] font-bold text-white shadow"
+        >
+          إعادة المحاولة
+        </button>
+        <Link to="/agpeya" className="rounded-full border border-[#c79356]/40 bg-white/70 px-4 py-2 text-[13px] font-bold text-[#5b3a18]">
+          الأجبية
+        </Link>
+      </div>
+    </ReaderShell>
+  );
+}
+
 export const Route = createFileRoute("/agpeya/$prayerId")({
   ssr: false,
   head: ({ params }) => {
