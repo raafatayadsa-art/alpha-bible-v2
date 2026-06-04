@@ -278,19 +278,27 @@ function SearchHub() {
             <div className="flex items-center gap-1.5 w-max">
               {SCOPES.map((s) => {
                 const active = s.id === scope;
+                const col = SCOPE_COLORS[s.id];
                 return (
                   <button
                     key={s.id}
                     type="button"
                     onClick={() => setScope(s.id)}
                     className={
-                      "px-3 h-7 rounded-full text-[12px] font-bold whitespace-nowrap border transition-all active:scale-95 " +
+                      "relative px-3 h-7 rounded-full text-[12px] font-bold whitespace-nowrap border backdrop-blur-md transition-all duration-300 ease-out active:scale-95 " +
                       (active
-                        ? "bg-[#caa15f] text-white border-[#caa15f] shadow-[0_4px_10px_-4px_rgba(120,80,30,0.5)]"
-                        : "bg-white/70 text-[#7a5a35] border-[#ead9b1] backdrop-blur-md")
+                        ? `${col.activeBg} ${col.text} ${col.border} ${col.glow} border-[${col.color}]/40`
+                        : `${col.bg} ${col.text} ${col.border} hover:bg-[${col.color}]/16`)
                     }
+                    style={active ? { borderColor: `${col.color}40` } : undefined}
                   >
-                    {s.label}
+                    <span className={active ? "relative z-10" : ""}>{s.label}</span>
+                    {active && (
+                      <span
+                        className="absolute inset-0 rounded-full opacity-30 blur-[1px]"
+                        style={{ backgroundColor: col.color }}
+                      />
+                    )}
                   </button>
                 );
               })}
