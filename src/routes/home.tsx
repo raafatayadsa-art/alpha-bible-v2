@@ -1054,14 +1054,7 @@ function MiniPlayer({ dockVisible }: { dockVisible: boolean }) {
           >
             {playing ? <Pause className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current" />}
           </button>
-          {/* dismiss */}
-          <button
-            aria-label="إغلاق"
-            onClick={() => setDismissed(true)}
-            className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-white/10 bg-white/5 text-white/70 active:scale-95 transition"
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
+          {/* dismiss button removed — player is always available */}
         </div>
       </div>
       <style>{`@keyframes alphaMarquee { 0%{transform:translateX(0)} 100%{transform:translateX(-100%)} }`}</style>
