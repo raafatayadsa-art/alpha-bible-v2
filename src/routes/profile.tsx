@@ -514,8 +514,9 @@ function MessagesHero() {
   const unread = 3;
   return (
     <Link
-      to={"/profile/messages" as any}
-      className="block active:scale-[0.985] transition-transform"
+      to="/profile/messages"
+      preload="intent"
+      className="block active:scale-[0.985] transition-transform cursor-pointer"
     >
       <div
         className="relative overflow-hidden rounded-[22px]"
