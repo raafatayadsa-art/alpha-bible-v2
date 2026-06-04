@@ -95,28 +95,36 @@ function FeastsHome() {
         {/* Today hero */}
         <Link to="/feasts/$eventId" params={{ eventId: today.id }} className="block mt-3 active:scale-[0.99] transition-transform">
           <GlassSurface className="overflow-hidden p-0 bg-white border-[#ead9b1] shadow-[0_18px_40px_-22px_rgba(120,80,30,0.55)]">
-            <div className="relative h-[210px] overflow-hidden">
+            <div className="relative h-[220px] overflow-hidden">
+              {/* Image bleeds into card from the right (~68%) */}
               <img
                 src={today.image}
                 alt={today.title}
                 loading="eager"
                 decoding="async"
                 draggable={false}
-                className="absolute inset-y-0 right-0 h-full w-[72%] object-cover object-center select-none"
+                className="absolute inset-y-0 right-0 h-full w-[68%] object-cover object-center select-none"
+              />
+              {/* Strong beige→white fade from text side into image */}
+              <div
+                className="absolute inset-0 pointer-events-none"
                 style={{
-                  WebkitMaskImage:
-                    "linear-gradient(to left, #000 55%, rgba(0,0,0,0.55) 75%, rgba(0,0,0,0.15) 90%, transparent 100%)",
-                  maskImage:
-                    "linear-gradient(to left, #000 55%, rgba(0,0,0,0.55) 75%, rgba(0,0,0,0.15) 90%, transparent 100%)",
+                  background:
+                    "linear-gradient(to left, rgba(255,255,255,0) 0%, rgba(255,253,247,0.15) 30%, rgba(255,251,240,0.7) 48%, #fffaee 62%, #ffffff 78%)",
                 }}
               />
-              <div className="absolute inset-0 bg-[linear-gradient(to_left,transparent_0%,rgba(255,255,255,0.18)_28%,rgba(255,255,255,0.72)_52%,#ffffff_75%)]" />
-              <div className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-[#3a2a18] border border-[#ead9b1] shadow-[0_4px_10px_-8px_rgba(120,80,30,0.5)]">
+              {/* Soft top/bottom polish */}
+              <div className="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-white/70 to-transparent pointer-events-none" />
+              <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-white/80 to-transparent pointer-events-none" />
+
+              <div className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-white/90 backdrop-blur px-2.5 py-1 text-[11px] font-bold text-[#3a2a18] border border-[#ead9b1] shadow-[0_4px_10px_-8px_rgba(120,80,30,0.5)]">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#6a4ab5]" />
                 اليوم
               </div>
-              <div className="absolute inset-y-0 left-0 w-[58%] p-4 flex flex-col justify-center">
-                <h2 className="font-arabic-serif text-[22px] font-extrabold text-[#3a2a18] leading-tight text-right">
+
+              {/* Text overlays the faded area on the left */}
+              <div className="absolute inset-y-0 left-0 right-[35%] p-5 flex flex-col justify-center">
+                <h2 className="font-arabic-serif text-[22px] font-extrabold text-[#3a2a18] leading-tight text-right drop-shadow-[0_1px_0_rgba(255,255,255,0.8)]">
                   {today.title}
                 </h2>
                 <p className="text-[12px] text-[#6a543a] mt-1 text-right">{today.subtitle}</p>
@@ -126,15 +134,14 @@ function FeastsHome() {
                 {today.scriptureRef && (
                   <p className="text-[11px] font-bold text-[#b8893a] mt-1 text-right">{today.scriptureRef}</p>
                 )}
+                <span className="mt-3 self-end inline-flex items-center gap-2 rounded-full bg-white border border-[#ead9b1] px-3.5 h-9 text-[11.5px] font-bold text-[#3a2a18] shadow-[0_10px_18px_-12px_rgba(120,80,30,0.55)]">
+                  <BookOpen className="h-3.5 w-3.5 text-[#6a4ab5]" />
+                  تعرف على المناسبة
+                </span>
               </div>
             </div>
-            <div className="px-4 pb-4 -mt-6 flex justify-start relative z-10">
-              <span className="inline-flex items-center gap-2 rounded-full bg-white border border-[#ead9b1] px-4 h-10 text-[12px] font-bold text-[#3a2a18] shadow-[0_10px_18px_-12px_rgba(120,80,30,0.55)]">
-                <BookOpen className="h-3.5 w-3.5 text-[#6a4ab5]" />
-                تعرف على المناسبة
-              </span>
-            </div>
           </GlassSurface>
+
         </Link>
 
         {/* List */}
