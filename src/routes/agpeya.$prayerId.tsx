@@ -320,7 +320,7 @@ function GospelCard({
     <GlassCard dark={dark}>
       <div className={cn(
         "mb-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold",
-        dark ? "bg-[#f0d78c]/15 text-[#f0d78c]" : "bg-[#1f4032]/10 text-[#1f4032]",
+        dark ? "bg-[#f0d78c]/15 text-[#f0d78c]" : "bg-[#5a3d92]/10 text-[#5a3d92]",
       )}>
         <CopticCross className="h-3 w-3" />
         {g.reference}
@@ -336,7 +336,7 @@ function GospelCard({
         </p>
       ))}
       {g.conclusion && (
-        <p className={cn("mt-3 text-center text-[12.5px] font-bold", dark ? "text-[#f0d78c]" : "text-[#1f4032]")}>
+        <p className={cn("mt-3 text-center text-[12.5px] font-bold", dark ? "text-[#f0d78c]" : "text-[#5a3d92]")}>
           {g.conclusion}
         </p>
       )}
@@ -649,7 +649,7 @@ function PrayerReader() {
               {isSaved(prayerId) && (
                 <span className={cn(
                   "rounded-full px-1.5 py-0.5 text-[9px] font-bold",
-                  dark ? "bg-[#f0d78c]/20 text-[#f0d78c]" : "bg-[#1f4032]/10 text-[#1f4032]",
+                  dark ? "bg-[#f0d78c]/20 text-[#f0d78c]" : "bg-[#5a3d92]/10 text-[#5a3d92]",
                 )}>
                   محفوظة
                 </span>
@@ -872,10 +872,10 @@ function PrayerReader() {
             onClick={() => setPlaying((p) => !p)}
             className={cn(
               "ms-1 grid h-10 w-10 place-items-center rounded-full text-white transition-all active:scale-95",
-              "bg-gradient-to-br from-[#3eb482] to-[#1f6e54]",
+              "bg-gradient-to-br from-[#7a5cb0] to-[#5a3d92]",
               playing
-                ? "shadow-[0_0_14px_rgba(62,180,130,0.85)] ring-1 ring-[#7af0b8]/40"
-                : "shadow-[0_6px_14px_-6px_rgba(31,94,74,0.6)] ring-1 ring-[#7af0b8]/25",
+                ? "shadow-[0_0_14px_rgba(122,92,176,0.85)] ring-1 ring-[#b89dd9]/40"
+                : "shadow-[0_6px_14px_-6px_rgba(90,61,146,0.6)] ring-1 ring-[#b89dd9]/25",
             )}
             aria-label={playing ? "إيقاف التمرير" : "تشغيل التمرير"}
           >
@@ -973,7 +973,7 @@ function IconButton({
         "grid h-10 w-10 place-items-center rounded-full border transition-all active:scale-95",
         dark
           ? active ? "border-[#f0d78c] bg-[#f0d78c] text-[#1a1208]" : "border-white/15 bg-white/5 text-[#f0d78c]"
-          : active ? "border-[#1f4032] bg-[#1f4032] text-white" : "border-[#c79356]/35 bg-white/60 text-[#8a5a1f]",
+          : active ? "border-[#5a3d92] bg-gradient-to-br from-[#7a5cb0] to-[#5a3d92] text-white" : "border-[#c79356]/35 bg-white/60 text-[#8a5a1f]",
       )}
     >
       {children}
