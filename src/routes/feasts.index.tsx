@@ -139,7 +139,7 @@ function FeastsHome() {
                   aria-hidden
                 />
                 <GlassSurface className="p-2.5 bg-white border-[#ead9b1] shadow-[0_14px_30px_-22px_rgba(120,80,30,0.55)]">
-                  <div className="grid grid-cols-[48px_104px_1fr_auto] gap-2.5 items-center">
+                  <div className="grid grid-cols-[42px_92px_minmax(0,1fr)_38px] gap-2 items-center">
                     <div className="text-center">
                       <div className="text-[9.5px] font-bold text-[#b8893a] leading-none">{f.gregorianDate}</div>
                       <div
