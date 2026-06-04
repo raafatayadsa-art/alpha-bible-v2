@@ -121,13 +121,25 @@ function HomeScreen() {
   }, []);
 
 
-  const quickCards = [
+  const quickCards: Array<{
+    key: string;
+    icon: string;
+    title: string;
+    sub: string;
+    to?: string;
+  }> = [
+    // Row 1
     { key: "bible", icon: iconBible, title: "الكتاب المقدس", sub: "إقرا كلمة الله", to: "/books" },
-    { key: "hymn", icon: iconHymn, title: "الصوتيات", sub: "استمع لترنيمة مختارة\nكل يوم" },
     { key: "prayer", icon: iconPrayer, title: "الأجبية", sub: "صلوات السبع ساعات\nصلاة كل ساعة", to: "/agpeya" },
-    { key: "meeting", icon: iconMeeting, title: "الأطفال", sub: "قصص و أنشطة تعلم الايمان" },
-    { key: "calendar", icon: iconCalendar, title: "المناسبات", sub: "اكتشف المناسبات\nالقادمة" },
-    { key: "meditation", icon: iconMeditation, title: "التأملات ", sub: "رحلات روحية \n و تأملات يومية" },
+    { key: "katameros", icon: iconMeditation, title: "القطمارس", sub: "قراءات الكنيسة\nاليومية" },
+    // Row 2
+    { key: "synaxarium", icon: iconMeeting, title: "السنكسار", sub: "سير القديسين\nيوماً بيوم", to: "/synaxarium" },
+    { key: "feasts", icon: iconCalendar, title: "الأعياد والمناسبات", sub: "اكتشف الأعياد\nوالمواسم", to: "/feasts" },
+    { key: "church", icon: iconMeeting, title: "كنيستك معاك", sub: "أخبار وخدمات\nكنيستك" },
+    // Row 3
+    { key: "meditation", icon: iconMeditation, title: "التأملات", sub: "رحلات روحية\nوتأملات يومية" },
+    { key: "audio", icon: iconHymn, title: "المكتبة الصوتية", sub: "ترانيم وعظات\nوقراءات" },
+    { key: "kids", icon: iconMeeting, title: "الأطفال", sub: "قصص وأنشطة\nلتعليم الإيمان" },
   ];
 
   const church = [
