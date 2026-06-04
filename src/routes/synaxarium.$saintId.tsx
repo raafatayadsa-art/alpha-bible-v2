@@ -39,6 +39,11 @@ import {
   DrawerDescription,
   DrawerClose,
 } from "@/components/ui/drawer";
+import {
+  PresentationMode,
+  DisplayButton,
+  type PresentationContent,
+} from "@/components/presentation/PresentationMode";
 
 export const Route = createFileRoute("/synaxarium/$saintId")({
   ssr: false,
@@ -98,6 +103,27 @@ function SaintDetails() {
   const navigate = useNavigate();
   const [saved, setSaved] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [presentOpen, setPresentOpen] = useState(false);
+
+  const presentationContent: PresentationContent = useMemo(() => {
+    const paras = saint.bio.split("\n\n").filter(Boolean);
+    const sections = [
+      { title: "نبذة", body: saint.summary, meta: saint.copticDate },
+      ...paras.map((p, i) => ({
+        title: i === 0 ? "السيرة" : undefined,
+        body: p,
+      })),
+      ...(saint.quote
+        ? [{ title: "من أقواله", body: `"${saint.quote}"`, meta: saint.quoteRef }]
+        : []),
+      ...(saint.timelinePhases ?? []).map((ph) => ({
+        title: ph.label,
+        body: ph.body,
+        meta: ph.year,
+      })),
+    ];
+    return { title: saint.name, subtitle: saint.title, sections };
+  }, [saint]);
   const bioRef = useRef<HTMLElement | null>(null);
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
@@ -274,6 +300,7 @@ function SaintDetails() {
           </h1>
         </div>
         <div className="flex items-center gap-2">
+          <DisplayButton onClick={() => setPresentOpen(true)} />
           <button
             type="button"
             aria-label="مشاركة"
@@ -535,6 +562,12 @@ function SaintDetails() {
           </div>
         </DrawerContent>
       </Drawer>
+
+      <PresentationMode
+        open={presentOpen}
+        onOpenChange={setPresentOpen}
+        content={presentationContent}
+      />
 
       <BottomDock />
     </div>

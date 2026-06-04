@@ -1,11 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Bookmark, BookmarkCheck, Share2, MoreVertical, BookOpen, Calendar, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 import { FEASTS, getFeast } from "@/features/feasts";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { GlassSurface, BackButton } from "@/components/bible/primitives";
 import { CopticCross, CopticWatermark, CopticSeparator } from "@/components/coptic";
+import {
+  PresentationMode,
+  DisplayButton,
+  type PresentationContent,
+} from "@/components/presentation/PresentationMode";
 
 export const Route = createFileRoute("/feasts/$eventId")({
   ssr: false,
@@ -33,6 +38,21 @@ function EventDetails() {
 
   const storageKey = "alpha:saved-feasts";
   const [saved, setSaved] = useState(false);
+  const [presentOpen, setPresentOpen] = useState(false);
+
+  const presentationContent: PresentationContent = useMemo(() => {
+    const sections: PresentationContent["sections"] = [
+      { title: "نبذة", body: event.subtitle ?? "", meta: `${event.copticDay} · ${event.gregorianDate}` },
+    ];
+    if (event.scripture)
+      sections.push({ title: "الآية", body: event.scripture, meta: event.scriptureRef });
+    if (event.about) sections.push({ title: "عن العيد", body: event.about });
+    if (event.rite) sections.push({ title: "الطقس", body: event.rite });
+    if (event.readings) sections.push({ title: "القراءات", body: event.readings });
+    return { title: event.title, subtitle: event.copticDay, sections };
+  }, [event]);
+
+  // re-bind storageKey/saved (already declared above); keep no-op duplicate guard removed
 
   useEffect(() => {
     try {
@@ -107,6 +127,7 @@ function EventDetails() {
           >
             <BackButton compact to="/feasts" tone="dark" />
             <div className="flex items-center gap-2">
+              <DisplayButton tone="dark" onClick={() => setPresentOpen(true)} />
               <button
                 onClick={toggleSave}
                 aria-pressed={saved}
@@ -236,6 +257,11 @@ function EventDetails() {
         </div>
       </main>
 
+      <PresentationMode
+        open={presentOpen}
+        onOpenChange={setPresentOpen}
+        content={presentationContent}
+      />
       <BottomDock />
     </div>
   );

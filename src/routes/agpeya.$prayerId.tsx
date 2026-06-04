@@ -19,6 +19,11 @@ import {
   MessageCircle,
 } from "lucide-react";
 import {
+  PresentationMode,
+  DisplayButton,
+  type PresentationContent,
+} from "@/components/presentation/PresentationMode";
+import {
   adjacentAgpeyaPrayers,
   AGPEYA_DRAFT_NOTICE,
   AgpeyaErrorState,
@@ -405,6 +410,39 @@ function PrayerReader() {
   const { isSaved, toggle } = useSavedAgpeya();
 
   const [shareOpen, setShareOpen] = useState(false);
+  const [presentOpen, setPresentOpen] = useState(false);
+
+  const presentationContent: PresentationContent = useMemo(() => {
+    const out: PresentationContent["sections"] = [];
+    const text = prayer.tabs.text?.body ?? "";
+    if (text.trim()) {
+      text
+        .split(/\n\s*\n/)
+        .map((p) => p.trim())
+        .filter(Boolean)
+        .forEach((p, i) =>
+          out.push({ title: i === 0 ? "مقدمة الساعة" : undefined, body: p }),
+        );
+    }
+    (prayer.tabs.psalms?.psalms ?? []).forEach((ps) => {
+      out.push({
+        title: `المزمور ${ps.number}${ps.title ? " — " + ps.title : ""}`,
+        body: ps.verses.join("\n"),
+      });
+    });
+    (prayer.tabs.gospel?.gospel ?? []).forEach((g: any) => {
+      out.push({
+        title: g.title ?? "الإنجيل",
+        body: g.body ?? (Array.isArray(g.verses) ? g.verses.join("\n") : ""),
+        meta: g.reference,
+      });
+    });
+    (prayer.tabs.fragments?.fragments ?? []).forEach((f: any) => {
+      out.push({ title: f.title, body: f.body ?? (f.lines?.join("\n") ?? "") });
+    });
+    if (out.length === 0) out.push({ title: prayer.title, body: prayer.subtitle ?? "" });
+    return { title: prayer.title, subtitle: prayer.subtitle, sections: out };
+  }, [prayer]);
 
   // Audio scaffolding — reserved for future player.
   const [, setAudioState] = useAgpeyaAudio();
@@ -662,6 +700,7 @@ function PrayerReader() {
             )}
           </div>
           <div className="flex items-center gap-1.5">
+            <DisplayButton tone={dark ? "dark" : "light"} onClick={() => setPresentOpen(true)} />
             <IconButton dark={dark} ariaLabel="مشاركة" onClick={handleShare}>
               <Share2 className="h-4 w-4" />
             </IconButton>
@@ -943,6 +982,12 @@ function PrayerReader() {
           {notice}
         </div>
       )}
+
+      <PresentationMode
+        open={presentOpen}
+        onOpenChange={setPresentOpen}
+        content={presentationContent}
+      />
     </div>
   );
 }
