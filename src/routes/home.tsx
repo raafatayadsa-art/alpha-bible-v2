@@ -452,7 +452,7 @@ function HomeScreen() {
         <section className="mt-4">
           <div className="mb-3 flex items-center justify-between px-1">
             <h2 className="text-[14px] font-extrabold text-[#3a2a18] tracking-tight flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-[#b8893a]" />
+              <CopticCross className="text-[#b8893a]" size={14} />
               أخبار كنيستك
             </h2>
             <span className="text-[11px] font-bold text-[#7a4a26]">عرض الكل</span>
