@@ -1,55 +1,98 @@
-# Alpha Bible — Plan
+# Agpeya UX Completion Plan
 
-External Supabase only. Lovable Cloud stays disabled. App uses the existing `bible_verses` table read-only.
+Scope: finish the Agpeya reader and supporting flows on top of the **already approved** home screen and design system. No Supabase, no backend, no redesign, no nav changes.
 
-## Connection
+## 1. Placeholder Content (realistic, Coptic-faithful)
 
-- Project URL: `https://usfibjlyadihyitnvzya.supabase.co`
-- Publishable key: `sb_publishable_kePRSRtR4ocvFoYy5PqTYg_UITT5IXf`
-- Install `@supabase/supabase-js`
-- Create `src/integrations/supabase/client.ts` with a browser client built from the publishable key (no auth persistence needed, public read).
-- Values stored as `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` constants in the client file (publishable key is safe in code).
+Replace the single `PLACEHOLDER` string in `src/features/agpeya/data.ts` with a structured per-prayer placeholder dataset:
 
-## Data model (existing, read-only)
+- **text tab** — opening rite (Our Father, Thanksgiving, Psalm 50 incipit) as multi-paragraph Arabic prose, clearly marked as a draft excerpt.
+- **psalms tab** — list of psalm objects `{ number, title, verses: string[] }` matching `psalmsCount`, with 4–6 sample verses each (labeled placeholder).
+- **gospel tab** — `{ reference, intro, passage, conclusion }` shaped pericope(s) matching `gospelCount`.
+- **fragments tab** ("قطع وذكصولوجيات") — 2–3 short Coptic-tradition fragments (Trisagion, Doxology snippet, intercession).
+- **info tab** — structured metadata: meaning, commemoration, hour, recommended posture, sources note.
 
-`bible_verses`: `id, book, chapter, verse, text, translation, testament, book_order, chapter_order, verse_order, language, created_at`
+All content prefixed once at the top with a visible "محتوى تجريبي — قيد المراجعة" notice in the reader. No invented liturgical claims — generic, clearly-marked draft text.
 
-Queries used:
-- Distinct books for a language+translation, ordered by `book_order`.
-- Distinct chapters for a book, ordered by `chapter_order`.
-- Verses for a book+chapter, ordered by `verse_order`.
-- Available languages/translations (for the selector).
+## 2. Reader Screen (`src/routes/agpeya.$prayerId.tsx`)
 
-Defaults: `language = 'Arabic'`, `translation = 'SVD'`. UI is RTL when language is Arabic.
+Keep current shell (sticky header, tabs, floating control bar, progress bar). Wire the four content tabs to render the new structured placeholder data:
 
-## Routes (TanStack Start, file-based)
+- **Psalms tab** — collapsible psalm cards (number + title header, verses list with verse numbers, Coptic cross divider).
+- **Gospel tab** — pericope card with reference chip, intro line, passage body, conclusion line.
+- **Passages / Fragments tab** — stacked fragment cards with title + body.
+- **Information tab** — definition list (meaning, hour, commemoration, duration, psalms/gospel counts, sources).
+- Empty-tab fallback: friendly Arabic empty state with small icon when a prayer omits a tab.
 
-- `src/routes/index.tsx` — Books grid (Old/New Testament sections), language + translation selector in header.
-- `src/routes/$book.tsx` — Chapter grid for the selected book.
-- `src/routes/$book.$chapter.tsx` — Verses reader with prev/next chapter nav.
+## 3. Search Inside Prayer
 
-All three use TanStack Query (`ensureQueryData` in loader + `useSuspenseQuery` in component) per project conventions. QueryClientProvider already wired in `__root.tsx` — verify and add if missing.
+Add a search icon in the reader header that toggles an inline search bar:
 
-## UI
+- Filters visible content of the active tab (psalm verses, gospel passage, fragments, info entries).
+- Highlights matches with `<mark>` styled via design tokens.
+- Match counter + prev/next arrows; Esc clears.
+- Pure client-side, scoped to current prayer + current tab.
 
-- Arabic-first, RTL by default, elegant serif/Naskh-friendly typography for verse text.
-- Header: app title "Alpha Bible / الكتاب المقدس", language + translation selectors.
-- Books page: sectioned by testament, cards labeled with book name + chapter count.
-- Chapter page: simple numbered grid.
-- Verse page: verse number + text, large readable line-height, prev/next chapter buttons, breadcrumb back to book.
-- Theme tokens added to `src/styles.css` (warm parchment light + deep night dark).
+## 4. Continue Reading Flow
 
-## Files to create/modify
+Already partially wired via `ab.agpeya.last` and `readLastOpenedPrayer`. Finalize:
 
-- `src/integrations/supabase/client.ts` (new)
-- `src/lib/bible.ts` (query helpers + queryOptions)
-- `src/routes/index.tsx` (replace placeholder)
-- `src/routes/$book.tsx` (new)
-- `src/routes/$book.$chapter.tsx` (new)
-- `src/routes/__root.tsx` (add QueryClientProvider if missing, set lang/dir, meta)
-- `src/styles.css` (Bible theme tokens, Arabic font stack)
-- `package.json` — add `@supabase/supabase-js`
+- Home "متابعة القراءة" tile shows last prayer title, tab label, and percentage.
+- Tapping opens the reader at the saved tab and scroll position (already implemented — verify).
+- Add a dismiss (×) affordance to clear last-read.
 
-## Out of scope
+## 5. Saved Prayers Flow
 
-No auth, no writes, no Lovable Cloud, no edge functions, no schema changes. Search, bookmarks, audio, and cross-references can come later.
+- New route `src/routes/agpeya.saved.tsx` (Saved Prayers list screen) reachable from the bookmark icon already present in the Agpeya home header.
+- Renders list of saved prayers using the existing card style; empty state with icon + CTA "تصفح الصلوات".
+- Reader's save button already toggles — keep, add subtle "محفوظة" badge in header when saved.
+
+## 6. Share Prayer Flow
+
+Already uses `navigator.share` with clipboard fallback. Add:
+
+- Share sheet fallback dialog (when `navigator.share` unavailable) with: copy link, copy text excerpt, share to WhatsApp/Telegram (URL schemes).
+- Toast confirmation in Arabic.
+
+## 7. Empty / Loading / Error States
+
+Unified small components in `src/features/agpeya/states.tsx`:
+
+- **AgpeyaSkeleton** — reader skeleton (header bar, 3 tab pills, 6 shimmer lines) used as `pendingComponent`.
+- **AgpeyaEmpty** — icon + title + subtitle + optional CTA (used for empty saved list, empty tab).
+- **AgpeyaError** — icon + message + "إعادة المحاولة" button (wired to `router.invalidate()` + `reset()`).
+- **AgpeyaNotFound** — used as `notFoundComponent` with link back to Agpeya home.
+- Home: skeleton row while last-read is hydrating from localStorage.
+
+## 8. Coptic Visual Identity (light touch, no redesign)
+
+Within existing tokens only:
+
+- Reuse Alpha logo mark in reader header watermark (very low opacity) and on empty states.
+- Coptic cross divider (SVG, existing gold accent token) between psalm cards and as section breaks.
+- Keep all current colors, spacing, hero, and bottom nav untouched.
+
+## Files Touched
+
+- `src/features/agpeya/data.ts` — structured placeholder dataset.
+- `src/features/agpeya/types.ts` — extend tab content types (psalms[], gospel object, fragments[], info entries).
+- `src/features/agpeya/states.tsx` — new (skeleton/empty/error/notfound).
+- `src/features/agpeya/search.ts` — new (in-prayer search hook + highlight helper).
+- `src/routes/agpeya.$prayerId.tsx` — wire structured tabs, search bar, share dialog fallback, saved badge, use unified state components.
+- `src/routes/agpeya.saved.tsx` — new route.
+- `src/routes/agpeya.tsx` — wire bookmark icon to `/agpeya/saved`, add dismiss to continue tile, skeleton on hydrate.
+- `src/assets/agpeya/` — small Coptic cross SVG (inline component, no asset upload needed).
+
+## Out of Scope (explicitly)
+
+- No Supabase, server functions, or migrations.
+- No changes to Bottom Navigation, Alpha branding, Home screen, Bible/Dictionary/Church routes.
+- No redesign of the approved Agpeya home cards, hero, colors, or spacing.
+- No audio player UI (state shape already exists; deferred).
+
+## Risks
+
+- Placeholder liturgical text must stay clearly marked as draft to avoid being mistaken for verified Agpeya content (per `.cursor/rules/alpha-content.mdc`).
+- Search highlighting must not break RTL layout — will use logical CSS only.
+
+Ready to implement on approval.
