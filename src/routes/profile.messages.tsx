@@ -591,7 +591,9 @@ function MessagesScreen() {
 
         <FilterChips value={filter} onChange={setFilter} counts={counts} />
 
-        <div className="mt-4 space-y-2.5">
+        <CopticSeparator className="my-3" />
+
+        <div className="space-y-2.5">
           {filtered.length === 0 ? (
             <EmptyState />
           ) : (
