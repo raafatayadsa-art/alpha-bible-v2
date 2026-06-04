@@ -32,14 +32,16 @@ function norm(s: string): string {
 }
 
 type Category = "bible" | "agpeya" | "katameros" | "synaxarium" | "feasts" | "meditations";
+type Scope = "all" | Category;
 
-const CATEGORIES: { id: Category; label: string; icon: typeof BookOpen; to: string; tint: string; iconBg: string }[] = [
-  { id: "bible",      label: "الكتاب المقدس", icon: BookOpen,     to: "/bible",       tint: "from-[#fff4d6] to-[#fbe4a8]", iconBg: "bg-[#caa15f]" },
-  { id: "agpeya",     label: "الأجبية",        icon: HandHeart,    to: "/agpeya",      tint: "from-[#eef6ef] to-[#cfe6d2]", iconBg: "bg-[#6c9a72]" },
-  { id: "katameros",  label: "القطمارس",       icon: ScrollText,   to: "/katameros",   tint: "from-[#f3ecff] to-[#dccbf3]", iconBg: "bg-[#8a6ec1]" },
-  { id: "synaxarium", label: "السنكسار",       icon: Cross,        to: "/synaxarium",  tint: "from-[#fff0e6] to-[#f6cfb1]", iconBg: "bg-[#c97a3c]" },
-  { id: "feasts",     label: "المناسبات",      icon: CalendarHeart,to: "/feasts",      tint: "from-[#fde9ef] to-[#f6c2d0]", iconBg: "bg-[#c95680]" },
-  { id: "meditations",label: "التأملات",       icon: Sparkles,     to: "/home",        tint: "from-[#eaf4ff] to-[#c6dffb]", iconBg: "bg-[#5b8fd1]" },
+const SCOPES: { id: Scope; label: string; placeholder: string }[] = [
+  { id: "all",        label: "الكل",         placeholder: "ابحث في كل شيء..." },
+  { id: "bible",      label: "الكتاب",       placeholder: "ابحث في الكتاب المقدس..." },
+  { id: "agpeya",     label: "الأجبية",      placeholder: "ابحث في الأجبية..." },
+  { id: "katameros",  label: "القطمارس",     placeholder: "ابحث في القطمارس..." },
+  { id: "synaxarium", label: "السنكسار",     placeholder: "ابحث في السنكسار..." },
+  { id: "feasts",     label: "المناسبات",    placeholder: "ابحث في المناسبات..." },
+  { id: "meditations",label: "التأملات",     placeholder: "ابحث في التأملات..." },
 ];
 
 const POPULAR = ["يوحنا", "القيامة", "صلاة الشكر", "الأنبا أنطونيوس", "القديسة العذراء", "المزمور"];
@@ -176,6 +178,7 @@ function SearchHub() {
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [query, setQuery] = useState("");
+  const [scope, setScope] = useState<Scope>("all");
   const [recent, setRecent] = useState<string[]>([]);
 
   useEffect(() => {
@@ -184,7 +187,10 @@ function SearchHub() {
     return () => clearTimeout(t);
   }, []);
 
-  const results = useMemo(() => searchAll(query), [query]);
+  const results = useMemo(() => {
+    const all = searchAll(query);
+    return scope === "all" ? all : all.filter((r) => r.category === scope);
+  }, [query, scope]);
 
   const grouped = useMemo(() => {
     const map = new Map<Category, Result[]>();
@@ -207,6 +213,8 @@ function SearchHub() {
       setRecent(loadRecent());
     }
   };
+
+  const activeScope = SCOPES.find((s) => s.id === scope) ?? SCOPES[0];
 
   return (
     <div dir="rtl" className="min-h-screen bg-[#FAF8F3] text-[#3a2a18] pb-28">
@@ -239,8 +247,8 @@ function SearchHub() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onBlur={commitRecent}
-              placeholder="ابحث في كل شيء..."
-              className="flex-1 bg-transparent outline-none text-[15px] font-bold placeholder:font-normal placeholder:text-[#8a7558]"
+              placeholder={activeScope.placeholder}
+              className="flex-1 bg-transparent outline-none text-[15px] font-bold placeholder:font-normal placeholder:text-[#b89c70]"
               dir="rtl"
             />
             {query && (
@@ -253,6 +261,30 @@ function SearchHub() {
                 <X className="h-3.5 w-3.5" />
               </button>
             )}
+          </div>
+
+          {/* Compact scope selector */}
+          <div className="mt-3 -mx-4 px-4 overflow-x-auto no-scrollbar">
+            <div className="flex items-center gap-1.5 w-max">
+              {SCOPES.map((s) => {
+                const active = s.id === scope;
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => setScope(s.id)}
+                    className={
+                      "px-3 h-7 rounded-full text-[12px] font-bold whitespace-nowrap border transition-all active:scale-95 " +
+                      (active
+                        ? "bg-[#caa15f] text-white border-[#caa15f] shadow-[0_4px_10px_-4px_rgba(120,80,30,0.5)]"
+                        : "bg-white/70 text-[#7a5a35] border-[#ead9b1] backdrop-blur-md")
+                    }
+                  >
+                    {s.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </header>
@@ -274,6 +306,7 @@ function SearchHub() {
   );
 }
 
+
 function BeforeSearch({
   recent,
   onPickRecent,
@@ -285,24 +318,8 @@ function BeforeSearch({
 }) {
   return (
     <div className="space-y-7 animate-fade-in">
-      {/* Categories */}
-      <section>
-        <h2 className="text-[12px] font-extrabold tracking-[0.2em] text-[#8a6322] mb-3">الأقسام</h2>
-        <div className="grid grid-cols-2 gap-3">
-          {CATEGORIES.map((c) => (
-            <Link
-              key={c.id}
-              to={c.to as any}
-              className={`group relative overflow-hidden rounded-3xl border border-white/70 bg-gradient-to-br ${c.tint} p-4 min-h-[96px] flex flex-col justify-between shadow-[0_10px_24px_-16px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.8)] active:scale-[0.98] transition-transform`}
-            >
-              <div className={`grid h-10 w-10 place-items-center rounded-2xl text-white ${c.iconBg} shadow-[0_6px_14px_-8px_rgba(0,0,0,0.35)]`}>
-                <c.icon className="h-5 w-5" />
-              </div>
-              <span className="font-arabic-serif text-[15px] font-extrabold text-[#3a2a18]">{c.label}</span>
-            </Link>
-          ))}
-        </div>
-      </section>
+      {/* Categories removed — scope is selected via top chips */}
+
 
       {/* Recent */}
       {recent.length > 0 && (
