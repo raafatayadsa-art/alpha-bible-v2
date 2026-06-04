@@ -318,24 +318,8 @@ function BeforeSearch({
 }) {
   return (
     <div className="space-y-7 animate-fade-in">
-      {/* Categories */}
-      <section>
-        <h2 className="text-[12px] font-extrabold tracking-[0.2em] text-[#8a6322] mb-3">الأقسام</h2>
-        <div className="grid grid-cols-2 gap-3">
-          {CATEGORIES.map((c) => (
-            <Link
-              key={c.id}
-              to={c.to as any}
-              className={`group relative overflow-hidden rounded-3xl border border-white/70 bg-gradient-to-br ${c.tint} p-4 min-h-[96px] flex flex-col justify-between shadow-[0_10px_24px_-16px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.8)] active:scale-[0.98] transition-transform`}
-            >
-              <div className={`grid h-10 w-10 place-items-center rounded-2xl text-white ${c.iconBg} shadow-[0_6px_14px_-8px_rgba(0,0,0,0.35)]`}>
-                <c.icon className="h-5 w-5" />
-              </div>
-              <span className="font-arabic-serif text-[15px] font-extrabold text-[#3a2a18]">{c.label}</span>
-            </Link>
-          ))}
-        </div>
-      </section>
+      {/* Categories removed — scope is selected via top chips */}
+
 
       {/* Recent */}
       {recent.length > 0 && (
