@@ -14,9 +14,11 @@ import { Route as HomeRouteImport } from './routes/home'
 import { Route as DiagnosticsRouteImport } from './routes/diagnostics'
 import { Route as BooksRouteImport } from './routes/books'
 import { Route as BibleRouteImport } from './routes/bible'
+import { Route as AgpeyaRouteImport } from './routes/agpeya'
 import { Route as BookRouteImport } from './routes/$book'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BookIndexRouteImport } from './routes/$book.index'
+import { Route as AgpeyaPrayerIdRouteImport } from './routes/agpeya.$prayerId'
 import { Route as BookChapterRouteImport } from './routes/$book.$chapter'
 
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -44,6 +46,11 @@ const BibleRoute = BibleRouteImport.update({
   path: '/bible',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AgpeyaRoute = AgpeyaRouteImport.update({
+  id: '/agpeya',
+  path: '/agpeya',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BookRoute = BookRouteImport.update({
   id: '/$book',
   path: '/$book',
@@ -59,6 +66,11 @@ const BookIndexRoute = BookIndexRouteImport.update({
   path: '/',
   getParentRoute: () => BookRoute,
 } as any)
+const AgpeyaPrayerIdRoute = AgpeyaPrayerIdRouteImport.update({
+  id: '/$prayerId',
+  path: '/$prayerId',
+  getParentRoute: () => AgpeyaRoute,
+} as any)
 const BookChapterRoute = BookChapterRouteImport.update({
   id: '/$chapter',
   path: '/$chapter',
@@ -68,34 +80,40 @@ const BookChapterRoute = BookChapterRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$book': typeof BookRouteWithChildren
+  '/agpeya': typeof AgpeyaRouteWithChildren
   '/bible': typeof BibleRoute
   '/books': typeof BooksRoute
   '/diagnostics': typeof DiagnosticsRoute
   '/home': typeof HomeRoute
   '/onboarding': typeof OnboardingRoute
   '/$book/$chapter': typeof BookChapterRoute
+  '/agpeya/$prayerId': typeof AgpeyaPrayerIdRoute
   '/$book/': typeof BookIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/agpeya': typeof AgpeyaRouteWithChildren
   '/bible': typeof BibleRoute
   '/books': typeof BooksRoute
   '/diagnostics': typeof DiagnosticsRoute
   '/home': typeof HomeRoute
   '/onboarding': typeof OnboardingRoute
   '/$book/$chapter': typeof BookChapterRoute
+  '/agpeya/$prayerId': typeof AgpeyaPrayerIdRoute
   '/$book': typeof BookIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$book': typeof BookRouteWithChildren
+  '/agpeya': typeof AgpeyaRouteWithChildren
   '/bible': typeof BibleRoute
   '/books': typeof BooksRoute
   '/diagnostics': typeof DiagnosticsRoute
   '/home': typeof HomeRoute
   '/onboarding': typeof OnboardingRoute
   '/$book/$chapter': typeof BookChapterRoute
+  '/agpeya/$prayerId': typeof AgpeyaPrayerIdRoute
   '/$book/': typeof BookIndexRoute
 }
 export interface FileRouteTypes {
@@ -103,39 +121,46 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/$book'
+    | '/agpeya'
     | '/bible'
     | '/books'
     | '/diagnostics'
     | '/home'
     | '/onboarding'
     | '/$book/$chapter'
+    | '/agpeya/$prayerId'
     | '/$book/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/agpeya'
     | '/bible'
     | '/books'
     | '/diagnostics'
     | '/home'
     | '/onboarding'
     | '/$book/$chapter'
+    | '/agpeya/$prayerId'
     | '/$book'
   id:
     | '__root__'
     | '/'
     | '/$book'
+    | '/agpeya'
     | '/bible'
     | '/books'
     | '/diagnostics'
     | '/home'
     | '/onboarding'
     | '/$book/$chapter'
+    | '/agpeya/$prayerId'
     | '/$book/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BookRoute: typeof BookRouteWithChildren
+  AgpeyaRoute: typeof AgpeyaRouteWithChildren
   BibleRoute: typeof BibleRoute
   BooksRoute: typeof BooksRoute
   DiagnosticsRoute: typeof DiagnosticsRoute
@@ -180,6 +205,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BibleRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/agpeya': {
+      id: '/agpeya'
+      path: '/agpeya'
+      fullPath: '/agpeya'
+      preLoaderRoute: typeof AgpeyaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/$book': {
       id: '/$book'
       path: '/$book'
@@ -200,6 +232,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/$book/'
       preLoaderRoute: typeof BookIndexRouteImport
       parentRoute: typeof BookRoute
+    }
+    '/agpeya/$prayerId': {
+      id: '/agpeya/$prayerId'
+      path: '/$prayerId'
+      fullPath: '/agpeya/$prayerId'
+      preLoaderRoute: typeof AgpeyaPrayerIdRouteImport
+      parentRoute: typeof AgpeyaRoute
     }
     '/$book/$chapter': {
       id: '/$book/$chapter'
@@ -223,9 +262,21 @@ const BookRouteChildren: BookRouteChildren = {
 
 const BookRouteWithChildren = BookRoute._addFileChildren(BookRouteChildren)
 
+interface AgpeyaRouteChildren {
+  AgpeyaPrayerIdRoute: typeof AgpeyaPrayerIdRoute
+}
+
+const AgpeyaRouteChildren: AgpeyaRouteChildren = {
+  AgpeyaPrayerIdRoute: AgpeyaPrayerIdRoute,
+}
+
+const AgpeyaRouteWithChildren =
+  AgpeyaRoute._addFileChildren(AgpeyaRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BookRoute: BookRouteWithChildren,
+  AgpeyaRoute: AgpeyaRouteWithChildren,
   BibleRoute: BibleRoute,
   BooksRoute: BooksRoute,
   DiagnosticsRoute: DiagnosticsRoute,

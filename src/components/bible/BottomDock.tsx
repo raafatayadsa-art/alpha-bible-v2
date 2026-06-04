@@ -44,7 +44,7 @@ export function BottomDock({
         >
           <div className="grid grid-cols-5 items-end px-3 pt-2 pb-1.5 gap-1">
             <DockItem icon={HomeIcon} label="الرئيسية" to="/home" active={isActive("/home")} />
-            <DockItem icon={HandHeart} label="الصلاة" />
+            <DockItem icon={HandHeart} label="الصلاة" to="/agpeya" active={isActive("/agpeya")} />
             <DockItem
               raised
               label="الكتاب المقدس"
