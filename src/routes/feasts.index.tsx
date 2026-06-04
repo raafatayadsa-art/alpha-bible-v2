@@ -48,6 +48,17 @@ function FeastsHome() {
   const [query, setQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const calendarRef = useRef<HTMLDivElement | null>(null);
+  const [notifications, setNotifications] = useState<NotificationItem[]>(() => [
+    {
+      id: "feast-today",
+      title: `مناسبة اليوم: ${today.title}`,
+      description: today.subtitle,
+      time: "اليوم",
+      read: false,
+      icon: <Church className="h-4 w-4" />,
+      onOpen: () => navigate({ to: "/feasts/$eventId", params: { eventId: today.id } }),
+    },
+  ]);
 
   useEffect(() => {
     if (searchOpen) {
