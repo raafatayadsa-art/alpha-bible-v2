@@ -1012,11 +1012,11 @@ function MiniPlayer({ dockVisible }: { dockVisible: boolean }) {
     >
       <div className="mx-auto w-full max-w-[440px] px-4">
         <div
-          className="relative flex items-center gap-3 overflow-hidden rounded-[20px] border border-white/12 bg-gradient-to-r from-[#1a1230]/85 to-[#0c0918]/90 px-2.5 py-2 backdrop-blur-2xl"
-          style={{ boxShadow: "0 18px 36px -16px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.08)" }}
+          className="relative flex items-center gap-3 overflow-hidden rounded-[20px] border border-[#efe2c4] bg-gradient-to-r from-[#fbf3e1]/95 to-[#f4ead8]/95 px-2.5 py-2 backdrop-blur-2xl"
+          style={{ boxShadow: "0 18px 36px -16px rgba(120,80,30,0.35), inset 0 1px 0 rgba(255,255,255,0.8)" }}
         >
           {/* artwork */}
-          <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-[12px] border border-white/15">
+          <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-[12px] border border-[#efe2c4]">
             <img src={dailyHymn} alt="" className="h-full w-full object-cover" />
             <div className="pointer-events-none absolute inset-0" style={{ boxShadow: "inset 0 0 18px rgba(231,201,122,0.35)" }} />
           </div>
@@ -1024,7 +1024,7 @@ function MiniPlayer({ dockVisible }: { dockVisible: boolean }) {
           <div className="flex-1 min-w-0">
             <div className="overflow-hidden">
               <div
-                className="whitespace-nowrap text-[12.5px] font-bold text-white"
+                className="whitespace-nowrap text-[12.5px] font-bold text-[#3a2a18]"
                 style={{
                   display: "inline-block",
                   paddingInlineStart: "100%",
@@ -1034,7 +1034,7 @@ function MiniPlayer({ dockVisible }: { dockVisible: boolean }) {
                 {title} · {title}
               </div>
             </div>
-            <div className="mt-1.5 h-[3px] w-full overflow-hidden rounded-full bg-white/10">
+            <div className="mt-1.5 h-[3px] w-full overflow-hidden rounded-full bg-[#ecdcb6]">
               <div
                 className="h-full rounded-full"
                 style={{
