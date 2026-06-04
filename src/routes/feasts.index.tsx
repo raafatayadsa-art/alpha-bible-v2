@@ -122,19 +122,19 @@ function FeastsHome() {
                 اليوم
               </div>
 
-              {/* Text overlays the faded area on the left */}
-              <div className="absolute inset-y-0 left-0 right-[35%] p-5 flex flex-col justify-center">
+              {/* Text overlays the faded area on the left, with extra breathing room away from the fade */}
+              <div className="absolute inset-y-0 left-0 right-[42%] p-6 pl-7 flex flex-col justify-center">
                 <h2 className="font-arabic-serif text-[22px] font-extrabold text-[#3a2a18] leading-tight text-right drop-shadow-[0_1px_0_rgba(255,255,255,0.8)]">
                   {today.title}
                 </h2>
-                <p className="text-[12px] text-[#6a543a] mt-1 text-right">{today.subtitle}</p>
+                <p className="text-[12px] text-[#6a543a] mt-1.5 text-right">{today.subtitle}</p>
                 {today.scripture && (
-                  <p className="text-[12px] text-[#3a2a18] mt-2 leading-relaxed line-clamp-3 text-right">{today.scripture}</p>
+                  <p className="text-[12px] text-[#3a2a18] mt-3 leading-relaxed line-clamp-3 text-right">{today.scripture}</p>
                 )}
                 {today.scriptureRef && (
-                  <p className="text-[11px] font-bold text-[#b8893a] mt-1 text-right">{today.scriptureRef}</p>
+                  <p className="text-[11px] font-bold text-[#b8893a] mt-1.5 text-right">{today.scriptureRef}</p>
                 )}
-                <span className="mt-3 self-end inline-flex items-center gap-2 rounded-full bg-white border border-[#ead9b1] px-3.5 h-9 text-[11.5px] font-bold text-[#3a2a18] shadow-[0_10px_18px_-12px_rgba(120,80,30,0.55)]">
+                <span className="mt-4 self-end inline-flex items-center gap-2 rounded-full bg-white border border-[#ead9b1] px-3.5 h-9 text-[11.5px] font-bold text-[#3a2a18] shadow-[0_10px_18px_-12px_rgba(120,80,30,0.55)]">
                   <BookOpen className="h-3.5 w-3.5 text-[#6a4ab5]" />
                   تعرف على المناسبة
                 </span>
