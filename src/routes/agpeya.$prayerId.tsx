@@ -303,16 +303,22 @@ function PrayerReader() {
         style={{ scrollBehavior: "smooth" }}
       >
         <article
-          className="mx-auto max-w-[640px] px-5 py-8 font-arabic-serif leading-[2.05]"
-          style={{ fontSize, lineHeight: 2.05 }}
+          className="mx-auto max-w-[640px] px-5 py-8 font-arabic-serif"
+          style={{ fontSize, lineHeight }}
         >
-          {content
-            .split(/\n\s*\n/)
-            .map((para, i) => (
-              <p key={i} className={cn("mb-5", dark ? "text-[#e8e2cf]" : "text-[#2a1a08]")}>
-                {para}
-              </p>
-            ))}
+          {content.trim().length === 0 ? (
+            <div className={cn("rounded-2xl border px-5 py-10 text-center text-[13px]", dark ? "border-white/10 bg-white/5 text-white/65" : "border-[#c79356]/30 bg-white/55 text-[#7a5a32]")}>
+              لا يوجد محتوى لهذا القسم بعد.
+            </div>
+          ) : (
+            content
+              .split(/\n\s*\n/)
+              .map((para: string, i: number) => (
+                <p key={i} className={cn("mb-5", dark ? "text-[#e8e2cf]" : "text-[#2a1a08]")}>
+                  {para}
+                </p>
+              ))
+          )}
           <div className={cn("mt-10 border-t pt-5 text-center text-[12px]", dark ? "border-white/10 text-white/55" : "border-[#c79356]/25 text-[#8a5a1f]")}>
             نهاية الصلاة — بركة الرب تشملكم
           </div>
