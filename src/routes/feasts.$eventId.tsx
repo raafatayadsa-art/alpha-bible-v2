@@ -91,9 +91,15 @@ function EventDetails() {
             decoding="async"
             draggable={false}
             className="absolute inset-0 h-full w-full object-cover object-center select-none"
+            style={{
+              WebkitMaskImage:
+                "linear-gradient(to bottom, #000 0%, rgba(0,0,0,0.85) 55%, rgba(0,0,0,0.3) 85%, transparent 100%)",
+              maskImage:
+                "linear-gradient(to bottom, #000 0%, rgba(0,0,0,0.85) 55%, rgba(0,0,0,0.3) 85%, transparent 100%)",
+            }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#faf3e3] via-[#faf3e3]/30 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#faf3e3] via-[#faf3e3]/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/25 to-transparent" />
 
           <div
             className="absolute top-0 inset-x-0 px-4 flex items-center justify-between"
@@ -202,7 +208,14 @@ function EventDetails() {
                         decoding="async"
                         draggable={false}
                         className="absolute inset-0 h-full w-full object-cover object-center select-none"
+                        style={{
+                          WebkitMaskImage:
+                            "linear-gradient(to bottom, #000 0%, rgba(0,0,0,0.7) 60%, rgba(0,0,0,0.2) 88%, transparent 100%)",
+                          maskImage:
+                            "linear-gradient(to bottom, #000 0%, rgba(0,0,0,0.7) 60%, rgba(0,0,0,0.2) 88%, transparent 100%)",
+                        }}
                       />
+                      <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-white via-white/60 to-transparent pointer-events-none" />
                     </div>
                     <div className="p-3">
                       <div

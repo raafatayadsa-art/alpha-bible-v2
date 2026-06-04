@@ -102,9 +102,15 @@ function FeastsHome() {
                 loading="eager"
                 decoding="async"
                 draggable={false}
-                className="absolute inset-0 h-full w-full object-cover object-center select-none"
+                className="absolute inset-y-0 right-0 h-full w-[72%] object-cover object-center select-none"
+                style={{
+                  WebkitMaskImage:
+                    "linear-gradient(to left, #000 55%, rgba(0,0,0,0.55) 75%, rgba(0,0,0,0.15) 90%, transparent 100%)",
+                  maskImage:
+                    "linear-gradient(to left, #000 55%, rgba(0,0,0,0.55) 75%, rgba(0,0,0,0.15) 90%, transparent 100%)",
+                }}
               />
-              <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff_0%,#ffffff_45%,rgba(255,255,255,0.6)_65%,transparent_100%)]" />
+              <div className="absolute inset-0 bg-[linear-gradient(to_left,transparent_0%,rgba(255,255,255,0.18)_28%,rgba(255,255,255,0.72)_52%,#ffffff_75%)]" />
               <div className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-[#3a2a18] border border-[#ead9b1] shadow-[0_4px_10px_-8px_rgba(120,80,30,0.5)]">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#6a4ab5]" />
                 اليوم
@@ -166,7 +172,14 @@ function FeastsHome() {
                         decoding="async"
                         draggable={false}
                         className="absolute inset-0 h-full w-full object-cover object-center select-none"
+                        style={{
+                          WebkitMaskImage:
+                            "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.25) 18%, rgba(0,0,0,0.7) 42%, #000 70%)",
+                          maskImage:
+                            "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.25) 18%, rgba(0,0,0,0.7) 42%, #000 70%)",
+                        }}
                       />
+                      <div className="absolute inset-y-0 left-0 w-1/2 bg-[linear-gradient(to_right,#ffffff_0%,rgba(255,255,255,0.6)_55%,transparent_100%)] pointer-events-none" />
                       <div className="absolute inset-0 ring-1 ring-inset ring-[#ead9b1]/70 rounded-2xl pointer-events-none" />
                     </div>
                     <div className="min-w-0 text-right">
