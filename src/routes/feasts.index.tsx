@@ -153,10 +153,7 @@ function FeastsHome() {
               key={f.id}
               to="/feasts/$eventId"
               params={{ eventId: f.id }}
-              className={cn(
-                "block active:scale-[0.99] transition-transform",
-                isToday && "scale-[1.04] origin-right my-1",
-              )}
+              className="group block transition-transform duration-300 ease-out hover:-translate-y-1 focus-visible:-translate-y-1 hover:scale-[1.015] focus-visible:scale-[1.015] active:scale-[0.99] active:translate-y-0 focus:outline-none"
             >
               <div className="relative pr-3">
                 <span
@@ -166,18 +163,18 @@ function FeastsHome() {
                 />
                 <GlassSurface
                   className={cn(
-                    "relative overflow-hidden p-0 bg-white border-[#ead9b1] shadow-[0_14px_30px_-22px_rgba(120,80,30,0.55)]",
-                    isToday && "border-[#d9bf86] shadow-[0_22px_44px_-22px_rgba(106,74,181,0.45)] ring-1 ring-inset ring-[#ead9b1]",
+                    "relative overflow-hidden p-0 bg-white border-[#ead9b1] shadow-[0_14px_30px_-22px_rgba(120,80,30,0.55)] transition-shadow duration-300 ease-out group-hover:shadow-[0_24px_44px_-22px_rgba(120,80,30,0.55)] group-focus-visible:shadow-[0_24px_44px_-22px_rgba(120,80,30,0.55)]",
+                    isToday && "border-[#d9bf86] ring-1 ring-inset ring-[#ead9b1]",
                   )}
                 >
-                  {/* Image bleeds in from the left edge */}
+                  {/* Image bleeds in from the left edge — gentle parallax on hover/focus */}
                   <img
                     src={f.image}
                     alt=""
                     loading="lazy"
                     decoding="async"
                     draggable={false}
-                    className="absolute inset-y-0 left-0 h-full w-[44%] object-cover object-center select-none"
+                    className="absolute inset-y-0 left-0 h-full w-[44%] object-cover object-center select-none transition-transform duration-500 ease-out group-hover:scale-[1.06] group-hover:-translate-x-1 group-focus-visible:scale-[1.06] group-focus-visible:-translate-x-1"
                   />
                   {/* Beige→white fade from text into image */}
                   <div
@@ -190,10 +187,8 @@ function FeastsHome() {
                   <div className="absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-white/50 to-transparent pointer-events-none" />
                   <div className="absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-white/50 to-transparent pointer-events-none" />
 
-                  <div className={cn(
-                    "relative grid grid-cols-[64px_minmax(0,1fr)_44%] items-center gap-3 p-3",
-                    isToday ? "min-h-[110px]" : "min-h-[96px]",
-                  )}>
+                  <div className="relative grid grid-cols-[64px_minmax(0,1fr)_44%] items-center gap-3 p-3 min-h-[96px]">
+
                     {/* RIGHT: distinct date block */}
                     <div
                       className="relative rounded-2xl border bg-white/95 backdrop-blur px-1.5 py-2 text-center shadow-[0_6px_14px_-10px_rgba(120,80,30,0.45)]"
