@@ -997,7 +997,7 @@ function MiniPlayer({ dockVisible }: { dockVisible: boolean }) {
     return () => clearInterval(id);
   }, [playing]);
 
-  if (dismissed) return null;
+  // Player is always available; no dismiss.
 
   const title = "ترنيمة بي إيك أفنوتي — لحن سنوي";
 
