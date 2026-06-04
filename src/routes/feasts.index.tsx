@@ -69,7 +69,12 @@ function FeastsHome() {
         className="relative z-10 mx-auto w-full max-w-[430px] px-4 flex items-center justify-between"
         style={{ paddingTop: "max(env(safe-area-inset-top), 14px)", paddingBottom: 8 }}
       >
-        <button className="relative grid h-10 w-10 place-items-center rounded-full bg-white border border-[#ead9b1] text-[#3a2a18] active:scale-90 transition-transform shadow-[0_4px_10px_-8px_rgba(120,80,30,0.5)]">
+        <button
+          type="button"
+          onClick={() => setNotifOpen(true)}
+          aria-label="التنبيهات"
+          className="relative grid h-10 w-10 place-items-center rounded-full bg-white border border-[#ead9b1] text-[#3a2a18] active:scale-90 transition-transform shadow-[0_4px_10px_-8px_rgba(120,80,30,0.5)]"
+        >
           <Bell className="h-4 w-4" />
           <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-[#6a4ab5]" />
         </button>
@@ -80,7 +85,12 @@ function FeastsHome() {
           </h1>
           <p className="text-[10.5px] text-[#6a543a] -mt-0.5">تعرف على الأعياد والمواسم الكنسية</p>
         </div>
-        <button className="grid h-10 w-10 place-items-center rounded-full bg-white border border-[#ead9b1] text-[#3a2a18] active:scale-90 transition-transform shadow-[0_4px_10px_-8px_rgba(120,80,30,0.5)]">
+        <button
+          type="button"
+          onClick={() => setSearchOpen(true)}
+          aria-label="البحث"
+          className="grid h-10 w-10 place-items-center rounded-full bg-white border border-[#ead9b1] text-[#3a2a18] active:scale-90 transition-transform shadow-[0_4px_10px_-8px_rgba(120,80,30,0.5)]"
+        >
           <Search className="h-4 w-4" />
         </button>
       </header>
