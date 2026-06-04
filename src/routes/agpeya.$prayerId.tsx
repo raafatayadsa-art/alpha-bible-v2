@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, ErrorComponentProps, Link, notFound, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronLeft,
@@ -12,6 +12,7 @@ import {
   Play,
   Pause,
   Gauge,
+  Rows3,
 } from "lucide-react";
 import {
   adjacentAgpeyaPrayers,
