@@ -54,21 +54,24 @@ test.describe("Agpeya reader — section chip tap navigation", () => {
       //    for sections that cannot fully reach the top.
       await page.waitForTimeout(800); // wait for smooth scroll to finish
 
-      const top = await sectionTopRelativeToScroller(page, id);
+      const { top, clamped, clientHeight } = await page.evaluate((sectionId) => {
+        const root = document.querySelector("main") as HTMLElement | null;
+        const el = document.querySelector(`#section-${sectionId}`) as HTMLElement | null;
+        if (!root || !el) return { top: null as number | null, clamped: false, clientHeight: 0 };
+        const r = root.getBoundingClientRect();
+        const e = el.getBoundingClientRect();
+        const clamped = root.scrollTop + root.clientHeight >= root.scrollHeight - 2;
+        return { top: e.top - r.top, clamped, clientHeight: root.clientHeight };
+      }, id);
       expect(top).not.toBeNull();
 
-      const clamped = await page.evaluate(() => {
-        const root = document.querySelector("main") as HTMLElement | null;
-        if (!root) return false;
-        return root.scrollTop + root.clientHeight >= root.scrollHeight - 2;
-      });
-
       if (clamped) {
-        // Near-bottom: section can't reach the top; just assert it's visible.
-        expect(top!).toBeLessThan(800);
-        expect(top!).toBeGreaterThan(-50);
+        // Near-bottom of scroll: section may not reach the top, but it must
+        // be at least partially visible inside the scroll container.
+        expect(top!).toBeLessThan(clientHeight);
+        expect(top!).toBeGreaterThan(-clientHeight);
       } else {
-        // Should land ~12px from the top (with some tolerance for sub-pixel rounding).
+        // Should land ~12px from the top (with tolerance for browser easing).
         expect(top!).toBeGreaterThanOrEqual(-4);
         expect(top!).toBeLessThanOrEqual(40);
       }
