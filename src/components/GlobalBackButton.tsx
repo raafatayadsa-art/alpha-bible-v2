@@ -11,24 +11,29 @@ import { useRouter, useRouterState } from "@tanstack/react-router";
  * - Uses history.back() so scroll position / state of the
  *   previous screen is preserved by the browser.
  */
-const SHOW_ON_PREFIXES = [
-  "/feasts",
-  "/synaxarium",
-];
+// All current sub-screens already render their own in-header BackButton.
+// Root content screens (Home, Synaxarium Home, Feasts Home, Agpeya Home,
+// Katamaros Home, Bible Home) must keep their Notifications/Search actions
+// and NEVER show a Back button — so the global auto-mount is disabled.
+const SHOW_ON_PREFIXES: string[] = [];
 
 const HIDE_ON_EXACT = new Set<string>([
   "/",
   "/home",
   "/agpeya",
   "/bible",
+  "/synaxarium",
+  "/feasts",
   "/onboarding",
   "/diagnostics",
 ]);
 
 // Routes that already render their own BackButton in-header:
 const SKIP_PREFIXES = [
-  "/feasts/", // /feasts/$eventId already has header back
-  "/synaxarium/", // /synaxarium/$saintId already has header back
+  "/feasts/",
+  "/synaxarium/",
+  "/agpeya/",
+  "/books",
 ];
 
 export function GlobalBackButton() {
