@@ -150,7 +150,7 @@ function HomeScreen() {
   ];
 
   return (
-    <div dir="rtl" className="relative min-h-screen w-full overflow-x-hidden bg-[#f4ead8]">
+    <div dir="rtl" className="relative min-h-screen w-full overflow-x-hidden bg-[#faf8f3]">
       {/* ambient */}
       <div
         aria-hidden

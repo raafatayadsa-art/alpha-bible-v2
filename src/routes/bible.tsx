@@ -39,7 +39,7 @@ function BibleHome() {
   return (
     <main
       dir="rtl"
-      className="relative min-h-screen w-full overflow-x-hidden bg-[#f4ead8]"
+      className="relative min-h-screen w-full overflow-x-hidden bg-[#faf8f3]"
     >
       <div
         aria-hidden

@@ -27,7 +27,7 @@ function SavedAgpeya() {
     .filter((p): p is (typeof AGPEYA_PRAYERS)[number] => Boolean(p));
 
   return (
-    <div dir="rtl" className="relative min-h-dvh bg-[#fbf3e1] pb-32">
+    <div dir="rtl" className="relative min-h-dvh bg-[#faf8f3] pb-32">
       <CopticWatermark />
       <header className="sticky top-0 z-30 backdrop-blur-xl border-b border-[#c79356]/25 bg-[#fbf3e1]/85">
         <div className="mx-auto flex max-w-[480px] items-center justify-between px-4 py-3">

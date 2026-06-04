@@ -281,7 +281,7 @@ function SaintDetails() {
   return (
     <div
       dir="rtl"
-      className="relative min-h-dvh bg-[#f4ead8]"
+      className="relative min-h-dvh bg-[#faf8f3]"
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >

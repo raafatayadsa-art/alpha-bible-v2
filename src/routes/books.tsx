@@ -68,7 +68,7 @@ function BooksGrid() {
   }, [books, grouped, cat, q]);
 
   return (
-    <main dir="rtl" className="relative min-h-screen w-full overflow-x-hidden bg-[#f4ead8]">
+    <main dir="rtl" className="relative min-h-screen w-full overflow-x-hidden bg-[#faf8f3]">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 -z-0"
