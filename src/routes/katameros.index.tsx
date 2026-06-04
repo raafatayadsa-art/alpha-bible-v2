@@ -546,7 +546,8 @@ function ReadingCard({
             </div>
           </div>
         )}
-      </GlassSurface>
+      </div>
+
     </div>
   );
 }
