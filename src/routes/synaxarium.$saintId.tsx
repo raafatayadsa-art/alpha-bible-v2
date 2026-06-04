@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   Bookmark,
   Share2,
@@ -15,8 +15,13 @@ import {
   Crown,
   Feather,
   Users,
+  Link2,
+  Image as ImageIcon,
+  FileText,
+  Check,
 } from "lucide-react";
-import { getSaint } from "@/features/synaxarium";
+import { toast } from "sonner";
+import { getSaint, SAINTS } from "@/features/synaxarium";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { GlassSurface, BackButton } from "@/components/bible/primitives";
 import {
@@ -26,6 +31,14 @@ import {
   Timeline,
   TimelineItem,
 } from "@/components/coptic";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerClose,
+} from "@/components/ui/drawer";
 
 export const Route = createFileRoute("/synaxarium/$saintId")({
   ssr: false,
@@ -60,13 +73,192 @@ const PHASE_ACCENT: Record<string, "purple" | "gold" | "green" | "blue"> = {
   repose: "green",
 };
 
+const FAVORITES_KEY = "alpha:synaxarium:favorites";
+
+function readFavorites(): string[] {
+  try {
+    const raw = localStorage.getItem(FAVORITES_KEY);
+    return raw ? (JSON.parse(raw) as string[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeFavorites(ids: string[]) {
+  try {
+    localStorage.setItem(FAVORITES_KEY, JSON.stringify(ids));
+  } catch {
+    /* noop */
+  }
+}
+
 function SaintDetails() {
   const { saintId } = Route.useParams();
   const saint = getSaint(saintId);
+  const navigate = useNavigate();
   const [saved, setSaved] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const bioRef = useRef<HTMLElement | null>(null);
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+
+  // Prev / next saint for swipe navigation
+  const { prevSaint, nextSaint } = useMemo(() => {
+    const idx = SAINTS.findIndex((s) => s.id === saint.id);
+    const prev = idx > 0 ? SAINTS[idx - 1] : SAINTS[SAINTS.length - 1];
+    const next = idx < SAINTS.length - 1 ? SAINTS[idx + 1] : SAINTS[0];
+    return { prevSaint: prev, nextSaint: next };
+  }, [saint.id]);
+
+  // Load favorite state
+  useEffect(() => {
+    setSaved(readFavorites().includes(saint.id));
+  }, [saint.id]);
+
+  const toggleSave = () => {
+    const favs = readFavorites();
+    const next = favs.includes(saint.id)
+      ? favs.filter((id) => id !== saint.id)
+      : [...favs, saint.id];
+    writeFavorites(next);
+    setSaved(next.includes(saint.id));
+    toast(next.includes(saint.id) ? "تم الحفظ في المفضلة" : "أُزيل من المفضلة");
+  };
+
+  const pageUrl = () =>
+    typeof window !== "undefined" ? window.location.href : "";
+
+  const shareText = `${saint.name} — ${saint.title}\n${saint.summary}`;
+
+  const handleNativeShare = async () => {
+    const data = { title: saint.name, text: shareText, url: pageUrl() };
+    try {
+      if (typeof navigator !== "undefined" && (navigator as Navigator).share) {
+        await (navigator as Navigator).share(data);
+        return;
+      }
+    } catch {
+      return;
+    }
+    setShareOpen(true);
+  };
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(pageUrl());
+      toast("تم نسخ الرابط");
+    } catch {
+      toast("تعذّر نسخ الرابط");
+    }
+    setShareOpen(false);
+  };
+
+  const copyText = async () => {
+    try {
+      await navigator.clipboard.writeText(`${shareText}\n${pageUrl()}`);
+      toast("تم نسخ النص");
+    } catch {
+      toast("تعذّر نسخ النص");
+    }
+    setShareOpen(false);
+  };
+
+  const shareImage = async () => {
+    try {
+      if (typeof navigator !== "undefined" && (navigator as Navigator).share) {
+        await (navigator as Navigator).share({
+          title: saint.name,
+          text: saint.name,
+          url: saint.image.startsWith("http")
+            ? saint.image
+            : new URL(saint.image, window.location.origin).toString(),
+        });
+        setShareOpen(false);
+        return;
+      }
+    } catch {
+      /* fall through */
+    }
+    try {
+      await navigator.clipboard.writeText(
+        saint.image.startsWith("http")
+          ? saint.image
+          : new URL(saint.image, window.location.origin).toString(),
+      );
+      toast("تم نسخ رابط الصورة");
+    } catch {
+      toast("تعذّر مشاركة الصورة");
+    }
+    setShareOpen(false);
+  };
+
+  const shareBio = async () => {
+    const data = {
+      title: saint.name,
+      text: `${saint.name}\n\n${saint.bio.slice(0, 280)}…`,
+      url: pageUrl(),
+    };
+    try {
+      if (typeof navigator !== "undefined" && (navigator as Navigator).share) {
+        await (navigator as Navigator).share(data);
+        setShareOpen(false);
+        return;
+      }
+    } catch {
+      setShareOpen(false);
+      return;
+    }
+    await copyText();
+  };
+
+  const scrollToBio = (highlight?: string) => {
+    bioRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (highlight) {
+      toast(`الفضيلة: ${highlight}`);
+    }
+  };
+
+  // Swipe navigation
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current == null || touchStartY.current == null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    const dy = e.changedTouches[0].clientY - touchStartY.current;
+    touchStartX.current = null;
+    touchStartY.current = null;
+    if (Math.abs(dx) < 70 || Math.abs(dy) > Math.abs(dx)) return;
+    // RTL: swipe right (dx > 0) → previous (older), swipe left → next
+    const target = dx > 0 ? prevSaint : nextSaint;
+    if (target && target.id !== saint.id) {
+      navigate({ to: "/synaxarium/$saintId", params: { saintId: target.id } });
+    }
+  };
+
+  const goRelated = (kind: string, item?: { id: string; title: string }) => {
+    if (!item) {
+      toast("لا يوجد محتوى مرتبط بعد");
+      return;
+    }
+    if (kind === "similar") {
+      const exists = SAINTS.some((s) => s.id === item.id);
+      if (exists) {
+        navigate({ to: "/synaxarium/$saintId", params: { saintId: item.id } });
+        return;
+      }
+    }
+    toast(`${item.title} — قريباً`);
+  };
 
   return (
-    <div dir="rtl" className="relative min-h-dvh bg-[#f4ead8]">
+    <div
+      dir="rtl"
+      className="relative min-h-dvh bg-[#f4ead8]"
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+    >
       <CopticWatermark />
 
       {/* Header */}
@@ -85,6 +277,7 @@ function SaintDetails() {
           <button
             type="button"
             aria-label="مشاركة"
+            onClick={() => setShareOpen(true)}
             className="grid h-9 w-9 place-items-center rounded-full bg-white/70 border border-[#efe2c4] text-[#3a2a18] active:scale-90 transition-transform"
           >
             <Share2 className="h-4 w-4" />
@@ -92,7 +285,7 @@ function SaintDetails() {
           <button
             type="button"
             aria-label="حفظ"
-            onClick={() => setSaved((v) => !v)}
+            onClick={toggleSave}
             className={`grid h-9 w-9 place-items-center rounded-full border active:scale-90 transition-all duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
               saved
                 ? "bg-[#6a4ab5] border-[#6a4ab5] text-white shadow-[0_8px_18px_-10px_rgba(106,74,181,0.7)]"
@@ -117,14 +310,12 @@ function SaintDetails() {
                 style={{ backgroundImage: `url(${saint.image})` }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#fbf3e1] via-[#fbf3e1]/30 to-transparent" />
-              {/* Coptic letter ornaments */}
               <span className="absolute top-3 right-3 text-[28px] font-bold text-white/70 drop-shadow-[0_2px_6px_rgba(0,0,0,0.4)] leading-none">
                 Ⲁ
               </span>
               <span className="absolute top-3 left-3 text-[28px] font-bold text-white/70 drop-shadow-[0_2px_6px_rgba(0,0,0,0.4)] leading-none">
                 Ⲱ
               </span>
-              {/* Feast chip */}
               <div className="absolute top-4 inset-x-0 flex justify-center">
                 <div className="inline-flex items-center gap-1.5 rounded-full bg-black/35 backdrop-blur-md px-3 py-1 text-[11px] font-bold text-white border border-white/20">
                   <Calendar className="h-3 w-3" />
@@ -166,7 +357,7 @@ function SaintDetails() {
         </GlassSurface>
 
         {/* BIOGRAPHY */}
-        <section className="mt-5">
+        <section ref={bioRef} id="biography" className="mt-5 scroll-mt-24">
           <SectionTitle title="السيرة" caption="نبذة عن حياته" />
           <GlassSurface className="p-5">
             {saint.bio.split("\n\n").map((para, i) => (
@@ -231,15 +422,17 @@ function SaintDetails() {
           <SectionTitle title="فضائله" caption="مثال يُحتذى به" />
           <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none [&::-webkit-scrollbar]:hidden">
             {(saint.virtues ?? []).map((v) => (
-              <div
+              <button
+                type="button"
                 key={v}
+                onClick={() => scrollToBio(v)}
                 className="shrink-0 inline-flex flex-col items-center gap-1.5 rounded-2xl bg-white/85 border border-[#efe2c4] px-4 py-3 min-w-[78px] shadow-[0_6px_14px_-10px_rgba(120,80,30,0.4)] transition-transform duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-95"
               >
                 <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-[#fff1c7] to-[#e7c07a] text-[#7a4a26]">
                   {VIRTUE_ICONS[v] ?? <Sparkles className="h-4 w-4" />}
                 </span>
                 <span className="text-[11.5px] font-bold text-[#3a2a18]">{v}</span>
-              </div>
+              </button>
             ))}
           </div>
         </section>
@@ -248,10 +441,34 @@ function SaintDetails() {
         <section className="mt-5">
           <SectionTitle title="محتوى مرتبط" caption="استكشف أكثر" />
           <div className="grid grid-cols-2 gap-2.5">
-            <RelatedTile icon={<Flame className="h-4 w-4" />} title="صلوات مرتبطة" subtitle={`${saint.relatedPrayers?.length ?? 0} صلوات`} tone="gold" />
-            <RelatedTile icon={<BookOpen className="h-4 w-4" />} title="تأملات مرتبطة" subtitle={`${saint.relatedMeditations?.length ?? 0} تأملات`} tone="purple" />
-            <RelatedTile icon={<Calendar className="h-4 w-4" />} title="مناسبات مرتبطة" subtitle={`${saint.relatedEvents?.length ?? 0} مناسبات`} tone="purple" />
-            <RelatedTile icon={<Users className="h-4 w-4" />} title="قديسون مشابهون" subtitle={`${saint.similarSaints?.length ?? 0} قديسين`} tone="gold" />
+            <RelatedTile
+              icon={<Flame className="h-4 w-4" />}
+              title="صلوات مرتبطة"
+              subtitle={`${saint.relatedPrayers?.length ?? 0} صلوات`}
+              tone="gold"
+              onClick={() => goRelated("prayer", saint.relatedPrayers?.[0])}
+            />
+            <RelatedTile
+              icon={<BookOpen className="h-4 w-4" />}
+              title="تأملات مرتبطة"
+              subtitle={`${saint.relatedMeditations?.length ?? 0} تأملات`}
+              tone="purple"
+              onClick={() => goRelated("meditation", saint.relatedMeditations?.[0])}
+            />
+            <RelatedTile
+              icon={<Calendar className="h-4 w-4" />}
+              title="مناسبات مرتبطة"
+              subtitle={`${saint.relatedEvents?.length ?? 0} مناسبات`}
+              tone="purple"
+              onClick={() => goRelated("event", saint.relatedEvents?.[0])}
+            />
+            <RelatedTile
+              icon={<Users className="h-4 w-4" />}
+              title="قديسون مشابهون"
+              subtitle={`${saint.similarSaints?.length ?? 0} قديسين`}
+              tone="gold"
+              onClick={() => goRelated("similar", saint.similarSaints?.[0])}
+            />
           </div>
         </section>
 
@@ -260,13 +477,14 @@ function SaintDetails() {
           <div className="grid grid-cols-2 gap-2.5">
             <button
               type="button"
+              onClick={handleNativeShare}
               className="h-12 inline-flex items-center justify-center gap-2 rounded-2xl bg-white/85 border border-[#efe2c4] text-[#3a2a18] text-[13px] font-bold shadow-[0_8px_18px_-12px_rgba(120,80,30,0.45)] active:scale-[0.97] transition-transform"
             >
               <Share2 className="h-4 w-4" /> مشاركة السيرة
             </button>
             <button
               type="button"
-              onClick={() => setSaved((v) => !v)}
+              onClick={toggleSave}
               className={`h-12 inline-flex items-center justify-center gap-2 rounded-2xl border text-[13px] font-bold active:scale-[0.97] transition-all duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
                 saved
                   ? "bg-[#6a4ab5] border-[#6a4ab5] text-white shadow-[0_10px_22px_-12px_rgba(106,74,181,0.7)]"
@@ -288,8 +506,61 @@ function SaintDetails() {
         </section>
       </main>
 
+      {/* Share Bottom Sheet */}
+      <Drawer open={shareOpen} onOpenChange={setShareOpen}>
+        <DrawerContent className="bg-[#fbf3e1] border-[#efe2c4]" dir="rtl">
+          <DrawerHeader className="text-right">
+            <DrawerTitle className="font-arabic-serif text-[17px] text-[#3a2a18]">
+              مشاركة {saint.name}
+            </DrawerTitle>
+            <DrawerDescription className="text-[12px] text-[#6a543a]">
+              اختر طريقة المشاركة
+            </DrawerDescription>
+          </DrawerHeader>
+          <div className="px-4 pb-2 grid grid-cols-2 gap-2.5">
+            <ShareAction icon={<FileText className="h-4 w-4" />} label="مشاركة السيرة" onClick={shareBio} />
+            <ShareAction icon={<Link2 className="h-4 w-4" />} label="نسخ الرابط" onClick={copyLink} />
+            <ShareAction icon={<ImageIcon className="h-4 w-4" />} label="مشاركة الصورة" onClick={shareImage} />
+            <ShareAction icon={<Check className="h-4 w-4" />} label="مشاركة النص" onClick={copyText} />
+          </div>
+          <div className="px-4 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-3">
+            <DrawerClose asChild>
+              <button
+                type="button"
+                className="h-11 w-full rounded-2xl bg-white/85 border border-[#efe2c4] text-[13px] font-bold text-[#3a2a18] active:scale-[0.98] transition-transform"
+              >
+                إلغاء
+              </button>
+            </DrawerClose>
+          </div>
+        </DrawerContent>
+      </Drawer>
+
       <BottomDock />
     </div>
+  );
+}
+
+function ShareAction({
+  icon,
+  label,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="h-14 inline-flex items-center justify-center gap-2 rounded-2xl bg-white/85 border border-[#efe2c4] text-[#3a2a18] text-[13px] font-bold shadow-[0_8px_18px_-14px_rgba(120,80,30,0.45)] active:scale-[0.97] transition-transform"
+    >
+      <span className="grid h-8 w-8 place-items-center rounded-xl bg-gradient-to-br from-[#fff1c7] to-[#e7c07a] text-[#7a4a26]">
+        {icon}
+      </span>
+      {label}
+    </button>
   );
 }
 
@@ -345,11 +616,13 @@ function RelatedTile({
   title,
   subtitle,
   tone,
+  onClick,
 }: {
   icon: React.ReactNode;
   title: string;
   subtitle: string;
   tone: "gold" | "purple";
+  onClick?: () => void;
 }) {
   const accentBg =
     tone === "purple"
@@ -358,6 +631,7 @@ function RelatedTile({
   return (
     <button
       type="button"
+      onClick={onClick}
       className="text-right rounded-2xl bg-white/85 border border-[#efe2c4] p-3.5 shadow-[0_8px_18px_-14px_rgba(120,80,30,0.45)] hover:shadow-[0_14px_28px_-14px_rgba(120,80,30,0.5)] transition-all duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.98]"
     >
       <span className={`grid h-10 w-10 place-items-center rounded-xl border border-white/70 mb-2 ${accentBg}`}>
