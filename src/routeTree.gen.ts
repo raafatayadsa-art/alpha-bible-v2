@@ -13,6 +13,7 @@ import { Route as SearchRouteImport } from './routes/search'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as DiagnosticsRouteImport } from './routes/diagnostics'
+import { Route as ChurchRouteImport } from './routes/church'
 import { Route as BooksRouteImport } from './routes/books'
 import { Route as BibleRouteImport } from './routes/bible'
 import { Route as BookRouteImport } from './routes/$book'
@@ -54,6 +55,11 @@ const HomeRoute = HomeRouteImport.update({
 const DiagnosticsRoute = DiagnosticsRouteImport.update({
   id: '/diagnostics',
   path: '/diagnostics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChurchRoute = ChurchRouteImport.update({
+  id: '/church',
+  path: '/church',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BooksRoute = BooksRouteImport.update({
@@ -172,6 +178,7 @@ export interface FileRoutesByFullPath {
   '/$book': typeof BookRouteWithChildren
   '/bible': typeof BibleRoute
   '/books': typeof BooksRoute
+  '/church': typeof ChurchRoute
   '/diagnostics': typeof DiagnosticsRoute
   '/home': typeof HomeRoute
   '/onboarding': typeof OnboardingRoute
@@ -199,6 +206,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/bible': typeof BibleRoute
   '/books': typeof BooksRoute
+  '/church': typeof ChurchRoute
   '/diagnostics': typeof DiagnosticsRoute
   '/home': typeof HomeRoute
   '/onboarding': typeof OnboardingRoute
@@ -228,6 +236,7 @@ export interface FileRoutesById {
   '/$book': typeof BookRouteWithChildren
   '/bible': typeof BibleRoute
   '/books': typeof BooksRoute
+  '/church': typeof ChurchRoute
   '/diagnostics': typeof DiagnosticsRoute
   '/home': typeof HomeRoute
   '/onboarding': typeof OnboardingRoute
@@ -258,6 +267,7 @@ export interface FileRouteTypes {
     | '/$book'
     | '/bible'
     | '/books'
+    | '/church'
     | '/diagnostics'
     | '/home'
     | '/onboarding'
@@ -285,6 +295,7 @@ export interface FileRouteTypes {
     | '/'
     | '/bible'
     | '/books'
+    | '/church'
     | '/diagnostics'
     | '/home'
     | '/onboarding'
@@ -313,6 +324,7 @@ export interface FileRouteTypes {
     | '/$book'
     | '/bible'
     | '/books'
+    | '/church'
     | '/diagnostics'
     | '/home'
     | '/onboarding'
@@ -342,6 +354,7 @@ export interface RootRouteChildren {
   BookRoute: typeof BookRouteWithChildren
   BibleRoute: typeof BibleRoute
   BooksRoute: typeof BooksRoute
+  ChurchRoute: typeof ChurchRoute
   DiagnosticsRoute: typeof DiagnosticsRoute
   HomeRoute: typeof HomeRoute
   OnboardingRoute: typeof OnboardingRoute
@@ -392,6 +405,13 @@ declare module '@tanstack/react-router' {
       path: '/diagnostics'
       fullPath: '/diagnostics'
       preLoaderRoute: typeof DiagnosticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/church': {
+      id: '/church'
+      path: '/church'
+      fullPath: '/church'
+      preLoaderRoute: typeof ChurchRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/books': {
@@ -568,6 +588,7 @@ const rootRouteChildren: RootRouteChildren = {
   BookRoute: BookRouteWithChildren,
   BibleRoute: BibleRoute,
   BooksRoute: BooksRoute,
+  ChurchRoute: ChurchRoute,
   DiagnosticsRoute: DiagnosticsRoute,
   HomeRoute: HomeRoute,
   OnboardingRoute: OnboardingRoute,
