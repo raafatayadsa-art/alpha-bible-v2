@@ -10,12 +10,33 @@ import cardChurch from "@/assets/home/card-church.jpg";
 export type PostType =
   | "news"
   | "announcement"
+  | "liturgy"
+  | "meeting"
   | "wedding"
   | "condolence"
   | "prayer"
   | "report"
   | "event"
   | "trip";
+
+/** Template-specific extra fields rendered on the details screen + cards. */
+export type ChurchPostDetails = {
+  /** Sub-type label, e.g. "تعزية" | "أربعين" | "ذكرى سنوية" | "إكليل" | "نصف إكليل" */
+  eventType?: string;
+  date?: string;
+  time?: string;
+  place?: string;
+  priest?: string;
+  audience?: string;
+  groom?: string;
+  bride?: string;
+  personName?: string;
+  deathDate?: string;
+  verse?: string;
+  returnDate?: string;
+  seats?: number;
+  places?: string;
+};
 
 export type ChurchPost = {
   id: string;
@@ -27,18 +48,22 @@ export type ChurchPost = {
   date: string;
   author: string;
   pinned?: boolean;
+  details?: ChurchPostDetails;
 };
 
 export const POST_TYPE_META: Record<PostType, { label: string; tone: string }> = {
   news:         { label: "خبر",     tone: "#c98a3c" },
   announcement: { label: "إعلان",   tone: "#c44569" },
-  wedding:      { label: "زواج",    tone: "#d97a8a" },
+  liturgy:      { label: "قداس",    tone: "#7a4a26" },
+  meeting:      { label: "اجتماع",  tone: "#5b8fd1" },
+  wedding:      { label: "فرح",     tone: "#d97a8a" },
   condolence:   { label: "تعزية",   tone: "#6a543a" },
   prayer:       { label: "طلبة",    tone: "#8a6ec1" },
-  report:       { label: "تقرير",   tone: "#5b8fd1" },
+  report:       { label: "تقرير",   tone: "#3a6db0" },
   event:        { label: "فعالية",  tone: "#1f8a5a" },
   trip:         { label: "رحلة",    tone: "#b8893a" },
 };
+
 
 export const CHURCH_POSTS: ChurchPost[] = [
   {

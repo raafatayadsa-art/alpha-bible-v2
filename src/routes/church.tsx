@@ -9,10 +9,15 @@ import {
 import { CHURCH_CONTACTS, type ChurchContact } from "@/data/church-contacts";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { CopticWatermark } from "@/components/coptic";
-import { CHURCH_POSTS, POST_TYPE_META, type ChurchPost } from "@/data/church-posts";
+import { POST_TYPE_META, type ChurchPost } from "@/data/church-posts";
 import {
   PRAYER_REQUESTS, prayerStats, ENCOURAGEMENT_TOTAL,
 } from "@/data/prayer-requests";
+import { useAllPosts } from "@/features/church/post-store";
+import { PostBuilder } from "@/features/church/PostBuilder";
+import {
+  AttendButton, CondolencePopup, CongratsPopup, ReservePopup,
+} from "@/features/church/PostActions";
 
 
 
@@ -495,48 +500,131 @@ function SmallPostCard({ post }: { post: ChurchPost }) {
   );
 }
 
-function HorizontalPostCard({ post }: { post: ChurchPost }) {
-  return (
+function PostCardActions({ post }: { post: ChurchPost }) {
+  const [popup, setPopup] = useState<null | "condolence" | "congrats" | "reserve">(null);
+
+  const openCondolence = (e: React.MouseEvent) => {
+    e.preventDefault(); e.stopPropagation(); setPopup("condolence");
+  };
+  const openCongrats = (e: React.MouseEvent) => {
+    e.preventDefault(); e.stopPropagation(); setPopup("congrats");
+  };
+  const openReserve = (e: React.MouseEvent) => {
+    e.preventDefault(); e.stopPropagation(); setPopup("reserve");
+  };
+
+  let primary: React.ReactNode = (
     <Link
       to="/church/post/$id"
       params={{ id: post.id }}
-      className="block shrink-0 w-[260px] active:scale-[0.98] transition-transform"
+      className="inline-flex items-center justify-center gap-1 rounded-full px-3 py-2 text-[11.5px] font-extrabold bg-gradient-to-l from-[#7a4a26] to-[#b8893a] text-white shadow-[0_8px_18px_-10px_rgba(122,74,38,0.7)] active:scale-[0.97]"
     >
+      عرض التفاصيل
+      <ArrowRight className="h-3 w-3 -scale-x-100" />
+    </Link>
+  );
+
+  let secondary: React.ReactNode = null;
+
+  if (post.type === "liturgy" || post.type === "meeting") {
+    secondary = <AttendButton postId={post.id} />;
+  } else if (post.type === "trip") {
+    secondary = (
+      <button
+        type="button"
+        onClick={openReserve}
+        className="inline-flex items-center justify-center gap-1 rounded-full px-3 py-2 text-[11.5px] font-extrabold bg-[#1f8a5a] text-white shadow-[0_8px_18px_-10px_rgba(31,138,90,0.7)] active:scale-[0.97]"
+      >
+        حجز
+      </button>
+    );
+  } else if (post.type === "wedding") {
+    secondary = (
+      <button
+        type="button"
+        onClick={openCongrats}
+        className="inline-flex items-center justify-center gap-1 rounded-full px-3 py-2 text-[11.5px] font-extrabold bg-[#d97a8a] text-white shadow-[0_8px_18px_-10px_rgba(217,122,138,0.7)] active:scale-[0.97]"
+      >
+        شارك التهنئة
+      </button>
+    );
+  } else if (post.type === "condolence") {
+    secondary = (
+      <button
+        type="button"
+        onClick={openCondolence}
+        className="inline-flex items-center justify-center gap-1 rounded-full px-3 py-2 text-[11.5px] font-extrabold bg-[#6a543a] text-white shadow-[0_8px_18px_-10px_rgba(106,84,58,0.7)] active:scale-[0.97]"
+      >
+        أرسل تعزية
+      </button>
+    );
+  }
+
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        {secondary ? <div className="flex-1">{secondary}</div> : null}
+        <div className={secondary ? "" : "flex-1"}>{primary}</div>
+      </div>
+      {popup === "condolence" ? (
+        <CondolencePopup postId={post.id} onClose={() => setPopup(null)} />
+      ) : popup === "congrats" ? (
+        <CongratsPopup postId={post.id} onClose={() => setPopup(null)} />
+      ) : popup === "reserve" ? (
+        <ReservePopup postId={post.id} totalSeats={post.details?.seats} onClose={() => setPopup(null)} />
+      ) : null}
+    </>
+  );
+}
+
+function HorizontalPostCard({ post }: { post: ChurchPost }) {
+  return (
+    <div className="shrink-0 w-[260px]">
       <Glass padded={false} className="overflow-hidden">
-        <div className="relative h-[140px]">
-          <img src={post.image} alt={post.title} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#1a0f04]/85 via-[#1a0f04]/15 to-transparent" />
-          <div className="absolute top-2 right-2 flex items-center gap-1.5">
-            {post.pinned && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-[#b8893a] px-2 py-0.5 text-[9.5px] font-extrabold text-white border border-white/40">
-                <Pin className="h-3 w-3" strokeWidth={2.6} /> مثبت
-              </span>
-            )}
-            <CategoryPill type={post.type} />
+        <Link
+          to="/church/post/$id"
+          params={{ id: post.id }}
+          className="block active:scale-[0.99] transition-transform"
+        >
+          <div className="relative h-[140px]">
+            <img src={post.image} alt={post.title} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#1a0f04]/85 via-[#1a0f04]/15 to-transparent" />
+            <div className="absolute top-2 right-2 flex items-center gap-1.5">
+              {post.pinned && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-[#b8893a] px-2 py-0.5 text-[9.5px] font-extrabold text-white border border-white/40">
+                  <Pin className="h-3 w-3" strokeWidth={2.6} /> مثبت
+                </span>
+              )}
+              <CategoryPill type={post.type} />
+            </div>
+            <div className="absolute bottom-2 right-2.5 left-2.5 text-right text-white">
+              <h3 className="font-arabic-serif text-[13.5px] font-extrabold leading-snug drop-shadow-[0_2px_8px_rgba(0,0,0,0.65)] line-clamp-2">
+                {post.title}
+              </h3>
+            </div>
           </div>
-          <div className="absolute bottom-2 right-2.5 left-2.5 text-right text-white">
-            <h3 className="font-arabic-serif text-[13.5px] font-extrabold leading-snug drop-shadow-[0_2px_8px_rgba(0,0,0,0.65)] line-clamp-2">
-              {post.title}
-            </h3>
+          <div className="px-3 pt-2.5 text-right">
+            <p className="text-[11.5px] text-[#6a543a] leading-snug line-clamp-2">{post.excerpt}</p>
+            <p className="mt-1.5 inline-flex items-center gap-1.5 text-[10px] font-bold text-[#8a6a3a]">
+              <CalendarDays className="h-3 w-3 text-[#b8893a]" />
+              {post.date}
+            </p>
           </div>
-        </div>
-        <div className="px-3 py-2.5 text-right">
-          <p className="text-[11.5px] text-[#6a543a] leading-snug line-clamp-2">{post.excerpt}</p>
-          <p className="mt-1.5 inline-flex items-center gap-1.5 text-[10px] font-bold text-[#8a6a3a]">
-            <CalendarDays className="h-3 w-3 text-[#b8893a]" />
-            {post.date}
-          </p>
+        </Link>
+        <div className="px-3 pb-3 pt-2">
+          <PostCardActions post={post} />
         </div>
       </Glass>
-    </Link>
+    </div>
   );
 }
 
 function ChurchPostsFeed() {
-  const sorted = [...CHURCH_POSTS].sort((a, b) => Number(!!b.pinned) - Number(!!a.pinned));
+  const allPosts = useAllPosts();
+  const sorted = [...allPosts].sort((a, b) => Number(!!b.pinned) - Number(!!a.pinned));
   const trackRef = useRef<HTMLDivElement | null>(null);
-  // Reverse direction compared to Quick Access (negative direction).
   useAutoMarquee(trackRef, { speed: 18, direction: -1 });
+  const [builderOpen, setBuilderOpen] = useState(false);
 
   return (
     <section>
@@ -547,6 +635,7 @@ function ChurchPostsFeed() {
             type="button"
             aria-label="منشور جديد"
             title="إنشاء منشور (للكهنة والخدام)"
+            onClick={() => setBuilderOpen(true)}
             className="inline-flex items-center gap-1 rounded-full bg-gradient-to-l from-[#7a4a26] to-[#b8893a] text-white text-[11px] font-extrabold px-3 py-1.5 shadow-[0_10px_20px_-10px_rgba(122,74,38,0.6)] active:scale-95 transition-transform"
           >
             <Plus className="h-3.5 w-3.5" strokeWidth={2.6} />
@@ -565,6 +654,7 @@ function ChurchPostsFeed() {
           ))}
         </div>
       </div>
+      {builderOpen ? <PostBuilder onClose={() => setBuilderOpen(false)} /> : null}
     </section>
   );
 }
