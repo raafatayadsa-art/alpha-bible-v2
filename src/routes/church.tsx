@@ -13,7 +13,9 @@ import { POST_TYPE_META, type ChurchPost } from "@/data/church-posts";
 import {
   PRAYER_REQUESTS, prayerStats, ENCOURAGEMENT_TOTAL,
 } from "@/data/prayer-requests";
-import { useAllPosts } from "@/features/church/post-store";
+import {
+  useActivePosts, useCanManagePosts, isPinned, pinForDays, pinUntil, unpinPost, archivePost,
+} from "@/features/church/post-store";
 import { PostBuilder } from "@/features/church/PostBuilder";
 import {
   AttendButton, CondolencePopup, CongratsPopup, ReservePopup,
