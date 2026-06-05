@@ -1,133 +1,135 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { ChevronLeft, Search, MapPin, Navigation, Church, Mountain, Landmark, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import {
-  CHURCH_PLACES, KIND_LABEL, mapsUrlFor, type ChurchPlace, type PlaceKind,
+  ChevronLeft, Search, MapPin, Navigation, Church, Mountain, Landmark,
+  X, Info, Sparkles, Clock,
+} from "lucide-react";
+import {
+  CHURCH_PLACES, KIND_LABEL, PLACE_STATS, mapsUrlFor, getRecentPlaceIds,
+  formatDistance, findPlace, type ChurchPlace, type PlaceKind,
 } from "@/data/church-places";
+import heroChurch from "@/assets/home/heavenly-church.png";
 
 export const Route = createFileRoute("/church/directory")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "دليل الكنائس والأديرة — ألفا" },
-      { name: "description", content: "دليل شامل للكنائس، الأديرة، والمعالم المسيحية القريبة منك." },
+      { title: "الكنائس والأديرة — ألفا" },
+      { name: "description", content: "اكتشف الكنائس والأديرة والمزارات القبطية حولك." },
     ],
   }),
   component: DirectoryScreen,
 });
 
+/* ---------------- palette tokens ---------------- */
+const IVORY = "#fbf6ec";
+const CREAM = "#f3eadb";
+const SKY = "rgba(140,180,220,";
+const LAV = "rgba(170,150,210,";
+const BORDER = "rgba(220,210,235,0.7)";
+const TEXT = "#3a3258";
+const SUB = "#6b658a";
+
 const TABS: { key: "all" | PlaceKind; label: string; icon: any }[] = [
-  { key: "all", label: "الكل", icon: MapPin },
-  { key: "church", label: "كنائس", icon: Church },
-  { key: "monastery", label: "أديرة", icon: Mountain },
-  { key: "landmark", label: "معالم", icon: Landmark },
+  { key: "all", label: "الكل", icon: Sparkles },
+  { key: "church", label: "الكنائس", icon: Church },
+  { key: "monastery", label: "الأديرة", icon: Mountain },
+  { key: "landmark", label: "المزارات", icon: Landmark },
 ];
 
 const KIND_TONE: Record<PlaceKind, { bg: string; color: string; ring: string }> = {
-  church: { bg: "rgba(199,147,86,0.16)", color: "#8a5a1f", ring: "rgba(199,147,86,0.35)" },
-  monastery: { bg: "rgba(168,109,194,0.16)", color: "#6b3a8a", ring: "rgba(168,109,194,0.35)" },
-  landmark: { bg: "rgba(64,124,196,0.14)", color: "#1e4d8a", ring: "rgba(64,124,196,0.30)" },
+  church: { bg: `${SKY}0.16)`, color: "#2f5a8a", ring: `${SKY}0.35)` },
+  monastery: { bg: `${LAV}0.20)`, color: "#5a3e8a", ring: `${LAV}0.4)` },
+  landmark: { bg: "rgba(196,179,140,0.22)", color: "#7a5c1f", ring: "rgba(196,179,140,0.45)" },
 };
 
+/* ============================================================ */
 function DirectoryScreen() {
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState<(typeof TABS)[number]["key"]>("all");
+  const [recentIds, setRecentIds] = useState<string[]>([]);
+
+  useEffect(() => { setRecentIds(getRecentPlaceIds()); }, []);
 
   const filtered = useMemo(() => {
     const q = query.trim();
     return CHURCH_PLACES.filter((p) => {
       if (tab !== "all" && p.kind !== tab) return false;
       if (!q) return true;
-      return p.name.includes(q) || p.city.includes(q);
+      return [p.name, p.type, p.city, p.region ?? "", p.country, p.priest ?? ""]
+        .some((s) => s.includes(q));
     }).sort((a, b) => a.distanceKm - b.distanceKm);
   }, [query, tab]);
+
+  const nearby = useMemo(
+    () => [...CHURCH_PLACES].sort((a, b) => a.distanceKm - b.distanceKm).slice(0, 6),
+    [],
+  );
+
+  const recent = recentIds
+    .map((id) => findPlace(id))
+    .filter((x): x is ChurchPlace => Boolean(x));
 
   return (
     <div
       dir="rtl"
       className="min-h-screen pb-24"
       style={{
-        background: "radial-gradient(120% 80% at 50% 0%, #fff8ec 0%, #faeed4 45%, #f3e0b8 100%)",
+        background:
+          `radial-gradient(120% 80% at 50% 0%, #fbf6ec 0%, #f1ecf7 45%, #e8eef8 100%)`,
       }}
     >
-      <header
-        className="sticky top-0 z-30 backdrop-blur-xl border-b border-[#efe2c4]/70"
+      {/* ambient halos */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 -z-0"
         style={{
-          background: "linear-gradient(180deg, rgba(255,248,236,0.92), rgba(250,238,212,0.85))",
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
+          background:
+            `radial-gradient(60% 40% at 20% 10%, ${LAV}0.22), transparent 65%),` +
+            `radial-gradient(70% 45% at 90% 30%, ${SKY}0.20), transparent 65%)`,
         }}
-      >
-        <div className="flex items-center justify-between px-4 pb-3">
-          <Link
-            to="/church"
-            aria-label="رجوع"
-            className="inline-grid h-10 w-10 place-items-center rounded-full bg-white/80 border border-[#efe2c4] text-[#3a2a18] active:scale-90 transition-transform shadow-[0_8px_20px_-14px_rgba(120,80,30,0.45)]"
-          >
-            <ChevronLeft className="h-5 w-5 -scale-x-100" strokeWidth={2} />
-          </Link>
-          <h1 className="text-[15px] font-extrabold text-[#3a2a18]">دليل الكنائس والأديرة</h1>
-          <div className="w-10" />
-        </div>
+      />
+
+      <Header query={query} hasQuery={!!query} />
+
+      <main className="relative mx-auto w-full max-w-[440px] px-4 pt-3 space-y-5">
+        {/* Hero */}
+        <HeroCard />
 
         {/* Search */}
-        <div className="px-4 pb-3">
-          <div className="relative">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9a7d4e]" strokeWidth={2.4} />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="ابحث عن كنيسة، دير، أو معلم…"
-              className="w-full h-11 pr-10 pl-10 rounded-full bg-white/85 border border-[#efe2c4] text-[13px] font-bold text-[#3a2a18] placeholder:text-[#a98a55] placeholder:font-medium outline-none focus:border-[#c79356] shadow-[0_8px_20px_-14px_rgba(120,80,30,0.4)]"
-            />
-            {query ? (
-              <button
-                type="button"
-                onClick={() => setQuery("")}
-                className="absolute left-2 top-1/2 -translate-y-1/2 h-7 w-7 grid place-items-center rounded-full bg-[#f5e6c8] text-[#7a5a30] active:scale-90"
-                aria-label="مسح البحث"
-              >
-                <X className="h-3.5 w-3.5" strokeWidth={2.6} />
-              </button>
-            ) : null}
-          </div>
-        </div>
+        <SearchBar value={query} onChange={setQuery} />
 
         {/* Tabs */}
-        <div className="flex gap-2 overflow-x-auto no-scrollbar px-4 pb-3">
-          {TABS.map((t) => {
-            const active = t.key === tab;
-            const Icon = t.icon;
-            return (
-              <button
-                key={t.key}
-                onClick={() => setTab(t.key)}
-                className={
-                  "shrink-0 inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-[11px] font-bold border transition-all " +
-                  (active
-                    ? "bg-[#3a2a18] text-white border-[#3a2a18] shadow-[0_8px_18px_-10px_rgba(58,42,24,0.6)]"
-                    : "bg-white/70 text-[#5a4626] border-[#efe2c4] active:scale-95")
-                }
-              >
-                <Icon className="h-3.5 w-3.5" strokeWidth={2.4} />
-                {t.label}
-              </button>
-            );
-          })}
-        </div>
-      </header>
+        <Tabs active={tab} onChange={setTab} />
 
-      <main className="px-4 pt-4">
-        <div className="text-[11px] font-bold text-[#7a5a30] mb-2.5 text-right">
-          {filtered.length} نتيجة
-        </div>
-        {filtered.length === 0 ? (
-          <Empty />
-        ) : (
-          <div className="space-y-2.5">
-            {filtered.map((p) => <PlaceCard key={p.id} p={p} />)}
+        {/* Recently viewed */}
+        {recent.length > 0 && !query && tab === "all" ? (
+          <SectionCarousel title="الكنائس التي زرتها مؤخراً" icon={Clock} places={recent} />
+        ) : null}
+
+        {/* Nearby */}
+        {!query && tab === "all" ? (
+          <SectionCarousel title="الكنائس القريبة منك" icon={MapPin} places={nearby} />
+        ) : null}
+
+        {/* Results */}
+        <section>
+          <div className="flex items-center justify-between mb-2.5 px-1">
+            <h2 className="text-[14px] font-extrabold" style={{ color: TEXT }}>
+              {query ? "نتائج البحث" : tab === "all" ? "كل المواقع" : TABS.find((t) => t.key === tab)?.label}
+            </h2>
+            <span className="text-[11px] font-bold" style={{ color: SUB }}>
+              {filtered.length} نتيجة
+            </span>
           </div>
-        )}
+          {filtered.length === 0 ? (
+            <Empty />
+          ) : (
+            <div className="grid grid-cols-1 gap-3">
+              {filtered.map((p) => <PlaceCard key={p.id} p={p} />)}
+            </div>
+          )}
+        </section>
       </main>
 
       <style>{`
@@ -138,57 +140,318 @@ function DirectoryScreen() {
   );
 }
 
-function PlaceCard({ p }: { p: ChurchPlace }) {
+/* ============================================================ */
+function Header({ query, hasQuery }: { query: string; hasQuery: boolean }) {
+  return (
+    <header
+      className="sticky top-0 z-30 backdrop-blur-2xl"
+      style={{
+        background: "linear-gradient(180deg, rgba(251,246,236,0.9), rgba(241,236,247,0.78))",
+        borderBottom: `1px solid ${BORDER}`,
+        paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
+      }}
+    >
+      <div className="flex items-center justify-between px-4 pb-3">
+        <Link
+          to="/church"
+          aria-label="رجوع"
+          className="inline-grid h-10 w-10 place-items-center rounded-full bg-white/85 border text-[#3a3258] active:scale-90 transition-transform shadow-[0_8px_20px_-14px_rgba(100,90,140,0.5)]"
+          style={{ borderColor: BORDER }}
+        >
+          <ChevronLeft className="h-5 w-5 -scale-x-100" strokeWidth={2} />
+        </Link>
+        <h1 className="text-[15px] font-extrabold" style={{ color: TEXT }}>
+          الكنائس والأديرة
+        </h1>
+        <div className="w-10" />
+      </div>
+      {hasQuery ? (
+        <div className="px-4 pb-2 text-[11px] font-bold text-right" style={{ color: SUB }}>
+          بحث: «{query}»
+        </div>
+      ) : null}
+    </header>
+  );
+}
+
+/* ============================================================ */
+function HeroCard() {
+  return (
+    <section
+      className="relative overflow-hidden rounded-[28px] border backdrop-blur-xl shadow-[0_24px_50px_-24px_rgba(120,110,180,0.45),inset_0_1px_0_rgba(255,255,255,0.9)]"
+      style={{ borderColor: BORDER, background: `linear-gradient(160deg, ${IVORY}, #efeaf6)` }}
+    >
+      <div className="relative h-[140px] w-full overflow-hidden">
+        <img src={heroChurch} alt="" className="absolute inset-0 h-full w-full object-cover opacity-90" />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              `linear-gradient(180deg, rgba(251,246,236,0.2) 0%, rgba(251,246,236,0.85) 90%),` +
+              `radial-gradient(60% 60% at 80% 20%, ${LAV}0.45), transparent 65%)`,
+          }}
+        />
+      </div>
+      <div className="px-4 pt-1 pb-4 text-right">
+        <h2 className="font-arabic-serif text-[18px] font-extrabold leading-tight" style={{ color: TEXT }}>
+          ابحث عن كنيسة أو دير
+        </h2>
+        <p className="mt-1 text-[12px] leading-relaxed" style={{ color: SUB }}>
+          اكتشف الكنائس والأديرة والمزارات القبطية
+        </p>
+
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          <StatChip emoji="⛪" label="كنيسة" value={PLACE_STATS.churches} tint={`${SKY}0.18)`} ring={`${SKY}0.4)`} color="#2f5a8a" />
+          <StatChip emoji="🏛" label="دير" value={PLACE_STATS.monasteries} tint={`${LAV}0.22)`} ring={`${LAV}0.45)`} color="#5a3e8a" />
+          <StatChip emoji="✝️" label="مزار" value={PLACE_STATS.landmarks} tint="rgba(196,179,140,0.22)" ring="rgba(196,179,140,0.45)" color="#7a5c1f" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function StatChip({ emoji, label, value, tint, ring, color }: {
+  emoji: string; label: string; value: number; tint: string; ring: string; color: string;
+}) {
+  return (
+    <div
+      className="rounded-2xl px-2 py-2 text-center backdrop-blur-md"
+      style={{ background: tint, border: `1px solid ${ring}`, boxShadow: "inset 0 1px 0 rgba(255,255,255,0.8)" }}
+    >
+      <div className="text-[18px] leading-none">{emoji}</div>
+      <div className="mt-1 text-[16px] font-extrabold" style={{ color }}>{value}</div>
+      <div className="text-[10px] font-bold" style={{ color: SUB }}>{label}</div>
+    </div>
+  );
+}
+
+/* ============================================================ */
+function SearchBar({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <div
+      className="relative rounded-2xl backdrop-blur-xl"
+      style={{
+        background: `linear-gradient(160deg, rgba(255,255,255,0.85), rgba(241,236,247,0.7))`,
+        border: `1px solid ${BORDER}`,
+        boxShadow: "0 14px 30px -20px rgba(120,110,180,0.45), inset 0 1px 0 rgba(255,255,255,0.9)",
+      }}
+    >
+      <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: SUB }} strokeWidth={2.4} />
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="ابحث: مارجرجس، الأنبا بيشوي، الرياض…"
+        className="w-full h-12 pr-11 pl-11 bg-transparent rounded-2xl text-[13px] font-bold outline-none placeholder:font-medium"
+        style={{ color: TEXT }}
+      />
+      {value ? (
+        <button
+          type="button"
+          onClick={() => onChange("")}
+          aria-label="مسح"
+          className="absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 grid place-items-center rounded-full bg-white/80 border active:scale-90"
+          style={{ borderColor: BORDER, color: SUB }}
+        >
+          <X className="h-3.5 w-3.5" strokeWidth={2.6} />
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+/* ============================================================ */
+function Tabs({
+  active, onChange,
+}: { active: (typeof TABS)[number]["key"]; onChange: (k: any) => void }) {
+  return (
+    <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4">
+      {TABS.map((t) => {
+        const on = t.key === active;
+        const Icon = t.icon;
+        return (
+          <button
+            key={t.key}
+            onClick={() => onChange(t.key)}
+            className={
+              "shrink-0 inline-flex items-center gap-1.5 h-9 px-4 rounded-full text-[12px] font-extrabold border backdrop-blur-md transition-all " +
+              (on ? "text-white" : "active:scale-95")
+            }
+            style={
+              on
+                ? { background: "linear-gradient(160deg, #5a4e8a, #3a3258)", borderColor: "transparent", boxShadow: "0 10px 22px -12px rgba(90,78,138,0.6)" }
+                : { background: "rgba(255,255,255,0.75)", borderColor: BORDER, color: TEXT }
+            }
+          >
+            <Icon className="h-3.5 w-3.5" strokeWidth={2.4} />
+            {t.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ============================================================ */
+function SectionCarousel({
+  title, icon: Icon, places,
+}: { title: string; icon: any; places: ChurchPlace[] }) {
+  return (
+    <section>
+      <div className="flex items-center gap-1.5 mb-2 px-1">
+        <Icon className="h-4 w-4" style={{ color: "#5a4e8a" }} strokeWidth={2.4} />
+        <h2 className="text-[13.5px] font-extrabold" style={{ color: TEXT }}>{title}</h2>
+      </div>
+      <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-4 px-4 pb-1 snap-x snap-mandatory">
+        {places.map((p) => <MiniCard key={p.id} p={p} />)}
+      </div>
+    </section>
+  );
+}
+
+function MiniCard({ p }: { p: ChurchPlace }) {
   const tone = KIND_TONE[p.kind];
   return (
-    <a
-      href={mapsUrlFor(p)}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="block rounded-2xl overflow-hidden bg-white/85 border border-[#efe2c4]/80 backdrop-blur-xl shadow-[0_14px_30px_-20px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.85)] active:scale-[0.99] transition-transform"
+    <Link
+      to="/church/directory/$placeId"
+      params={{ placeId: p.id }}
+      className="snap-start shrink-0 w-[180px] rounded-2xl overflow-hidden border backdrop-blur-xl active:scale-[0.98] transition-transform"
+      style={{
+        background: "linear-gradient(180deg, rgba(255,255,255,0.9), rgba(241,236,247,0.85))",
+        borderColor: BORDER,
+        boxShadow: "0 14px 30px -20px rgba(120,110,180,0.45), inset 0 1px 0 rgba(255,255,255,0.9)",
+      }}
     >
-      <div className="flex gap-3 p-2.5">
-        <div className="relative h-[88px] w-[110px] shrink-0 rounded-xl overflow-hidden border border-white/70">
-          <img src={p.image} alt={p.name} className="absolute inset-0 h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+      <div className="relative h-[100px] w-full">
+        <img src={p.image} alt={p.name} className="absolute inset-0 h-full w-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/35 to-transparent" />
+        <span
+          className="absolute top-2 right-2 inline-flex items-center gap-1 px-2 h-[20px] rounded-full text-[10px] font-extrabold backdrop-blur-md text-white"
+          style={{ background: "rgba(0,0,0,0.4)" }}
+        >
+          {p.countryFlag} {p.country}
+        </span>
+      </div>
+      <div className="p-2.5 text-right">
+        <h3 className="text-[12.5px] font-extrabold leading-tight line-clamp-2" style={{ color: TEXT }}>
+          {p.name}
+        </h3>
+        <div className="mt-1.5 flex items-center justify-between">
           <span
-            className="absolute top-1.5 right-1.5 inline-flex items-center px-2 h-[18px] rounded-full text-[9px] font-extrabold backdrop-blur-md"
+            className="inline-flex items-center px-1.5 h-[18px] rounded-full text-[9.5px] font-extrabold"
             style={{ background: tone.bg, color: tone.color, border: `1px solid ${tone.ring}` }}
           >
             {KIND_LABEL[p.kind]}
           </span>
-        </div>
-        <div className="flex-1 min-w-0 py-1">
-          <h3 className="text-[13.5px] font-extrabold text-[#2a1d10] leading-tight mb-1 line-clamp-2">
-            {p.name}
-          </h3>
-          <div className="flex items-center gap-1 text-[11.5px] text-[#6b5436] mb-2">
-            <MapPin className="h-3 w-3 text-[#c79356]" strokeWidth={2.4} />
-            <span className="truncate">{p.city}</span>
-          </div>
-          <div className="flex items-center justify-between gap-2">
-            <span className="inline-flex items-center gap-1 px-2 h-[22px] rounded-full bg-[#faeed4] border border-[#efe2c4] text-[10.5px] font-extrabold text-[#7a5a30]">
-              <Navigation className="h-3 w-3" strokeWidth={2.4} />
-              {p.distanceKm < 1
-                ? `${Math.round(p.distanceKm * 1000)} م`
-                : `${p.distanceKm.toFixed(1)} كم`}
-            </span>
-            <span className="text-[10.5px] font-extrabold text-[#8a5a1f]">فتح في الخرائط ←</span>
-          </div>
+          <span className="text-[10px] font-bold" style={{ color: SUB }}>
+            {formatDistance(p.distanceKm)}
+          </span>
         </div>
       </div>
-    </a>
+    </Link>
+  );
+}
+
+/* ============================================================ */
+function PlaceCard({ p }: { p: ChurchPlace }) {
+  const tone = KIND_TONE[p.kind];
+  return (
+    <article
+      className="rounded-[24px] overflow-hidden border backdrop-blur-xl"
+      style={{
+        background: "linear-gradient(180deg, rgba(255,255,255,0.92), rgba(241,236,247,0.85))",
+        borderColor: BORDER,
+        boxShadow: "0 20px 40px -24px rgba(120,110,180,0.5), inset 0 1px 0 rgba(255,255,255,0.95)",
+      }}
+    >
+      <div className="relative h-[150px] w-full">
+        <img src={p.image} alt={p.name} className="absolute inset-0 h-full w-full object-cover" />
+        <div
+          className="absolute inset-0"
+          style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.05) 30%, rgba(0,0,0,0.45) 100%)" }}
+        />
+        {/* Country badge */}
+        <span
+          className="absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 h-[24px] rounded-full text-[11px] font-extrabold backdrop-blur-md text-white"
+          style={{ background: "rgba(0,0,0,0.42)", border: "1px solid rgba(255,255,255,0.25)" }}
+        >
+          <span className="text-[13px] leading-none">{p.countryFlag}</span>
+          {p.country}
+        </span>
+        {/* Kind */}
+        <span
+          className="absolute top-3 left-3 inline-flex items-center px-2.5 h-[24px] rounded-full text-[10.5px] font-extrabold backdrop-blur-md"
+          style={{ background: tone.bg, color: tone.color, border: `1px solid ${tone.ring}` }}
+        >
+          {KIND_LABEL[p.kind]}
+        </span>
+        {/* Distance */}
+        <span
+          className="absolute bottom-3 right-3 inline-flex items-center gap-1 px-2.5 h-[24px] rounded-full text-[10.5px] font-extrabold text-white backdrop-blur-md"
+          style={{ background: "rgba(0,0,0,0.45)" }}
+        >
+          <MapPin className="h-3 w-3" strokeWidth={2.6} />
+          تبعد {formatDistance(p.distanceKm)}
+        </span>
+      </div>
+
+      <div className="p-3.5 text-right">
+        <h3 className="font-arabic-serif text-[15px] font-extrabold leading-tight" style={{ color: TEXT }}>
+          {p.name}
+        </h3>
+        <p className="mt-1 text-[11.5px] font-bold" style={{ color: tone.color }}>{p.type}</p>
+        <div className="mt-1 flex items-center gap-1 text-[11.5px]" style={{ color: SUB }}>
+          <MapPin className="h-3 w-3" strokeWidth={2.4} />
+          <span className="truncate">{[p.city, p.region].filter(Boolean).join(" — ")}</span>
+        </div>
+
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <a
+            href={mapsUrlFor(p)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-1.5 h-10 rounded-full text-[12px] font-extrabold text-white active:scale-[0.98] transition-transform"
+            style={{
+              background: `linear-gradient(160deg, ${SKY}0.95), #2f5a8a)`,
+              boxShadow: `0 12px 24px -14px ${SKY}0.9)`,
+            }}
+          >
+            <Navigation className="h-3.5 w-3.5" strokeWidth={2.4} />
+            الاتجاهات
+          </a>
+          <Link
+            to="/church/directory/$placeId"
+            params={{ placeId: p.id }}
+            className="inline-flex items-center justify-center gap-1.5 h-10 rounded-full text-[12px] font-extrabold active:scale-[0.98] transition-transform border"
+            style={{
+              background: `linear-gradient(160deg, rgba(255,255,255,0.95), ${LAV}0.18))`,
+              borderColor: `${LAV}0.5)`,
+              color: "#5a3e8a",
+            }}
+          >
+            <Info className="h-3.5 w-3.5" strokeWidth={2.4} />
+            التفاصيل
+          </Link>
+        </div>
+      </div>
+    </article>
   );
 }
 
 function Empty() {
   return (
-    <div className="rounded-3xl border border-[#efe2c4]/70 bg-white/70 backdrop-blur-xl p-10 text-center">
-      <div className="mx-auto h-14 w-14 rounded-2xl grid place-items-center bg-[#faeed4] border border-[#efe2c4] text-[#8a5a1f] mb-3">
+    <div
+      className="rounded-3xl border p-10 text-center backdrop-blur-xl"
+      style={{ background: "rgba(255,255,255,0.75)", borderColor: BORDER }}
+    >
+      <div
+        className="mx-auto h-14 w-14 rounded-2xl grid place-items-center mb-3"
+        style={{ background: `${LAV}0.2)`, color: "#5a3e8a", border: `1px solid ${LAV}0.4)` }}
+      >
         <Search className="h-6 w-6" strokeWidth={2} />
       </div>
-      <h3 className="text-[14px] font-extrabold text-[#3a2a18] mb-1">لا توجد نتائج</h3>
-      <p className="text-[12px] text-[#6b5436]">جرّب كلمة بحث أخرى أو غيّر التصنيف.</p>
+      <h3 className="text-[14px] font-extrabold mb-1" style={{ color: TEXT }}>لا توجد نتائج</h3>
+      <p className="text-[12px]" style={{ color: SUB }}>جرّب اسمًا، مدينة، أو دولة أخرى.</p>
     </div>
   );
 }
