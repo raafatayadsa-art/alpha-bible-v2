@@ -604,7 +604,7 @@ function HeroStack({
 
   const currentMod = ((index % total) + total) % total;
   const slots = [-2, -1, 0, 1, 2];
-  const peekPct = 78; // base offset between cards
+  const peekPct = 62; // base offset between cards — keeps side cards visibly peeking
 
   return (
     <section className="mt-5 select-none">
