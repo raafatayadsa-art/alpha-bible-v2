@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { CopticWatermark } from "@/components/coptic";
-import alphaLogoAsset from "@/assets/alpha-logo.png.asset.json";
+
 import cardChurch from "@/assets/home/card-church.jpg";
 import newsCandle from "@/assets/home/news-candle.jpg";
 import newsYouth from "@/assets/home/news-youth.jpg";
