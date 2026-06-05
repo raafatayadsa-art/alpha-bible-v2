@@ -581,6 +581,47 @@ function UpcomingMeetings() {
 }
 
 /* ============================================================ */
+/* Prayer Requests Card                                          */
+/* ============================================================ */
+
+function PrayerRequestsCard() {
+  return (
+    <Link
+      to="/church/prayer"
+      className="block active:scale-[0.98] transition-transform"
+    >
+      <Glass className="overflow-hidden">
+        <div className="flex items-center gap-4">
+          {/* Icon */}
+          <div className="shrink-0 grid h-12 w-12 place-items-center rounded-2xl border border-white/70 bg-gradient-to-br from-[#8a6ec1]/25 to-[#8a6ec1]/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_8px_18px_-10px_rgba(138,110,193,0.45)]">
+            <Sparkles className="h-6 w-6 text-[#8a6ec1]" strokeWidth={2} />
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 text-right">
+            <p className="text-[13px] font-extrabold text-[#3a2a18]">طلبات الصلاة</p>
+            <p className="mt-0.5 text-[10.5px] text-[#6a543a]">شارك في الصلاة من أجل إخوتك</p>
+            <div className="mt-2 flex items-center justify-end gap-3">
+              <span className="inline-flex items-center gap-1 rounded-full bg-[#1f8a5a]/12 px-2.5 py-1 text-[11px] font-extrabold text-[#1f8a5a] border border-[#1f8a5a]/20">
+                <Heart className="h-3 w-3" strokeWidth={2.5} />
+                24 طلب نشط
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-[#5b8fd1]/12 px-2.5 py-1 text-[11px] font-extrabold text-[#5b8fd1] border border-[#5b8fd1]/20">
+                <Users className="h-3 w-3" strokeWidth={2.5} />
+                128 صليّ
+              </span>
+            </div>
+          </div>
+
+          {/* Chevron */}
+          <ChevronLeft className="h-5 w-5 text-[#c79356] shrink-0" />
+        </div>
+      </Glass>
+    </Link>
+  );
+}
+
+/* ============================================================ */
 /* Live Broadcast                                                */
 /* ============================================================ */
 
