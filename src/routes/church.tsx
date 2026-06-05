@@ -589,40 +589,233 @@ function UpcomingMeetings() {
 /* Prayer Requests Card                                          */
 /* ============================================================ */
 
+type PrayerCardState =
+  | { kind: "loading" }
+  | { kind: "error"; message: string }
+  | { kind: "ready"; items: PrayerRequest[] };
+
+function usePrayerData(): PrayerCardState {
+  const [state, setState] = useState<PrayerCardState>({ kind: "loading" });
+  useEffect(() => {
+    let alive = true;
+    // Simulated fetch — replace with real backend when connected.
+    const id = setTimeout(() => {
+      if (!alive) return;
+      try {
+        setState({ kind: "ready", items: PRAYER_REQUESTS });
+      } catch (e: any) {
+        setState({ kind: "error", message: e?.message ?? "تعذر تحميل الطلبات" });
+      }
+    }, 350);
+    return () => {
+      alive = false;
+      clearTimeout(id);
+    };
+  }, []);
+  return state;
+}
+
 function PrayerRequestsCard() {
+  const state = usePrayerData();
+  const [tab, setTab] = useState<PrayerFilter>("all");
+
+  const all = state.kind === "ready" ? state.items : [];
+  const filtered = useMemo(
+    () => filterPrayers(all, tab).sort((a, b) => a.ageMinutes - b.ageMinutes),
+    [all, tab]
+  );
+  const latest = filtered[0];
+  const stats = useMemo(() => prayerStats(all), [all]);
+
+  return (
+    <section>
+      <SectionTitle title="طلبات الصلاة" />
+      <div className="relative overflow-hidden rounded-[28px] border border-white/70 bg-[#fbf3e1]/85 backdrop-blur-xl shadow-[0_24px_50px_-26px_rgba(60,40,16,0.55),inset_0_1px_0_rgba(255,255,255,0.85)]">
+        {/* Hero image */}
+        <Link
+          to="/church/prayer"
+          aria-label="عرض كل طلبات الصلاة"
+          className="relative block h-[150px] w-full overflow-hidden"
+        >
+          <img
+            src={cardAgpeya}
+            alt="طلبات الصلاة"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(15,10,4,0.10) 0%, rgba(15,10,4,0.45) 60%, rgba(15,10,4,0.85) 100%)," +
+                "radial-gradient(70% 60% at 70% 30%, rgba(167,139,217,0.35), transparent 65%)",
+            }}
+          />
+          <div className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-extrabold text-[#3a2a18] shadow-md">
+            <Sparkles className="h-3 w-3 text-[#8a6ec1]" strokeWidth={2.6} />
+            مجتمع الصلاة
+          </div>
+          <div className="absolute bottom-3 right-3 left-3 text-right text-white">
+            <h3 className="font-arabic-serif text-[17px] font-extrabold drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
+              صلوا بعضكم لأجل بعض
+            </h3>
+            <p className="mt-0.5 text-[11px] text-white/85">شارك إخوتك حمل الصلاة</p>
+          </div>
+        </Link>
+
+        {/* Stats row */}
+        <div className="grid grid-cols-2 gap-2 px-3.5 pt-3">
+          <div className="rounded-2xl bg-white/80 border border-white/80 px-3 py-2 text-right shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+            <p className="inline-flex items-center gap-1 text-[10px] font-bold text-[#1f8a5a]">
+              <Heart className="h-3 w-3" strokeWidth={2.6} />
+              طلبات نشطة
+            </p>
+            <p className="mt-0.5 text-[16px] font-extrabold text-[#3a2a18] leading-none">
+              {stats.active.toLocaleString("ar-EG")}
+            </p>
+          </div>
+          <div className="rounded-2xl bg-white/80 border border-white/80 px-3 py-2 text-right shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+            <p className="inline-flex items-center gap-1 text-[10px] font-bold text-[#5b8fd1]">
+              <Users className="h-3 w-3" strokeWidth={2.6} />
+              صلّوا معًا
+            </p>
+            <p className="mt-0.5 text-[16px] font-extrabold text-[#3a2a18] leading-none">
+              {stats.peoplePrayed.toLocaleString("ar-EG")}
+            </p>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="px-3.5 pt-3">
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+            {PRAYER_TABS.map((t) => {
+              const active = tab === t.key;
+              return (
+                <button
+                  key={t.key}
+                  type="button"
+                  onClick={() => setTab(t.key)}
+                  className={
+                    "shrink-0 rounded-full px-3 py-1.5 text-[11px] font-extrabold transition-all border " +
+                    (active
+                      ? "bg-gradient-to-l from-[#c79356] to-[#d6a862] text-white border-transparent shadow-[0_6px_14px_-8px_rgba(199,147,86,0.7)]"
+                      : "bg-white/70 text-[#7a5a30] border-[#efe2c4] hover:bg-white/90")
+                  }
+                >
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Preview */}
+        <div className="px-3.5 pt-3">
+          {state.kind === "loading" ? (
+            <PrayerSkeleton />
+          ) : state.kind === "error" ? (
+            <PrayerErrorState message={state.message} />
+          ) : !latest ? (
+            <PrayerEmptyState filter={tab} />
+          ) : (
+            <PrayerPreview item={latest} />
+          )}
+        </div>
+
+        {/* CTA */}
+        <div className="p-3.5 pt-3">
+          <Link
+            to="/church/prayer"
+            className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-l from-[#8a6ec1] to-[#a07ec4] px-4 py-3 text-[13px] font-extrabold text-white shadow-[0_12px_28px_-12px_rgba(138,110,193,0.7)] active:scale-[0.98] transition-transform"
+          >
+            <Heart className="h-4 w-4 fill-current" strokeWidth={0} />
+            عرض كل الطلبات
+            <ChevronLeft className="h-4 w-4" />
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PrayerPreview({ item }: { item: PrayerRequest }) {
   return (
     <Link
       to="/church/prayer"
-      className="block active:scale-[0.98] transition-transform"
+      className="block rounded-2xl bg-white/80 border border-white/80 p-3 text-right shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_6px_14px_-12px_rgba(120,80,30,0.4)] active:scale-[0.99] transition-transform"
     >
-      <Glass className="overflow-hidden">
-        <div className="flex items-center gap-4">
-          {/* Icon */}
-          <div className="shrink-0 grid h-12 w-12 place-items-center rounded-2xl border border-white/70 bg-gradient-to-br from-[#8a6ec1]/25 to-[#8a6ec1]/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_8px_18px_-10px_rgba(138,110,193,0.45)]">
-            <Sparkles className="h-6 w-6 text-[#8a6ec1]" strokeWidth={2} />
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 text-right">
-            <p className="text-[13px] font-extrabold text-[#3a2a18]">طلبات الصلاة</p>
-            <p className="mt-0.5 text-[10.5px] text-[#6a543a]">شارك في الصلاة من أجل إخوتك</p>
-            <div className="mt-2 flex items-center justify-end gap-3">
-              <span className="inline-flex items-center gap-1 rounded-full bg-[#1f8a5a]/12 px-2.5 py-1 text-[11px] font-extrabold text-[#1f8a5a] border border-[#1f8a5a]/20">
-                <Heart className="h-3 w-3" strokeWidth={2.5} />
-                24 طلب نشط
-              </span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-[#5b8fd1]/12 px-2.5 py-1 text-[11px] font-extrabold text-[#5b8fd1] border border-[#5b8fd1]/20">
-                <Users className="h-3 w-3" strokeWidth={2.5} />
-                128 صليّ
-              </span>
-            </div>
-          </div>
-
-          {/* Chevron */}
-          <ChevronLeft className="h-5 w-5 text-[#c79356] shrink-0" />
-        </div>
-      </Glass>
+      <div className="flex items-center gap-2 mb-1.5">
+        <span className="inline-flex items-center gap-1 rounded-full bg-[#8a6ec1]/15 px-2 py-0.5 text-[10px] font-extrabold text-[#6a4ab5] border border-[#8a6ec1]/25">
+          <HandHeart className="h-2.5 w-2.5" strokeWidth={2.8} />
+          {item.category}
+        </span>
+        {item.status === "urgent" ? (
+          <span className="inline-flex items-center gap-1 rounded-full bg-[#c44569]/15 px-2 py-0.5 text-[10px] font-extrabold text-[#a8344f] border border-[#c44569]/25">
+            <Flame className="h-2.5 w-2.5" strokeWidth={2.8} />
+            عاجلة
+          </span>
+        ) : item.status === "answered" ? (
+          <span className="inline-flex items-center gap-1 rounded-full bg-[#1f8a5a]/15 px-2 py-0.5 text-[10px] font-extrabold text-[#136a44] border border-[#1f8a5a]/25">
+            <ShieldCheck className="h-2.5 w-2.5" strokeWidth={2.8} />
+            تمت الصلاة
+          </span>
+        ) : null}
+        <span className="ms-auto inline-flex items-center gap-1 text-[10px] font-bold text-[#7a5a30]">
+          <Clock className="h-2.5 w-2.5" />
+          {item.time}
+        </span>
+      </div>
+      <p className="font-arabic-serif text-[13.5px] font-extrabold text-[#3a2a18] leading-tight">
+        {item.title}
+      </p>
+      <p className="mt-1 text-[11.5px] text-[#6a543a] leading-snug line-clamp-2">
+        {item.request}
+      </p>
+      <div className="mt-2 flex items-center justify-between">
+        <span className="text-[10.5px] font-bold text-[#7a5a30]">{item.name}</span>
+        <span className="inline-flex items-center gap-1 rounded-full bg-[#c79356]/12 px-2 py-0.5 text-[10px] font-extrabold text-[#8a6325] border border-[#c79356]/25">
+          <Heart className="h-2.5 w-2.5 fill-current" strokeWidth={0} />
+          {item.prayers.toLocaleString("ar-EG")} صلّوا
+        </span>
+      </div>
     </Link>
+  );
+}
+
+function PrayerSkeleton() {
+  return (
+    <div className="rounded-2xl bg-white/60 border border-white/70 p-3 animate-pulse" aria-busy="true">
+      <div className="flex gap-2 mb-2">
+        <span className="h-4 w-14 rounded-full bg-[#efe2c4]" />
+        <span className="h-4 w-10 rounded-full bg-[#efe2c4]" />
+      </div>
+      <div className="h-3.5 w-3/4 rounded bg-[#efe2c4] mb-1.5" />
+      <div className="h-3 w-full rounded bg-[#f1e6cb]" />
+      <div className="h-3 w-2/3 rounded bg-[#f1e6cb] mt-1.5" />
+    </div>
+  );
+}
+
+function PrayerEmptyState({ filter }: { filter: PrayerFilter }) {
+  const messages: Record<PrayerFilter, string> = {
+    all: "لا توجد طلبات صلاة حالياً",
+    urgent: "لا توجد طلبات عاجلة الآن",
+    answered: "لم تُختم أي طلبة بعد",
+    mine: "لم تُضف طلبة شخصية بعد",
+  };
+  return (
+    <div className="rounded-2xl bg-white/70 border border-dashed border-[#c79356]/40 p-4 text-center">
+      <Sparkles className="h-5 w-5 text-[#8a6ec1] mx-auto" strokeWidth={2.2} />
+      <p className="mt-1.5 text-[12px] font-bold text-[#7a5a30]">{messages[filter]}</p>
+    </div>
+  );
+}
+
+function PrayerErrorState({ message }: { message: string }) {
+  return (
+    <div className="rounded-2xl bg-[#fbeaec] border border-[#c44569]/30 p-3 text-center">
+      <p className="text-[11.5px] font-bold text-[#8a2540]">تعذّر تحميل الطلبات</p>
+      <p className="mt-0.5 text-[10.5px] text-[#a04060]">{message}</p>
+    </div>
   );
 }
 
