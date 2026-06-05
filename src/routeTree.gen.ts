@@ -36,6 +36,7 @@ import { Route as FeastsEventIdRouteImport } from './routes/feasts.$eventId'
 import { Route as AgpeyaSavedRouteImport } from './routes/agpeya.saved'
 import { Route as AgpeyaPrayerIdRouteImport } from './routes/agpeya.$prayerId'
 import { Route as BookChapterRouteImport } from './routes/$book.$chapter'
+import { Route as ChurchPostIdRouteImport } from './routes/church.post.$id'
 
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
@@ -172,13 +173,18 @@ const BookChapterRoute = BookChapterRouteImport.update({
   path: '/$chapter',
   getParentRoute: () => BookRoute,
 } as any)
+const ChurchPostIdRoute = ChurchPostIdRouteImport.update({
+  id: '/post/$id',
+  path: '/post/$id',
+  getParentRoute: () => ChurchRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$book': typeof BookRouteWithChildren
   '/bible': typeof BibleRoute
   '/books': typeof BooksRoute
-  '/church': typeof ChurchRoute
+  '/church': typeof ChurchRouteWithChildren
   '/diagnostics': typeof DiagnosticsRoute
   '/home': typeof HomeRoute
   '/onboarding': typeof OnboardingRoute
@@ -201,12 +207,13 @@ export interface FileRoutesByFullPath {
   '/katameros/': typeof KatamerosIndexRoute
   '/profile/': typeof ProfileIndexRoute
   '/synaxarium/': typeof SynaxariumIndexRoute
+  '/church/post/$id': typeof ChurchPostIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/bible': typeof BibleRoute
   '/books': typeof BooksRoute
-  '/church': typeof ChurchRoute
+  '/church': typeof ChurchRouteWithChildren
   '/diagnostics': typeof DiagnosticsRoute
   '/home': typeof HomeRoute
   '/onboarding': typeof OnboardingRoute
@@ -229,6 +236,7 @@ export interface FileRoutesByTo {
   '/katameros': typeof KatamerosIndexRoute
   '/profile': typeof ProfileIndexRoute
   '/synaxarium': typeof SynaxariumIndexRoute
+  '/church/post/$id': typeof ChurchPostIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -236,7 +244,7 @@ export interface FileRoutesById {
   '/$book': typeof BookRouteWithChildren
   '/bible': typeof BibleRoute
   '/books': typeof BooksRoute
-  '/church': typeof ChurchRoute
+  '/church': typeof ChurchRouteWithChildren
   '/diagnostics': typeof DiagnosticsRoute
   '/home': typeof HomeRoute
   '/onboarding': typeof OnboardingRoute
@@ -259,6 +267,7 @@ export interface FileRoutesById {
   '/katameros/': typeof KatamerosIndexRoute
   '/profile/': typeof ProfileIndexRoute
   '/synaxarium/': typeof SynaxariumIndexRoute
+  '/church/post/$id': typeof ChurchPostIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -290,6 +299,7 @@ export interface FileRouteTypes {
     | '/katameros/'
     | '/profile/'
     | '/synaxarium/'
+    | '/church/post/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -318,6 +328,7 @@ export interface FileRouteTypes {
     | '/katameros'
     | '/profile'
     | '/synaxarium'
+    | '/church/post/$id'
   id:
     | '__root__'
     | '/'
@@ -347,6 +358,7 @@ export interface FileRouteTypes {
     | '/katameros/'
     | '/profile/'
     | '/synaxarium/'
+    | '/church/post/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -354,7 +366,7 @@ export interface RootRouteChildren {
   BookRoute: typeof BookRouteWithChildren
   BibleRoute: typeof BibleRoute
   BooksRoute: typeof BooksRoute
-  ChurchRoute: typeof ChurchRoute
+  ChurchRoute: typeof ChurchRouteWithChildren
   DiagnosticsRoute: typeof DiagnosticsRoute
   HomeRoute: typeof HomeRoute
   OnboardingRoute: typeof OnboardingRoute
@@ -568,6 +580,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BookChapterRouteImport
       parentRoute: typeof BookRoute
     }
+    '/church/post/$id': {
+      id: '/church/post/$id'
+      path: '/post/$id'
+      fullPath: '/church/post/$id'
+      preLoaderRoute: typeof ChurchPostIdRouteImport
+      parentRoute: typeof ChurchRoute
+    }
   }
 }
 
@@ -583,12 +602,23 @@ const BookRouteChildren: BookRouteChildren = {
 
 const BookRouteWithChildren = BookRoute._addFileChildren(BookRouteChildren)
 
+interface ChurchRouteChildren {
+  ChurchPostIdRoute: typeof ChurchPostIdRoute
+}
+
+const ChurchRouteChildren: ChurchRouteChildren = {
+  ChurchPostIdRoute: ChurchPostIdRoute,
+}
+
+const ChurchRouteWithChildren =
+  ChurchRoute._addFileChildren(ChurchRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BookRoute: BookRouteWithChildren,
   BibleRoute: BibleRoute,
   BooksRoute: BooksRoute,
-  ChurchRoute: ChurchRoute,
+  ChurchRoute: ChurchRouteWithChildren,
   DiagnosticsRoute: DiagnosticsRoute,
   HomeRoute: HomeRoute,
   OnboardingRoute: OnboardingRoute,
