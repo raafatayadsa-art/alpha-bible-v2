@@ -906,7 +906,7 @@ function ProfileScreen() {
           <SectionTitle>إدارة الحساب</SectionTitle>
           <div className="grid grid-cols-2 gap-3">
             <GridTile to="/profile/church" icon={Church} title="كنيستي" subtitle={MEMBER.church} accent="#c98a3c" glyph="☩" />
-            <GridTile to="/profile/family" icon={Users} title="العائلة" subtitle="أفراد العائلة" accent="#a07ec4" glyph="✿" />
+            <GridTile to="/profile/service" icon={HandHeart} title="خدمتي" subtitle="خدمة الشباب" accent="#a07ec4" glyph="✿" />
             <GridTile to="/profile/appearance" icon={Palette} title="المظهر" subtitle="فاتح · داكن · النظام" accent="#d8a83a" glyph="Ⲁ" />
             <GridTile to="/profile/security" icon={Shield} title="الخصوصية والأمان" subtitle="كلمة المرور والأجهزة" accent="#3f9d6e" glyph="⛨" />
           </div>
