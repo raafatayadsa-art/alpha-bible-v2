@@ -272,47 +272,50 @@ const QUICK = [
   { key: "live", label: "البث المباشر", icon: Radio, tone: "#c44569", img: heavenlyChurch },
   { key: "meetings", label: "الاجتماعات", icon: Users, tone: "#5b8fd1", img: newsYouth },
   { key: "service", label: "الخدمة", icon: HandHeart, tone: "#1f8a5a", img: cardChildren },
-  { key: "mass", label: "جدول القداسات", icon: CalendarDays, tone: "#8a6ec1", img: newsMass },
+  { key: "prayers", label: "طلبات الصلاة", icon: Heart, tone: "#8a6ec1", img: cardAgpeya },
   { key: "library", label: "المكتبة", icon: Library, tone: "#6a4ab5", img: cardKatameros },
+  { key: "mass", label: "جدول القداسات", icon: CalendarDays, tone: "#7a4a26", img: newsMass },
 ] as const;
 
-function QuickGrid() {
-  const trackRef = useRef<HTMLDivElement | null>(null);
-  const pausedRef = useRef(false);
-  const resumeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+/* Shared horizontal auto-marquee for premium rails (RTL-aware). */
+function useAutoMarquee(
+  ref: React.RefObject<HTMLDivElement | null>,
+  opts: { speed?: number; direction?: 1 | -1; resumeMs?: number } = {}
+) {
+  const { speed = 22, direction = 1, resumeMs = 2200 } = opts;
 
   useEffect(() => {
-    const track = trackRef.current;
+    const track = ref.current;
     if (!track) return;
     let raf = 0;
     let last = performance.now();
-    const SPEED = 22; // px per second — slow & smooth
+    let paused = false;
+    let resumeTimer: ReturnType<typeof setTimeout> | null = null;
 
     const tick = (now: number) => {
       const dt = (now - last) / 1000;
       last = now;
-      if (!pausedRef.current && track.scrollWidth > track.clientWidth + 4) {
-        // RTL: scrollLeft becomes negative as you scroll towards the end.
-        track.scrollLeft -= SPEED * dt;
+      if (!paused && track.scrollWidth > track.clientWidth + 4) {
+        // RTL: scrollLeft is 0 at start, becomes negative scrolling toward end.
+        track.scrollLeft -= direction * speed * dt;
         const max = track.scrollWidth - track.clientWidth;
-        if (Math.abs(track.scrollLeft) >= max - 1) {
-          track.scrollLeft = 0;
-        }
+        if (track.scrollLeft <= -max + 1) track.scrollLeft = 0;
+        else if (track.scrollLeft >= 1) track.scrollLeft = -max;
       }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
 
     const pause = () => {
-      pausedRef.current = true;
-      if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
+      paused = true;
+      if (resumeTimer) clearTimeout(resumeTimer);
     };
     const scheduleResume = () => {
-      if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
-      resumeTimeoutRef.current = setTimeout(() => {
-        pausedRef.current = false;
+      if (resumeTimer) clearTimeout(resumeTimer);
+      resumeTimer = setTimeout(() => {
+        paused = false;
         last = performance.now();
-      }, 2200);
+      }, resumeMs);
     };
 
     track.addEventListener("pointerdown", pause);
@@ -321,14 +324,10 @@ function QuickGrid() {
     track.addEventListener("pointercancel", scheduleResume);
     track.addEventListener("touchend", scheduleResume);
     track.addEventListener("mouseleave", scheduleResume);
-    track.addEventListener("scroll", () => {
-      pause();
-      scheduleResume();
-    });
 
     return () => {
       cancelAnimationFrame(raf);
-      if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
+      if (resumeTimer) clearTimeout(resumeTimer);
       track.removeEventListener("pointerdown", pause);
       track.removeEventListener("touchstart", pause);
       track.removeEventListener("pointerup", scheduleResume);
@@ -336,7 +335,12 @@ function QuickGrid() {
       track.removeEventListener("touchend", scheduleResume);
       track.removeEventListener("mouseleave", scheduleResume);
     };
-  }, []);
+  }, [ref, speed, direction, resumeMs]);
+}
+
+function QuickGrid() {
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  useAutoMarquee(trackRef, { speed: 22, direction: 1 });
 
   return (
     <section>
@@ -356,24 +360,20 @@ function QuickGrid() {
               type="button"
               className="group shrink-0 w-[124px] h-[150px] relative rounded-3xl overflow-hidden border border-white/70 text-right active:scale-[0.96] transition-transform shadow-[0_18px_36px_-22px_rgba(120,80,30,0.55),inset_0_1px_0_rgba(255,255,255,0.85)]"
             >
-              {/* Image */}
               <img
                 src={q.img}
                 alt=""
                 className="absolute inset-0 h-full w-full object-cover"
                 loading="lazy"
               />
-              {/* Tone wash + bottom fade */}
               <div
                 className="absolute inset-0"
                 style={{
                   background: `linear-gradient(180deg, ${q.tone}10 0%, rgba(15,10,4,0.15) 40%, rgba(15,10,4,0.85) 100%)`,
                 }}
               />
-              {/* Top gold hairline */}
               <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#e7c97a]/80 to-transparent" />
 
-              {/* 3D glass icon chip */}
               <div
                 className="absolute top-2.5 right-2.5 grid h-10 w-10 place-items-center rounded-2xl border border-white/60 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_10px_18px_-10px_rgba(0,0,0,0.45)]"
                 style={{
@@ -384,7 +384,6 @@ function QuickGrid() {
                 <q.icon className="h-5 w-5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.35)]" strokeWidth={2.3} />
               </div>
 
-              {/* Label */}
               <div className="absolute bottom-2.5 right-2.5 left-2.5">
                 <p className="font-arabic-serif text-[12.5px] font-extrabold text-white leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.65)] [word-break:keep-all]">
                   {q.label}
