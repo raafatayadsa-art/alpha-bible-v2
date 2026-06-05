@@ -337,6 +337,9 @@ function HomeScreen() {
       accent: "#a82747",
       to: "/prayer-requests",
     },
+  ];
+
+
 
 
   type PrimaryCard = { key: string; title: string; sub: string; image: string; to: string; accent: string; glyph: "Ⲁ" | "Ⲱ" };
