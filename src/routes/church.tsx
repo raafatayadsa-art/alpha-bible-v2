@@ -861,22 +861,9 @@ function ChurchMapCard() {
   );
 }
 
-type Contact = {
-  id: string;
-  name: string;
-  role: string;
-  roleType: "priest" | "servant" | "admin";
-  phone: string;
-  whatsapp: string;
-  initials: string;
-};
+type Contact = ChurchContact;
 
-const CONTACTS: Contact[] = [
-  { id: "p1", name: "القمص داود عبد الملاك", role: "الكاهن المسؤول", roleType: "priest", phone: "+201001234567", whatsapp: "201001234567", initials: "✚" },
-  { id: "s1", name: "أمين الخدمة - مايكل عادل", role: "خادم الشباب", roleType: "servant", phone: "+201112345678", whatsapp: "201112345678", initials: "م" },
-  { id: "s2", name: "أمينة خدمة البنات - مارينا", role: "خادمة البنات", roleType: "servant", phone: "+201223456789", whatsapp: "201223456789", initials: "م" },
-  { id: "a1", name: "إدارة الكنيسة", role: "السكرتارية", roleType: "admin", phone: "+20223456789", whatsapp: "20223456789", initials: "✱" },
-];
+const CONTACTS: Contact[] = CHURCH_CONTACTS;
 
 const ROLE_TONE: Record<Contact["roleType"], { bg: string; icon: any; tag: string }> = {
   priest: { bg: "linear-gradient(160deg, #7a4a26, #3a2a18)", icon: Crown, tag: "#c79356" },
