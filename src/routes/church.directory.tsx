@@ -8,7 +8,7 @@ import {
   CHURCH_PLACES, KIND_LABEL, PLACE_STATS, mapsUrlFor, getRecentPlaceIds,
   formatDistance, findPlace, type ChurchPlace, type PlaceKind,
 } from "@/data/church-places";
-import heroChurch from "@/assets/home/heavenly-church.png";
+import heroChurch from "@/assets/home/hero-church-premium.jpg";
 
 export const Route = createFileRoute("/church/directory")({
   ssr: false,
@@ -182,13 +182,13 @@ function HeroCard() {
       style={{ borderColor: BORDER, background: `linear-gradient(160deg, ${IVORY}, #efeaf6)` }}
     >
       <div className="relative h-[140px] w-full overflow-hidden">
-        <img src={heroChurch} alt="" className="absolute inset-0 h-full w-full object-cover opacity-90" />
+        <img src={heroChurch} alt="" className="absolute inset-0 h-full w-full object-cover" />
         <div
           className="absolute inset-0"
           style={{
             background:
-              `linear-gradient(180deg, rgba(251,246,236,0.2) 0%, rgba(251,246,236,0.85) 90%),` +
-              `radial-gradient(60% 60% at 80% 20%, ${LAV}0.45), transparent 65%)`,
+              `linear-gradient(180deg, rgba(251,246,236,0.15) 0%, rgba(251,246,236,0.75) 80%, rgba(251,246,236,0.95) 100%),` +
+              `radial-gradient(50% 50% at 70% 30%, ${LAV}0.35), transparent 65%)`,
           }}
         />
       </div>
@@ -201,26 +201,60 @@ function HeroCard() {
         </p>
 
         <div className="mt-3 grid grid-cols-3 gap-2">
-          <StatChip emoji="⛪" label="كنيسة" value={PLACE_STATS.churches} tint={`${SKY}0.18)`} ring={`${SKY}0.4)`} color="#2f5a8a" />
-          <StatChip emoji="🏛" label="دير" value={PLACE_STATS.monasteries} tint={`${LAV}0.22)`} ring={`${LAV}0.45)`} color="#5a3e8a" />
-          <StatChip emoji="✝️" label="مزار" value={PLACE_STATS.landmarks} tint="rgba(196,179,140,0.22)" ring="rgba(196,179,140,0.45)" color="#7a5c1f" />
+          <StatChip icon={Church} label="كنيسة" value={PLACE_STATS.churches} tint={`${SKY}0.20)`} ring={`${SKY}0.42)`} color="#2f5a8a" shadowColor="rgba(140,180,220,0.30)" />
+          <StatChip icon={Mountain} label="دير" value={PLACE_STATS.monasteries} tint={`${LAV}0.24)`} ring={`${LAV}0.48)`} color="#5a3e8a" shadowColor="rgba(170,150,210,0.30)" />
+          <StatChip icon={Landmark} label="مزار" value={PLACE_STATS.landmarks} tint="rgba(196,179,140,0.24)" ring="rgba(196,179,140,0.48)" color="#7a5c1f" shadowColor="rgba(196,179,140,0.30)" />
         </div>
       </div>
     </section>
   );
 }
 
-function StatChip({ emoji, label, value, tint, ring, color }: {
-  emoji: string; label: string; value: number; tint: string; ring: string; color: string;
+function StatChip({ icon: Icon, label, value, tint, ring, color, shadowColor }: {
+  icon: any; label: string; value: number; tint: string; ring: string; color: string; shadowColor: string;
 }) {
   return (
     <div
-      className="rounded-2xl px-2 py-2 text-center backdrop-blur-md"
-      style={{ background: tint, border: `1px solid ${ring}`, boxShadow: "inset 0 1px 0 rgba(255,255,255,0.8)" }}
+      className="relative rounded-[22px] px-2 py-3 text-center overflow-hidden"
+      style={{
+        background: `linear-gradient(160deg, rgba(255,255,255,0.55) 0%, ${tint} 100%)`,
+        border: `1px solid ${ring}`,
+        boxShadow: `0 12px 32px -12px ${shadowColor}, 0 4px 8px -4px ${shadowColor}, inset 0 1px 1px rgba(255,255,255,0.85), inset 0 -1px 1px rgba(255,255,255,0.3)`,
+      }}
     >
-      <div className="text-[18px] leading-none">{emoji}</div>
-      <div className="mt-1 text-[16px] font-extrabold" style={{ color }}>{value}</div>
-      <div className="text-[10px] font-bold" style={{ color: SUB }}>{label}</div>
+      {/* Soft top highlight */}
+      <div 
+        className="pointer-events-none absolute inset-x-4 top-[1px] h-[1px] rounded-full" 
+        style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.95), transparent)' }} 
+      />
+      
+      {/* 3D depth: subtle inner bottom shadow */}
+      <div 
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-[45%] rounded-b-[22px]" 
+        style={{ background: `linear-gradient(180deg, transparent, ${shadowColor})`, opacity: 0.06 }} 
+      />
+      
+      {/* Icon container with glass */}
+      <div 
+        className="relative mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-[14px]"
+        style={{ 
+          background: `linear-gradient(135deg, rgba(255,255,255,0.6), ${tint})`,
+          border: `1px solid ${ring}`,
+          boxShadow: `0 4px 12px -6px ${shadowColor}, inset 0 1px 0 rgba(255,255,255,0.8)`,
+        }}
+      >
+        <Icon className="h-[18px] w-[18px]" style={{ color }} strokeWidth={2} />
+      </div>
+      
+      {/* Large number */}
+      <div className="text-[24px] font-extrabold leading-none tracking-tight" style={{ color }}>
+        {value}
+      </div>
+      
+      {/* Label */}
+      <div className="mt-1.5 text-[11px] font-bold" style={{ color: SUB }}>
+        {label}
+      </div>
     </div>
   );
 }
