@@ -187,6 +187,19 @@ function buildPost(cat: CategoryDef, f: FormState): ChurchPost | null {
   const trim = (s: string) => s.trim();
   const has = (s: string) => trim(s).length > 0;
 
+  const userExpiry = fromDatetimeLocal(f.expiresAt);
+  const finalize = (base: ChurchPost): ChurchPost => {
+    const exp =
+      userExpiry !== null
+        ? userExpiry
+        : computeDefaultExpiry(base.type, {
+            date: f.date,
+            time: f.time,
+            returnDate: f.returnDate,
+          });
+    return { ...base, expiresAt: exp };
+  };
+
   switch (cat.key) {
     case "news":
     case "announcement":
