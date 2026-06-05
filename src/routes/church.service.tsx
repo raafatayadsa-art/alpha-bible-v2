@@ -310,13 +310,109 @@ function UpcomingActivities() {
   );
 }
 
+/* ----------------------------- Management toolbar -------------------------- */
+type Action = { key: string; label: string; icon: any; tone: string };
+
+const PRIEST_ACTIONS: Action[] = [
+  { key: "new-service",  label: "خدمة جديدة",   icon: Plus,         tone: "#7a4a26" },
+  { key: "new-activity", label: "نشاط جديد",    icon: Sparkles,     tone: "#b8893a" },
+];
+const LEADER_ACTIONS: Action[] = [
+  { key: "new-meeting",      label: "اجتماع جديد", icon: CalendarPlus,  tone: "#5b8fd1" },
+  { key: "new-announcement", label: "إعلان جديد",  icon: MegaphoneIcon, tone: "#a8669a" },
+];
+
+function ActionButton({ a }: { a: Action }) {
+  return (
+    <button
+      type="button"
+      className="inline-flex items-center gap-1.5 rounded-full border border-white/70 bg-white/85 px-3 py-2 text-[12px] font-extrabold text-[#3a2a18] backdrop-blur-md shadow-[0_10px_24px_-14px_rgba(120,80,30,0.5),inset_0_1px_0_rgba(255,255,255,0.9)] active:scale-95 transition-transform"
+    >
+      <span
+        className="grid h-6 w-6 place-items-center rounded-full text-white"
+        style={{ background: `linear-gradient(160deg, ${a.tone}, ${a.tone}bb)` }}
+      >
+        <a.icon className="h-3.5 w-3.5" strokeWidth={2.5} />
+      </span>
+      {a.label}
+    </button>
+  );
+}
+
+const ROLE_LABEL: Record<ChurchRole, string> = {
+  priest: "كاهن",
+  leader: "أمين خدمة",
+  servant: "خادم",
+  admin: "مشرف",
+  member: "مخدوم",
+};
+
+function RoleSwitcher({ role }: { role: ChurchRole }) {
+  const roles: ChurchRole[] = ["priest", "leader", "servant", "member"];
+  return (
+    <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+      <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-white/70 border border-white/70 px-2 py-1 text-[10px] font-extrabold text-[#6a543a]">
+        <ShieldCheck className="h-3 w-3 text-[#b8893a]" strokeWidth={2.6} />
+        دوري
+      </span>
+      {roles.map((r) => {
+        const active = r === role;
+        return (
+          <button
+            key={r}
+            type="button"
+            onClick={() => setRole(r)}
+            className={`shrink-0 rounded-full px-2.5 py-1 text-[10.5px] font-extrabold border transition-colors ${
+              active
+                ? "bg-[#3a2a18] text-[#f4ead8] border-[#3a2a18]"
+                : "bg-white/70 text-[#3a2a18] border-white/70"
+            }`}
+          >
+            {ROLE_LABEL[r]}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function ManagementBar({ role }: { role: ChurchRole }) {
+  const isPriest = role === "priest" || role === "admin";
+  const isLeader = role === "leader" || isPriest;
+  const actions: Action[] = [
+    ...(isPriest ? PRIEST_ACTIONS : []),
+    ...(isLeader ? LEADER_ACTIONS : []),
+  ];
+  if (actions.length === 0) return null;
+  return (
+    <section
+      className="rounded-3xl border border-white/70 p-3 shadow-[0_18px_36px_-24px_rgba(120,80,30,0.5),inset_0_1px_0_rgba(255,255,255,0.85)]"
+      style={{
+        background:
+          "linear-gradient(180deg, rgba(251,243,225,0.95) 0%, rgba(243,228,250,0.92) 100%)",
+      }}
+    >
+      <div className="mb-2 flex items-center justify-between">
+        <h3 className="text-[13px] font-extrabold text-[#3a2a18]">إدارة الخدمة</h3>
+        <span className="text-[10.5px] font-bold text-[#b8893a]">{ROLE_LABEL[role]}</span>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {actions.map((a) => <ActionButton key={a.key} a={a} />)}
+      </div>
+    </section>
+  );
+}
+
 /* --------------------------------- Screen ---------------------------------- */
 function ServiceHub() {
+  const role = useChurchRole();
   return (
     <div dir="rtl" className="min-h-screen bg-[#f4ead8]">
       <Header />
       <main className="px-4 pb-[max(env(safe-area-inset-bottom),16px)] space-y-5">
         <Hero />
+        <RoleSwitcher role={role} />
+        <ManagementBar role={role} />
         <CategoriesGrid />
         <UpcomingActivities />
       </main>
