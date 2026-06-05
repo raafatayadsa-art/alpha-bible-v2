@@ -4,6 +4,7 @@ import {
   ArrowRight, Phone, MessageCircle, MapPin, ShieldCheck, Users,
   HandHeart, Newspaper, Radio, CalendarDays, BookOpen, Library, Heart,
   Play, ChevronLeft, Clock, Sparkles, Bell, Flame, Pin, Plus,
+  Navigation, Share2, Crown, UserCog, Send,
 } from "lucide-react";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { CopticWatermark } from "@/components/coptic";
@@ -775,6 +776,223 @@ function LiveBroadcast() {
 }
 
 /* ============================================================ */
+/* Church Utilities — Map, Contacts, Messages                   */
+/* ============================================================ */
+
+const CHURCH_ADDRESS = "كنيسة الشهيد مار جرجس، مدينة نصر، القاهرة";
+const CHURCH_COORDS = { lat: 30.0626, lng: 31.3470 };
+const MAPS_URL = `https://www.google.com/maps/search/?api=1&query=${CHURCH_COORDS.lat},${CHURCH_COORDS.lng}`;
+
+function ChurchMapCard() {
+  const handleOpenMaps = () => window.open(MAPS_URL, "_blank", "noopener,noreferrer");
+  const handleShare = async () => {
+    const text = `${CHURCH_ADDRESS}\n${MAPS_URL}`;
+    if (navigator.share) {
+      try { await navigator.share({ title: "موقع الكنيسة", text, url: MAPS_URL }); } catch {}
+    } else if (navigator.clipboard) {
+      await navigator.clipboard.writeText(text);
+    }
+  };
+
+  const staticMap = `https://staticmap.openstreetmap.de/staticmap.php?center=${CHURCH_COORDS.lat},${CHURCH_COORDS.lng}&zoom=15&size=600x260&markers=${CHURCH_COORDS.lat},${CHURCH_COORDS.lng},red-pushpin`;
+
+  return (
+    <section>
+      <SectionTitle title="موقع الكنيسة" />
+      <div className="relative overflow-hidden rounded-[28px] border border-white/70 bg-[#fbf3e1]/85 backdrop-blur-xl shadow-[0_20px_44px_-26px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.85)]">
+        <div className="relative h-[150px] w-full overflow-hidden">
+          <img
+            src={staticMap}
+            alt="خريطة الكنيسة"
+            className="absolute inset-0 h-full w-full object-cover"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+          />
+          <div
+            aria-hidden
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(244,234,216,0.0) 30%, rgba(244,234,216,0.85) 100%), " +
+                "radial-gradient(60% 70% at 50% 40%, rgba(167,139,217,0.18), transparent 70%)",
+            }}
+          />
+          {/* Pin */}
+          <div className="absolute inset-0 grid place-items-center">
+            <div className="relative">
+              <div className="absolute -inset-3 rounded-full bg-[#c44569]/30 animate-ping" />
+              <div className="relative grid h-11 w-11 place-items-center rounded-full bg-gradient-to-br from-[#e0577f] to-[#c44569] text-white border-2 border-white shadow-[0_10px_24px_-8px_rgba(196,69,105,0.7)]">
+                <MapPin className="h-5 w-5" strokeWidth={2.6} />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="p-3.5">
+          <div className="flex items-start gap-2 mb-3">
+            <MapPin className="h-4 w-4 text-[#c79356] mt-0.5 shrink-0" />
+            <div className="flex-1 text-right">
+              <p className="font-arabic-serif text-[14px] font-extrabold text-[#3a2a18] leading-tight">
+                كنيسة الشهيد مار جرجس
+              </p>
+              <p className="mt-0.5 text-[11px] text-[#7a5a30]">إيبارشية شرق القاهرة · مدينة نصر</p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={handleOpenMaps}
+              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-l from-[#c79356] to-[#d6a862] px-3 py-2.5 text-[12px] font-extrabold text-white shadow-[0_10px_24px_-12px_rgba(199,147,86,0.7)] active:scale-[0.98] transition-transform"
+            >
+              <Navigation className="h-3.5 w-3.5" />
+              فتح في الخرائط
+            </button>
+            <button
+              type="button"
+              onClick={handleShare}
+              className="inline-flex items-center justify-center gap-1.5 rounded-full bg-white/80 border border-[#efe2c4] px-4 py-2.5 text-[12px] font-extrabold text-[#3a2a18] active:scale-[0.98] transition-transform"
+            >
+              <Share2 className="h-3.5 w-3.5" />
+              مشاركة
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+type Contact = {
+  id: string;
+  name: string;
+  role: string;
+  roleType: "priest" | "servant" | "admin";
+  phone: string;
+  whatsapp: string;
+  initials: string;
+};
+
+const CONTACTS: Contact[] = [
+  { id: "p1", name: "القمص داود عبد الملاك", role: "الكاهن المسؤول", roleType: "priest", phone: "+201001234567", whatsapp: "201001234567", initials: "✚" },
+  { id: "s1", name: "أمين الخدمة - مايكل عادل", role: "خادم الشباب", roleType: "servant", phone: "+201112345678", whatsapp: "201112345678", initials: "م" },
+  { id: "s2", name: "أمينة خدمة البنات - مارينا", role: "خادمة البنات", roleType: "servant", phone: "+201223456789", whatsapp: "201223456789", initials: "م" },
+  { id: "a1", name: "إدارة الكنيسة", role: "السكرتارية", roleType: "admin", phone: "+20223456789", whatsapp: "20223456789", initials: "✱" },
+];
+
+const ROLE_TONE: Record<Contact["roleType"], { bg: string; icon: any; tag: string }> = {
+  priest: { bg: "linear-gradient(160deg, #7a4a26, #3a2a18)", icon: Crown, tag: "#c79356" },
+  servant: { bg: "linear-gradient(160deg, #6a4ab5, #4a2e8e)", icon: HandHeart, tag: "#8a6ec1" },
+  admin: { bg: "linear-gradient(160deg, #1f8a5a, #136a44)", icon: UserCog, tag: "#1f8a5a" },
+};
+
+function ContactRow({ contact }: { contact: Contact }) {
+  const tone = ROLE_TONE[contact.roleType];
+  const RoleIcon = tone.icon;
+  return (
+    <div className="flex items-center gap-3 rounded-2xl bg-white/70 border border-white/80 p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_6px_14px_-12px_rgba(120,80,30,0.4)]">
+      <div
+        className="relative h-11 w-11 shrink-0 rounded-full grid place-items-center text-[#f3e6c4] font-arabic-serif text-[16px] font-extrabold border-2 border-white shadow-[0_6px_14px_-6px_rgba(60,40,16,0.5)]"
+        style={{ background: tone.bg }}
+      >
+        {contact.initials}
+        <span
+          className="absolute -bottom-0.5 -left-0.5 grid h-4 w-4 place-items-center rounded-full bg-white border border-white"
+          style={{ color: tone.tag }}
+        >
+          <RoleIcon className="h-2.5 w-2.5" strokeWidth={2.8} />
+        </span>
+      </div>
+      <div className="flex-1 min-w-0 text-right">
+        <p className="font-arabic-serif text-[13.5px] font-extrabold text-[#3a2a18] leading-tight truncate">
+          {contact.name}
+        </p>
+        <p className="mt-0.5 text-[10.5px] text-[#7a5a30] leading-none">{contact.role}</p>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <a
+          href={`tel:${contact.phone}`}
+          aria-label={`اتصال بـ ${contact.name}`}
+          className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-[#5b8fd1] to-[#3a6db0] text-white shadow-[0_8px_18px_-10px_rgba(91,143,209,0.7)] active:scale-90 transition-transform"
+        >
+          <Phone className="h-4 w-4" strokeWidth={2.4} />
+        </a>
+        <a
+          href={`https://wa.me/${contact.whatsapp}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`واتساب ${contact.name}`}
+          className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-[#25d366] to-[#128c44] text-white shadow-[0_8px_18px_-10px_rgba(37,211,102,0.7)] active:scale-90 transition-transform"
+        >
+          <MessageCircle className="h-4 w-4 fill-current" strokeWidth={0} />
+        </a>
+      </div>
+    </div>
+  );
+}
+
+function ContactsCard() {
+  return (
+    <section>
+      <SectionTitle title="جهات الاتصال" />
+      <div className="rounded-[28px] border border-white/70 bg-[#fbf3e1]/85 backdrop-blur-xl p-3 shadow-[0_20px_44px_-26px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.85)] space-y-2">
+        {CONTACTS.map((c) => <ContactRow key={c.id} contact={c} />)}
+      </div>
+    </section>
+  );
+}
+
+function MessageRow({ contact, unread }: { contact: Contact; unread?: number }) {
+  const tone = ROLE_TONE[contact.roleType];
+  return (
+    <button
+      type="button"
+      className="w-full flex items-center gap-3 rounded-2xl bg-white/70 border border-white/80 p-2.5 text-right active:scale-[0.98] transition-transform shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_6px_14px_-12px_rgba(120,80,30,0.4)]"
+    >
+      <div
+        className="h-11 w-11 shrink-0 rounded-full grid place-items-center text-[#f3e6c4] font-arabic-serif text-[16px] font-extrabold border-2 border-white shadow-[0_6px_14px_-6px_rgba(60,40,16,0.5)]"
+        style={{ background: tone.bg }}
+      >
+        {contact.initials}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between gap-2">
+          <p className="font-arabic-serif text-[13.5px] font-extrabold text-[#3a2a18] leading-tight truncate">
+            {contact.name}
+          </p>
+          {unread ? (
+            <span className="inline-grid h-5 min-w-5 px-1.5 place-items-center rounded-full bg-[#c44569] text-white text-[10px] font-extrabold">
+              {unread}
+            </span>
+          ) : null}
+        </div>
+        <p className="mt-0.5 text-[10.5px] text-[#7a5a30] truncate">اضغط لبدء محادثة خاصة</p>
+      </div>
+      <Send className="h-4 w-4 text-[#c79356] -scale-x-100 shrink-0" strokeWidth={2.4} />
+    </button>
+  );
+}
+
+function MessagesCard() {
+  const leaders = CONTACTS.filter((c) => c.roleType !== "admin");
+  return (
+    <section>
+      <SectionTitle
+        title="مراسلة قادة الكنيسة"
+        action={
+          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#7a5a30]">
+            <ShieldCheck className="h-3 w-3" />
+            بإذن الكاهن
+          </span>
+        }
+      />
+      <div className="rounded-[28px] border border-white/70 bg-[#fbf3e1]/85 backdrop-blur-xl p-3 shadow-[0_20px_44px_-26px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.85)] space-y-2">
+        {leaders.map((c, i) => (
+          <MessageRow key={c.id} contact={c} unread={i === 0 ? 2 : undefined} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ============================================================ */
 /* Screen                                                        */
 /* ============================================================ */
 
@@ -805,6 +1023,9 @@ function ChurchScreen() {
         <PrayerRequestsCard />
         <UpcomingMeetings />
         <LiveBroadcast />
+        <ChurchMapCard />
+        <ContactsCard />
+        <MessagesCard />
       </div>
 
       <BottomDock />
