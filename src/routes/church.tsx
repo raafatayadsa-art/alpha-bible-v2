@@ -1018,18 +1018,7 @@ function ContactRow({ contact }: { contact: Contact }) {
   );
 }
 
-function ContactsCard() {
-  return (
-    <section>
-      <SectionTitle title="جهات الاتصال" />
-      <div className="rounded-[28px] border border-white/70 bg-[#fbf3e1]/85 backdrop-blur-xl p-3 shadow-[0_20px_44px_-26px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.85)] space-y-2">
-        {CONTACTS.map((c) => <ContactRow key={c.id} contact={c} />)}
-      </div>
-    </section>
-  );
-}
-
-function MessageRow({ contact, unread }: { contact: Contact; unread?: number }) {
+function MessageRow({ contact, unread, onClose }: { contact: Contact; unread?: number; onClose?: () => void }) {
   const tone = ROLE_TONE[contact.roleType];
   const allowed = contact.messagingAllowed;
   const className =
@@ -1085,6 +1074,7 @@ function MessageRow({ contact, unread }: { contact: Contact; unread?: number }) 
     <Link
       to="/church/chat/$contactId"
       params={{ contactId: contact.id }}
+      onClick={onClose}
       className={className}
     >
       {inner}
@@ -1092,27 +1082,80 @@ function MessageRow({ contact, unread }: { contact: Contact; unread?: number }) 
   );
 }
 
-function MessagesCard() {
-  const leaders = CONTACTS.filter((c) => c.roleType !== "admin");
+/* ============================================================ */
+/* Hero Card Popups: Contacts & Messages                         */
+/* ============================================================ */
+
+function PopupShell({
+  title, subtitle, onClose, children,
+}: { title: string; subtitle?: string; onClose: () => void; children: React.ReactNode }) {
   return (
-    <section>
-      <SectionTitle
-        title="مراسلة قادة الكنيسة"
-        action={
-          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#7a5a30]">
-            <ShieldCheck className="h-3 w-3" />
-            بإذن الكاهن
-          </span>
-        }
-      />
-      <div className="rounded-[28px] border border-white/70 bg-[#fbf3e1]/85 backdrop-blur-xl p-3 shadow-[0_20px_44px_-26px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.85)] space-y-2">
-        {leaders.map((c, i) => (
-          <MessageRow key={c.id} contact={c} unread={i === 0 ? 2 : undefined} />
-        ))}
+    <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-end sm:items-center justify-center px-3 pb-[max(env(safe-area-inset-bottom,0px),12px)]">
+      <button type="button" aria-label="إغلاق" onClick={onClose} className="absolute inset-0 bg-[#1a0f04]/55 backdrop-blur-sm" />
+      <div className="relative w-full max-w-[420px] rounded-[28px] border border-white/75 bg-[#fbf3e1]/95 backdrop-blur-2xl shadow-[0_30px_60px_-20px_rgba(60,40,16,0.6)] p-3.5 text-right max-h-[80vh] overflow-y-auto no-scrollbar">
+        <div className="flex items-center justify-between gap-2 mb-2.5">
+          <div className="min-w-0">
+            <h3 className="font-arabic-serif text-[15.5px] font-extrabold text-[#3a2a18] leading-tight">{title}</h3>
+            {subtitle ? (
+              <p className="mt-0.5 text-[10.5px] text-[#7a5a30] inline-flex items-center gap-1">
+                <ShieldCheck className="h-3 w-3 text-[#1f8a5a]" /> {subtitle}
+              </p>
+            ) : null}
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="إغلاق"
+            className="grid h-8 w-8 place-items-center rounded-full bg-white/90 border border-[#efe2c4] text-[#7a5a30] active:scale-90"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        {children}
       </div>
-    </section>
+    </div>
   );
 }
+
+function PopupGroup({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="mb-2">
+      <p className="px-1 mb-1 text-[10.5px] font-extrabold tracking-wide text-[#b8893a]">{label}</p>
+      <div className="space-y-1.5">{children}</div>
+    </div>
+  );
+}
+
+function groupedContacts() {
+  return {
+    priests: CONTACTS.filter((c) => c.roleType === "priest"),
+    servants: CONTACTS.filter((c) => c.roleType === "servant"),
+    admins: CONTACTS.filter((c) => c.roleType === "admin"),
+  };
+}
+
+function ContactsPopup({ onClose }: { onClose: () => void }) {
+  const { priests, servants, admins } = groupedContacts();
+  return (
+    <PopupShell title="تواصل مع الكنيسة" subtitle="اتصال مباشر أو واتساب" onClose={onClose}>
+      {priests.length > 0 && <PopupGroup label="الكاهن">{priests.map((c) => <ContactRow key={c.id} contact={c} />)}</PopupGroup>}
+      {servants.length > 0 && <PopupGroup label="الخدام">{servants.map((c) => <ContactRow key={c.id} contact={c} />)}</PopupGroup>}
+      {admins.length > 0 && <PopupGroup label="المسؤولون">{admins.map((c) => <ContactRow key={c.id} contact={c} />)}</PopupGroup>}
+    </PopupShell>
+  );
+}
+
+function MessagesPopup({ onClose }: { onClose: () => void }) {
+  const { priests, servants, admins } = groupedContacts();
+  return (
+    <PopupShell title="مراسلة قادة الكنيسة" subtitle="بإذن الكاهن" onClose={onClose}>
+      {priests.length > 0 && <PopupGroup label="الكاهن">{priests.map((c) => <MessageRow key={c.id} contact={c} onClose={onClose} />)}</PopupGroup>}
+      {servants.length > 0 && <PopupGroup label="الخدام">{servants.map((c, i) => <MessageRow key={c.id} contact={c} unread={i === 0 ? 2 : undefined} onClose={onClose} />)}</PopupGroup>}
+      {admins.length > 0 && <PopupGroup label="المسؤولون">{admins.map((c) => <MessageRow key={c.id} contact={c} onClose={onClose} />)}</PopupGroup>}
+    </PopupShell>
+  );
+}
+
 
 /* ============================================================ */
 /* Screen                                                        */
