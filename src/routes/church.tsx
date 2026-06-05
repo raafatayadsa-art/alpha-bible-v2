@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useRef } from "react";
 import {
   ArrowRight, Phone, MessageCircle, MapPin, ShieldCheck, Users,
   HandHeart, Newspaper, Radio, CalendarDays, BookOpen, Library, Heart,
@@ -12,6 +13,9 @@ import newsCandle from "@/assets/home/news-candle.jpg";
 import newsYouth from "@/assets/home/news-youth.jpg";
 import newsMass from "@/assets/home/news-mass.jpg";
 import heavenlyChurch from "@/assets/home/heavenly-church.png";
+import cardAgpeya from "@/assets/home/card-agpeya.jpg";
+import cardKatameros from "@/assets/home/card-katameros.jpg";
+import cardChildren from "@/assets/home/card-children.jpg";
 
 export const Route = createFileRoute("/church")({
   ssr: false,
@@ -245,41 +249,132 @@ function StatTile({ icon: Icon, value, label, tone }: { icon: any; value: string
 /* ============================================================ */
 
 const QUICK = [
-  { key: "news", label: "الأخبار", icon: Newspaper, tone: "#c98a3c" },
-  { key: "live", label: "البث المباشر", icon: Radio, tone: "#c44569" },
-  { key: "meetings", label: "الاجتماعات", icon: Users, tone: "#5b8fd1" },
-  { key: "service", label: "الخدمة", icon: HandHeart, tone: "#1f8a5a" },
-  { key: "mass", label: "جدول القداسات", icon: CalendarDays, tone: "#8a6ec1" },
-  { key: "prayer", label: "طلبات الصلاة", icon: Heart, tone: "#a85450" },
-  { key: "library", label: "المكتبة", icon: Library, tone: "#6a4ab5" },
-  { key: "bible", label: "الكتاب المقدس", icon: BookOpen, tone: "#b8893a" },
+  { key: "news", label: "الأخبار", icon: Newspaper, tone: "#c98a3c", img: newsCandle },
+  { key: "live", label: "البث المباشر", icon: Radio, tone: "#c44569", img: heavenlyChurch },
+  { key: "meetings", label: "الاجتماعات", icon: Users, tone: "#5b8fd1", img: newsYouth },
+  { key: "service", label: "الخدمة", icon: HandHeart, tone: "#1f8a5a", img: cardChildren },
+  { key: "mass", label: "جدول القداسات", icon: CalendarDays, tone: "#8a6ec1", img: newsMass },
+  { key: "prayer", label: "طلبات الصلاة", icon: Heart, tone: "#a85450", img: cardAgpeya },
+  { key: "library", label: "المكتبة", icon: Library, tone: "#6a4ab5", img: cardKatameros },
 ] as const;
 
 function QuickGrid() {
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  const pausedRef = useRef(false);
+  const resumeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    let raf = 0;
+    let last = performance.now();
+    const SPEED = 22; // px per second — slow & smooth
+
+    const tick = (now: number) => {
+      const dt = (now - last) / 1000;
+      last = now;
+      if (!pausedRef.current && track.scrollWidth > track.clientWidth + 4) {
+        // RTL: scrollLeft becomes negative as you scroll towards the end.
+        track.scrollLeft -= SPEED * dt;
+        const max = track.scrollWidth - track.clientWidth;
+        if (Math.abs(track.scrollLeft) >= max - 1) {
+          track.scrollLeft = 0;
+        }
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+
+    const pause = () => {
+      pausedRef.current = true;
+      if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
+    };
+    const scheduleResume = () => {
+      if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
+      resumeTimeoutRef.current = setTimeout(() => {
+        pausedRef.current = false;
+        last = performance.now();
+      }, 2200);
+    };
+
+    track.addEventListener("pointerdown", pause);
+    track.addEventListener("touchstart", pause, { passive: true });
+    track.addEventListener("pointerup", scheduleResume);
+    track.addEventListener("pointercancel", scheduleResume);
+    track.addEventListener("touchend", scheduleResume);
+    track.addEventListener("mouseleave", scheduleResume);
+    track.addEventListener("scroll", () => {
+      pause();
+      scheduleResume();
+    });
+
+    return () => {
+      cancelAnimationFrame(raf);
+      if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
+      track.removeEventListener("pointerdown", pause);
+      track.removeEventListener("touchstart", pause);
+      track.removeEventListener("pointerup", scheduleResume);
+      track.removeEventListener("pointercancel", scheduleResume);
+      track.removeEventListener("touchend", scheduleResume);
+      track.removeEventListener("mouseleave", scheduleResume);
+    };
+  }, []);
+
   return (
     <section>
-      <SectionTitle title="وصول سريع" />
-      <div className="grid grid-cols-4 gap-2.5">
-        {QUICK.map((q) => (
-          <button
-            key={q.key}
-            type="button"
-            className="group relative rounded-2xl bg-[#fbf3e1]/85 border border-white/70 backdrop-blur-xl p-2.5 text-center shadow-[0_10px_22px_-16px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.85)] active:scale-[0.95] transition-transform"
-          >
-            <div
-              className="mx-auto grid h-11 w-11 place-items-center rounded-[14px] border border-white/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_8px_16px_-10px_rgba(0,0,0,0.25)]"
-              style={{
-                background: `linear-gradient(160deg, ${q.tone}22, ${q.tone}55)`,
-                color: q.tone,
-              }}
+      <SectionTitle
+        title="وصول سريع"
+        action={<span className="text-[11px] font-bold text-[#b8893a]">عرض الكل</span>}
+      />
+      <div
+        ref={trackRef}
+        className="-mx-4 overflow-x-auto no-scrollbar scroll-smooth"
+        style={{ WebkitOverflowScrolling: "touch" }}
+      >
+        <div className="flex gap-3 px-4 pb-2">
+          {QUICK.map((q) => (
+            <button
+              key={q.key}
+              type="button"
+              className="group shrink-0 w-[124px] h-[150px] relative rounded-3xl overflow-hidden border border-white/70 text-right active:scale-[0.96] transition-transform shadow-[0_18px_36px_-22px_rgba(120,80,30,0.55),inset_0_1px_0_rgba(255,255,255,0.85)]"
             >
-              <q.icon className="h-5 w-5" strokeWidth={2} />
-            </div>
-            <p className="mt-1.5 text-[10.5px] font-extrabold text-[#3a2a18] leading-tight [word-break:keep-all]">
-              {q.label}
-            </p>
-          </button>
-        ))}
+              {/* Image */}
+              <img
+                src={q.img}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover"
+                loading="lazy"
+              />
+              {/* Tone wash + bottom fade */}
+              <div
+                className="absolute inset-0"
+                style={{
+                  background: `linear-gradient(180deg, ${q.tone}10 0%, rgba(15,10,4,0.15) 40%, rgba(15,10,4,0.85) 100%)`,
+                }}
+              />
+              {/* Top gold hairline */}
+              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#e7c97a]/80 to-transparent" />
+
+              {/* 3D glass icon chip */}
+              <div
+                className="absolute top-2.5 right-2.5 grid h-10 w-10 place-items-center rounded-2xl border border-white/60 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_10px_18px_-10px_rgba(0,0,0,0.45)]"
+                style={{
+                  background: `linear-gradient(160deg, ${q.tone}cc, ${q.tone}88)`,
+                  color: "#fff",
+                }}
+              >
+                <q.icon className="h-5 w-5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.35)]" strokeWidth={2.3} />
+              </div>
+
+              {/* Label */}
+              <div className="absolute bottom-2.5 right-2.5 left-2.5">
+                <p className="font-arabic-serif text-[12.5px] font-extrabold text-white leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.65)] [word-break:keep-all]">
+                  {q.label}
+                </p>
+              </div>
+            </button>
+          ))}
+        </div>
       </div>
     </section>
   );
