@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRight, Phone, MessageCircle, MapPin, ShieldCheck, Users,
   HandHeart, Newspaper, Radio, CalendarDays, BookOpen, Library, Heart,
-  Play, ChevronLeft, Clock, Sparkles,
+  Play, ChevronLeft, Clock, Sparkles, Bell, Flame,
 } from "lucide-react";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { CopticWatermark } from "@/components/coptic";
@@ -92,13 +92,14 @@ function Header() {
 
         <h1 className="text-[15px] font-extrabold text-[#3a2a18]">كنيستك معاك</h1>
 
-        <Link
-          to="/profile"
-          aria-label="الملف الشخصي"
-          className="inline-grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-[#e7c97a] to-[#7a4a26] text-white font-extrabold text-[13px] border border-white/70 shadow-[0_10px_22px_-12px_rgba(120,80,30,0.55)] active:scale-90 transition-transform"
+        <button
+          type="button"
+          aria-label="الإشعارات"
+          className="relative inline-grid h-10 w-10 place-items-center rounded-full bg-white/80 border border-[#efe2c4] text-[#3a2a18] active:scale-90 transition-transform shadow-[0_8px_20px_-14px_rgba(120,80,30,0.45)]"
         >
-          ب
-        </Link>
+          <Bell className="h-5 w-5" strokeWidth={2} />
+          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-[#c44569] border border-white" />
+        </button>
       </div>
     </header>
   );
@@ -159,9 +160,9 @@ function HeroChurchCard() {
           </div>
         </div>
 
-        {/* Glass body — compact */}
+        {/* Glass body — compact, two dedicated rows */}
         <div
-          className="relative px-4 py-3"
+          className="relative px-4 pt-3 pb-3"
           style={{
             background:
               "linear-gradient(180deg, rgba(251,243,225,0.94) 0%, rgba(246,232,200,0.97) 100%)",
@@ -170,21 +171,31 @@ function HeroChurchCard() {
         >
           <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-[#c79356]/40 to-transparent" />
 
+          {/* Row 1: Priest information (dedicated row, full name) */}
           <div className="flex items-center gap-3">
-            <div className="h-[46px] w-[46px] shrink-0 rounded-full bg-gradient-to-br from-[#7a4a26] to-[#3a2a18] grid place-items-center text-[#f3e6c4] font-arabic-serif text-[16px] font-extrabold border-[2.5px] border-[#e7c97a] shadow-[0_8px_20px_-8px_rgba(60,40,16,0.6)]">
+            <div className="h-[48px] w-[48px] shrink-0 rounded-full bg-gradient-to-br from-[#7a4a26] to-[#3a2a18] grid place-items-center text-[#f3e6c4] font-arabic-serif text-[18px] font-extrabold border-[2.5px] border-[#e7c97a] shadow-[0_8px_20px_-8px_rgba(60,40,16,0.6)]">
               ✚
             </div>
             <div className="flex-1 min-w-0 text-right">
               <p className="text-[9.5px] font-bold text-[#b8893a] tracking-wide leading-none">الكاهن المسؤول</p>
-              <p className="mt-1 text-[13.5px] font-extrabold text-[#3a2a18] leading-tight truncate">
-                القمص داود عبد الملاك
+              <p className="mt-1 font-arabic-serif text-[15px] font-extrabold text-[#3a2a18] leading-tight whitespace-normal break-words">
+                القمص داود عبد الملاك المقاري
               </p>
             </div>
+          </div>
 
-            <div className="flex items-center gap-1.5">
-              <MiniStat icon={Users} value="2,480" label="عضو" />
-              <MiniStat icon={HandHeart} value="186" label="خادم" />
-            </div>
+          {/* Coptic gold separator */}
+          <div className="my-2.5 flex items-center gap-2" aria-hidden>
+            <span className="h-px flex-1 bg-gradient-to-l from-transparent via-[#c79356]/50 to-transparent" />
+            <span className="inline-block h-1 w-1 rotate-45 rounded-[1px] bg-[#c79356]" />
+            <span className="h-px flex-1 bg-gradient-to-r from-transparent via-[#c79356]/50 to-transparent" />
+          </div>
+
+          {/* Row 2: Statistics (dedicated row) */}
+          <div className="grid grid-cols-3 gap-2">
+            <StatTile icon={Users} value="2,480" label="عضو" tone="#5b8fd1" />
+            <StatTile icon={HandHeart} value="186" label="خادم" tone="#1f8a5a" />
+            <StatTile icon={Flame} value="نشط" label="نشاط الصلاة" tone="#c98a3c" />
           </div>
         </div>
       </div>
@@ -211,6 +222,21 @@ function FloatAction({ icon: Icon, label }: { icon: any; label: string }) {
     >
       <Icon className="h-4 w-4" strokeWidth={2.2} />
     </button>
+  );
+}
+
+function StatTile({ icon: Icon, value, label, tone }: { icon: any; value: string; label: string; tone: string }) {
+  return (
+    <div className="rounded-2xl bg-white/80 border border-white/80 px-2 py-2 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_8px_18px_-12px_rgba(120,80,30,0.45)]">
+      <div
+        className="mx-auto grid h-7 w-7 place-items-center rounded-lg border border-white/70"
+        style={{ background: `linear-gradient(160deg, ${tone}22, ${tone}55)`, color: tone }}
+      >
+        <Icon className="h-4 w-4" strokeWidth={2.2} />
+      </div>
+      <p className="mt-1 text-[12.5px] font-extrabold text-[#3a2a18] leading-none">{value}</p>
+      <p className="mt-0.5 text-[9px] font-bold text-[#6a543a] leading-none">{label}</p>
+    </div>
   );
 }
 
