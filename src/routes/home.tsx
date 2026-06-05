@@ -326,7 +326,21 @@ function HomeScreen() {
       accent: "#d4a574",
       to: "/feasts",
     },
+    {
+      id: "prayer-requests",
+      kind: "saint",
+      badge: "طلبات الصلاة",
+      title: "طلبات الصلاة",
+      body: "شارك إخوتك في الصلاة، وأرسل طلبتك ليصلي عنك المؤمنون.",
+      meta: "اضغط للمشاركة",
+      image: dailyPrayer,
+      accent: "#a82747",
+      to: "/prayer-requests",
+    },
   ];
+
+
+
 
   type PrimaryCard = { key: string; title: string; sub: string; image: string; to: string; accent: string; glyph: "Ⲁ" | "Ⲱ" };
   const primary: PrimaryCard[] = [

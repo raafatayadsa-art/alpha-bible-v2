@@ -22,7 +22,10 @@ export type PrayerRequest = {
   status: PrayerStatus;
   /** true = belongs to the current user (mock). */
   mine?: boolean;
+  /** Posted anonymously — hides the name. */
+  anonymous?: boolean;
 };
+
 
 export const PRAYER_REQUESTS: PrayerRequest[] = [
   {
@@ -130,7 +133,9 @@ export type EncouragementMessage = {
   author: string;
   text: string;
   time: string;
+  anonymous?: boolean;
 };
+
 
 export const ENCOURAGEMENT_MESSAGES: EncouragementMessage[] = [
   { id: "m1", author: "أ. مارينا", text: "الرب يقويك ويعطيك سلامه", time: "منذ ساعة" },
