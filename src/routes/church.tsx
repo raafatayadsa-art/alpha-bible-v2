@@ -104,14 +104,14 @@ function Header() {
 
         <h1 className="text-[15px] font-extrabold text-[#3a2a18]">كنيستك معاك</h1>
 
-        <button
-          type="button"
+        <Link
+          to="/church/notifications"
           aria-label="الإشعارات"
           className="relative inline-grid h-10 w-10 place-items-center rounded-full bg-white/80 border border-[#efe2c4] text-[#3a2a18] active:scale-90 transition-transform shadow-[0_8px_20px_-14px_rgba(120,80,30,0.45)]"
         >
           <Bell className="h-5 w-5" strokeWidth={2} />
           <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-[#c44569] border border-white" />
-        </button>
+        </Link>
       </div>
     </header>
   );
