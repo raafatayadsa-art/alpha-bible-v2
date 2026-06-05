@@ -71,18 +71,25 @@ export function deleteUserPost(id: string) {
   write(POSTS_KEY, getUserPosts().filter((p) => p.id !== id));
 }
 
-/** Merged feed: user posts first (newest), then seed. */
+/** Merged feed (cached by user-posts reference): user posts first, then seed. */
+const FEED_CACHE_KEY = "__feed__";
+const SERVER_FEED: ChurchPost[] = [...CHURCH_POSTS];
 export function getAllPosts(): ChurchPost[] {
+  if (typeof window === "undefined") return SERVER_FEED;
   const user = getUserPosts();
+  const cached = cache.get(FEED_CACHE_KEY) as { user: ChurchPost[]; feed: ChurchPost[] } | undefined;
+  if (cached && cached.user === user) return cached.feed;
   const seedIds = new Set(user.map((p) => p.id));
-  return [...user, ...CHURCH_POSTS.filter((p) => !seedIds.has(p.id))];
+  const feed = [...user, ...CHURCH_POSTS.filter((p) => !seedIds.has(p.id))];
+  cache.set(FEED_CACHE_KEY, { user, feed });
+  return feed;
 }
 export function getPost(id: string): ChurchPost | undefined {
   return getAllPosts().find((p) => p.id === id);
 }
 
 export function useAllPosts(): ChurchPost[] {
-  return useSyncExternalStore(subscribe, getAllPosts, getAllPosts);
+  return useSyncExternalStore(subscribe, getAllPosts, () => SERVER_FEED);
 }
 
 /* ------------------------------- attendance ---------------------------------- */
