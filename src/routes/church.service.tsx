@@ -239,15 +239,16 @@ function CategoryCard({ c }: { c: Category }) {
   );
 }
 
-function CategoriesGrid() {
+function CategoriesGrid({ extra }: { extra: Category[] }) {
+  const all = [...extra, ...CATEGORIES];
   return (
     <section>
       <SectionTitle
         title="فرق الخدمة"
-        action={<span className="text-[11px] font-bold text-[#b8893a]">{CATEGORIES.length} فريق</span>}
+        action={<span className="text-[11px] font-bold text-[#b8893a]">{all.length} فريق</span>}
       />
       <div className="grid grid-cols-2 gap-3">
-        {CATEGORIES.map((c) => (
+        {all.map((c) => (
           <CategoryCard key={c.key} c={c} />
         ))}
       </div>
