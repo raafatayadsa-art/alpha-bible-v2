@@ -1,16 +1,22 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { CHURCH_POSTS, type ChurchPost } from "@/data/church-posts";
+import { CHURCH_POSTS, type ChurchPost, type PostType } from "@/data/church-posts";
 
 const POSTS_KEY = "alpha:church:user-posts";
-const ATT_KEY = "alpha:church:attendance"; // { [postId]: boolean }
-const RES_KEY = "alpha:church:reservations"; // { [postId]: { count: number, mine: number } }
-const COND_KEY = "alpha:church:condolences"; // { [postId]: Reply[] }
-const CONG_KEY = "alpha:church:congrats"; // { [postId]: Reply[] }
+const OVERRIDES_KEY = "alpha:church:post-overrides"; // patches applied on top of any post (seed + user)
+const ATT_KEY = "alpha:church:attendance";
+const RES_KEY = "alpha:church:reservations";
+const COND_KEY = "alpha:church:condolences";
+const CONG_KEY = "alpha:church:congrats";
+const ROLE_KEY = "alpha:church:role"; // "priest" | "servant" | "admin" | "member"
 
 export type Reply = { id: string; name: string; text: string; at: number };
 type Reservations = Record<string, { count: number; mine: number }>;
 type Attendance = Record<string, boolean>;
 type RepliesMap = Record<string, Reply[]>;
+export type PostOverride = Partial<
+  Pick<ChurchPost, "pinned" | "pinnedUntil" | "expiresAt" | "archived" | "closed">
+>;
+type OverridesMap = Record<string, PostOverride>;
 
 /* ------------------------ tiny pub/sub on localStorage ------------------------ */
 const listeners = new Set<() => void>();
@@ -31,7 +37,6 @@ function subscribe(l: () => void) {
   };
 }
 
-/** Cache parsed snapshots so useSyncExternalStore gets stable references. */
 const cache = new Map<string, unknown>();
 function read<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
@@ -51,9 +56,7 @@ function write<T>(key: string, value: T) {
     window.localStorage.setItem(key, JSON.stringify(value));
     cache.set(key, value);
     bumpVersion();
-  } catch {
-    /* quota / disabled storage */
-  }
+  } catch {}
 }
 
 /* ------------------------------- user posts ---------------------------------- */
@@ -71,17 +74,46 @@ export function deleteUserPost(id: string) {
   write(POSTS_KEY, getUserPosts().filter((p) => p.id !== id));
 }
 
-/** Merged feed (cached by user-posts reference): user posts first, then seed. */
+/* --------------------------------- overrides --------------------------------- */
+export function getOverrides(): OverridesMap {
+  return read<OverridesMap>(OVERRIDES_KEY, {});
+}
+export function patchPost(id: string, patch: PostOverride) {
+  // For user-owned posts, persist on the post itself (so it survives clearing overrides).
+  const user = getUserPosts();
+  const idx = user.findIndex((p) => p.id === id);
+  if (idx >= 0) {
+    user[idx] = { ...user[idx], ...patch };
+    write(POSTS_KEY, user);
+    return;
+  }
+  const map = getOverrides();
+  map[id] = { ...(map[id] || {}), ...patch };
+  write(OVERRIDES_KEY, map);
+}
+
+/* ------------------------------- merged feed --------------------------------- */
 const FEED_CACHE_KEY = "__feed__";
 const SERVER_FEED: ChurchPost[] = [...CHURCH_POSTS];
+
+function applyOverride(p: ChurchPost, ov?: PostOverride): ChurchPost {
+  return ov ? { ...p, ...ov } : p;
+}
+
 export function getAllPosts(): ChurchPost[] {
   if (typeof window === "undefined") return SERVER_FEED;
   const user = getUserPosts();
-  const cached = cache.get(FEED_CACHE_KEY) as { user: ChurchPost[]; feed: ChurchPost[] } | undefined;
-  if (cached && cached.user === user) return cached.feed;
+  const ov = getOverrides();
+  const cached = cache.get(FEED_CACHE_KEY) as
+    | { user: ChurchPost[]; ov: OverridesMap; feed: ChurchPost[] }
+    | undefined;
+  if (cached && cached.user === user && cached.ov === ov) return cached.feed;
   const seedIds = new Set(user.map((p) => p.id));
-  const feed = [...user, ...CHURCH_POSTS.filter((p) => !seedIds.has(p.id))];
-  cache.set(FEED_CACHE_KEY, { user, feed });
+  const feed = [
+    ...user.map((p) => applyOverride(p, ov[p.id])),
+    ...CHURCH_POSTS.filter((p) => !seedIds.has(p.id)).map((p) => applyOverride(p, ov[p.id])),
+  ];
+  cache.set(FEED_CACHE_KEY, { user, ov, feed });
   return feed;
 }
 export function getPost(id: string): ChurchPost | undefined {
@@ -90,6 +122,94 @@ export function getPost(id: string): ChurchPost | undefined {
 
 export function useAllPosts(): ChurchPost[] {
   return useSyncExternalStore(subscribe, getAllPosts, () => SERVER_FEED);
+}
+
+/* ----------------- expiration / pinning derived helpers ---------------------- */
+export function isPinned(p: ChurchPost, now: number = Date.now()): boolean {
+  if (p.pinnedUntil && p.pinnedUntil > now) return true;
+  if (p.pinned && !p.pinnedUntil) return true;
+  return false;
+}
+export function isExpired(p: ChurchPost, now: number = Date.now()): boolean {
+  if (p.archived) return true;
+  // Prayer requests never auto-expire unless closed
+  if (p.type === "prayer") return !!p.closed;
+  if (p.expiresAt != null && p.expiresAt > 0 && p.expiresAt <= now) return true;
+  return false;
+}
+
+export function useActivePosts(): ChurchPost[] {
+  const all = useAllPosts();
+  const now = Date.now();
+  return all
+    .filter((p) => !isExpired(p, now))
+    .sort((a, b) => Number(isPinned(b, now)) - Number(isPinned(a, now)));
+}
+export function useArchivedPosts(): ChurchPost[] {
+  const all = useAllPosts();
+  const now = Date.now();
+  return all.filter((p) => isExpired(p, now));
+}
+
+/* ---------------------------- pin / expire / archive ------------------------- */
+export function pinForDays(id: string, days: number) {
+  patchPost(id, { pinnedUntil: Date.now() + days * 24 * 3600 * 1000, pinned: true });
+}
+export function pinUntil(id: string, untilMs: number) {
+  patchPost(id, { pinnedUntil: untilMs, pinned: true });
+}
+export function unpinPost(id: string) {
+  patchPost(id, { pinnedUntil: 0, pinned: false });
+}
+export function setExpiration(id: string, expiresAt: number | null) {
+  patchPost(id, { expiresAt });
+}
+export function archivePost(id: string) {
+  patchPost(id, { archived: true });
+}
+export function restorePost(id: string) {
+  patchPost(id, { archived: false, expiresAt: null });
+}
+export function closePrayer(id: string, closed = true) {
+  patchPost(id, { closed });
+}
+
+/* ------------------------------ default expiry ------------------------------- */
+/** Compute the default expiration timestamp for a new post based on type + details. */
+export function computeDefaultExpiry(
+  type: PostType,
+  details?: { date?: string; time?: string; returnDate?: string }
+): number | null {
+  const sevenDays = 7 * 24 * 3600 * 1000;
+  const parse = (d?: string, t?: string) => {
+    if (!d) return null;
+    const time = t && /^\d{2}:\d{2}/.test(t) ? t : "23:59";
+    const ms = Date.parse(`${d}T${time}:00`);
+    return Number.isFinite(ms) ? ms : null;
+  };
+  switch (type) {
+    case "liturgy":
+    case "meeting": {
+      const t = parse(details?.date, details?.time);
+      // Expire 3h after start so the post stays during the event.
+      return t ? t + 3 * 3600 * 1000 : null;
+    }
+    case "trip": {
+      const ret = parse(details?.returnDate || details?.date, "23:59");
+      return ret ? ret + 6 * 3600 * 1000 : null;
+    }
+    case "wedding":
+    case "condolence":
+      return Date.now() + sevenDays;
+    case "prayer":
+      return null; // never auto-expires
+    case "announcement":
+    case "news":
+    case "report":
+    case "event":
+    default:
+      return null; // optional
+  }
 }
 
 /* ------------------------------- attendance ---------------------------------- */
@@ -113,7 +233,6 @@ export function useAttendance(postId: string) {
     () => EMPTY_ATT,
   );
   const going = !!map[postId];
-  // Demo baseline so cards never look empty; user toggle adds 1.
   return { going, count: 12 + (going ? 1 : 0) };
 }
 
@@ -162,12 +281,32 @@ export function useReplies(kind: "condolence" | "congrats", postId: string): Rep
   return map[postId] ?? EMPTY_REPLY_LIST;
 }
 
+/* --------------------------------- roles ------------------------------------- */
+export type ChurchRole = "priest" | "servant" | "admin" | "member";
+export function getRole(): ChurchRole {
+  return read<ChurchRole>(ROLE_KEY, "priest"); // demo default: manager
+}
+export function setRole(role: ChurchRole) {
+  write(ROLE_KEY, role);
+}
+export function canManagePosts(): boolean {
+  const r = getRole();
+  return r === "priest" || r === "servant" || r === "admin";
+}
+export function useCanManagePosts(): boolean {
+  const r = useSyncExternalStore(
+    subscribe,
+    () => read<ChurchRole>(ROLE_KEY, "priest"),
+    () => "priest" as ChurchRole,
+  );
+  return r === "priest" || r === "servant" || r === "admin";
+}
+
 /* --------------------------------- helpers ----------------------------------- */
 export function newPostId(): string {
   return "u-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 7);
 }
 
-/** Hydration guard for components that read localStorage before mount. */
 export function useHydrated(): boolean {
   const [h, setH] = useState(false);
   useEffect(() => setH(true), []);
