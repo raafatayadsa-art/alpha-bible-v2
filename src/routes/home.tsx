@@ -662,9 +662,9 @@ function HeroStack({
   );
 }
 
-// ===== Premium Cover Flow — connected motion, momentum, Apple ease =====
+// ===== Premium Infinite Wheel Carousel — single shared progress drives all cards =====
 function Coverflow<T>({
-  items, direction, height, cardWidthPct, peekPct, renderCard, getKey, intervalMs = 6000,
+  items, direction, height, cardWidthPct, peekPct, renderCard, getKey,
 }: {
   items: T[];
   direction: 1 | -1;
@@ -676,50 +676,139 @@ function Coverflow<T>({
   intervalMs?: number;
 }) {
   const total = items.length;
-  const [index, setIndex] = useState(0);
+  // Shared continuous progress in "slot units" — every card derives its position from this.
+  const progressRef = useRef(0);
+  const velocityRef = useRef(0); // slots per second (from drag release)
+  const draggingRef = useRef(false);
+  const pauseUntilRef = useRef(0);
+  const lastTsRef = useRef(0);
+  const [, force] = useState(0);
+  const rerender = useCallback(() => force((n) => (n + 1) % 1_000_000), []);
 
-  const { paused, pauseTemporarily } = useAutoplay(total > 1, intervalMs, () =>
-    setIndex((i) => i + direction),
-  );
-  const { dx, dragging, onStart, onMove, onEnd } = useCarouselGesture((dir) => {
-    setIndex((i) => i + dir);
-    pauseTemporarily();
-  });
-  const handleStart = (e: any) => { if (!paused) pauseTemporarily(); onStart(e); };
+  // Drag state
+  const dragStartXRef = useRef(0);
+  const dragStartProgRef = useRef(0);
+  const lastMoveXRef = useRef(0);
+  const lastMoveTRef = useRef(0);
+  const containerWRef = useRef(1);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
-  const currentMod = ((index % total) + total) % total;
-  const slots = [-2, -1, 0, 1, 2];
+  // Pixels per slot — derived from peek spacing
+  const pxPerSlot = useCallback(() => Math.max(80, (containerWRef.current * peekPct) / 100), [peekPct]);
+
+  // Continuous RAF loop — auto-rotation + momentum decay
+  useEffect(() => {
+    if (total < 2) return;
+    let raf = 0;
+    const autoSpeed = 0.18; // slots / second (slow continuous drift)
+    const tick = (ts: number) => {
+      const last = lastTsRef.current || ts;
+      const dt = Math.min(0.05, (ts - last) / 1000);
+      lastTsRef.current = ts;
+      const now = performance.now();
+      const autoActive = !draggingRef.current && now >= pauseUntilRef.current;
+      // Momentum decay (always while not dragging)
+      if (!draggingRef.current && velocityRef.current !== 0) {
+        progressRef.current += velocityRef.current * dt;
+        // Exponential decay toward zero (no snap)
+        const decay = Math.exp(-dt * 2.6);
+        velocityRef.current *= decay;
+        if (Math.abs(velocityRef.current) < 0.02) velocityRef.current = 0;
+      }
+      if (autoActive) {
+        progressRef.current += direction * autoSpeed * dt;
+      }
+      rerender();
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [total, direction, rerender]);
+
+  // Measure container width
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => { containerWRef.current = el.clientWidth || 1; });
+    ro.observe(el);
+    containerWRef.current = el.clientWidth || 1;
+    return () => ro.disconnect();
+  }, []);
+
+  // Gesture handlers — convert px delta into progress delta directly (connected rail)
+  const onStart = (clientX: number) => {
+    draggingRef.current = true;
+    dragStartXRef.current = clientX;
+    dragStartProgRef.current = progressRef.current;
+    lastMoveXRef.current = clientX;
+    lastMoveTRef.current = performance.now();
+    velocityRef.current = 0;
+  };
+  const onMove = (clientX: number) => {
+    if (!draggingRef.current) return;
+    const dx = clientX - dragStartXRef.current;
+    // RTL feel: dragging left (negative dx) advances forward
+    progressRef.current = dragStartProgRef.current - dx / pxPerSlot();
+    // Track instantaneous velocity for release
+    const t = performance.now();
+    const dt = Math.max(1, t - lastMoveTRef.current);
+    const vSlotsPerSec = -((clientX - lastMoveXRef.current) / pxPerSlot()) * (1000 / dt);
+    velocityRef.current = vSlotsPerSec;
+    lastMoveXRef.current = clientX;
+    lastMoveTRef.current = t;
+  };
+  const onEnd = () => {
+    if (!draggingRef.current) return;
+    draggingRef.current = false;
+    // Clamp momentum to a sane range
+    velocityRef.current = Math.max(-8, Math.min(8, velocityRef.current));
+    // Pause auto-scroll briefly so momentum can carry naturally before drift resumes
+    pauseUntilRef.current = performance.now() + 1800;
+  };
+
+  // Event adapters
+  const handleTouchStart = (e: React.TouchEvent) => onStart(e.touches[0].clientX);
+  const handleTouchMove = (e: React.TouchEvent) => onMove(e.touches[0].clientX);
+  const handleMouseDown = (e: React.MouseEvent) => onStart(e.clientX);
+  const handleMouseMove = (e: React.MouseEvent) => { if (draggingRef.current) onMove(e.clientX); };
+
+  // Render slots — enough to fill both sides; positions derived from shared progress
+  const visible = 5; // -2..+2
+  const half = Math.floor(visible / 2);
+  const progress = progressRef.current;
+  const centerIdx = Math.round(progress);
+  const frac = progress - centerIdx; // -0.5..0.5
+  const currentMod = ((centerIdx % total) + total) % total;
+
+  const slotOffsets: number[] = [];
+  for (let i = -half; i <= half; i++) slotOffsets.push(i);
 
   return (
     <div
-      className="relative w-full select-none overflow-hidden"
+      ref={containerRef}
+      className="relative w-full select-none overflow-hidden touch-pan-y"
       style={{ height, perspective: 1400, perspectiveOrigin: "50% 50%" }}
-      onTouchStart={handleStart}
-      onTouchMove={onMove as any}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
       onTouchEnd={onEnd}
-      onMouseDown={handleStart}
-      onMouseMove={(e) => { if (dragging) onMove(e); }}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
       onMouseUp={onEnd}
-      onMouseLeave={() => { if (dragging) onEnd(); }}
+      onMouseLeave={onEnd}
     >
-      {slots.map((s) => {
-        const cardIdx = ((index + s) % total + total) % total;
+      {slotOffsets.map((s) => {
+        // Position of this slot relative to the visual center, derived from shared progress
+        const effective = s - frac;
+        const cardIdx = ((centerIdx + s) % total + total) % total;
         const item = items[cardIdx];
-        const isFront = s === 0;
-        const distance = Math.abs(s);
-        // Connected-rail drift: convert drag into fractional slot offset
-        const dragFrac = dx / 220;
-        const effective = s - dragFrac;
         const absEff = Math.abs(effective);
+        const isFront = absEff < 0.5;
         const baseXPct = effective * peekPct;
-        // Apple Cover Flow: side cards rotate inward in 3D
-        const rotateY = Math.max(-55, Math.min(55, -effective * 38));
-        const translateZ = isFront ? 0 : -Math.min(absEff, 2) * 80;
-        const scale = isFront
-          ? 1 + Math.max(0, 0.04 - Math.abs(dragFrac) * 0.04)
-          : Math.max(0.7, 1 - absEff * 0.13);
-        const opacity = Math.max(0.12, 1 - absEff * 0.42);
-        const z = 30 - Math.round(absEff * 10);
+        const rotateY = Math.max(-60, Math.min(60, -effective * 36));
+        const translateZ = -Math.min(absEff, 2.2) * 90;
+        const scale = Math.max(0.66, 1 - absEff * 0.14);
+        const opacity = Math.max(0.1, 1 - absEff * 0.38);
+        const z = 100 - Math.round(absEff * 20);
         return (
           <div
             key={`${getKey(item)}-${s}`}
@@ -731,10 +820,9 @@ function Coverflow<T>({
               transformOrigin: "50% 50%",
               zIndex: z,
               opacity,
-              transition: dragging ? "none" : TRANSITION,
-              filter: distance >= 2 ? "blur(1.5px)" : "none",
+              filter: absEff >= 1.6 ? "blur(1.5px)" : "none",
               willChange: "transform, opacity",
-              pointerEvents: distance >= 2 ? "none" : "auto",
+              pointerEvents: isFront ? "auto" : "none",
               borderRadius: 24,
             }}
           >
@@ -773,6 +861,7 @@ function Coverflow<T>({
     </div>
   );
 }
+
 
 
 function HeroCardView({
