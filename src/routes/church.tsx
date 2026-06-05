@@ -4,7 +4,7 @@ import {
   ArrowRight, Phone, MessageCircle, MapPin, ShieldCheck, Users,
   HandHeart, Newspaper, Radio, CalendarDays, BookOpen, Library, Heart,
   Play, ChevronLeft, Clock, Sparkles, Bell, Flame, Pin, Plus,
-  Navigation, Share2, Crown, UserCog, Send, Lock,
+  Navigation, Share2, Crown, UserCog, Send, Lock, X, MessageSquareHeart, Check,
 } from "lucide-react";
 import { CHURCH_CONTACTS, type ChurchContact } from "@/data/church-contacts";
 import { BottomDock } from "@/components/bible/BottomDock";
@@ -12,7 +12,8 @@ import { CopticWatermark } from "@/components/coptic";
 import { CHURCH_POSTS, POST_TYPE_META, type ChurchPost } from "@/data/church-posts";
 import {
   PRAYER_REQUESTS, PRAYER_TABS, filterPrayers, prayerStats,
-  type PrayerFilter, type PrayerRequest,
+  ENCOURAGEMENT_MESSAGES, ENCOURAGEMENT_TOTAL, ENCOURAGEMENT_CHIPS, ENCOURAGEMENT_MAX,
+  type PrayerFilter, type PrayerRequest, type EncouragementMessage,
 } from "@/data/prayer-requests";
 
 import cardChurch from "@/assets/home/card-church.jpg";
@@ -618,6 +619,9 @@ function usePrayerData(): PrayerCardState {
 function PrayerRequestsCard() {
   const state = usePrayerData();
   const [tab, setTab] = useState<PrayerFilter>("all");
+  const [prayedIds, setPrayedIds] = useState<Set<string>>(() => new Set());
+  const [messages, setMessages] = useState<EncouragementMessage[]>(ENCOURAGEMENT_MESSAGES);
+  const [showEncourage, setShowEncourage] = useState(false);
 
   const all = state.kind === "ready" ? state.items : [];
   const filtered = useMemo(
@@ -626,17 +630,35 @@ function PrayerRequestsCard() {
   );
   const latest = filtered[0];
   const stats = useMemo(() => prayerStats(all), [all]);
+  const totalMessages = ENCOURAGEMENT_TOTAL + (messages.length - ENCOURAGEMENT_MESSAGES.length);
+
+  const togglePray = (id: string) => {
+    setPrayedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const addEncouragement = (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    setMessages((prev) => [
+      { id: `local-${Date.now()}`, author: "أنت", text: trimmed.slice(0, ENCOURAGEMENT_MAX), time: "الآن" },
+      ...prev,
+    ]);
+    setShowEncourage(false);
+  };
+
+  const hasPrayed = latest ? prayedIds.has(latest.id) : false;
+  const liveCount = latest ? latest.prayers + (hasPrayed ? 1 : 0) : 0;
 
   return (
     <section>
       <SectionTitle title="طلبات الصلاة" />
       <div className="relative overflow-hidden rounded-[28px] border border-white/70 bg-[#fbf3e1]/85 backdrop-blur-xl shadow-[0_24px_50px_-26px_rgba(60,40,16,0.55),inset_0_1px_0_rgba(255,255,255,0.85)]">
         {/* Hero image */}
-        <Link
-          to="/church/prayer"
-          aria-label="عرض كل طلبات الصلاة"
-          className="relative block h-[150px] w-full overflow-hidden"
-        >
+        <div className="relative block h-[150px] w-full overflow-hidden">
           <img
             src={cardAgpeya}
             alt="طلبات الصلاة"
@@ -656,32 +678,32 @@ function PrayerRequestsCard() {
           </div>
           <div className="absolute bottom-3 right-3 left-3 text-right text-white">
             <h3 className="font-arabic-serif text-[17px] font-extrabold drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
-              صلوا بعضكم لأجل بعض
+              🙏 طلبات الصلاة
             </h3>
-            <p className="mt-0.5 text-[11px] text-white/85">شارك إخوتك حمل الصلاة</p>
+            <p className="mt-0.5 text-[11px] text-white/85">شارك بالصلاة وشجع الآخرين</p>
           </div>
-        </Link>
+        </div>
 
-        {/* Stats row */}
-        <div className="grid grid-cols-2 gap-2 px-3.5 pt-3">
-          <div className="rounded-2xl bg-white/80 border border-white/80 px-3 py-2 text-right shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
-            <p className="inline-flex items-center gap-1 text-[10px] font-bold text-[#1f8a5a]">
-              <Heart className="h-3 w-3" strokeWidth={2.6} />
-              طلبات نشطة
-            </p>
-            <p className="mt-0.5 text-[16px] font-extrabold text-[#3a2a18] leading-none">
-              {stats.active.toLocaleString("ar-EG")}
-            </p>
-          </div>
-          <div className="rounded-2xl bg-white/80 border border-white/80 px-3 py-2 text-right shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
-            <p className="inline-flex items-center gap-1 text-[10px] font-bold text-[#5b8fd1]">
-              <Users className="h-3 w-3" strokeWidth={2.6} />
-              صلّوا معًا
-            </p>
-            <p className="mt-0.5 text-[16px] font-extrabold text-[#3a2a18] leading-none">
-              {stats.peoplePrayed.toLocaleString("ar-EG")}
-            </p>
-          </div>
+        {/* Live stats row — 3 cols */}
+        <div className="grid grid-cols-3 gap-2 px-3.5 pt-3">
+          <StatPill
+            icon={<HandHeart className="h-3 w-3" strokeWidth={2.6} />}
+            label="صلوا"
+            value={stats.peoplePrayed + (hasPrayed ? 1 : 0)}
+            tone="purple"
+          />
+          <StatPill
+            icon={<MessageSquareHeart className="h-3 w-3" strokeWidth={2.6} />}
+            label="رسالة"
+            value={totalMessages}
+            tone="rose"
+          />
+          <StatPill
+            icon={<Sparkles className="h-3 w-3" strokeWidth={2.6} />}
+            label="نشط"
+            value={stats.active}
+            tone="green"
+          />
         </div>
 
         {/* Tabs */}
@@ -708,7 +730,7 @@ function PrayerRequestsCard() {
           </div>
         </div>
 
-        {/* Preview */}
+        {/* Latest preview */}
         <div className="px-3.5 pt-3">
           {state.kind === "loading" ? (
             <PrayerSkeleton />
@@ -717,27 +739,203 @@ function PrayerRequestsCard() {
           ) : !latest ? (
             <PrayerEmptyState filter={tab} />
           ) : (
-            <PrayerPreview item={latest} />
+            <PrayerPreview item={latest} liveCount={liveCount} />
           )}
+        </div>
+
+        {/* Prayer actions */}
+        {latest && state.kind === "ready" ? (
+          <div className="px-3.5 pt-3 grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => togglePray(latest.id)}
+              aria-pressed={hasPrayed}
+              className={
+                "inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-2.5 text-[12px] font-extrabold transition-all active:scale-[0.98] border " +
+                (hasPrayed
+                  ? "bg-gradient-to-l from-[#1f8a5a] to-[#2ea870] text-white border-transparent shadow-[0_10px_22px_-12px_rgba(31,138,90,0.7)]"
+                  : "bg-gradient-to-l from-[#8a6ec1] to-[#a07ec4] text-white border-transparent shadow-[0_10px_22px_-12px_rgba(138,110,193,0.7)]")
+              }
+            >
+              {hasPrayed ? <Check className="h-3.5 w-3.5" strokeWidth={3} /> : <HandHeart className="h-3.5 w-3.5" strokeWidth={2.6} />}
+              {hasPrayed ? "تمت الصلاة" : "صليت لأجلها"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowEncourage(true)}
+              className="inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-2.5 text-[12px] font-extrabold border bg-white/85 text-[#7a5a30] border-[#efe2c4] active:scale-[0.98] transition-all"
+            >
+              <MessageSquareHeart className="h-3.5 w-3.5" strokeWidth={2.6} />
+              رسالة تشجيع
+            </button>
+          </div>
+        ) : null}
+
+        {/* Encouragement preview */}
+        <div className="px-3.5 pt-3">
+          <p className="mb-2 text-[11px] font-extrabold text-[#7a5a30] inline-flex items-center gap-1.5">
+            <MessageSquareHeart className="h-3 w-3 text-[#c44569]" strokeWidth={2.6} />
+            أحدث رسائل التشجيع
+          </p>
+          <div className="space-y-1.5">
+            {messages.slice(0, 2).map((m) => (
+              <div
+                key={m.id}
+                className="rounded-2xl bg-white/80 border border-white/80 px-3 py-2 text-right shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]"
+              >
+                <p className="text-[12px] text-[#3a2a18] leading-snug">{m.text}</p>
+                <div className="mt-1 flex items-center justify-between text-[10px] text-[#7a5a30]">
+                  <span className="font-bold">{m.author}</span>
+                  <span>{m.time}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            className="mt-2 w-full text-center text-[11px] font-extrabold text-[#8a6ec1] py-1"
+          >
+            عرض جميع الرسائل ({totalMessages.toLocaleString("ar-EG")})
+          </button>
         </div>
 
         {/* CTA */}
         <div className="p-3.5 pt-3">
           <Link
             to="/church/prayer"
-            className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-l from-[#8a6ec1] to-[#a07ec4] px-4 py-3 text-[13px] font-extrabold text-white shadow-[0_12px_28px_-12px_rgba(138,110,193,0.7)] active:scale-[0.98] transition-transform"
+            className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-l from-[#c79356] to-[#d6a862] px-4 py-3 text-[13px] font-extrabold text-white shadow-[0_12px_28px_-12px_rgba(199,147,86,0.7)] active:scale-[0.98] transition-transform"
           >
-            <Heart className="h-4 w-4 fill-current" strokeWidth={0} />
-            عرض كل الطلبات
+            <BookOpen className="h-4 w-4" />
+            عرض جميع الطلبات
             <ChevronLeft className="h-4 w-4" />
           </Link>
         </div>
       </div>
+
+      {showEncourage ? (
+        <EncourageModal
+          onClose={() => setShowEncourage(false)}
+          onSend={addEncouragement}
+        />
+      ) : null}
     </section>
   );
 }
 
-function PrayerPreview({ item }: { item: PrayerRequest }) {
+function StatPill({
+  icon, label, value, tone,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: number;
+  tone: "purple" | "rose" | "green";
+}) {
+  const toneClass = {
+    purple: "text-[#6a4ab5]",
+    rose: "text-[#a8344f]",
+    green: "text-[#136a44]",
+  }[tone];
+  return (
+    <div className="rounded-2xl bg-white/80 border border-white/80 px-2.5 py-2 text-right shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+      <p className={"inline-flex items-center gap-1 text-[10px] font-bold " + toneClass}>
+        {icon}
+        {label}
+      </p>
+      <p className="mt-0.5 text-[15px] font-extrabold text-[#3a2a18] leading-none">
+        {value.toLocaleString("ar-EG")}
+      </p>
+    </div>
+  );
+}
+
+function EncourageModal({
+  onClose, onSend,
+}: {
+  onClose: () => void;
+  onSend: (text: string) => void;
+}) {
+  const [text, setText] = useState("");
+  const remaining = ENCOURAGEMENT_MAX - text.length;
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="رسالة تشجيع"
+      className="fixed inset-0 z-50 grid place-items-center px-4"
+    >
+      <button
+        type="button"
+        aria-label="إغلاق"
+        onClick={onClose}
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+      />
+      <div className="relative w-full max-w-[340px] rounded-3xl border border-white/70 bg-[#fbf3e1] shadow-[0_30px_60px_-20px_rgba(60,40,16,0.6)] p-4 text-right">
+        <div className="flex items-center justify-between mb-2">
+          <h4 className="font-arabic-serif text-[15px] font-extrabold text-[#3a2a18] inline-flex items-center gap-1.5">
+            <MessageSquareHeart className="h-4 w-4 text-[#c44569]" strokeWidth={2.6} />
+            رسالة تشجيع
+          </h4>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="إغلاق"
+            className="grid h-7 w-7 place-items-center rounded-full bg-white/80 border border-[#efe2c4] text-[#7a5a30] active:scale-90"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value.slice(0, ENCOURAGEMENT_MAX))}
+          maxLength={ENCOURAGEMENT_MAX}
+          rows={3}
+          placeholder="اكتب كلمة تشجيع أو صلاة قصيرة"
+          className="w-full resize-none rounded-2xl bg-white/90 border border-[#efe2c4] px-3 py-2 text-[12.5px] text-[#3a2a18] placeholder:text-[#a89878] focus:outline-none focus:ring-2 focus:ring-[#c79356]/40"
+        />
+        <div className="mt-1 flex items-center justify-between text-[10px] text-[#7a5a30]">
+          <span>{remaining.toLocaleString("ar-EG")} حرف متبقي</span>
+        </div>
+
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {ENCOURAGEMENT_CHIPS.map((c) => (
+            <button
+              key={c.text}
+              type="button"
+              onClick={() => setText(`${c.emoji} ${c.text}`.slice(0, ENCOURAGEMENT_MAX))}
+              className="rounded-full bg-white/80 border border-[#efe2c4] px-2.5 py-1 text-[11px] font-bold text-[#7a5a30] active:scale-95"
+            >
+              {c.emoji} {c.text}
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-3 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 rounded-full bg-white/80 border border-[#efe2c4] py-2 text-[12px] font-extrabold text-[#7a5a30]"
+          >
+            إلغاء
+          </button>
+          <button
+            type="button"
+            onClick={() => onSend(text)}
+            disabled={!text.trim()}
+            className="flex-[1.3] inline-flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-l from-[#c44569] to-[#d96585] py-2 text-[12px] font-extrabold text-white disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_10px_22px_-12px_rgba(196,69,105,0.7)]"
+          >
+            <Send className="h-3.5 w-3.5" strokeWidth={2.6} />
+            إرسال
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+function PrayerPreview({ item, liveCount }: { item: PrayerRequest; liveCount: number }) {
   return (
     <Link
       to="/church/prayer"
@@ -774,7 +972,7 @@ function PrayerPreview({ item }: { item: PrayerRequest }) {
         <span className="text-[10.5px] font-bold text-[#7a5a30]">{item.name}</span>
         <span className="inline-flex items-center gap-1 rounded-full bg-[#c79356]/12 px-2 py-0.5 text-[10px] font-extrabold text-[#8a6325] border border-[#c79356]/25">
           <Heart className="h-2.5 w-2.5 fill-current" strokeWidth={0} />
-          {item.prayers.toLocaleString("ar-EG")} صلّوا
+          {liveCount.toLocaleString("ar-EG")} صلّوا
         </span>
       </div>
     </Link>

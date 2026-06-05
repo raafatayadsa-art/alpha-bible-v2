@@ -124,3 +124,27 @@ export function prayerStats(list: PrayerRequest[]) {
   const peoplePrayed = list.reduce((sum, p) => sum + p.prayers, 0);
   return { active, peoplePrayed };
 }
+
+export type EncouragementMessage = {
+  id: string;
+  author: string;
+  text: string;
+  time: string;
+};
+
+export const ENCOURAGEMENT_MESSAGES: EncouragementMessage[] = [
+  { id: "m1", author: "أ. مارينا", text: "الرب يقويك ويعطيك سلامه", time: "منذ ساعة" },
+  { id: "m2", author: "أ. بيشوي", text: "نصلي من أجلك ومن أجل أسرتك", time: "منذ ٣ ساعات" },
+  { id: "m3", author: "أ. مريم", text: "المسيح معك في كل لحظة", time: "منذ ٥ ساعات" },
+];
+
+export const ENCOURAGEMENT_TOTAL = 45;
+
+export const ENCOURAGEMENT_CHIPS: { emoji: string; text: string }[] = [
+  { emoji: "🙏", text: "نصلي من أجلك" },
+  { emoji: "❤️", text: "الرب معك" },
+  { emoji: "✝️", text: "المسيح يعزيك" },
+  { emoji: "🌿", text: "سلام المسيح" },
+];
+
+export const ENCOURAGEMENT_MAX = 100;
