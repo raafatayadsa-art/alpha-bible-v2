@@ -653,98 +653,90 @@ function UpcomingMeetings() {
 /* Prayer Requests Preview Card (links to /prayer-requests)      */
 /* ============================================================ */
 
+function PrayerCardCompact({ p }: { p: typeof PRAYER_REQUESTS[number] }) {
+  return (
+    <Link
+      to="/prayer-requests"
+      className="block shrink-0 w-[240px] active:scale-[0.98] transition-transform"
+    >
+      <div className="rounded-2xl bg-white/85 border border-white/80 p-3 text-right shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_14px_30px_-20px_rgba(120,80,30,0.45)] h-[150px] flex flex-col">
+        <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+          <span className="inline-flex items-center gap-1 rounded-full bg-[#8a6ec1]/15 px-2 py-0.5 text-[10px] font-extrabold text-[#6a4ab5] border border-[#8a6ec1]/25">
+            <HandHeart className="h-2.5 w-2.5" strokeWidth={2.8} />
+            {p.category}
+          </span>
+          {p.status === "urgent" ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#c44569]/15 px-2 py-0.5 text-[10px] font-extrabold text-[#a8344f] border border-[#c44569]/25">
+              <Flame className="h-2.5 w-2.5" strokeWidth={2.8} />
+              عاجلة
+            </span>
+          ) : p.status === "answered" ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#1f8a5a]/15 px-2 py-0.5 text-[10px] font-extrabold text-[#136a44] border border-[#1f8a5a]/25">
+              <Check className="h-2.5 w-2.5" strokeWidth={2.8} />
+              تمّت
+            </span>
+          ) : null}
+        </div>
+        <p className="font-arabic-serif text-[12.5px] font-extrabold text-[#3a2a18] leading-tight line-clamp-1">
+          {p.title}
+        </p>
+        <p className="mt-1 text-[11px] text-[#6a543a] leading-snug line-clamp-3 flex-1">
+          {p.request}
+        </p>
+        <div className="mt-1.5 flex items-center justify-between text-[10px] font-bold text-[#8a6325]">
+          <span className="inline-flex items-center gap-1">
+            <Heart className="h-2.5 w-2.5 fill-current" strokeWidth={0} />
+            {p.prayers.toLocaleString("ar-EG")}
+          </span>
+          <span className="inline-flex items-center gap-1 text-[#7a5a30]">
+            <Clock className="h-2.5 w-2.5" />
+            {p.time}
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
 function PrayerRequestsCard() {
   const items = PRAYER_REQUESTS;
-  const latest = [...items].sort((a, b) => a.ageMinutes - b.ageMinutes)[0];
   const stats = prayerStats(items);
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  useAutoMarquee(trackRef, { speed: 20, direction: -1 });
 
   return (
     <section>
-      <SectionTitle title="طلبات الصلاة" />
-      <Link
-        to="/prayer-requests"
-        className="block relative overflow-hidden rounded-[28px] border border-white/70 bg-[#fbf3e1]/85 backdrop-blur-xl shadow-[0_24px_50px_-26px_rgba(60,40,16,0.55),inset_0_1px_0_rgba(255,255,255,0.85)] active:scale-[0.99] transition-transform"
+      <SectionTitle
+        title="طلبات الصلاة"
+        action={
+          <Link
+            to="/prayer-requests"
+            className="inline-flex items-center gap-1 text-[11px] font-bold text-[#b8893a] active:opacity-60 transition-opacity"
+          >
+            عرض الكل
+            <ArrowRight className="h-3.5 w-3.5 -scale-x-100" />
+          </Link>
+        }
+      />
+
+      {/* Compact stats row */}
+      <div className="grid grid-cols-3 gap-2 mb-2.5">
+        <StatPill icon={<Sparkles className="h-3 w-3" strokeWidth={2.6} />} label="نشط" value={stats.active} tone="purple" />
+        <StatPill icon={<HandHeart className="h-3 w-3" strokeWidth={2.6} />} label="صلّوا" value={stats.peoplePrayed} tone="green" />
+        <StatPill icon={<MessageSquareHeart className="h-3 w-3" strokeWidth={2.6} />} label="رسالة" value={ENCOURAGEMENT_TOTAL} tone="rose" />
+      </div>
+
+      <div
+        ref={trackRef}
+        className="-mx-4 overflow-x-auto no-scrollbar scroll-smooth"
+        style={{ WebkitOverflowScrolling: "touch" }}
       >
-        {/* Hero image */}
-        <div className="relative block h-[150px] w-full overflow-hidden">
-          <img
-            src={cardAgpeya}
-            alt="طلبات الصلاة"
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(180deg, rgba(15,10,4,0.10) 0%, rgba(15,10,4,0.45) 60%, rgba(15,10,4,0.85) 100%)," +
-                "radial-gradient(70% 60% at 70% 30%, rgba(167,139,217,0.35), transparent 65%)",
-            }}
-          />
-          <div className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-extrabold text-[#3a2a18] shadow-md">
-            <Sparkles className="h-3 w-3 text-[#8a6ec1]" strokeWidth={2.6} />
-            مجتمع الصلاة
-          </div>
-          <div className="absolute bottom-3 right-3 left-3 text-right text-white">
-            <h3 className="font-arabic-serif text-[17px] font-extrabold drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
-              🙏 طلبات الصلاة
-            </h3>
-            <p className="mt-0.5 text-[11px] text-white/85">شارك بالصلاة وشجع الآخرين</p>
-          </div>
+        <div className="flex gap-3 px-4 pb-2">
+          {items.map((p) => (
+            <PrayerCardCompact key={p.id} p={p} />
+          ))}
         </div>
-
-        {/* Stats row */}
-        <div className="grid grid-cols-3 gap-2 px-3.5 pt-3">
-          <StatPill icon={<Sparkles className="h-3 w-3" strokeWidth={2.6} />} label="نشط" value={stats.active} tone="purple" />
-          <StatPill icon={<HandHeart className="h-3 w-3" strokeWidth={2.6} />} label="صلّوا" value={stats.peoplePrayed} tone="green" />
-          <StatPill icon={<MessageSquareHeart className="h-3 w-3" strokeWidth={2.6} />} label="رسالة" value={ENCOURAGEMENT_TOTAL} tone="rose" />
-        </div>
-
-        {/* Latest preview */}
-        {latest ? (
-          <div className="px-3.5 pt-3">
-            <div className="rounded-2xl bg-white/80 border border-white/80 p-3 text-right shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
-              <div className="flex items-center gap-2 mb-1 flex-wrap">
-                <span className="inline-flex items-center gap-1 rounded-full bg-[#8a6ec1]/15 px-2 py-0.5 text-[10px] font-extrabold text-[#6a4ab5] border border-[#8a6ec1]/25">
-                  <HandHeart className="h-2.5 w-2.5" strokeWidth={2.8} />
-                  {latest.category}
-                </span>
-                {latest.status === "urgent" ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[#c44569]/15 px-2 py-0.5 text-[10px] font-extrabold text-[#a8344f] border border-[#c44569]/25">
-                    <Flame className="h-2.5 w-2.5" strokeWidth={2.8} />
-                    عاجلة
-                  </span>
-                ) : null}
-                <span className="ms-auto inline-flex items-center gap-1 text-[10px] font-bold text-[#7a5a30]">
-                  <Clock className="h-2.5 w-2.5" />
-                  {latest.time}
-                </span>
-              </div>
-              <p className="font-arabic-serif text-[13px] font-extrabold text-[#3a2a18] leading-tight">
-                {latest.title}
-              </p>
-              <p className="mt-1 text-[11.5px] text-[#6a543a] leading-snug line-clamp-2">
-                {latest.request}
-              </p>
-              <div className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-bold text-[#8a6325]">
-                <Heart className="h-2.5 w-2.5 fill-current" strokeWidth={0} />
-                {latest.prayers.toLocaleString("ar-EG")} صلّوا معه
-              </div>
-            </div>
-          </div>
-        ) : null}
-
-        {/* CTAs */}
-        <div className="p-3.5 pt-3 grid grid-cols-2 gap-2">
-          <span className="inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-2.5 text-[12px] font-extrabold bg-gradient-to-l from-[#8a6ec1] to-[#a07ec4] text-white shadow-[0_10px_22px_-12px_rgba(138,110,193,0.7)]">
-            <HandHeart className="h-3.5 w-3.5" strokeWidth={2.6} />
-            صلّي الآن
-          </span>
-          <span className="inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-2.5 text-[12px] font-extrabold bg-gradient-to-l from-[#c79356] to-[#d6a862] text-white shadow-[0_12px_28px_-12px_rgba(199,147,86,0.7)]">
-            <BookOpen className="h-3.5 w-3.5" />
-            عرض جميع الطلبات
-          </span>
-        </div>
-      </Link>
+      </div>
     </section>
   );
 }
