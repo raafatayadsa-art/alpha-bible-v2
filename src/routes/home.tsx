@@ -776,8 +776,8 @@ function Coverflow<T>({
     draggingRef.current = false;
     // Clamp momentum to a sane range
     velocityRef.current = Math.max(-8, Math.min(8, velocityRef.current));
-    // Pause auto-scroll briefly so momentum can carry naturally before drift resumes
-    pauseUntilRef.current = performance.now() + 1800;
+    // Tiny pause so momentum reads naturally, then auto-drift resumes immediately
+    pauseUntilRef.current = performance.now() + 220;
   };
 
   // Event adapters
