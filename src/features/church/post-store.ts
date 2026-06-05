@@ -282,7 +282,7 @@ export function useReplies(kind: "condolence" | "congrats", postId: string): Rep
 }
 
 /* --------------------------------- roles ------------------------------------- */
-export type ChurchRole = "priest" | "servant" | "admin" | "member";
+export type ChurchRole = "priest" | "leader" | "servant" | "admin" | "member";
 export function getRole(): ChurchRole {
   return read<ChurchRole>(ROLE_KEY, "priest"); // demo default: manager
 }
@@ -291,15 +291,18 @@ export function setRole(role: ChurchRole) {
 }
 export function canManagePosts(): boolean {
   const r = getRole();
-  return r === "priest" || r === "servant" || r === "admin";
+  return r === "priest" || r === "servant" || r === "admin" || r === "leader";
 }
-export function useCanManagePosts(): boolean {
-  const r = useSyncExternalStore(
+export function useChurchRole(): ChurchRole {
+  return useSyncExternalStore(
     subscribe,
     () => read<ChurchRole>(ROLE_KEY, "priest"),
     () => "priest" as ChurchRole,
   );
-  return r === "priest" || r === "servant" || r === "admin";
+}
+export function useCanManagePosts(): boolean {
+  const r = useChurchRole();
+  return r === "priest" || r === "servant" || r === "admin" || r === "leader";
 }
 
 /* --------------------------------- helpers ----------------------------------- */
