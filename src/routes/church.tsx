@@ -382,74 +382,130 @@ function QuickGrid() {
 }
 
 /* ============================================================ */
-/* Announcement                                                  */
+/* Church Posts Feed (featured + list)                           */
 /* ============================================================ */
 
-function Announcement() {
+function CategoryPill({ type, size = "sm" }: { type: ChurchPost["type"]; size?: "sm" | "md" }) {
+  const meta = POST_TYPE_META[type];
+  const px = size === "md" ? "px-3 py-1 text-[11px]" : "px-2.5 py-0.5 text-[10px]";
   return (
-    <section>
-      <Glass className="overflow-hidden" padded={false}>
-        <div className="relative">
-          <img src={newsCandle} alt="" className="h-32 w-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#1a0f04]/70 via-transparent to-transparent" />
-          <span className="absolute top-2.5 right-2.5 inline-flex items-center gap-1 rounded-full bg-[#c44569]/95 px-2.5 py-1 text-[10px] font-bold text-white">
-            <Sparkles className="h-3 w-3" /> إعلان هام
-          </span>
-        </div>
-        <div className="p-4 text-right">
-          <h3 className="font-arabic-serif text-[16px] font-extrabold text-[#3a2a18] leading-snug">
-            قداس عيد الصليب المجيد
-          </h3>
-          <p className="mt-1 text-[12px] text-[#6a543a] leading-relaxed">
-            يُقام القداس الإلهي يوم الجمعة 17 سبتمبر الساعة 7 صباحًا. الكل مدعوّ للمشاركة.
-          </p>
-          <button className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-l from-[#7a4a26] to-[#b8893a] text-white text-[12px] font-bold px-4 py-2 shadow-[0_10px_20px_-10px_rgba(122,74,38,0.7)] active:scale-95 transition-transform">
-            عرض التفاصيل
-            <ArrowRight className="h-3.5 w-3.5 -scale-x-100" />
-          </button>
-        </div>
-      </Glass>
-    </section>
+    <span
+      className={`inline-flex items-center gap-1 rounded-full font-extrabold text-white border border-white/30 shadow-[0_6px_14px_-8px_rgba(0,0,0,0.45)] ${px}`}
+      style={{ background: `linear-gradient(180deg, ${meta.tone}, ${meta.tone}cc)` }}
+    >
+      {meta.label}
+    </span>
   );
 }
 
-/* ============================================================ */
-/* Latest News (horizontal)                                      */
-/* ============================================================ */
+function FeaturedPostCard({ post }: { post: ChurchPost }) {
+  return (
+    <Link
+      to="/church/post/$id"
+      params={{ id: post.id }}
+      className="block active:scale-[0.99] transition-transform"
+    >
+      <Glass className="overflow-hidden" padded={false}>
+        <div className="relative">
+          <img src={post.image} alt={post.title} className="h-44 w-full object-cover" loading="lazy" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#1a0f04]/85 via-[#1a0f04]/15 to-transparent" />
 
-const NEWS = [
-  { img: newsYouth, title: "خدمة الشباب", sub: "اجتماع الجمعة", tag: "شباب" },
-  { img: newsMass, title: "قداس الأحد", sub: "بحضور نيافة الأنبا", tag: "قداس" },
-  { img: newsCandle, title: "صلاة العشية", sub: "يوميًا 6 مساءً", tag: "صلاة" },
-];
+          <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5">
+            {post.pinned && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-[#b8893a] px-2 py-0.5 text-[9.5px] font-extrabold text-white border border-white/40">
+                <Pin className="h-3 w-3" strokeWidth={2.6} /> مثبت
+              </span>
+            )}
+            <CategoryPill type={post.type} size="md" />
+          </div>
 
-function LatestNews() {
+          <div className="absolute bottom-3 right-3 left-3 text-right text-white">
+            <h3 className="font-arabic-serif text-[17px] font-extrabold leading-snug drop-shadow-[0_2px_8px_rgba(0,0,0,0.65)]">
+              {post.title}
+            </h3>
+            <p className="mt-1 inline-flex items-center gap-2 text-[11px] text-white/90">
+              <CalendarDays className="h-3.5 w-3.5" />
+              {post.date}
+              <span className="text-[#e7c97a]">•</span>
+              {post.author}
+            </p>
+          </div>
+        </div>
+        <div className="p-4 text-right">
+          <p className="text-[12.5px] text-[#6a543a] leading-relaxed line-clamp-2">{post.excerpt}</p>
+          <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-l from-[#7a4a26] to-[#b8893a] text-white text-[12px] font-bold px-4 py-2 shadow-[0_10px_20px_-10px_rgba(122,74,38,0.7)]">
+            عرض التفاصيل
+            <ArrowRight className="h-3.5 w-3.5 -scale-x-100" />
+          </span>
+        </div>
+      </Glass>
+    </Link>
+  );
+}
+
+function SmallPostCard({ post }: { post: ChurchPost }) {
+  return (
+    <Link
+      to="/church/post/$id"
+      params={{ id: post.id }}
+      className="block active:scale-[0.98] transition-transform"
+    >
+      <Glass padded={false} className="overflow-hidden">
+        <div className="flex gap-3 p-2.5">
+          <div className="relative h-[78px] w-[88px] shrink-0 overflow-hidden rounded-2xl border border-white/70">
+            <img src={post.image} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+            {post.pinned && (
+              <span className="absolute top-1 right-1 grid place-items-center h-5 w-5 rounded-full bg-[#b8893a] text-white border border-white/50 shadow">
+                <Pin className="h-2.5 w-2.5" strokeWidth={3} />
+              </span>
+            )}
+          </div>
+          <div className="flex-1 min-w-0 text-right">
+            <div className="flex items-center justify-end gap-1.5">
+              <CategoryPill type={post.type} />
+            </div>
+            <h4 className="mt-1 text-[13.5px] font-extrabold text-[#3a2a18] leading-tight line-clamp-2">
+              {post.title}
+            </h4>
+            <p className="mt-1 inline-flex items-center gap-1.5 text-[10.5px] text-[#6a543a]">
+              <CalendarDays className="h-3 w-3 text-[#b8893a]" />
+              {post.date}
+            </p>
+          </div>
+          <ChevronLeft className="self-center h-4 w-4 text-[#b8893a] shrink-0" />
+        </div>
+      </Glass>
+    </Link>
+  );
+}
+
+function ChurchPostsFeed() {
+  // Featured = first pinned, else first post. Rest go below.
+  const sorted = [...CHURCH_POSTS].sort((a, b) => Number(!!b.pinned) - Number(!!a.pinned));
+  const featured = sorted[0];
+  const rest = sorted.slice(1);
+
   return (
     <section>
       <SectionTitle
-        title="آخر الأخبار"
-        action={<span className="text-[11px] font-bold text-[#b8893a]">عرض الكل</span>}
+        title="منشورات الكنيسة"
+        action={
+          <button
+            type="button"
+            aria-label="منشور جديد"
+            title="إنشاء منشور (للكهنة والخدام)"
+            className="inline-flex items-center gap-1 rounded-full bg-gradient-to-l from-[#7a4a26] to-[#b8893a] text-white text-[11px] font-extrabold px-3 py-1.5 shadow-[0_10px_20px_-10px_rgba(122,74,38,0.6)] active:scale-95 transition-transform"
+          >
+            <Plus className="h-3.5 w-3.5" strokeWidth={2.6} />
+            منشور
+          </button>
+        }
       />
-      <div className="-mx-4 overflow-x-auto no-scrollbar">
-        <div className="flex gap-3 px-4 pb-1">
-          {NEWS.map((n, i) => (
-            <article
-              key={i}
-              className="shrink-0 w-[180px] rounded-3xl overflow-hidden border border-white/70 bg-[#fbf3e1] shadow-[0_14px_30px_-20px_rgba(120,80,30,0.5),inset_0_1px_0_rgba(255,255,255,0.85)]"
-            >
-              <div className="relative h-[110px]">
-                <img src={n.img} alt={n.title} className="absolute inset-0 h-full w-full object-cover" />
-                <span className="absolute top-2 right-2 rounded-full bg-white/90 px-2 py-0.5 text-[9.5px] font-bold text-[#7a4a26]">
-                  {n.tag}
-                </span>
-              </div>
-              <div className="p-3 text-right">
-                <h4 className="text-[13px] font-extrabold text-[#3a2a18] leading-tight">{n.title}</h4>
-                <p className="mt-0.5 text-[10.5px] text-[#6a543a]">{n.sub}</p>
-              </div>
-            </article>
-          ))}
-        </div>
+      <div className="space-y-3">
+        {featured && <FeaturedPostCard post={featured} />}
+        {rest.map((p) => (
+          <SmallPostCard key={p.id} post={p} />
+        ))}
       </div>
     </section>
   );
