@@ -4,11 +4,10 @@ import {
   ChevronLeft, Users, HandHeart, BookOpen, Music2, Heart, HeartHandshake,
   Megaphone, GraduationCap, UsersRound, UserCog, Calendar, MapPin, Clock,
   ArrowRight, Plus, CalendarPlus, Megaphone as MegaphoneIcon, Sparkles, ShieldCheck,
-  Repeat,
 } from "lucide-react";
 import { useChurchRole, setRole, type ChurchRole } from "@/features/church/post-store";
 import {
-  useUserServices, useUserActivities, SERVICE_TYPE_LABELS, REPEAT_LABELS,
+  useUserServices, useUserActivities, REPEAT_LABELS,
   type UserService, type UserActivity,
 } from "@/features/church/service-store";
 import { ServiceBuilder } from "@/features/church/ServiceBuilder";
