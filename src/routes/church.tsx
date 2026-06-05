@@ -90,13 +90,7 @@ function Header() {
           <ChevronLeft className="h-5 w-5 -scale-x-100" strokeWidth={2} />
         </Link>
 
-        <div className="flex items-center gap-2">
-          <img
-            src={alphaLogoAsset.url}
-            alt="Alpha"
-            className="h-7 w-auto opacity-95 drop-shadow-[0_2px_6px_rgba(184,137,58,0.35)]"
-          />
-        </div>
+        <h1 className="text-[15px] font-extrabold text-[#3a2a18]">كنيستك معاك</h1>
 
         <div className="flex items-center gap-2">
           <button
