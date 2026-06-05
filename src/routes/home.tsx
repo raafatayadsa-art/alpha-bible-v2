@@ -452,8 +452,8 @@ function HomeScreen() {
             items={daily}
             direction={-1}
             height={150}
-            cardWidthPct={72}
-            peekPct={66}
+            cardWidthPct={66}
+            peekPct={56}
             getKey={(d) => d.key}
             renderCard={(d) => (
               <Link to={d.to as any} aria-label={d.title} className="block">
