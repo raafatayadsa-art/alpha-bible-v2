@@ -212,10 +212,10 @@ function buildPost(cat: CategoryDef, f: FormState): ChurchPost | null {
     }
     case "prayer": {
       if (!has(f.title) || !has(f.body)) return null;
-      return {
+      return finalize({
         id, type: "prayer", title: trim(f.title), body: trim(f.body),
         excerpt: trim(f.body).slice(0, 140), image, date, author, details,
-      };
+      });
     }
     case "liturgy": {
       if (!has(f.title) || !has(f.date)) return null;
