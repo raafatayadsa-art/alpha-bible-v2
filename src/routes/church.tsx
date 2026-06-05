@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { CopticWatermark } from "@/components/coptic";
-import alphaLogoAsset from "@/assets/alpha-logo.png.asset.json";
+
 import cardChurch from "@/assets/home/card-church.jpg";
 import newsCandle from "@/assets/home/news-candle.jpg";
 import newsYouth from "@/assets/home/news-youth.jpg";
@@ -90,13 +90,7 @@ function Header() {
           <ChevronLeft className="h-5 w-5 -scale-x-100" strokeWidth={2} />
         </Link>
 
-        <div className="flex items-center gap-2">
-          <img
-            src={alphaLogoAsset.url}
-            alt="Alpha"
-            className="h-7 w-auto opacity-95 drop-shadow-[0_2px_6px_rgba(184,137,58,0.35)]"
-          />
-        </div>
+        <h1 className="text-[15px] font-extrabold text-[#3a2a18]">كنيستك معاك</h1>
 
         <div className="flex items-center gap-2">
           <button
@@ -127,37 +121,36 @@ function HeroChurchCard() {
   return (
     <section className="relative">
       <div className="relative overflow-hidden rounded-[32px] border border-white/70 shadow-[0_30px_60px_-30px_rgba(60,40,16,0.55),inset_0_1px_0_rgba(255,255,255,0.7)]">
-        {/* Cover */}
+        {/* Church image background */}
         <div className="relative h-[200px] w-full">
           <img src={cardChurch} alt="كنيسة الشهيد مار جرجس" className="absolute inset-0 h-full w-full object-cover" />
+          {/* Elegant overlay */}
           <div
             className="absolute inset-0"
             style={{
               background:
-                "linear-gradient(180deg, rgba(15,10,4,0.05) 0%, rgba(15,10,4,0.55) 70%, rgba(15,10,4,0.85) 100%)",
+                "linear-gradient(180deg, rgba(15,10,4,0.15) 0%, rgba(15,10,4,0.35) 50%, rgba(15,10,4,0.85) 100%)",
             }}
           />
-          {/* Warm light bloom */}
+          {/* Warm golden glow */}
           <div
             aria-hidden
-            className="absolute inset-0 opacity-70 mix-blend-screen"
+            className="absolute inset-0 opacity-50 mix-blend-screen"
             style={{
               background:
-                "radial-gradient(60% 50% at 30% 20%, rgba(255,210,120,0.35), transparent 60%)",
+                "radial-gradient(70% 60% at 70% 25%, rgba(255,210,120,0.3), transparent 60%)",
             }}
           />
-          {/* Verified pill */}
-          <div className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-[#1f8a5a]/90 backdrop-blur-md px-2.5 py-1 text-[10.5px] font-bold text-white border border-white/30 shadow-lg">
-            <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2.5} />
-            عضوية موثقة
-          </div>
-          {/* Title overlay */}
-          <div className="absolute bottom-3 right-3 left-3 text-right text-white">
-            <h2 className="font-arabic-serif text-[20px] font-extrabold leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
+          {/* Coptic decorative top accent */}
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#c79356]/70 to-transparent" />
+
+          {/* Top: Church Name & Location */}
+          <div className="absolute bottom-4 right-4 left-4 text-right text-white">
+            <h2 className="font-arabic-serif text-[22px] font-extrabold leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)]">
               كنيسة الشهيد مار جرجس
             </h2>
-            <p className="mt-1 inline-flex items-center gap-1.5 text-[12px] text-white/90">
-              <MapPin className="h-3.5 w-3.5" />
+            <p className="mt-1.5 inline-flex items-center gap-1.5 text-[12px] text-white/90">
+              <MapPin className="h-3.5 w-3.5" strokeWidth={2.5} />
               إيبارشية شرق القاهرة · مدينة نصر
             </p>
           </div>
@@ -165,42 +158,57 @@ function HeroChurchCard() {
 
         {/* Glass body */}
         <div
-          className="relative px-4 pb-4 pt-3"
+          className="relative px-4 pb-4 pt-4"
           style={{
             background:
-              "linear-gradient(180deg, #fbf3e1 0%, #f6e8c8 100%)",
+              "linear-gradient(180deg, rgba(251,243,225,0.92) 0%, rgba(246,232,200,0.96) 100%)",
+            backdropFilter: "blur(20px)",
           }}
         >
-          {/* Priest row */}
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <div className="h-14 w-14 rounded-full bg-gradient-to-br from-[#7a4a26] to-[#3a2a18] grid place-items-center text-[#f3e6c4] font-arabic-serif text-[16px] font-extrabold border-2 border-[#e7c97a] shadow-[0_8px_18px_-8px_rgba(60,40,16,0.6)]">
-                ✚
-              </div>
-              <span className="absolute -bottom-1 -right-1 inline-grid h-5 w-5 place-items-center rounded-full bg-white border border-[#e7c97a]">
-                <ShieldCheck className="h-3 w-3 text-[#1f8a5a]" strokeWidth={2.5} />
-              </span>
+          {/* Subtle top glass edge */}
+          <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-[#c79356]/40 to-transparent" />
+
+          {/* Middle: Priest info + Action buttons */}
+          <div className="flex items-center justify-between gap-3">
+            {/* Right side: Action buttons */}
+            <div className="flex flex-col gap-2">
+              <ActionBtn icon={Phone} label="اتصال" tone="gold" />
+              <ActionBtn icon={MessageCircle} label="رسالة" tone="purple" />
+              <ActionBtn icon={MapPin} label="خريطة" tone="green" />
             </div>
-            <div className="flex-1 min-w-0 text-right">
-              <p className="text-[10.5px] font-bold text-[#b8893a]">الكاهن المسؤول</p>
-              <p className="text-[14px] font-extrabold text-[#3a2a18] truncate">القمص داود عبد الملاك</p>
+
+            {/* Left side: Priest info */}
+            <div className="flex items-center gap-3">
+              <div className="flex-1 min-w-0 text-right">
+                <p className="text-[10px] font-bold text-[#b8893a] tracking-wide">الكاهن المسؤول</p>
+                <p className="mt-1 text-[15px] font-extrabold text-[#3a2a18] leading-tight">
+                  القمص داود عبد الملاك
+                </p>
+                <p className="mt-0.5 text-[11px] text-[#6a543a]/80">أب روحي · خادم الكنيسة</p>
+              </div>
+              <div className="relative shrink-0">
+                <div className="h-[52px] w-[52px] rounded-full bg-gradient-to-br from-[#7a4a26] to-[#3a2a18] grid place-items-center text-[#f3e6c4] font-arabic-serif text-[18px] font-extrabold border-[2.5px] border-[#e7c97a] shadow-[0_8px_20px_-8px_rgba(60,40,16,0.6)]">
+                  ✚
+                </div>
+                <span className="absolute -bottom-1 -right-1 inline-grid h-5 w-5 place-items-center rounded-full bg-white border border-[#e7c97a] shadow-sm">
+                  <ShieldCheck className="h-3 w-3 text-[#1f8a5a]" strokeWidth={2.5} />
+                </span>
+              </div>
             </div>
           </div>
 
-          <GoldDivider />
+          {/* Coptic gold divider */}
+          <div className="my-3 flex items-center gap-2">
+            <span className="h-px flex-1 bg-gradient-to-l from-transparent via-[#c79356]/50 to-transparent" />
+            <span className="text-[#c79356]/60 text-[9px]">&#10013;</span>
+            <span className="h-px flex-1 bg-gradient-to-r from-transparent via-[#c79356]/50 to-transparent" />
+          </div>
 
-          {/* Stats */}
+          {/* Bottom: Statistics */}
           <div className="grid grid-cols-3 gap-2">
             <Stat icon={Users} label="الأعضاء" value="2,480" />
             <Stat icon={HandHeart} label="الخدام" value="186" />
-            <Stat icon={CalendarDays} label="الاجتماعات" value="14/أسبوع" />
-          </div>
-
-          {/* Communication buttons */}
-          <div className="mt-3 grid grid-cols-3 gap-2">
-            <CommBtn icon={Phone} label="اتصال" tone="gold" />
-            <CommBtn icon={MessageCircle} label="رسالة" tone="purple" />
-            <CommBtn icon={MapPin} label="الخريطة" tone="green" />
+            <Stat icon={ShieldCheck} label="العضوية" value="موثقة" tone="green" />
           </div>
         </div>
       </div>
@@ -208,35 +216,33 @@ function HeroChurchCard() {
   );
 }
 
-function Stat({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
+function Stat({ icon: Icon, label, value, tone = "gold" }: { icon: any; label: string; value: string; tone?: "gold" | "green" | "purple" }) {
+  const iconColor = tone === "green" ? "text-[#1f8a5a]" : tone === "purple" ? "text-[#6a4ab5]" : "text-[#b8893a]";
   return (
-    <div className="rounded-2xl bg-white/70 border border-white/80 px-2 py-2 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_6px_14px_-10px_rgba(120,80,30,0.4)]">
-      <Icon className="mx-auto h-4 w-4 text-[#b8893a]" strokeWidth={2} />
+    <div className="rounded-2xl bg-white/70 border border-white/80 px-2 py-2.5 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_6px_14px_-10px_rgba(120,80,30,0.4)]">
+      <Icon className={`mx-auto h-4 w-4 ${iconColor}`} strokeWidth={2} />
       <p className="mt-1 text-[13px] font-extrabold text-[#3a2a18] leading-none">{value}</p>
       <p className="mt-0.5 text-[10px] text-[#6a543a]">{label}</p>
     </div>
   );
 }
 
-function CommBtn({ icon: Icon, label, tone }: { icon: any; label: string; tone: "gold" | "purple" | "green" }) {
+function ActionBtn({ icon: Icon, label, tone }: { icon: any; label: string; tone: "gold" | "purple" | "green" }) {
   const styles = {
-    gold:
-      "from-[#e7c97a] to-[#b8893a] text-[#3a2a18] shadow-[0_10px_22px_-12px_rgba(184,137,58,0.7)]",
-    purple:
-      "from-[#a78bd9] to-[#6a4ab5] text-white shadow-[0_10px_22px_-12px_rgba(106,74,181,0.7)]",
-    green:
-      "from-[#4ec38a] to-[#1f8a5a] text-white shadow-[0_10px_22px_-12px_rgba(31,138,90,0.7)]",
+    gold: "bg-gradient-to-br from-[#e7c97a] to-[#b8893a] text-[#3a2a18] shadow-[0_8px_18px_-10px_rgba(184,137,58,0.6)]",
+    purple: "bg-gradient-to-br from-[#a78bd9] to-[#6a4ab5] text-white shadow-[0_8px_18px_-10px_rgba(106,74,181,0.6)]",
+    green: "bg-gradient-to-br from-[#4ec38a] to-[#1f8a5a] text-white shadow-[0_8px_18px_-10px_rgba(31,138,90,0.6)]",
   }[tone];
   return (
     <button
       type="button"
       className={
-        "inline-flex flex-col items-center justify-center gap-1 rounded-2xl py-2.5 bg-gradient-to-br border border-white/60 active:scale-[0.97] transition-transform " +
+        "inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 border border-white/50 active:scale-[0.95] transition-transform " +
         styles
       }
     >
-      <Icon className="h-4 w-4" strokeWidth={2.2} />
-      <span className="text-[11px] font-bold">{label}</span>
+      <Icon className="h-3.5 w-3.5" strokeWidth={2.2} />
+      <span className="text-[10px] font-bold">{label}</span>
     </button>
   );
 }
