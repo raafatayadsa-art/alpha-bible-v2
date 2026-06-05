@@ -381,6 +381,51 @@ function CategoryForm({ cat, f, set }: { cat: CategoryDef; f: FormState; set: (k
   }
 }
 
+/* --------------------------- Expiration field -------------------------------- */
+const EXPIRY_HINTS: Record<CategoryKey, string> = {
+  news: "اختياري — يُنصح بضبط تاريخ انتهاء.",
+  announcement: "اختياري — يُنصح بضبط تاريخ انتهاء.",
+  liturgy: "افتراضيًا: ينتهي تلقائيًا بعد موعد القداس.",
+  meeting: "افتراضيًا: ينتهي تلقائيًا بعد موعد الاجتماع.",
+  trip: "افتراضيًا: ينتهي تلقائيًا بعد تاريخ العودة.",
+  "wedding-full": "افتراضيًا: 7 أيام، يمكن التعديل.",
+  "wedding-half": "افتراضيًا: 7 أيام، يمكن التعديل.",
+  condolence: "افتراضيًا: 7 أيام، يمكن التعديل.",
+  fortyDay: "افتراضيًا: 7 أيام، يمكن التعديل.",
+  annual: "افتراضيًا: 7 أيام، يمكن التعديل.",
+  report: "بدون تاريخ انتهاء افتراضيًا (اختياري).",
+  prayer: "ينتهي فقط عند إغلاق الطلبة يدويًا.",
+};
+
+function ExpirationField({
+  cat, f, set,
+}: { cat: CategoryDef; f: FormState; set: (k: keyof FormState, v: string | null) => void }) {
+  return (
+    <div className="mt-3 rounded-2xl bg-white/85 border border-[#efe2c4] p-3 text-right">
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-[10.5px] font-bold text-[#7a5a30]">{EXPIRY_HINTS[cat.key]}</span>
+        <span className="text-[11.5px] font-extrabold text-[#3a2a18]">تاريخ الانتهاء</span>
+      </div>
+      <input
+        type="datetime-local"
+        className="w-full rounded-xl bg-white/90 border border-[#efe2c4] px-3 py-2 text-[13px] text-[#3a2a18] outline-none focus:border-[#c79356]"
+        value={f.expiresAt}
+        onChange={(e) => set("expiresAt", e.target.value)}
+      />
+      {f.expiresAt ? (
+        <button
+          type="button"
+          onClick={() => set("expiresAt", "")}
+          className="mt-1.5 text-[10.5px] font-extrabold text-[#a8344f]"
+        >
+          مسح — استخدام الافتراضي
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+
 /* --------------------------------- Builder ----------------------------------- */
 export function PostBuilder({ onClose }: { onClose: () => void }) {
   const [activeKey, setActiveKey] = useState<CategoryKey>("news");
