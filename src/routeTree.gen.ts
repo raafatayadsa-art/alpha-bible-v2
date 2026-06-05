@@ -38,6 +38,7 @@ import { Route as AgpeyaSavedRouteImport } from './routes/agpeya.saved'
 import { Route as AgpeyaPrayerIdRouteImport } from './routes/agpeya.$prayerId'
 import { Route as BookChapterRouteImport } from './routes/$book.$chapter'
 import { Route as ChurchPostIdRouteImport } from './routes/church.post.$id'
+import { Route as ChurchChatContactIdRouteImport } from './routes/church.chat.$contactId'
 
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
@@ -184,6 +185,11 @@ const ChurchPostIdRoute = ChurchPostIdRouteImport.update({
   path: '/post/$id',
   getParentRoute: () => ChurchRoute,
 } as any)
+const ChurchChatContactIdRoute = ChurchChatContactIdRouteImport.update({
+  id: '/chat/$contactId',
+  path: '/chat/$contactId',
+  getParentRoute: () => ChurchRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -214,6 +220,7 @@ export interface FileRoutesByFullPath {
   '/katameros/': typeof KatamerosIndexRoute
   '/profile/': typeof ProfileIndexRoute
   '/synaxarium/': typeof SynaxariumIndexRoute
+  '/church/chat/$contactId': typeof ChurchChatContactIdRoute
   '/church/post/$id': typeof ChurchPostIdRoute
 }
 export interface FileRoutesByTo {
@@ -244,6 +251,7 @@ export interface FileRoutesByTo {
   '/katameros': typeof KatamerosIndexRoute
   '/profile': typeof ProfileIndexRoute
   '/synaxarium': typeof SynaxariumIndexRoute
+  '/church/chat/$contactId': typeof ChurchChatContactIdRoute
   '/church/post/$id': typeof ChurchPostIdRoute
 }
 export interface FileRoutesById {
@@ -276,6 +284,7 @@ export interface FileRoutesById {
   '/katameros/': typeof KatamerosIndexRoute
   '/profile/': typeof ProfileIndexRoute
   '/synaxarium/': typeof SynaxariumIndexRoute
+  '/church/chat/$contactId': typeof ChurchChatContactIdRoute
   '/church/post/$id': typeof ChurchPostIdRoute
 }
 export interface FileRouteTypes {
@@ -309,6 +318,7 @@ export interface FileRouteTypes {
     | '/katameros/'
     | '/profile/'
     | '/synaxarium/'
+    | '/church/chat/$contactId'
     | '/church/post/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -339,6 +349,7 @@ export interface FileRouteTypes {
     | '/katameros'
     | '/profile'
     | '/synaxarium'
+    | '/church/chat/$contactId'
     | '/church/post/$id'
   id:
     | '__root__'
@@ -370,6 +381,7 @@ export interface FileRouteTypes {
     | '/katameros/'
     | '/profile/'
     | '/synaxarium/'
+    | '/church/chat/$contactId'
     | '/church/post/$id'
   fileRoutesById: FileRoutesById
 }
@@ -606,6 +618,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChurchPostIdRouteImport
       parentRoute: typeof ChurchRoute
     }
+    '/church/chat/$contactId': {
+      id: '/church/chat/$contactId'
+      path: '/chat/$contactId'
+      fullPath: '/church/chat/$contactId'
+      preLoaderRoute: typeof ChurchChatContactIdRouteImport
+      parentRoute: typeof ChurchRoute
+    }
   }
 }
 
@@ -623,11 +642,13 @@ const BookRouteWithChildren = BookRoute._addFileChildren(BookRouteChildren)
 
 interface ChurchRouteChildren {
   ChurchPrayerRoute: typeof ChurchPrayerRoute
+  ChurchChatContactIdRoute: typeof ChurchChatContactIdRoute
   ChurchPostIdRoute: typeof ChurchPostIdRoute
 }
 
 const ChurchRouteChildren: ChurchRouteChildren = {
   ChurchPrayerRoute: ChurchPrayerRoute,
+  ChurchChatContactIdRoute: ChurchChatContactIdRoute,
   ChurchPostIdRoute: ChurchPostIdRoute,
 }
 
