@@ -44,7 +44,7 @@ const KIND_TONE: Record<PlaceKind, { bg: string; color: string; ring: string }> 
 };
 
 /* ============================================================ */
-function DirectoryScreen() {
+export function DirectoryScreen() {
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState<(typeof TABS)[number]["key"]>("all");
   const [recentIds, setRecentIds] = useState<string[]>([]);

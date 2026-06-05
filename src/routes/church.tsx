@@ -893,7 +893,7 @@ function LocationRow() {
       <div className="grid grid-cols-2 gap-3">
         {/* Directory card */}
         <Link
-          to="/church/directory"
+          to="/churches-directory"
           className="relative block rounded-2xl overflow-hidden border border-white/70 shadow-[0_14px_30px_-18px_rgba(120,80,30,0.5),inset_0_1px_0_rgba(255,255,255,0.75)] active:scale-[0.98] transition-transform"
           style={{
             background:
