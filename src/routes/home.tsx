@@ -428,9 +428,9 @@ function HomeScreen() {
           <Coverflow
             items={primary}
             direction={1}
-            height={228}
+            height={244}
             cardWidthPct={62}
-            peekPct={54}
+            peekPct={46}
             getKey={(c) => c.key}
             renderCard={(c) => (
               <Link to={c.to as any} aria-label={c.title} className="block">
@@ -451,9 +451,9 @@ function HomeScreen() {
           <Coverflow
             items={daily}
             direction={-1}
-            height={150}
+            height={164}
             cardWidthPct={66}
-            peekPct={56}
+            peekPct={48}
             getKey={(d) => d.key}
             renderCard={(d) => (
               <Link to={d.to as any} aria-label={d.title} className="block">
@@ -462,6 +462,7 @@ function HomeScreen() {
             )}
           />
         </section>
+
 
         {/* CHURCH NEWS — featured */}
         <section className="mt-4">
@@ -692,7 +693,7 @@ function Coverflow<T>({
   return (
     <div
       className="relative w-full select-none overflow-hidden"
-      style={{ height, perspective: 1200 }}
+      style={{ height, perspective: 1400, perspectiveOrigin: "50% 50%" }}
       onTouchStart={handleStart}
       onTouchMove={onMove as any}
       onTouchEnd={onEnd}
@@ -706,27 +707,52 @@ function Coverflow<T>({
         const item = items[cardIdx];
         const isFront = s === 0;
         const distance = Math.abs(s);
-        const baseXPct = s * peekPct;
-        const tx = dx * (1 - distance * 0.14);
-        const scale = isFront ? 1 : distance === 1 ? 0.88 : 0.76;
-        const opacity = isFront ? 1 : distance === 1 ? 0.55 : 0.18;
-        const z = 30 - distance;
+        // Connected-rail drift: convert drag into fractional slot offset
+        const dragFrac = dx / 220;
+        const effective = s - dragFrac;
+        const absEff = Math.abs(effective);
+        const baseXPct = effective * peekPct;
+        // Apple Cover Flow: side cards rotate inward in 3D
+        const rotateY = Math.max(-55, Math.min(55, -effective * 38));
+        const translateZ = isFront ? 0 : -Math.min(absEff, 2) * 80;
+        const scale = isFront
+          ? 1 + Math.max(0, 0.04 - Math.abs(dragFrac) * 0.04)
+          : Math.max(0.7, 1 - absEff * 0.13);
+        const opacity = Math.max(0.12, 1 - absEff * 0.42);
+        const z = 30 - Math.round(absEff * 10);
         return (
           <div
             key={`${getKey(item)}-${s}`}
             className="absolute top-0 left-1/2"
             style={{
               width: `${cardWidthPct}%`,
-              transform: `translate3d(calc(-50% + ${baseXPct}% + ${tx}px), 0, 0) scale(${scale})`,
+              transform: `translate3d(calc(-50% + ${baseXPct}%), 0, ${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`,
+              transformStyle: "preserve-3d",
+              transformOrigin: "50% 50%",
               zIndex: z,
               opacity,
               transition: dragging ? "none" : TRANSITION,
-              filter: distance >= 2 ? "blur(1px)" : "none",
+              filter: distance >= 2 ? "blur(1.5px)" : "none",
               willChange: "transform, opacity",
               pointerEvents: distance >= 2 ? "none" : "auto",
+              borderRadius: 24,
             }}
           >
-            {renderCard(item, isFront)}
+            <div className="relative" style={{ filter: isFront ? "none" : "brightness(0.82) saturate(0.9)" }}>
+              {renderCard(item, isFront)}
+              {!isFront && (
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 rounded-[24px]"
+                  style={{
+                    background:
+                      effective > 0
+                        ? "linear-gradient(270deg, rgba(20,12,4,0.35), rgba(20,12,4,0) 65%)"
+                        : "linear-gradient(90deg, rgba(20,12,4,0.35), rgba(20,12,4,0) 65%)",
+                  }}
+                />
+              )}
+            </div>
           </div>
         );
       })}
