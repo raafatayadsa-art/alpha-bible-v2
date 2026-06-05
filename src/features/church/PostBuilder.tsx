@@ -150,14 +150,27 @@ type FormState = {
   returnDate: string;
   seats: string;
   places: string;
+  expiresAt: string; // datetime-local string ("YYYY-MM-DDTHH:mm"), "" means no expiration
 };
 
 const EMPTY: FormState = {
   title: "", body: "", author: "خدمة الإعلام", image: null,
   date: "", time: "", place: "", priest: "", audience: "",
   groom: "", bride: "", personName: "", deathDate: "",
-  verse: "", returnDate: "", seats: "", places: "",
+  verse: "", returnDate: "", seats: "", places: "", expiresAt: "",
 };
+
+function toDatetimeLocal(ms: number | null): string {
+  if (!ms) return "";
+  const d = new Date(ms);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function fromDatetimeLocal(s: string): number | null {
+  if (!s) return null;
+  const ms = Date.parse(s);
+  return Number.isFinite(ms) ? ms : null;
+}
 
 function formatHijriOrToday(): string {
   const d = new Date();
