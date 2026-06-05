@@ -220,12 +220,12 @@ function buildPost(cat: CategoryDef, f: FormState): ChurchPost | null {
     case "liturgy": {
       if (!has(f.title) || !has(f.date)) return null;
       details.date = f.date; details.time = f.time; details.place = f.place; details.priest = f.priest;
-      return {
+      return finalize({
         id, type: "liturgy", title: trim(f.title),
         body: trim(f.body) || `قداس ${trim(f.title)}${has(f.place) ? ` بـ${trim(f.place)}` : ""}.`,
         excerpt: `${f.date}${has(f.time) ? ` · ${f.time}` : ""}${has(f.place) ? ` · ${f.place}` : ""}`,
         image, date, author, details,
-      };
+      });
     }
     case "meeting": {
       if (!has(f.title) || !has(f.date)) return null;
