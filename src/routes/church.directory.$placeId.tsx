@@ -45,7 +45,8 @@ const TEXT = "#3a3258";
 const SUB = "#6b658a";
 
 function PlaceDetailsScreen() {
-  const { place } = Route.useLoaderData();
+  const data = Route.useLoaderData() as { place: ChurchPlace };
+  const place = data.place;
 
   useEffect(() => { pushRecentPlace(place.id); }, [place.id]);
 
