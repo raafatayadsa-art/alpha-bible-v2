@@ -516,40 +516,66 @@ function ChurchPostsFeed() {
 /* ============================================================ */
 
 const MEETINGS = [
-  { icon: HandHeart, title: "اجتماع الخدام", date: "السبت 12 سبتمبر", time: "5:00 م", tone: "#1f8a5a" },
-  { icon: Users, title: "اجتماع الشباب", date: "الجمعة 11 سبتمبر", time: "7:30 م", tone: "#5b8fd1" },
-  { icon: BookOpen, title: "درس الكتاب المقدس", date: "الأربعاء 9 سبتمبر", time: "6:00 م", tone: "#8a6ec1" },
+  { day: "12", month: "سبتمبر", title: "اجتماع الخدام", time: "5:00 مساءً", location: "قاعة القديس أغسطينوس", tone: "#1f8a5a" },
+  { day: "11", month: "سبتمبر", title: "اجتماع الشباب", time: "7:30 مساءً", location: "قاعة المجمع", tone: "#5b8fd1" },
+  { day: "9", month: "سبتمبر", title: "درس الكتاب المقدس", time: "6:00 مساءً", location: "الكنيسة الرئيسية", tone: "#8a6ec1" },
 ];
+
+function MeetingCard({ m }: { m: typeof MEETINGS[number] }) {
+  return (
+    <div className="relative flex items-stretch gap-0 overflow-hidden rounded-[24px] border border-white/70 bg-[#fbf3e1]/80 backdrop-blur-xl shadow-[0_16px_40px_-22px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.85)] active:scale-[0.98] transition-transform">
+      {/* Date block */}
+      <div
+        className="flex w-[74px] shrink-0 flex-col items-center justify-center gap-0.5 border-l border-white/60"
+        style={{ background: `linear-gradient(180deg, ${m.tone}18, ${m.tone}08)` }}
+      >
+        <span className="text-[22px] font-extrabold text-[#3a2a18] leading-none">{m.day}</span>
+        <span className="text-[10px] font-bold text-[#b8893a] leading-none">{m.month}</span>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 p-3.5 text-right">
+        <h4 className="text-[14px] font-extrabold text-[#3a2a18] leading-tight">{m.title}</h4>
+        <div className="mt-2 flex flex-col gap-1">
+          <p className="inline-flex items-center justify-end gap-1.5 text-[11px] text-[#6a543a]">
+            <Clock className="h-3.5 w-3.5 text-[#b8893a]" strokeWidth={2} />
+            {m.time}
+          </p>
+          <p className="inline-flex items-center justify-end gap-1.5 text-[11px] text-[#6a543a]">
+            <MapPin className="h-3.5 w-3.5 text-[#b8893a]" strokeWidth={2} />
+            {m.location}
+          </p>
+        </div>
+      </div>
+
+      {/* Chevron */}
+      <div className="flex items-center px-3">
+        <ChevronLeft className="h-4 w-4 text-[#c79356]" />
+      </div>
+    </div>
+  );
+}
 
 function UpcomingMeetings() {
   return (
     <section>
-      <SectionTitle title="الاجتماعات القادمة" />
-      <Glass padded={false}>
-        <ul className="divide-y divide-[#efe2c4]/80">
-          {MEETINGS.map((m, i) => (
-            <li key={i} className="flex items-center gap-3 p-3">
-              <div
-                className="grid h-11 w-11 place-items-center rounded-2xl border border-white/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_6px_14px_-10px_rgba(0,0,0,0.25)]"
-                style={{ background: `linear-gradient(160deg, ${m.tone}22, ${m.tone}55)`, color: m.tone }}
-              >
-                <m.icon className="h-5 w-5" strokeWidth={2} />
-              </div>
-              <div className="flex-1 min-w-0 text-right">
-                <p className="text-[13.5px] font-extrabold text-[#3a2a18] truncate">{m.title}</p>
-                <p className="mt-0.5 inline-flex items-center gap-2 text-[11px] text-[#6a543a]">
-                  <CalendarDays className="h-3.5 w-3.5 text-[#b8893a]" />
-                  {m.date}
-                  <span className="text-[#c79356]">•</span>
-                  <Clock className="h-3.5 w-3.5 text-[#b8893a]" />
-                  {m.time}
-                </p>
-              </div>
-              <ChevronLeft className="h-4 w-4 text-[#b8893a]" />
-            </li>
-          ))}
-        </ul>
-      </Glass>
+      <SectionTitle
+        title="الاجتماعات القادمة"
+        action={
+          <button
+            type="button"
+            className="inline-flex items-center gap-1 text-[11px] font-bold text-[#b8893a] active:opacity-60 transition-opacity"
+          >
+            عرض الكل
+            <ArrowRight className="h-3.5 w-3.5 -scale-x-100" />
+          </button>
+        }
+      />
+      <div className="space-y-2.5">
+        {MEETINGS.slice(0, 3).map((m, i) => (
+          <MeetingCard key={i} m={m} />
+        ))}
+      </div>
     </section>
   );
 }
