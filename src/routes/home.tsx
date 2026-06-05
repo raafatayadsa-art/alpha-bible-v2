@@ -410,12 +410,26 @@ function HomeScreen() {
           </div>
         </header>
 
-        {/* HERO STACK CAROUSEL — Apple Wallet style, autoplay + infinite */}
-        <HeroStack
-          cards={heroCards}
-          savedSet={savedSet}
-          onToggleSaved={toggleSaved}
-        />
+        {/* HERO CAROUSEL — same shared-progress infinite wheel as below */}
+        <section className="mt-5">
+          <Coverflow
+            items={heroCards}
+            direction={1}
+            height={268}
+            cardWidthPct={86}
+            peekPct={62}
+            getKey={(c) => c.id}
+            renderCard={(c, isActive) => (
+              <HeroCardView
+                card={c}
+                index={0}
+                total={heroCards.length}
+                saved={savedSet.has(c.id)}
+                onToggleSaved={() => toggleSaved(c.id)}
+              />
+            )}
+          />
+        </section>
 
         {/* PRIMARY STACKED CAROUSEL — auto-rotating cover flow, infinite */}
         <section className="mt-7">
@@ -762,8 +776,8 @@ function Coverflow<T>({
     draggingRef.current = false;
     // Clamp momentum to a sane range
     velocityRef.current = Math.max(-8, Math.min(8, velocityRef.current));
-    // Pause auto-scroll briefly so momentum can carry naturally before drift resumes
-    pauseUntilRef.current = performance.now() + 1800;
+    // Tiny pause so momentum reads naturally, then auto-drift resumes immediately
+    pauseUntilRef.current = performance.now() + 220;
   };
 
   // Event adapters
