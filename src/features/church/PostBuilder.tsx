@@ -489,6 +489,8 @@ export function PostBuilder({ onClose }: { onClose: () => void }) {
 
           <CategoryForm cat={cat} f={form} set={set} />
 
+          <ExpirationField cat={cat} f={form} set={set} />
+
           {error ? (
             <p className="mt-3 text-[12px] font-extrabold text-[#a8344f] text-right">{error}</p>
           ) : null}
