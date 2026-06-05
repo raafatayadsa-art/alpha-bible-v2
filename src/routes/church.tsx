@@ -886,78 +886,77 @@ const CHURCH_ADDRESS = "كنيسة الشهيد مار جرجس، مدينة ن�
 const CHURCH_COORDS = { lat: 30.0626, lng: 31.3470 };
 const MAPS_URL = `https://www.google.com/maps/search/?api=1&query=${CHURCH_COORDS.lat},${CHURCH_COORDS.lng}`;
 
-function ChurchMapCard() {
-  const handleOpenMaps = () => window.open(MAPS_URL, "_blank", "noopener,noreferrer");
-  const handleShare = async () => {
-    const text = `${CHURCH_ADDRESS}\n${MAPS_URL}`;
-    if (navigator.share) {
-      try { await navigator.share({ title: "موقع الكنيسة", text, url: MAPS_URL }); } catch {}
-    } else if (navigator.clipboard) {
-      await navigator.clipboard.writeText(text);
-    }
-  };
-
-  const staticMap = `https://staticmap.openstreetmap.de/staticmap.php?center=${CHURCH_COORDS.lat},${CHURCH_COORDS.lng}&zoom=15&size=600x260&markers=${CHURCH_COORDS.lat},${CHURCH_COORDS.lng},red-pushpin`;
-
+function LocationRow() {
   return (
     <section>
-      <SectionTitle title="موقع الكنيسة" />
-      <div className="relative overflow-hidden rounded-[28px] border border-white/70 bg-[#fbf3e1]/85 backdrop-blur-xl shadow-[0_20px_44px_-26px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.85)]">
-        <div className="relative h-[150px] w-full overflow-hidden">
-          <img
-            src={staticMap}
-            alt="خريطة الكنيسة"
-            className="absolute inset-0 h-full w-full object-cover"
-            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-          />
-          <div
-            aria-hidden
-            className="absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(180deg, rgba(244,234,216,0.0) 30%, rgba(244,234,216,0.85) 100%), " +
-                "radial-gradient(60% 70% at 50% 40%, rgba(167,139,217,0.18), transparent 70%)",
-            }}
-          />
-          {/* Pin */}
-          <div className="absolute inset-0 grid place-items-center">
-            <div className="relative">
-              <div className="absolute -inset-3 rounded-full bg-[#c44569]/30 animate-ping" />
-              <div className="relative grid h-11 w-11 place-items-center rounded-full bg-gradient-to-br from-[#e0577f] to-[#c44569] text-white border-2 border-white shadow-[0_10px_24px_-8px_rgba(196,69,105,0.7)]">
-                <MapPin className="h-5 w-5" strokeWidth={2.6} />
+      <SectionTitle title="المواقع والأماكن" />
+      <div className="grid grid-cols-2 gap-3">
+        {/* Directory card */}
+        <Link
+          to="/church/directory"
+          className="relative block rounded-2xl overflow-hidden border border-white/70 shadow-[0_14px_30px_-18px_rgba(120,80,30,0.5),inset_0_1px_0_rgba(255,255,255,0.75)] active:scale-[0.98] transition-transform"
+          style={{
+            background:
+              "linear-gradient(160deg, rgba(168,109,194,0.18), rgba(199,147,86,0.18)), linear-gradient(180deg, #fbf3e1, #f6e7c5)",
+          }}
+        >
+          <div className="p-3.5 h-[148px] flex flex-col justify-between text-right">
+            <div className="flex items-start justify-between">
+              <div className="h-10 w-10 rounded-2xl grid place-items-center bg-white/85 border border-[#efe2c4] text-[#6b3a8a] shadow-[0_8px_18px_-10px_rgba(107,58,138,0.6)]">
+                <Library className="h-5 w-5" strokeWidth={2.2} />
               </div>
+              <span className="inline-flex items-center px-2 h-[18px] rounded-full bg-[#3a2a18] text-white text-[9px] font-extrabold">
+                جديد
+              </span>
             </div>
-          </div>
-        </div>
-        <div className="p-3.5">
-          <div className="flex items-start gap-2 mb-3">
-            <MapPin className="h-4 w-4 text-[#c79356] mt-0.5 shrink-0" />
-            <div className="flex-1 text-right">
-              <p className="font-arabic-serif text-[14px] font-extrabold text-[#3a2a18] leading-tight">
-                كنيسة الشهيد مار جرجس
+            <div>
+              <p className="font-arabic-serif text-[14px] font-extrabold text-[#2a1d10] leading-tight">
+                دليل الكنائس والأديرة
               </p>
-              <p className="mt-0.5 text-[11px] text-[#7a5a30]">إيبارشية شرق القاهرة · مدينة نصر</p>
+              <p className="mt-1 text-[10.5px] text-[#6b5436] leading-snug">
+                كنائس، أديرة، ومعالم مسيحية قريبة منك
+              </p>
+              <span className="mt-2 inline-flex items-center gap-1 text-[10.5px] font-extrabold text-[#6b3a8a]">
+                استكشاف ←
+              </span>
             </div>
           </div>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={handleOpenMaps}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-l from-[#c79356] to-[#d6a862] px-3 py-2.5 text-[12px] font-extrabold text-white shadow-[0_10px_24px_-12px_rgba(199,147,86,0.7)] active:scale-[0.98] transition-transform"
-            >
-              <Navigation className="h-3.5 w-3.5" />
-              فتح في الخرائط
-            </button>
-            <button
-              type="button"
-              onClick={handleShare}
-              className="inline-flex items-center justify-center gap-1.5 rounded-full bg-white/80 border border-[#efe2c4] px-4 py-2.5 text-[12px] font-extrabold text-[#3a2a18] active:scale-[0.98] transition-transform"
-            >
-              <Share2 className="h-3.5 w-3.5" />
-              مشاركة
-            </button>
+        </Link>
+
+        {/* Quick map card */}
+        <a
+          href={MAPS_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="relative block rounded-2xl overflow-hidden border border-white/70 shadow-[0_14px_30px_-18px_rgba(120,80,30,0.5),inset_0_1px_0_rgba(255,255,255,0.75)] active:scale-[0.98] transition-transform"
+          style={{
+            background:
+              "linear-gradient(160deg, rgba(196,69,105,0.16), rgba(199,147,86,0.18)), linear-gradient(180deg, #fbf3e1, #f6e7c5)",
+          }}
+        >
+          <div className="p-3.5 h-[148px] flex flex-col justify-between text-right">
+            <div className="flex items-start justify-between">
+              <div className="relative">
+                <div className="absolute -inset-1.5 rounded-full bg-[#c44569]/25 animate-ping" />
+                <div className="relative h-10 w-10 grid place-items-center rounded-2xl bg-gradient-to-br from-[#e0577f] to-[#c44569] text-white border border-white/70 shadow-[0_8px_18px_-8px_rgba(196,69,105,0.7)]">
+                  <MapPin className="h-5 w-5" strokeWidth={2.4} />
+                </div>
+              </div>
+              <Navigation className="h-4 w-4 text-[#8a5a1f]" strokeWidth={2.4} />
+            </div>
+            <div>
+              <p className="font-arabic-serif text-[14px] font-extrabold text-[#2a1d10] leading-tight">
+                موقع كنيستي
+              </p>
+              <p className="mt-1 text-[10.5px] text-[#6b5436] leading-snug truncate">
+                {CHURCH_ADDRESS}
+              </p>
+              <span className="mt-2 inline-flex items-center gap-1 text-[10.5px] font-extrabold text-[#c44569]">
+                فتح الخرائط ←
+              </span>
+            </div>
           </div>
-        </div>
+        </a>
       </div>
     </section>
   );
@@ -1188,7 +1187,7 @@ function ChurchScreen() {
         <PrayerRequestsCard />
         <UpcomingMeetings />
         <LiveBroadcast />
-        <ChurchMapCard />
+        <LocationRow />
 
 
       </div>

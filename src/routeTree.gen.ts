@@ -35,6 +35,7 @@ import { Route as ProfileChurchRouteImport } from './routes/profile.church'
 import { Route as ProfileAppearanceRouteImport } from './routes/profile.appearance'
 import { Route as FeastsEventIdRouteImport } from './routes/feasts.$eventId'
 import { Route as ChurchNotificationsRouteImport } from './routes/church.notifications'
+import { Route as ChurchDirectoryRouteImport } from './routes/church.directory'
 import { Route as AgpeyaSavedRouteImport } from './routes/agpeya.saved'
 import { Route as AgpeyaPrayerIdRouteImport } from './routes/agpeya.$prayerId'
 import { Route as BookChapterRouteImport } from './routes/$book.$chapter'
@@ -171,6 +172,11 @@ const ChurchNotificationsRoute = ChurchNotificationsRouteImport.update({
   path: '/notifications',
   getParentRoute: () => ChurchRoute,
 } as any)
+const ChurchDirectoryRoute = ChurchDirectoryRouteImport.update({
+  id: '/directory',
+  path: '/directory',
+  getParentRoute: () => ChurchRoute,
+} as any)
 const AgpeyaSavedRoute = AgpeyaSavedRouteImport.update({
   id: '/agpeya/saved',
   path: '/agpeya/saved',
@@ -211,6 +217,7 @@ export interface FileRoutesByFullPath {
   '/$book/$chapter': typeof BookChapterRoute
   '/agpeya/$prayerId': typeof AgpeyaPrayerIdRoute
   '/agpeya/saved': typeof AgpeyaSavedRoute
+  '/church/directory': typeof ChurchDirectoryRoute
   '/church/notifications': typeof ChurchNotificationsRoute
   '/feasts/$eventId': typeof FeastsEventIdRoute
   '/profile/appearance': typeof ProfileAppearanceRoute
@@ -243,6 +250,7 @@ export interface FileRoutesByTo {
   '/$book/$chapter': typeof BookChapterRoute
   '/agpeya/$prayerId': typeof AgpeyaPrayerIdRoute
   '/agpeya/saved': typeof AgpeyaSavedRoute
+  '/church/directory': typeof ChurchDirectoryRoute
   '/church/notifications': typeof ChurchNotificationsRoute
   '/feasts/$eventId': typeof FeastsEventIdRoute
   '/profile/appearance': typeof ProfileAppearanceRoute
@@ -277,6 +285,7 @@ export interface FileRoutesById {
   '/$book/$chapter': typeof BookChapterRoute
   '/agpeya/$prayerId': typeof AgpeyaPrayerIdRoute
   '/agpeya/saved': typeof AgpeyaSavedRoute
+  '/church/directory': typeof ChurchDirectoryRoute
   '/church/notifications': typeof ChurchNotificationsRoute
   '/feasts/$eventId': typeof FeastsEventIdRoute
   '/profile/appearance': typeof ProfileAppearanceRoute
@@ -312,6 +321,7 @@ export interface FileRouteTypes {
     | '/$book/$chapter'
     | '/agpeya/$prayerId'
     | '/agpeya/saved'
+    | '/church/directory'
     | '/church/notifications'
     | '/feasts/$eventId'
     | '/profile/appearance'
@@ -344,6 +354,7 @@ export interface FileRouteTypes {
     | '/$book/$chapter'
     | '/agpeya/$prayerId'
     | '/agpeya/saved'
+    | '/church/directory'
     | '/church/notifications'
     | '/feasts/$eventId'
     | '/profile/appearance'
@@ -377,6 +388,7 @@ export interface FileRouteTypes {
     | '/$book/$chapter'
     | '/agpeya/$prayerId'
     | '/agpeya/saved'
+    | '/church/directory'
     | '/church/notifications'
     | '/feasts/$eventId'
     | '/profile/appearance'
@@ -610,6 +622,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChurchNotificationsRouteImport
       parentRoute: typeof ChurchRoute
     }
+    '/church/directory': {
+      id: '/church/directory'
+      path: '/directory'
+      fullPath: '/church/directory'
+      preLoaderRoute: typeof ChurchDirectoryRouteImport
+      parentRoute: typeof ChurchRoute
+    }
     '/agpeya/saved': {
       id: '/agpeya/saved'
       path: '/agpeya/saved'
@@ -661,12 +680,14 @@ const BookRouteChildren: BookRouteChildren = {
 const BookRouteWithChildren = BookRoute._addFileChildren(BookRouteChildren)
 
 interface ChurchRouteChildren {
+  ChurchDirectoryRoute: typeof ChurchDirectoryRoute
   ChurchNotificationsRoute: typeof ChurchNotificationsRoute
   ChurchChatContactIdRoute: typeof ChurchChatContactIdRoute
   ChurchPostIdRoute: typeof ChurchPostIdRoute
 }
 
 const ChurchRouteChildren: ChurchRouteChildren = {
+  ChurchDirectoryRoute: ChurchDirectoryRoute,
   ChurchNotificationsRoute: ChurchNotificationsRoute,
   ChurchChatContactIdRoute: ChurchChatContactIdRoute,
   ChurchPostIdRoute: ChurchPostIdRoute,
