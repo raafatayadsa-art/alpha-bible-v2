@@ -625,14 +625,99 @@ function PrayerRequestsCard() {
 /* Live Broadcast                                                */
 /* ============================================================ */
 
+function useCountdown(target: number) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const diff = Math.max(0, target - now);
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  const mins = Math.floor((diff % 3600000) / 60000);
+  const secs = Math.floor((diff % 60000) / 1000);
+  return { days, hours, mins, secs, done: diff === 0 };
+}
+
+function CountdownUnit({ value, label }: { value: number; label: string }) {
+  return (
+    <div className="flex flex-col items-center min-w-[44px]">
+      <span className="font-arabic-serif text-[18px] font-extrabold text-[#3a2a18] tabular-nums leading-none">
+        {String(value).padStart(2, "0")}
+      </span>
+      <span className="mt-1 text-[9.5px] font-bold text-[#8a6a3a] tracking-wide">{label}</span>
+    </div>
+  );
+}
+
+function UpcomingStreamCard() {
+  const [reminded, setReminded] = useState(false);
+  // Next Sunday 9:00 AM local
+  const target = useRef<number>(
+    (() => {
+      const d = new Date();
+      const day = d.getDay();
+      const add = ((7 - day) % 7) || 7;
+      d.setDate(d.getDate() + add);
+      d.setHours(9, 0, 0, 0);
+      return d.getTime();
+    })()
+  ).current;
+  const { days, hours, mins, secs } = useCountdown(target);
+
+  return (
+    <div className="relative overflow-hidden rounded-[24px] border border-white/70 bg-[#fbf3e1]/85 backdrop-blur-xl shadow-[0_20px_44px_-26px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.85)]">
+      <div className="flex gap-3 p-3">
+        <div className="relative h-[92px] w-[92px] shrink-0 overflow-hidden rounded-[18px] border border-white/70">
+          <img src={cardChurch} alt="بث قادم" className="absolute inset-0 h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+          <div className="absolute bottom-1 right-1 inline-flex items-center gap-1 rounded-full bg-white/95 px-1.5 py-0.5 text-[9px] font-extrabold text-[#3a2a18]">
+            <CalendarDays className="h-2.5 w-2.5" /> قريباً
+          </div>
+        </div>
+        <div className="flex-1 min-w-0">
+          <h4 className="font-arabic-serif text-[14px] font-extrabold text-[#3a2a18] leading-tight">
+            قداس الأحد القادم
+          </h4>
+          <p className="mt-0.5 text-[11px] text-[#7a5a30]">من الكاتدرائية المرقسية</p>
+          <div className="mt-2 flex items-center gap-1.5" dir="ltr">
+            <CountdownUnit value={days} label="يوم" />
+            <span className="text-[#c79356] font-bold">:</span>
+            <CountdownUnit value={hours} label="ساعة" />
+            <span className="text-[#c79356] font-bold">:</span>
+            <CountdownUnit value={mins} label="دقيقة" />
+            <span className="text-[#c79356] font-bold">:</span>
+            <CountdownUnit value={secs} label="ثانية" />
+          </div>
+        </div>
+      </div>
+      <div className="px-3 pb-3">
+        <button
+          type="button"
+          onClick={() => setReminded((v) => !v)}
+          className={
+            "w-full inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-[12.5px] font-extrabold transition-all active:scale-[0.98] " +
+            (reminded
+              ? "bg-[#e9d9b8] text-[#3a2a18] border border-[#c79356]/40"
+              : "bg-gradient-to-l from-[#c79356] to-[#d6a862] text-white shadow-[0_10px_24px_-12px_rgba(199,147,86,0.7)]")
+          }
+        >
+          <Bell className={"h-4 w-4 " + (reminded ? "fill-current" : "")} />
+          {reminded ? "تم تفعيل التذكير" : "ذكّرني قبل البث"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function LiveBroadcast() {
   return (
     <section>
       <SectionTitle title="البث المباشر" />
       <div className="relative overflow-hidden rounded-[28px] border border-white/70 shadow-[0_24px_50px_-26px_rgba(60,40,16,0.6),inset_0_1px_0_rgba(255,255,255,0.7)]">
-        <div className="relative h-[180px]">
+        <div className="relative h-[200px]">
           <img src={heavenlyChurch} alt="البث المباشر" className="absolute inset-0 h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0603]/85 via-[#0a0603]/30 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0603]/90 via-[#0a0603]/35 to-transparent" />
 
           {/* LIVE pill */}
           <div className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-[#c44569] px-2.5 py-1 text-[10.5px] font-extrabold text-white shadow-lg">
@@ -663,6 +748,27 @@ function LiveBroadcast() {
             <p className="mt-0.5 text-[11px] text-white/85">بث مباشر من الكاتدرائية</p>
           </div>
         </div>
+        {/* Watch button bar */}
+        <div className="bg-[#1a0f06] px-3 py-2.5 flex items-center gap-2">
+          <button
+            type="button"
+            className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-l from-[#c44569] to-[#e0577f] px-4 py-2.5 text-[12.5px] font-extrabold text-white shadow-[0_10px_24px_-12px_rgba(196,69,105,0.8)] active:scale-[0.98] transition-transform"
+          >
+            <Play className="h-4 w-4 fill-current" strokeWidth={0} />
+            شاهد الآن
+          </button>
+          <button
+            type="button"
+            aria-label="مشاركة"
+            className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white border border-white/15 active:scale-95 transition-transform"
+          >
+            <Sparkles className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-3">
+        <UpcomingStreamCard />
       </div>
     </section>
   );
