@@ -361,43 +361,55 @@ function QuickGrid() {
         style={{ WebkitOverflowScrolling: "touch" }}
       >
         <div className="flex gap-3 px-4 pb-2">
-          {QUICK.map((q) => (
-            <button
-              key={q.key}
-              type="button"
-              className="group shrink-0 w-[124px] h-[150px] relative rounded-3xl overflow-hidden border border-white/70 text-right active:scale-[0.96] transition-transform shadow-[0_18px_36px_-22px_rgba(120,80,30,0.55),inset_0_1px_0_rgba(255,255,255,0.85)]"
-            >
-              <img
-                src={q.img}
-                alt=""
-                className="absolute inset-0 h-full w-full object-cover"
-                loading="lazy"
-              />
-              <div
-                className="absolute inset-0"
-                style={{
-                  background: `linear-gradient(180deg, ${q.tone}10 0%, rgba(15,10,4,0.15) 40%, rgba(15,10,4,0.85) 100%)`,
-                }}
-              />
-              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#e7c97a]/80 to-transparent" />
+          {QUICK.map((q) => {
+            const inner = (
+              <>
+                <img
+                  src={q.img}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-cover"
+                  loading="lazy"
+                />
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: `linear-gradient(180deg, ${q.tone}10 0%, rgba(15,10,4,0.15) 40%, rgba(15,10,4,0.85) 100%)`,
+                  }}
+                />
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#e7c97a]/80 to-transparent" />
 
-              <div
-                className="absolute top-2.5 right-2.5 grid h-10 w-10 place-items-center rounded-2xl border border-white/60 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_10px_18px_-10px_rgba(0,0,0,0.45)]"
-                style={{
-                  background: `linear-gradient(160deg, ${q.tone}cc, ${q.tone}88)`,
-                  color: "#fff",
-                }}
-              >
-                <q.icon className="h-5 w-5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.35)]" strokeWidth={2.3} />
-              </div>
+                <div
+                  className="absolute top-2.5 right-2.5 grid h-10 w-10 place-items-center rounded-2xl border border-white/60 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_10px_18px_-10px_rgba(0,0,0,0.45)]"
+                  style={{
+                    background: `linear-gradient(160deg, ${q.tone}cc, ${q.tone}88)`,
+                    color: "#fff",
+                  }}
+                >
+                  <q.icon className="h-5 w-5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.35)]" strokeWidth={2.3} />
+                </div>
 
-              <div className="absolute bottom-2.5 right-2.5 left-2.5">
-                <p className="font-arabic-serif text-[12.5px] font-extrabold text-white leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.65)] [word-break:keep-all]">
-                  {q.label}
-                </p>
-              </div>
-            </button>
-          ))}
+                <div className="absolute bottom-2.5 right-2.5 left-2.5">
+                  <p className="font-arabic-serif text-[12.5px] font-extrabold text-white leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.65)] [word-break:keep-all]">
+                    {q.label}
+                  </p>
+                </div>
+              </>
+            );
+            const cls =
+              "group shrink-0 w-[124px] h-[150px] relative rounded-3xl overflow-hidden border border-white/70 text-right active:scale-[0.96] transition-transform shadow-[0_18px_36px_-22px_rgba(120,80,30,0.55),inset_0_1px_0_rgba(255,255,255,0.85)]";
+            if (q.key === "service") {
+              return (
+                <Link key={q.key} to="/church/service" className={cls}>
+                  {inner}
+                </Link>
+              );
+            }
+            return (
+              <button key={q.key} type="button" className={cls}>
+                {inner}
+              </button>
+            );
+          })}
         </div>
       </div>
     </section>
