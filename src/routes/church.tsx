@@ -615,6 +615,9 @@ function MeetingCard({ m }: { m: typeof MEETINGS[number] }) {
 }
 
 function UpcomingMeetings() {
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  useAutoMarquee(trackRef, { speed: 20, direction: 1 });
+
   return (
     <section>
       <SectionTitle
@@ -629,10 +632,18 @@ function UpcomingMeetings() {
           </button>
         }
       />
-      <div className="space-y-2.5">
-        {MEETINGS.slice(0, 3).map((m, i) => (
-          <MeetingCard key={i} m={m} />
-        ))}
+      <div
+        ref={trackRef}
+        className="-mx-4 overflow-x-auto no-scrollbar scroll-smooth"
+        style={{ WebkitOverflowScrolling: "touch" }}
+      >
+        <div className="flex gap-3 px-4 pb-2">
+          {MEETINGS.map((m, i) => (
+            <div key={i} className="shrink-0 w-[230px]">
+              <MeetingCard m={m} />
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
