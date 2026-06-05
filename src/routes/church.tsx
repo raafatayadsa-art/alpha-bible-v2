@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useRef } from "react";
 import {
   ArrowRight, Phone, MessageCircle, MapPin, ShieldCheck, Users,
   HandHeart, Newspaper, Radio, CalendarDays, BookOpen, Library, Heart,
@@ -12,6 +13,10 @@ import newsCandle from "@/assets/home/news-candle.jpg";
 import newsYouth from "@/assets/home/news-youth.jpg";
 import newsMass from "@/assets/home/news-mass.jpg";
 import heavenlyChurch from "@/assets/home/heavenly-church.png";
+import cardAgpeya from "@/assets/home/card-agpeya.jpg";
+import cardKatameros from "@/assets/home/card-katameros.jpg";
+import cardChildren from "@/assets/home/card-children.jpg";
+import cardMeditation from "@/assets/home/card-meditation.jpg";
 
 export const Route = createFileRoute("/church")({
   ssr: false,
