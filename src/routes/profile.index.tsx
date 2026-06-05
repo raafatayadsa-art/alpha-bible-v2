@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ChevronLeft, ChevronRight, MessageSquare, User as UserIcon, Church,
-  Users, Palette, Shield, BadgeCheck, Crown, QrCode, Calendar, Hash,
+  Users, Palette, Shield, BadgeCheck, Crown, QrCode, Calendar, Hash, HandHeart,
 } from "lucide-react";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { CopticWatermark, CopticCross } from "@/components/coptic";
