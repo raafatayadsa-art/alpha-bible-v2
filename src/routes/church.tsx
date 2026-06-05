@@ -16,7 +16,6 @@ import heavenlyChurch from "@/assets/home/heavenly-church.png";
 import cardAgpeya from "@/assets/home/card-agpeya.jpg";
 import cardKatameros from "@/assets/home/card-katameros.jpg";
 import cardChildren from "@/assets/home/card-children.jpg";
-import cardMeditation from "@/assets/home/card-meditation.jpg";
 
 export const Route = createFileRoute("/church")({
   ssr: false,
