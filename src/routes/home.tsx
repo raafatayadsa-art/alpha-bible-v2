@@ -514,6 +514,77 @@ function HomeScreen() {
 }
 
 // ===== Hero Stack — wallet-style layered swipe, infinite loop + autoplay =====
+/* =========================================================
+   Carousel internals (Apple-like)
+   - All visible cards translate together with the drag delta
+     so the row feels like a connected chain.
+   - Auto-rotation eases via cubic-bezier(0.32,0.72,0,1).
+   - Touch pauses autoplay; resumes after 4s of inactivity.
+   - Release uses velocity + distance to advance with momentum.
+   ========================================================= */
+
+const APPLE_EASE = "cubic-bezier(0.32, 0.72, 0, 1)";
+const TRANSITION = `transform 620ms ${APPLE_EASE}, opacity 420ms ease-out, filter 420ms ease-out`;
+
+function useCarouselGesture(onAdvance: (dir: 1 | -1) => void) {
+  const startX = useRef<number | null>(null);
+  const startT = useRef<number>(0);
+  const lastX = useRef<number>(0);
+  const lastT = useRef<number>(0);
+  const velocity = useRef<number>(0); // px / ms
+  const [dx, setDx] = useState(0);
+  const [dragging, setDragging] = useState(false);
+
+  const onStart = (e: React.TouchEvent | React.MouseEvent) => {
+    const x = "touches" in e ? e.touches[0].clientX : e.clientX;
+    startX.current = x; lastX.current = x;
+    startT.current = performance.now(); lastT.current = startT.current;
+    velocity.current = 0;
+    setDx(0); setDragging(true);
+  };
+  const onMove = (e: React.TouchEvent | React.MouseEvent) => {
+    if (startX.current == null) return;
+    const x = "touches" in e ? e.touches[0].clientX : e.clientX;
+    const t = performance.now();
+    const dt = Math.max(1, t - lastT.current);
+    velocity.current = (x - lastX.current) / dt;
+    lastX.current = x; lastT.current = t;
+    setDx(x - startX.current);
+  };
+  const onEnd = () => {
+    if (startX.current == null) return;
+    const d = lastX.current - startX.current;
+    const v = velocity.current; // RTL: left swipe (negative) → next
+    // distance OR velocity threshold (Apple-feel)
+    if (Math.abs(d) > 55 || Math.abs(v) > 0.55) {
+      onAdvance(d + v * 120 < 0 ? 1 : -1);
+    }
+    startX.current = null;
+    setDx(0); setDragging(false);
+  };
+
+  return { dx, dragging, onStart, onMove, onEnd };
+}
+
+function useAutoplay(active: boolean, intervalMs: number, tick: () => void) {
+  const [paused, setPaused] = useState(false);
+  const pauseTimer = useRef<number | null>(null);
+  useEffect(() => {
+    if (!active || paused) return;
+    const id = window.setInterval(tick, intervalMs);
+    const onVis = () => { if (document.hidden) setPaused(true); };
+    document.addEventListener("visibilitychange", onVis);
+    return () => { clearInterval(id); document.removeEventListener("visibilitychange", onVis); };
+  }, [active, paused, intervalMs, tick]);
+  const pauseTemporarily = (ms = 4000) => {
+    setPaused(true);
+    if (pauseTimer.current) window.clearTimeout(pauseTimer.current);
+    pauseTimer.current = window.setTimeout(() => setPaused(false), ms);
+  };
+  useEffect(() => () => { if (pauseTimer.current) window.clearTimeout(pauseTimer.current); }, []);
+  return { paused, pauseTemporarily };
+}
+
 function HeroStack({
   cards, savedSet, onToggleSaved,
 }: {
@@ -522,83 +593,57 @@ function HeroStack({
   onToggleSaved: (id: string) => void;
 }) {
   const total = cards.length;
-  const [index, setIndex] = useState(0); // logical, grows unbounded
-  const [paused, setPaused] = useState(false);
-  const pauseTimer = useRef<number | null>(null);
-  const startX = useRef<number | null>(null);
-  const [dx, setDx] = useState(0);
+  const [index, setIndex] = useState(0);
 
-  // Auto-rotation every 5s, paused on user interaction or document hidden
-  useEffect(() => {
-    if (paused || total <= 1) return;
-    const id = window.setInterval(() => setIndex((i) => i + 1), 5000);
-    const onVis = () => { if (document.hidden) setPaused(true); };
-    document.addEventListener("visibilitychange", onVis);
-    return () => { clearInterval(id); document.removeEventListener("visibilitychange", onVis); };
-  }, [paused, total]);
+  const advance = (dir: 1 | -1) => { setIndex((i) => i + dir); pauseTemporarily(); };
+  const { paused, pauseTemporarily } = useAutoplay(total > 1, 6000, () => setIndex((i) => i + 1));
+  const { dx, dragging, onStart, onMove, onEnd } = useCarouselGesture((dir) => advance(dir));
 
-  const pauseTemporarily = () => {
-    setPaused(true);
-    if (pauseTimer.current) window.clearTimeout(pauseTimer.current);
-    pauseTimer.current = window.setTimeout(() => setPaused(false), 8000);
-  };
-  useEffect(() => () => { if (pauseTimer.current) window.clearTimeout(pauseTimer.current); }, []);
-
-  const onTouchStart = (e: React.TouchEvent | React.MouseEvent) => {
-    startX.current = "touches" in e ? e.touches[0].clientX : e.clientX;
-    setDx(0);
-  };
-  const onTouchMove = (e: React.TouchEvent | React.MouseEvent) => {
-    if (startX.current == null) return;
-    const x = "touches" in e ? e.touches[0].clientX : e.clientX;
-    setDx(x - startX.current);
-  };
-  const onTouchEnd = () => {
-    if (Math.abs(dx) > 60) {
-      // RTL: swipe right (dx>0) = previous; swipe left (dx<0) = next
-      setIndex((i) => i + (dx < 0 ? 1 : -1));
-      pauseTemporarily();
-    }
-    startX.current = null;
-    setDx(0);
-  };
+  // when user touches, pause immediately
+  const handleStart = (e: any) => { if (!paused) pauseTemporarily(); onStart(e); };
 
   const currentMod = ((index % total) + total) % total;
-  const slots = [-1, 0, 1];
+  const slots = [-2, -1, 0, 1, 2];
+  const peekPct = 78; // base offset between cards
 
   return (
     <section className="mt-5 select-none">
       <div
         className="relative h-[268px] w-full overflow-hidden"
         style={{ perspective: 1200 }}
-        onTouchStart={onTouchStart as any}
-        onTouchMove={onTouchMove as any}
-        onTouchEnd={onTouchEnd}
-        onMouseDown={onTouchStart as any}
-        onMouseMove={(e) => { if (startX.current != null) onTouchMove(e); }}
-        onMouseUp={onTouchEnd}
-        onMouseLeave={() => { if (startX.current != null) onTouchEnd(); }}
+        onTouchStart={handleStart}
+        onTouchMove={onMove as any}
+        onTouchEnd={onEnd}
+        onMouseDown={handleStart}
+        onMouseMove={(e) => { if (dragging) onMove(e); }}
+        onMouseUp={onEnd}
+        onMouseLeave={() => { if (dragging) onEnd(); }}
       >
         {slots.map((s) => {
           const cardIdx = ((index + s) % total + total) % total;
           const c = cards[cardIdx];
           const isFront = s === 0;
-          const baseXPct = s * 78; // peek offset for prev/next
-          const tx = isFront ? dx : 0;
-          const scale = isFront ? 1 : 0.84;
-          const opacity = isFront ? 1 : 0.55;
-          const z = isFront ? 30 : 10;
-          const rotate = isFront ? dx * 0.02 : 0;
+          const distance = Math.abs(s);
+          // All cards translate together with dx for a "connected chain" feel
+          const baseXPct = s * peekPct;
+          // Soft parallax: outer cards drift slightly less than inner
+          const tx = dx * (1 - distance * 0.12);
+          const scale = isFront ? 1 : distance === 1 ? 0.86 : 0.74;
+          const opacity = isFront ? 1 : distance === 1 ? 0.55 : 0.18;
+          const z = 30 - distance;
+          const rotate = isFront ? dx * 0.015 : 0;
           return (
             <div
               key={`${c.id}-${s}`}
               className="absolute top-0 left-1/2 w-[86%]"
               style={{
-                transform: `translate(calc(-50% + ${baseXPct}% + ${tx}px), 0) scale(${scale}) rotate(${rotate}deg)`,
+                transform: `translate3d(calc(-50% + ${baseXPct}% + ${tx}px), 0, 0) scale(${scale}) rotate(${rotate}deg)`,
                 zIndex: z,
                 opacity,
-                transition: startX.current != null && isFront ? "none" : "transform 450ms cubic-bezier(0.22,1,0.36,1), opacity 350ms",
-                filter: isFront ? "none" : "blur(0.3px)",
+                transition: dragging ? "none" : TRANSITION,
+                filter: distance >= 2 ? "blur(1px)" : "none",
+                willChange: "transform, opacity",
+                pointerEvents: distance >= 2 ? "none" : "auto",
               }}
             >
               <HeroCardView
@@ -616,94 +661,69 @@ function HeroStack({
   );
 }
 
-// ===== Auto-rotating Cover Flow (used for Primary + Daily) =====
+// ===== Premium Cover Flow — connected motion, momentum, Apple ease =====
 function Coverflow<T>({
-  items, direction, height, cardWidthPct, peekPct, renderCard, getKey, intervalMs = 5000,
+  items, direction, height, cardWidthPct, peekPct, renderCard, getKey, intervalMs = 6000,
 }: {
   items: T[];
   direction: 1 | -1;
   height: number;
-  cardWidthPct: number; // width of active card as % of container
-  peekPct: number; // horizontal offset for prev/next, in % of container
+  cardWidthPct: number;
+  peekPct: number;
   renderCard: (item: T, isActive: boolean) => React.ReactNode;
   getKey: (item: T) => string;
   intervalMs?: number;
 }) {
   const total = items.length;
   const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
-  const pauseTimer = useRef<number | null>(null);
-  const startX = useRef<number | null>(null);
-  const [dx, setDx] = useState(0);
 
-  useEffect(() => {
-    if (paused || total <= 1) return;
-    const id = window.setInterval(() => setIndex((i) => i + direction), intervalMs);
-    const onVis = () => { if (document.hidden) setPaused(true); };
-    document.addEventListener("visibilitychange", onVis);
-    return () => { clearInterval(id); document.removeEventListener("visibilitychange", onVis); };
-  }, [paused, total, direction, intervalMs]);
-
-  const pauseTemporarily = () => {
-    setPaused(true);
-    if (pauseTimer.current) window.clearTimeout(pauseTimer.current);
-    pauseTimer.current = window.setTimeout(() => setPaused(false), 8000);
-  };
-  useEffect(() => () => { if (pauseTimer.current) window.clearTimeout(pauseTimer.current); }, []);
-
-  const onStart = (e: React.TouchEvent | React.MouseEvent) => {
-    startX.current = "touches" in e ? e.touches[0].clientX : e.clientX;
-    setDx(0);
-  };
-  const onMove = (e: React.TouchEvent | React.MouseEvent) => {
-    if (startX.current == null) return;
-    const x = "touches" in e ? e.touches[0].clientX : e.clientX;
-    setDx(x - startX.current);
-  };
-  const onEnd = () => {
-    if (Math.abs(dx) > 50) {
-      setIndex((i) => i + (dx < 0 ? 1 : -1));
-      pauseTemporarily();
-    }
-    startX.current = null;
-    setDx(0);
-  };
+  const { paused, pauseTemporarily } = useAutoplay(total > 1, intervalMs, () =>
+    setIndex((i) => i + direction),
+  );
+  const { dx, dragging, onStart, onMove, onEnd } = useCarouselGesture((dir) => {
+    setIndex((i) => i + dir);
+    pauseTemporarily();
+  });
+  const handleStart = (e: any) => { if (!paused) pauseTemporarily(); onStart(e); };
 
   const currentMod = ((index % total) + total) % total;
-  const slots = [-1, 0, 1];
+  const slots = [-2, -1, 0, 1, 2];
 
   return (
     <div
       className="relative w-full select-none overflow-hidden"
       style={{ height, perspective: 1200 }}
-      onTouchStart={onStart as any}
+      onTouchStart={handleStart}
       onTouchMove={onMove as any}
       onTouchEnd={onEnd}
-      onMouseDown={onStart as any}
-      onMouseMove={(e) => { if (startX.current != null) onMove(e); }}
+      onMouseDown={handleStart}
+      onMouseMove={(e) => { if (dragging) onMove(e); }}
       onMouseUp={onEnd}
-      onMouseLeave={() => { if (startX.current != null) onEnd(); }}
+      onMouseLeave={() => { if (dragging) onEnd(); }}
     >
       {slots.map((s) => {
         const cardIdx = ((index + s) % total + total) % total;
         const item = items[cardIdx];
         const isFront = s === 0;
+        const distance = Math.abs(s);
         const baseXPct = s * peekPct;
-        const tx = isFront ? dx : 0;
-        const scale = isFront ? 1 : 0.82;
-        const opacity = isFront ? 1 : 0.5;
-        const z = isFront ? 30 : 10;
+        const tx = dx * (1 - distance * 0.14);
+        const scale = isFront ? 1 : distance === 1 ? 0.88 : 0.76;
+        const opacity = isFront ? 1 : distance === 1 ? 0.55 : 0.18;
+        const z = 30 - distance;
         return (
           <div
             key={`${getKey(item)}-${s}`}
             className="absolute top-0 left-1/2"
             style={{
               width: `${cardWidthPct}%`,
-              transform: `translate(calc(-50% + ${baseXPct}% + ${tx}px), 0) scale(${scale})`,
+              transform: `translate3d(calc(-50% + ${baseXPct}% + ${tx}px), 0, 0) scale(${scale})`,
               zIndex: z,
               opacity,
-              transition: startX.current != null && isFront ? "none" : "transform 450ms cubic-bezier(0.22,1,0.36,1), opacity 350ms",
-              filter: isFront ? "none" : "blur(0.3px)",
+              transition: dragging ? "none" : TRANSITION,
+              filter: distance >= 2 ? "blur(1px)" : "none",
+              willChange: "transform, opacity",
+              pointerEvents: distance >= 2 ? "none" : "auto",
             }}
           >
             {renderCard(item, isFront)}
@@ -715,7 +735,7 @@ function Coverflow<T>({
         {items.map((it, i) => (
           <span
             key={getKey(it)}
-            className="h-1.5 rounded-full transition-all"
+            className="h-1.5 rounded-full transition-all duration-500"
             style={{
               width: i === currentMod ? 18 : 5,
               background: i === currentMod ? "#b8893a" : "rgba(120,80,30,0.25)",
@@ -727,6 +747,7 @@ function Coverflow<T>({
     </div>
   );
 }
+
 
 function HeroCardView({
   card, index, total, saved, onToggleSaved,
