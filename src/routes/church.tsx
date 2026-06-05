@@ -9,7 +9,7 @@ import {
 import { CHURCH_CONTACTS, type ChurchContact } from "@/data/church-contacts";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { CopticWatermark } from "@/components/coptic";
-import { CHURCH_POSTS, POST_TYPE_META, type ChurchPost } from "@/data/church-posts";
+import { POST_TYPE_META, type ChurchPost } from "@/data/church-posts";
 import {
   PRAYER_REQUESTS, prayerStats, ENCOURAGEMENT_TOTAL,
 } from "@/data/prayer-requests";
