@@ -3,10 +3,11 @@ import { useEffect, useRef } from "react";
 import {
   ArrowRight, Phone, MessageCircle, MapPin, ShieldCheck, Users,
   HandHeart, Newspaper, Radio, CalendarDays, BookOpen, Library, Heart,
-  Play, ChevronLeft, Clock, Sparkles, Bell, Flame,
+  Play, ChevronLeft, Clock, Sparkles, Bell, Flame, Pin, Plus,
 } from "lucide-react";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { CopticWatermark } from "@/components/coptic";
+import { CHURCH_POSTS, POST_TYPE_META, type ChurchPost } from "@/data/church-posts";
 
 import cardChurch from "@/assets/home/card-church.jpg";
 import newsCandle from "@/assets/home/news-candle.jpg";
