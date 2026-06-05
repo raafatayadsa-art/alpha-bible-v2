@@ -257,7 +257,6 @@ const QUICK = [
   { key: "meetings", label: "الاجتماعات", icon: Users, tone: "#5b8fd1", img: newsYouth },
   { key: "service", label: "الخدمة", icon: HandHeart, tone: "#1f8a5a", img: cardChildren },
   { key: "mass", label: "جدول القداسات", icon: CalendarDays, tone: "#8a6ec1", img: newsMass },
-  { key: "prayer", label: "طلبات الصلاة", icon: Heart, tone: "#a85450", img: cardAgpeya },
   { key: "library", label: "المكتبة", icon: Library, tone: "#6a4ab5", img: cardKatameros },
 ] as const;
 
