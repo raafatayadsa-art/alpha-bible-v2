@@ -59,7 +59,7 @@ function PrayerRequestsScreen() {
     setMessages((prev) => [
       {
         id: `local-${Date.now()}`,
-        author: anonymous ? "مجهول" : "أنت",
+        author: anonymous ? "عضو الكنيسة" : "أنت",
         text: trimmed.slice(0, ENCOURAGEMENT_MAX),
         time: "الآن",
         anonymous,
@@ -75,7 +75,7 @@ function PrayerRequestsScreen() {
     if (!t || !b) return;
     const item: PrayerRequest = {
       id: `local-${Date.now()}`,
-      name: anonymous ? "مجهول" : "أنت",
+      name: anonymous ? "طلب صلاة مجهول" : "أنت",
       title: t,
       request: b,
       time: "الآن",
@@ -223,7 +223,7 @@ function PrayerRequestsScreen() {
                     <div className="mt-2 flex items-center justify-between">
                       <span className="inline-flex items-center gap-1 text-[10.5px] font-bold text-[#7a1e32]">
                         {req.anonymous ? <EyeOff className="h-2.5 w-2.5" /> : <UserIcon className="h-2.5 w-2.5" />}
-                        {req.anonymous ? "مجهول" : req.name}
+                        {req.anonymous ? "طلب صلاة مجهول" : req.name}
                       </span>
                       <span className="inline-flex items-center gap-1 rounded-full bg-[#a82747]/12 px-1.5 py-0.5 text-[10px] font-extrabold text-[#7a1e32] border border-[#a82747]/25">
                         <Heart className="h-2.5 w-2.5 fill-current" strokeWidth={0} />
@@ -283,7 +283,7 @@ function PrayerRequestsScreen() {
                 <div className="mt-1 flex items-center justify-between text-[10.5px] text-[#7a1e32]">
                   <span className="inline-flex items-center gap-1 font-bold">
                     {m.anonymous ? <EyeOff className="h-2.5 w-2.5" /> : <UserIcon className="h-2.5 w-2.5" />}
-                    {m.author}
+                    {m.anonymous ? "عضو الكنيسة" : m.author}
                   </span>
                   <span>{m.time}</span>
                 </div>
