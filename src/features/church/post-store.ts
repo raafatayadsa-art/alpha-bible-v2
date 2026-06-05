@@ -101,15 +101,20 @@ export function toggleAttendance(postId: string): boolean {
   write(ATT_KEY, map);
   return next;
 }
+const EMPTY_ATT: Attendance = Object.freeze({}) as Attendance;
+const EMPTY_RES: Reservations = Object.freeze({}) as Reservations;
+const EMPTY_REPLIES: RepliesMap = Object.freeze({}) as RepliesMap;
+const EMPTY_REPLY_LIST: Reply[] = Object.freeze([]) as unknown as Reply[];
+
 export function useAttendance(postId: string) {
   const map = useSyncExternalStore(
     subscribe,
-    () => read<Attendance>(ATT_KEY, {}),
-    () => ({}) as Attendance,
+    () => read<Attendance>(ATT_KEY, EMPTY_ATT),
+    () => EMPTY_ATT,
   );
-  const count = Object.keys(map).filter((k) => k === postId || k.startsWith(postId + ":")).length;
-  // Demo baseline count so cards never look empty.
-  return { going: !!map[postId], count: count + 12 };
+  const going = !!map[postId];
+  // Demo baseline so cards never look empty; user toggle adds 1.
+  return { going, count: 12 + (going ? 1 : 0) };
 }
 
 /* ------------------------------ reservations --------------------------------- */
@@ -124,8 +129,8 @@ export function reserveSeats(postId: string, seats: number, totalSeats?: number)
 export function useReservations(postId: string, totalSeats?: number) {
   const map = useSyncExternalStore(
     subscribe,
-    () => read<Reservations>(RES_KEY, {}),
-    () => ({}) as Reservations,
+    () => read<Reservations>(RES_KEY, EMPTY_RES),
+    () => EMPTY_RES,
   );
   const cur = map[postId] || { count: 0, mine: 0 };
   return {
@@ -151,10 +156,10 @@ export function useReplies(kind: "condolence" | "congrats", postId: string): Rep
   const key = kind === "condolence" ? COND_KEY : CONG_KEY;
   const map = useSyncExternalStore(
     subscribe,
-    () => read<RepliesMap>(key, {}),
-    () => ({}) as RepliesMap,
+    () => read<RepliesMap>(key, EMPTY_REPLIES),
+    () => EMPTY_REPLIES,
   );
-  return map[postId] || [];
+  return map[postId] ?? EMPTY_REPLY_LIST;
 }
 
 /* --------------------------------- helpers ----------------------------------- */
