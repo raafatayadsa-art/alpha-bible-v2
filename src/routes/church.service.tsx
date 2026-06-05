@@ -298,7 +298,8 @@ function ActivityCard({ a }: { a: Activity }) {
   );
 }
 
-function UpcomingActivities() {
+function UpcomingActivities({ extra }: { extra: Activity[] }) {
+  const all = [...extra, ...ACTIVITIES];
   return (
     <section>
       <SectionTitle
@@ -310,7 +311,7 @@ function UpcomingActivities() {
         }
       />
       <div className="flex flex-col gap-3">
-        {ACTIVITIES.map((a) => (
+        {all.map((a) => (
           <ActivityCard key={a.id} a={a} />
         ))}
       </div>
