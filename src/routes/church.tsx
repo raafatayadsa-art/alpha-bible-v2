@@ -122,6 +122,8 @@ function Header() {
 /* ============================================================ */
 
 function HeroChurchCard() {
+  const [popup, setPopup] = useState<null | "contacts" | "messages">(null);
+  const handleMap = () => window.open(MAPS_URL, "_blank", "noopener,noreferrer");
   return (
     <section className="relative">
       <div className="relative overflow-hidden rounded-[32px] border border-white/70 shadow-[0_30px_60px_-30px_rgba(60,40,16,0.55),inset_0_1px_0_rgba(255,255,255,0.7)]">
@@ -147,9 +149,9 @@ function HeroChurchCard() {
 
           {/* Floating glass actions over image */}
           <div className="absolute top-3 left-3 flex flex-col gap-2">
-            <FloatAction icon={Phone} label="اتصال" />
-            <FloatAction icon={MessageCircle} label="رسالة" />
-            <FloatAction icon={MapPin} label="خريطة" />
+            <FloatAction icon={Phone} label="اتصال" onClick={() => setPopup("contacts")} />
+            <FloatAction icon={MessageCircle} label="رسالة" onClick={() => setPopup("messages")} />
+            <FloatAction icon={MapPin} label="خريطة" onClick={handleMap} />
           </div>
 
           {/* Verified premium green badge */}
@@ -211,9 +213,16 @@ function HeroChurchCard() {
           </div>
         </div>
       </div>
+
+      {popup === "contacts" ? (
+        <ContactsPopup onClose={() => setPopup(null)} />
+      ) : popup === "messages" ? (
+        <MessagesPopup onClose={() => setPopup(null)} />
+      ) : null}
     </section>
   );
 }
+
 
 function MiniStat({ icon: Icon, value, label }: { icon: any; value: string; label: string }) {
   return (
