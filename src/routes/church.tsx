@@ -1189,8 +1189,8 @@ function ChurchScreen() {
         <UpcomingMeetings />
         <LiveBroadcast />
         <ChurchMapCard />
-        <ContactsCard />
-        <MessagesCard />
+
+
       </div>
 
       <BottomDock />
