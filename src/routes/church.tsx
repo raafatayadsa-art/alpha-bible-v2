@@ -13,6 +13,11 @@ import { CHURCH_POSTS, POST_TYPE_META, type ChurchPost } from "@/data/church-pos
 import {
   PRAYER_REQUESTS, prayerStats, ENCOURAGEMENT_TOTAL,
 } from "@/data/prayer-requests";
+import { useAllPosts } from "@/features/church/post-store";
+import { PostBuilder } from "@/features/church/PostBuilder";
+import {
+  AttendButton, CondolencePopup, CongratsPopup, ReservePopup,
+} from "@/features/church/PostActions";
 
 
 
