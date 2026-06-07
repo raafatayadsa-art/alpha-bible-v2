@@ -222,11 +222,13 @@ export function IconBadge({
 
 export function BackButton({
   to,
+  onBack,
   label = "رجوع",
   compact = false,
   tone = "light",
 }: {
   to?: string;
+  onBack?: () => void;
   label?: string;
   compact?: boolean;
   tone?: "light" | "dark";
@@ -262,7 +264,7 @@ export function BackButton({
     <button
       type="button"
       aria-label={label}
-      onClick={() => history.back()}
+      onClick={onBack ?? (() => history.back())}
       className="inline-block active:scale-95 transition-transform"
     >
       {inner}

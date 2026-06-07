@@ -358,7 +358,7 @@ const ROLE_LABEL: Record<ChurchRole, string> = {
 };
 
 function RoleSwitcher({ role }: { role: ChurchRole }) {
-  const roles: ChurchRole[] = ["priest", "leader", "servant", "member"];
+  const roles: ChurchRole[] = ["priest", "admin", "leader", "servant", "member"];
   return (
     <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
       <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-white/70 border border-white/70 px-2 py-1 text-[10px] font-extrabold text-[#6a543a]">

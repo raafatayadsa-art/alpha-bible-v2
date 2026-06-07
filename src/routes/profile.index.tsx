@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { CopticWatermark, CopticCross } from "@/components/coptic";
+import { AlphaHeader, AlphaHeaderShell } from "@/components/navigation/AlphaHeader";
 import alphaLogoAsset from "@/assets/alpha-logo.png.asset.json";
 
 export const Route = createFileRoute("/profile/")({
@@ -863,13 +864,9 @@ function ProfileScreen() {
         <ChurchFrame />
 
         <div className="relative z-10">
-          <header className="flex items-center justify-between gap-2 pt-1">
-            <Link to={"/home" as any} aria-label="رجوع" className="grid h-9 w-9 place-items-center rounded-full border border-[#efe2c4] bg-white/70 backdrop-blur-xl shadow-[0_4px_12px_-8px_rgba(120,80,30,0.4)] active:scale-95 transition">
-              <ChevronRight className="h-4.5 w-4.5 text-[#3a2a18]" />
-            </Link>
-            <h1 className="text-[14px] font-extrabold text-[#3a2a18]">الملف الشخصي</h1>
-            <div className="h-9 w-9" />
-          </header>
+          <AlphaHeaderShell className="pb-0 pt-[max(env(safe-area-inset-top),10px)]">
+            <AlphaHeader variant="internal" backTo="/home" title="الملف الشخصي" />
+          </AlphaHeaderShell>
 
           <div className="mt-3 mb-2 flex justify-center">
             <div

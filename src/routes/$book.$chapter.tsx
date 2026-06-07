@@ -6,10 +6,6 @@ import {
   BookmarkCheck,
   Home as HomeIcon,
   Search,
-  Type as TypeIcon,
-  ChevronUp,
-  ChevronDown,
-  RotateCcw,
 } from "lucide-react";
 import { chaptersQueryOptions, versesQueryOptions } from "@/lib/bible";
 import type { BibleVerse } from "@/integrations/supabase/client";
@@ -225,7 +221,6 @@ function ScriptureReader() {
   const [lookupChoices, setLookupChoices] = useState<LookupDictionaryRow[] | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
-  const [typeOpen, setTypeOpen] = useState(false);
   const [activeVerse, setActiveVerse] = useState<string | null>(null);
 
   // Tap a highlighted/any word: query lookup_dictionary first. If multiple
@@ -379,11 +374,10 @@ function ScriptureReader() {
   }, [verses.data, book, ch]);
 
   // Persistent typography prefs
-  const { prefs, setPrefs, reset: resetPrefs } = useTypographyPrefs();
+  const { prefs, setPrefs } = useTypographyPrefs();
   const { fontSize, lineHeight, readingWidth } = prefs;
   const setFontSize = (n: number) => setPrefs({ ...prefs, fontSize: n });
   const setLineHeight = (n: number) => setPrefs({ ...prefs, lineHeight: n });
-  const setReadingWidth = (n: number) => setPrefs({ ...prefs, readingWidth: n });
 
   // Saved verses
   const { isSaved, toggle: toggleSaved } = useSavedVerses();
@@ -714,13 +708,6 @@ function ScriptureReader() {
             <ToolbarBtn label="بحث" surfaceClass={surfaceClass} onClick={() => setSearchOpen(true)}>
               <Search className="h-4 w-4" />
             </ToolbarBtn>
-            <ToolbarBtn
-              label="إعدادات النص"
-              surfaceClass={surfaceClass}
-              onClick={() => setTypeOpen((o) => !o)}
-            >
-              <TypeIcon className="h-4 w-4" />
-            </ToolbarBtn>
           </div>
         </header>
 
@@ -816,35 +803,17 @@ function ScriptureReader() {
         </nav>
       </div>
 
-      {/* Typography sheet */}
-      {typeOpen && (
-        <TypographySheet
-          fontSize={fontSize}
-          setFontSize={setFontSize}
-          lineHeight={lineHeight}
-          setLineHeight={setLineHeight}
-          readingWidth={readingWidth}
-          setReadingWidth={setReadingWidth}
-          onReset={resetPrefs}
-          onClose={() => setTypeOpen(false)}
-          spiritualMode={spiritualMode}
-        />
-      )}
-
-      {/* Auto-scroll above the dock — visibility is synchronized with the bottom nav */}
       <AutoScrollControls
         spiritualMode={spiritualMode}
         onToggleSpiritual={() => setSpiritualMode((s) => !s)}
-        bottomClass="bottom-[104px]"
-        visible={chromeVisible}
+        bottomClass="bottom-[88px]"
         fontSize={fontSize}
-        setFontSize={(n) => setFontSize(Math.max(14, Math.min(34, Math.round(n))))}
+        setFontSize={(n) => setFontSize(Math.max(14, Math.min(34, n)))}
         fontMin={14}
         fontMax={34}
         fontStep={1}
         lineHeight={lineHeight}
         setLineHeight={setLineHeight}
-        lineHeightSteps={[1.6, 1.8, 2.0, 2.2, 2.4]}
       />
 
       {/* Persistent global navigation */}
@@ -1351,176 +1320,6 @@ function VerticalProgress({
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-/* ---------------- Typography Sheet ---------------- */
-
-function TypographySheet({
-  fontSize,
-  setFontSize,
-  lineHeight,
-  setLineHeight,
-  readingWidth,
-  setReadingWidth,
-  onReset,
-  onClose,
-  spiritualMode,
-}: {
-  fontSize: number;
-  setFontSize: (n: number) => void;
-  lineHeight: number;
-  setLineHeight: (n: number) => void;
-  readingWidth: number;
-  setReadingWidth: (n: number) => void;
-  onReset: () => void;
-  onClose: () => void;
-  spiritualMode: boolean;
-}) {
-  return (
-    <>
-      <button
-        type="button"
-        aria-label="إغلاق"
-        onClick={onClose}
-        className="fixed inset-0 z-40 bg-transparent"
-      />
-      <div
-        dir="rtl"
-        className={cn(
-          "fixed left-1/2 -translate-x-1/2 z-50 w-[min(92vw,340px)] rounded-3xl border p-3 backdrop-blur-3xl animate-in fade-in zoom-in-95 duration-300",
-          "bottom-[150px]",
-          spiritualMode
-            ? "bg-[#0b1a2c]/55 border-[#e7c97a]/22 text-[#e8e2cf] shadow-[0_24px_60px_-20px_rgba(0,0,0,0.85),0_0_28px_-10px_rgba(231,201,122,0.30),inset_0_1px_0_rgba(255,255,255,0.06)]"
-            : "bg-white/55 border-white/70 text-[#3a2a18] shadow-[0_20px_50px_-18px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.85)]",
-        )}
-        role="dialog"
-        aria-label="إعدادات النص"
-      >
-        <div className="flex items-center justify-between mb-2 px-0.5">
-          <p className="text-[11.5px] font-extrabold tracking-wide opacity-90">إعدادات القراءة</p>
-          <button
-            type="button"
-            onClick={onReset}
-            aria-label="إعادة ضبط"
-            className={cn(
-              "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold active:scale-95 transition-transform",
-              spiritualMode
-                ? "bg-white/5 border-white/10 text-[#f3e6c4]"
-                : "bg-white/70 border-[#efe2c4] text-[#3a2a18]",
-            )}
-          >
-            <RotateCcw className="h-2.5 w-2.5" />
-            ضبط
-          </button>
-        </div>
-
-        <SliderRow
-          label="حجم الخط"
-          value={fontSize}
-          min={14}
-          max={28}
-          step={1}
-          onChange={setFontSize}
-          display={`${fontSize}px`}
-          spiritualMode={spiritualMode}
-        />
-        <SliderRow
-          label="السطور"
-          value={lineHeight}
-          min={1.6}
-          max={2.8}
-          step={0.05}
-          onChange={(v) => setLineHeight(+v.toFixed(2))}
-          display={lineHeight.toFixed(2)}
-          spiritualMode={spiritualMode}
-        />
-        <SliderRow
-          label="العرض"
-          value={readingWidth}
-          min={420}
-          max={800}
-          step={20}
-          onChange={setReadingWidth}
-          display={`${readingWidth}px`}
-          spiritualMode={spiritualMode}
-        />
-      </div>
-    </>
-  );
-}
-
-function SliderRow({
-  label,
-  value,
-  min,
-  max,
-  step,
-  onChange,
-  display,
-  spiritualMode,
-}: {
-  label: string;
-  value: number;
-  min: number;
-  max: number;
-  step: number;
-  onChange: (n: number) => void;
-  display: string;
-  spiritualMode: boolean;
-}) {
-  return (
-    <div
-      className={cn(
-        "mb-2 rounded-2xl border px-2.5 py-1.5",
-        spiritualMode ? "bg-white/[0.04] border-white/[0.08]" : "bg-white/55 border-[#efe2c4]",
-      )}
-    >
-      <div className="flex items-center justify-between mb-1">
-        <p className="text-[11px] font-bold opacity-80">{label}</p>
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            aria-label="تقليل"
-            onClick={() => onChange(Math.max(min, +(value - step).toFixed(2)))}
-            className={cn(
-              "grid h-5 w-5 place-items-center rounded-full border active:scale-90 transition-transform",
-              spiritualMode
-                ? "bg-white/10 border-white/15 text-[#f3e6c4]"
-                : "bg-white/80 border-[#efe2c4] text-[#3a2a18]",
-            )}
-          >
-            <ChevronDown className="h-2.5 w-2.5" />
-          </button>
-          <span className="min-w-[40px] text-center text-[10.5px] font-bold tabular-nums">
-            {display}
-          </span>
-          <button
-            type="button"
-            aria-label="زيادة"
-            onClick={() => onChange(Math.min(max, +(value + step).toFixed(2)))}
-            className={cn(
-              "grid h-5 w-5 place-items-center rounded-full border active:scale-90 transition-transform",
-              spiritualMode
-                ? "bg-white/10 border-white/15 text-[#f3e6c4]"
-                : "bg-white/80 border-[#efe2c4] text-[#3a2a18]",
-            )}
-          >
-            <ChevronUp className="h-2.5 w-2.5" />
-          </button>
-        </div>
-      </div>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(e) => onChange(parseFloat(e.target.value))}
-        aria-label={label}
-        className="w-full h-1 accent-[#3eb482]"
-      />
     </div>
   );
 }

@@ -1,12 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState, useCallback } from "react";
 import {
-  Menu, Bell, Search, Sparkles, Share2, Bookmark, ChevronLeft,
+  Menu, Search, Sparkles, Share2, Bookmark, ChevronLeft,
   Home as HomeIcon, HandHeart, Users, User as UserIcon,
   Play, Pause, X, Link2, Calendar,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { BottomDock } from "@/components/bible/BottomDock";
+import { useAlphaNavigation } from "@/components/navigation/AlphaNavigationProvider";
+import { AlphaNotificationButton } from "@/components/navigation/AlphaNotificationButton";
 
 // Hero stack art
 import artVerse from "@/assets/home/art-verse.jpg";
@@ -249,7 +251,8 @@ type HeroCard = {
 function HomeScreen() {
   const greeting = useGreeting();
   const userName = "رافت";
-  const [notifCount] = useState(1);
+  const [notifCount] = useState(1); // kept for potential future Supabase real-time
+  const { openNavHub } = useAlphaNavigation();
   const dockVisible = useHideOnScroll();
   const [verse, setVerse] = useState<{ text: string; reference: string } | null>(null);
   const { set: savedSet, toggle: toggleSaved } = useSavedSet("alpha.saved");
@@ -382,7 +385,12 @@ function HomeScreen() {
       <div className="relative mx-auto w-full max-w-[440px] px-4 pb-36 pt-[max(env(safe-area-inset-top),12px)]">
         {/* Top bar */}
         <header className="flex items-center justify-between gap-2 pt-2">
-          <button aria-label="القائمة" className="grid h-11 w-11 place-items-center rounded-full border border-[#efe2c4] bg-white/70 backdrop-blur-xl shadow-[0_6px_14px_-10px_rgba(120,80,30,0.4)] active:scale-95 transition">
+          <button
+            type="button"
+            aria-label="القائمة"
+            onClick={openNavHub}
+            className="grid h-11 w-11 place-items-center rounded-full border border-[#efe2c4] bg-white/70 backdrop-blur-xl shadow-[0_6px_14px_-10px_rgba(120,80,30,0.4)] active:scale-95 transition"
+          >
             <Menu className="h-5 w-5 text-[#3a2a18]" />
           </button>
           <div className="flex flex-col items-center min-w-0 flex-1">
@@ -396,14 +404,7 @@ function HomeScreen() {
             <p className="text-[11px] text-[#6a543a] mt-0.5">نعمة الرب معك اليوم</p>
           </div>
           <div className="flex items-center gap-1.5">
-            <button aria-label="الإشعارات" className="relative grid h-11 w-11 place-items-center rounded-full border border-[#efe2c4] bg-white/70 backdrop-blur-xl shadow-[0_6px_14px_-10px_rgba(120,80,30,0.4)] active:scale-95 transition">
-              <Bell className="h-5 w-5 text-[#3a2a18]" />
-              {notifCount > 0 && (
-                <span className="absolute top-1 right-1 grid h-4 min-w-4 px-1 place-items-center rounded-full bg-[#d88a2a] text-[10px] font-bold text-white">
-                  {notifCount}
-                </span>
-              )}
-            </button>
+            <AlphaNotificationButton />
             <Link to="/search" aria-label="بحث" className="grid h-11 w-11 place-items-center rounded-full border border-[#efe2c4] bg-white/70 backdrop-blur-xl shadow-[0_6px_14px_-10px_rgba(120,80,30,0.4)] active:scale-95 transition">
               <Search className="h-5 w-5 text-[#3a2a18]" />
             </Link>
@@ -431,7 +432,7 @@ function HomeScreen() {
           />
         </section>
 
-        {/* PRIMARY STACKED CAROUSEL — auto-rotating cover flow, infinite */}
+        {/* PRIMARY JOURNEY ALBUM — horizontal swipe, 2 cards + peek */}
         <section className="mt-7">
           <div className="mb-3 flex items-center justify-between px-1">
             <h2 className="text-[14px] font-extrabold text-[#3a2a18] tracking-tight flex items-center gap-1.5">
@@ -439,19 +440,21 @@ function HomeScreen() {
               اكتشف رحلتك اليوم
             </h2>
           </div>
-          <Coverflow
-            items={primary}
-            direction={1}
-            height={244}
-            cardWidthPct={62}
-            peekPct={46}
-            getKey={(c) => c.key}
-            renderCard={(c) => (
-              <Link to={c.to as any} aria-label={c.title} className="block">
-                <PrimaryArtCardFull {...c} />
+          <div
+            className="-mx-4 flex gap-2.5 overflow-x-auto overscroll-x-contain snap-x snap-mandatory scroll-smooth px-4 pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+            style={{ scrollPaddingInline: 16, WebkitOverflowScrolling: "touch" }}
+          >
+            {primary.map((c) => (
+              <Link
+                key={c.key}
+                to={c.to as any}
+                aria-label={c.title}
+                className="snap-start shrink-0 w-[calc((min(100vw,440px)-2rem-0.625rem)/2.35)] active:scale-[0.98] transition-transform"
+              >
+                <PrimaryArtCardCompact {...c} />
               </Link>
-            )}
-          />
+            ))}
+          </div>
         </section>
 
         {/* DAILY — opposite-direction auto cover flow */}
@@ -1082,6 +1085,37 @@ function FeaturedNewsCard({
   );
 }
 
+
+function PrimaryArtCardCompact({ title, sub, image, accent, glyph }: { title: string; sub: string; image: string; accent: string; glyph: "Ⲁ" | "Ⲱ" }) {
+  return (
+    <div
+      className="relative h-[148px] w-full overflow-hidden rounded-[20px] border border-white/20"
+      style={{
+        boxShadow: `0 16px 36px -18px rgba(60,40,16,0.45), 0 0 0 1px ${accent}28, inset 0 1px 0 rgba(255,255,255,0.16)`,
+        background: "#0a0612",
+      }}
+    >
+      <img src={image} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.04) 38%, rgba(0,0,0,0.62) 78%, rgba(0,0,0,0.92) 100%)" }}
+      />
+      <span aria-hidden className="pointer-events-none absolute top-2 left-3 select-none font-black leading-none" style={{ fontSize: 52, color: "rgba(255,255,255,0.09)" }}>{glyph}</span>
+      <div className="absolute inset-x-3.5 bottom-3 text-right">
+        <h3 className="text-[13.5px] font-extrabold leading-tight text-white line-clamp-1" style={{ textShadow: "0 2px 6px rgba(0,0,0,0.85)" }}>{title}</h3>
+        <p className="mt-0.5 text-[10.5px] font-medium text-white/85 line-clamp-1" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.7)" }}>{sub}</p>
+        <div
+          className="mt-1.5 inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[9.5px] font-bold text-white border"
+          style={{ background: `${accent}33`, borderColor: `${accent}70`, backdropFilter: "blur(6px)" }}
+        >
+          افتح
+          <ChevronLeft className="h-2.5 w-2.5" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function PrimaryArtCardFull({ title, sub, image, accent, glyph }: { title: string; sub: string; image: string; accent: string; glyph: "Ⲁ" | "Ⲱ" }) {
   return (

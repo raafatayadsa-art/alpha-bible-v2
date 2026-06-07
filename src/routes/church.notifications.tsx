@@ -1,10 +1,14 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
+import { useRouter } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import {
   ChevronLeft, Bell, CheckCheck, HandHeart, MessageSquareHeart, Newspaper,
-  Megaphone, CalendarDays, Radio, Briefcase, MessageCircle, Crown, Filter,
+  Megaphone, CalendarDays, Radio, Briefcase, MessageCircle, Crown,
 } from "lucide-react";
-import { CHURCH_NOTIFICATIONS, type ChurchNotification, type NotifCategory } from "@/data/church-notifications";
+import { type ChurchNotification, type NotifCategory } from "@/data/church-notifications";
+import {
+  useNotifItems, useNotifUnreadCount, markNotifRead, markAllNotifsRead,
+} from "@/data/notifications-store";
 
 export const Route = createFileRoute("/church/notifications")({
   ssr: false,
@@ -136,7 +140,9 @@ const FILTERS: { key: "all" | "unread" | NotifCategory; label: string }[] = [
 /* ---------------- screen ---------------- */
 
 function ChurchNotificationsScreen() {
-  const [items, setItems] = useState<ChurchNotification[]>(CHURCH_NOTIFICATIONS);
+  const router = useRouter();
+  const items = useNotifItems();
+  const unreadCount = useNotifUnreadCount();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]["key"]>("all");
 
   const filtered = useMemo(() => {
@@ -145,13 +151,13 @@ function ChurchNotificationsScreen() {
     return items.filter((n) => n.category === filter);
   }, [items, filter]);
 
-  const unreadCount = items.filter((n) => !n.read).length;
-
-  const markAllRead = () =>
-    setItems((prev) => prev.map((n) => ({ ...n, read: true })));
-
-  const markOneRead = (id: string) =>
-    setItems((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      router.history.back();
+    } else {
+      void router.navigate({ to: "/home" });
+    }
+  };
 
   return (
     <div
@@ -171,18 +177,19 @@ function ChurchNotificationsScreen() {
         }}
       >
         <div className="flex items-center justify-between px-4 pb-3">
-          <Link
-            to="/church"
+          <button
+            type="button"
             aria-label="رجوع"
+            onClick={handleBack}
             className="inline-grid h-10 w-10 place-items-center rounded-full bg-white/80 border border-[#efe2c4] text-[#3a2a18] active:scale-90 transition-transform shadow-[0_8px_20px_-14px_rgba(120,80,30,0.45)]"
           >
             <ChevronLeft className="h-5 w-5 -scale-x-100" strokeWidth={2} />
-          </Link>
+          </button>
 
           <div className="flex items-center gap-2">
             <h1 className="text-[15px] font-extrabold text-[#3a2a18]">الإشعارات</h1>
             {unreadCount > 0 ? (
-              <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-[#c44569] text-white text-[10px] font-extrabold border border-white">
+              <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-[#d88a2a] text-white text-[10px] font-extrabold border border-white">
                 {unreadCount}
               </span>
             ) : null}
@@ -190,7 +197,7 @@ function ChurchNotificationsScreen() {
 
           <button
             type="button"
-            onClick={markAllRead}
+            onClick={markAllNotifsRead}
             disabled={unreadCount === 0}
             className="inline-flex items-center gap-1 h-9 px-3 rounded-full bg-white/80 border border-[#efe2c4] text-[#3a2a18] text-[11px] font-bold active:scale-95 transition-transform disabled:opacity-40"
           >
@@ -227,7 +234,14 @@ function ChurchNotificationsScreen() {
           <EmptyState />
         ) : (
           filtered.map((n) => (
-            <NotificationCard key={n.id} n={n} onOpen={() => markOneRead(n.id)} />
+            <NotificationCard
+              key={n.id}
+              n={n}
+              onOpen={() => {
+                markNotifRead(n.id);
+                if (n.href) void router.navigate({ to: n.href as any });
+              }}
+            />
           ))
         )}
       </main>
@@ -247,10 +261,10 @@ function NotificationCard({
   const tone = TONES[n.category];
   const Icon = tone.icon;
   return (
-    <Link
-      to={n.href}
+    <button
+      type="button"
       onClick={onOpen}
-      className="block relative rounded-2xl overflow-hidden active:scale-[0.99] transition-transform"
+      className="block w-full text-right relative rounded-2xl overflow-hidden active:scale-[0.99] transition-transform"
       style={{
         background: n.read
           ? "linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,251,242,0.85))"
@@ -318,7 +332,7 @@ function NotificationCard({
           </div>
         </div>
       </div>
-    </Link>
+    </button>
   );
 }
 

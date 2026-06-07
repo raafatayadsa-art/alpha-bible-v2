@@ -162,12 +162,11 @@ function PrayerCard({ p }: { p: AgpeyaPrayer }) {
 
 function SectionTitle({ title }: { title: string }) {
   return (
-    <div className="my-4 flex items-center justify-center gap-3 px-2">
-      <span className="h-px flex-1 bg-gradient-to-l from-transparent via-[#c79356]/45 to-transparent" />
-      <Sparkles className="h-3.5 w-3.5 text-[#c79356]" />
+    <div className="mt-6 mb-3 flex items-center gap-2 px-1" aria-hidden={false}>
+      <span className="text-[#b8893a]/65 text-[12px] font-bold leading-none" aria-hidden>Ⲁ</span>
       <h2 className="font-arabic-serif text-[15px] font-bold text-[#5b3a18]">{title}</h2>
-      <Sparkles className="h-3.5 w-3.5 text-[#c79356]" />
-      <span className="h-px flex-1 bg-gradient-to-r from-transparent via-[#c79356]/45 to-transparent" />
+      <span className="h-px flex-1 bg-[#ead9b1]" aria-hidden />
+      <span className="text-[#b8893a]/65 text-[12px] font-bold leading-none" aria-hidden>Ⲱ</span>
     </div>
   );
 }

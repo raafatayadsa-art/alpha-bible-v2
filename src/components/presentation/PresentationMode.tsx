@@ -1,8 +1,19 @@
 import { useEffect, useRef, useState } from "react";
-import { X, Moon, Sun, Cast, Play, Pause, Gauge, Rows3, Type } from "lucide-react";
+import { X, Cast } from "lucide-react";
 import { CopticCross } from "@/components/coptic";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Slider } from "@/components/ui/slider";
+import {
+  AlphaReadingControlBar,
+} from "@/components/controls/AlphaReadingControlBar";
+import {
+  PRESENTATION_SPEED_PX,
+  PRESENTATION_SPEED_LABEL,
+  PRESENTATION_SPACING_LH,
+  PRESENTATION_SPACING_LABEL,
+  cyclePresentationSpeed,
+  cyclePresentationSpacing,
+  type PresentationSpeed,
+  type PresentationSpacing,
+} from "@/components/controls/alpha-control-cycles";
 
 export type PresentationSection = {
   id?: string;
@@ -17,30 +28,6 @@ export type PresentationContent = {
   sections: PresentationSection[];
 };
 
-type Speed = "slow" | "medium" | "fast";
-const SPEED_PX_PER_SEC: Record<Speed, number> = {
-  slow: 20,
-  medium: 45,
-  fast: 90,
-};
-const SPEED_LABEL: Record<Speed, string> = {
-  slow: "بطيء",
-  medium: "متوسط",
-  fast: "سريع",
-};
-
-type Spacing = "tight" | "normal" | "wide";
-const SPACING_LH: Record<Spacing, number> = {
-  tight: 1.7,
-  normal: 2.1,
-  wide: 2.6,
-};
-const SPACING_LABEL: Record<Spacing, string> = {
-  tight: "ضيق",
-  normal: "متوسط",
-  wide: "واسع",
-};
-
 export function PresentationMode({
   open,
   onOpenChange,
@@ -53,8 +40,8 @@ export function PresentationMode({
   const [fontScale, setFontScale] = useState(1);
   const [dark, setDark] = useState(false);
   const [playing, setPlaying] = useState(false);
-  const [speed, setSpeed] = useState<Speed>("medium");
-  const [spacing, setSpacing] = useState<Spacing>("normal");
+  const [speed, setSpeed] = useState<PresentationSpeed>("medium");
+  const [spacing, setSpacing] = useState<PresentationSpacing>("normal");
   const [chromeVisible, setChromeVisible] = useState(true);
 
   const scrollerRef = useRef<HTMLDivElement>(null);
@@ -127,7 +114,7 @@ export function PresentationMode({
     const el = scrollerRef.current;
     if (!el) return;
 
-    const pxPerSec = SPEED_PX_PER_SEC[speed];
+    const pxPerSec = PRESENTATION_SPEED_PX[speed];
     let acc = 0;
 
     const step = (ts: number) => {
@@ -174,7 +161,7 @@ export function PresentationMode({
   const titleSize = 30 * fontScale;
   const bodySize = 22 * fontScale;
   const sectionTitleSize = 24 * fontScale;
-  const bodyLineHeight = SPACING_LH[spacing];
+  const bodyLineHeight = PRESENTATION_SPACING_LH[spacing];
 
   return (
     <div
@@ -210,14 +197,6 @@ export function PresentationMode({
           <span>{content.title}</span>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            aria-label={dark ? "وضع نهاري" : "وضع ليلي"}
-            onClick={() => setDark((v) => !v)}
-            className={`grid h-9 w-9 place-items-center rounded-full border active:scale-90 transition-transform ${glassBtn}`}
-          >
-            {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          </button>
           <button
             type="button"
             aria-label="إغلاق العرض"
@@ -293,149 +272,20 @@ export function PresentationMode({
         className={`relative z-10 px-4 transition-opacity duration-300 ease-out ${chromeOpacity}`}
         style={{ paddingBottom: "max(env(safe-area-inset-bottom), 12px)", paddingTop: 6 }}
       >
-        {(() => {
-          const barBg = dark
-            ? "bg-[#0e2a22]/55 border-[#5aa78a]/30 shadow-[0_18px_50px_-22px_rgba(0,30,20,0.65)]"
-            : "bg-[#e6f2ea]/55 border-[#9ec9b4]/55 shadow-[0_18px_50px_-22px_rgba(20,80,55,0.30)]";
-          const ctrlBtn = dark
-            ? "bg-white/[0.05] border-[#7fc2a4]/25 text-[#dff3e8] backdrop-blur hover:bg-white/[0.08]"
-            : "bg-white/55 border-[#9ec9b4]/55 text-[#1f4a38] backdrop-blur hover:bg-white/70";
-          const textShadow = dark
-            ? { textShadow: "0 1px 2px rgba(0,0,0,0.55)" }
-            : { textShadow: "0 1px 1px rgba(20,60,40,0.18)" };
-          const activeBtn =
-            "bg-gradient-to-br from-[#5aa78a] to-[#2f6e54] text-white border-white/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_0_14px_rgba(90,167,138,0.55)]";
-          const popBg = dark
-            ? "bg-[#102a22]/90 border-[#5aa78a]/30 text-[#dff3e8]"
-            : "bg-[#f1faf4]/95 border-[#9ec9b4]/60 text-[#1f4a38]";
-          return (
-            <div
-              className={`mx-auto w-fit rounded-full border backdrop-blur-2xl px-1.5 py-1 flex items-center gap-1 ${barBg}`}
-            >
-              <button
-                type="button"
-                aria-label={playing ? "إيقاف التمرير" : "بدء التمرير"}
-                onClick={() => setPlaying((p) => !p)}
-                className={`grid h-10 w-10 place-items-center rounded-full text-white bg-gradient-to-br from-[#5aa78a] to-[#1f5a42] border border-white/25 active:scale-95 transition-all ${
-                  playing
-                    ? "shadow-[0_0_16px_rgba(90,167,138,0.85),0_0_30px_rgba(47,110,84,0.45)] ring-1 ring-[#bfe5d3]/60"
-                    : "shadow-[0_6px_14px_-6px_rgba(20,80,55,0.6)] ring-1 ring-[#bfe5d3]/35"
-                }`}
-              >
-                {playing ? <Pause className="h-4 w-4 fill-white" /> : <Play className="h-4 w-4 fill-white translate-x-[1px]" />}
-              </button>
-
-              <span className={`mx-0.5 h-5 w-px ${dark ? "bg-[#7fc2a4]/30" : "bg-[#2f6e54]/20"}`} />
-
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    type="button"
-                    aria-label="السرعة"
-                    style={textShadow}
-                    className={`h-8 px-2.5 rounded-full text-[11px] font-bold border inline-flex items-center gap-1 active:scale-95 transition-transform ${ctrlBtn}`}
-                  >
-                    <Gauge className="h-3.5 w-3.5" />
-                    <span>{SPEED_LABEL[speed]}</span>
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent
-                  side="top"
-                  align="center"
-                  sideOffset={10}
-                  className={`z-[200] w-auto p-1 rounded-2xl border backdrop-blur-2xl ${popBg}`}
-                >
-                  <div dir="rtl" className="flex flex-col gap-0.5 min-w-24">
-                    {(Object.keys(SPEED_LABEL) as Speed[]).map((s) => (
-                      <button
-                        key={s}
-                        type="button"
-                        onClick={() => setSpeed(s)}
-                        className={`h-8 px-3 rounded-full text-[12px] font-bold text-right transition-all ${
-                          speed === s ? activeBtn : "hover:bg-[#2f6e54]/10"
-                        }`}
-                      >
-                        {SPEED_LABEL[s]}
-                      </button>
-                    ))}
-                  </div>
-                </PopoverContent>
-              </Popover>
-
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    type="button"
-                    aria-label="تباعد الأسطر"
-                    style={textShadow}
-                    className={`h-8 px-2.5 rounded-full text-[11px] font-bold border inline-flex items-center gap-1 active:scale-95 transition-transform ${ctrlBtn}`}
-                  >
-                    <Rows3 className="h-3.5 w-3.5" />
-                    <span>{SPACING_LABEL[spacing]}</span>
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent
-                  side="top"
-                  align="center"
-                  sideOffset={10}
-                  className={`z-[200] w-auto p-1 rounded-2xl border backdrop-blur-2xl ${popBg}`}
-                >
-                  <div dir="rtl" className="flex flex-col gap-0.5 min-w-24">
-                    {(Object.keys(SPACING_LABEL) as Spacing[]).map((s) => (
-                      <button
-                        key={s}
-                        type="button"
-                        onClick={() => setSpacing(s)}
-                        className={`h-8 px-3 rounded-full text-[12px] font-bold text-right transition-all ${
-                          spacing === s ? activeBtn : "hover:bg-[#2f6e54]/10"
-                        }`}
-                      >
-                        {SPACING_LABEL[s]}
-                      </button>
-                    ))}
-                  </div>
-                </PopoverContent>
-              </Popover>
-
-              <span className={`mx-0.5 h-5 w-px ${dark ? "bg-[#7fc2a4]/30" : "bg-[#2f6e54]/20"}`} />
-
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    type="button"
-                    aria-label="حجم الخط"
-                    style={textShadow}
-                    className={`grid h-8 w-8 place-items-center rounded-full border active:scale-95 transition-transform ${ctrlBtn}`}
-                  >
-                    <Type className="h-3.5 w-3.5" />
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent
-                  side="top"
-                  align="center"
-                  sideOffset={10}
-                  className={`z-[200] w-64 p-3 rounded-2xl border backdrop-blur-2xl ${popBg}`}
-                >
-                  <div dir="ltr" className="flex items-center gap-3">
-                    <span className="text-[11px] font-bold opacity-70">A</span>
-                    <Slider
-                      value={[Math.round(fontScale * 100)]}
-                      min={70}
-                      max={200}
-                      step={5}
-                      onValueChange={(v) => setFontScale((v[0] ?? 100) / 100)}
-                      className="flex-1"
-                    />
-                    <span className="text-[15px] font-extrabold opacity-90">A</span>
-                  </div>
-                  <div className="mt-1.5 text-center text-[11px] font-bold opacity-70 tabular-nums">
-                    {Math.round(fontScale * 100)}%
-                  </div>
-                </PopoverContent>
-              </Popover>
-            </div>
-          );
-        })()}
+        <AlphaReadingControlBar
+          dark={dark}
+          playing={playing}
+          onTogglePlay={() => setPlaying((p) => !p)}
+          speedLabel={PRESENTATION_SPEED_LABEL[speed]}
+          onCycleSpeed={() => setSpeed((s) => cyclePresentationSpeed(s))}
+          spacingLabel={PRESENTATION_SPACING_LABEL[spacing]}
+          onCycleSpacing={() => setSpacing((s) => cyclePresentationSpacing(s))}
+          fontDisplay={`${Math.round(fontScale * 100)}%`}
+          onFontDecrease={() => setFontScale((s) => Math.max(0.7, +(s - 0.1).toFixed(2)))}
+          onFontIncrease={() => setFontScale((s) => Math.min(2, +(s + 0.1).toFixed(2)))}
+          onToggleTheme={() => setDark((v) => !v)}
+          className="mx-auto w-fit"
+        />
       </footer>
     </div>
   );

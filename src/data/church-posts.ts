@@ -1,11 +1,4 @@
-import newsCandle from "@/assets/home/news-candle.jpg";
-import newsYouth from "@/assets/home/news-youth.jpg";
-import newsMass from "@/assets/home/news-mass.jpg";
-import cardChildren from "@/assets/home/card-children.jpg";
-import heavenlyChurch from "@/assets/home/heavenly-church.png";
-import cardAgpeya from "@/assets/home/card-agpeya.jpg";
-import cardKatameros from "@/assets/home/card-katameros.jpg";
-import cardChurch from "@/assets/home/card-church.jpg";
+import { assignCategoryImage, assignPostImage } from "@/features/church/post-image-engine";
 
 export type PostType =
   | "news"
@@ -84,7 +77,7 @@ export const CHURCH_POSTS: ChurchPost[] = [
       "تتشرف كنيسة الشهيد مار جرجس بدعوتكم لحضور القداس الإلهي بمناسبة عيد الصليب المجيد، " +
       "والذي يُقام يوم الجمعة الموافق 17 سبتمبر في تمام السابعة صباحًا. " +
       "يسبق القداس صلاة باكر ورفع بخور، وتُلقى عظة بمناسبة العيد.",
-    image: newsCandle,
+    image: assignCategoryImage("announcement", "feast-cross"),
     date: "12 سبتمبر 2025",
     author: "القمص داود عبد الملاك",
     pinned: true,
@@ -97,7 +90,7 @@ export const CHURCH_POSTS: ChurchPost[] = [
     body:
       "يتشرف الآباء الكهنة وشعب الكنيسة باستقبال نيافة الحبر الجليل خلال قداس الأحد القادم. " +
       "نرجو الحضور مبكرًا والالتزام بالهدوء داخل الكنيسة.",
-    image: newsMass,
+    image: assignCategoryImage("news", "sunday-mass"),
     date: "10 سبتمبر 2025",
     author: "خدمة الإعلام",
   },
@@ -109,7 +102,7 @@ export const CHURCH_POSTS: ChurchPost[] = [
     body:
       "يُعقد اجتماع الشباب الأسبوعي يوم الجمعة في تمام السابعة والنصف مساءً بقاعة الكنيسة. " +
       "سيتحدث أبونا حول موضوع الرجاء المسيحي يعقبه نقاش مفتوح وأجاباي.",
-    image: newsYouth,
+    image: assignCategoryImage("event", "youth-meeting"),
     date: "9 سبتمبر 2025",
     author: "خدمة الشباب",
   },
@@ -121,7 +114,7 @@ export const CHURCH_POSTS: ChurchPost[] = [
     body:
       "تنظم الكنيسة رحلة روحية إلى دير الأنبا بيشوي بوادي النطرون يوم السبت 25 سبتمبر. " +
       "تشمل الرحلة الانتقالات ووجبة الغداء وزيارة الأديرة المجاورة. للحجز يرجى التواصل مع خدمة الرحلات.",
-    image: cardChurch,
+    image: assignCategoryImage("trip", "trip-monastery"),
     date: "8 سبتمبر 2025",
     author: "لجنة الرحلات",
   },
@@ -133,9 +126,14 @@ export const CHURCH_POSTS: ChurchPost[] = [
     body:
       "تتقدم أسرة الكنيسة بأحر التهاني للأخ مرقس والأخت مريم بمناسبة سر الزيجة المقدس. " +
       "أقام القداس وصلوات الإكليل أبونا داود عبد الملاك. عقبال الفرح الدائم في الرب.",
-    image: cardChildren,
+    image: assignPostImage({
+      id: "wedding-mark-mary",
+      type: "wedding",
+      details: { eventType: "إكليل" },
+    }),
     date: "6 سبتمبر 2025",
     author: "خدمة الإعلام",
+    details: { eventType: "إكليل" },
   },
   {
     id: "condolence-tadros",
@@ -145,7 +143,7 @@ export const CHURCH_POSTS: ChurchPost[] = [
     body:
       "بقلوب مؤمنة بقيامة الموتى ننعى إليكم المتنيح الأستاذ تادرس، أحد خدام الكنيسة الأمناء. " +
       "تُقام صلوات الجناز يوم الإثنين بكنيستنا. الرب ينيح نفسه ويعزّي أهله.",
-    image: cardAgpeya,
+    image: assignCategoryImage("condolence", "condolence-tadros"),
     date: "5 سبتمبر 2025",
     author: "مجلس الكنيسة",
   },
@@ -157,7 +155,7 @@ export const CHURCH_POSTS: ChurchPost[] = [
     body:
       "نطلب من أبنائنا الأحباء الصلاة من أجل عدد من إخوتنا المرضى الذين يحتاجون لمعونة الرب. " +
       "يمكنكم إرسال أسماء من تريدون الصلاة عنهم عبر خدمة طلبات الصلاة بالتطبيق.",
-    image: heavenlyChurch,
+    image: assignCategoryImage("prayer", "prayer-request"),
     date: "3 سبتمبر 2025",
     author: "خدمة الافتقاد",
   },
@@ -169,7 +167,7 @@ export const CHURCH_POSTS: ChurchPost[] = [
     body:
       "خلال شهر أغسطس شهدت الخدمة نموًا ملحوظًا في عدد المخدومين بكافة الفصول، " +
       "كما تمت زيارة 42 أسرة ضمن خدمة الافتقاد، وأُقيمت 3 رحلات روحية للأطفال والشباب.",
-    image: cardKatameros,
+    image: assignCategoryImage("report", "service-report"),
     date: "1 سبتمبر 2025",
     author: "أمين الخدمة",
   },

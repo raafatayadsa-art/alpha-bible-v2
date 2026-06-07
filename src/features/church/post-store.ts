@@ -1,5 +1,6 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { CHURCH_POSTS, type ChurchPost, type PostType } from "@/data/church-posts";
+import { ensurePostImageStored } from "./post-image-engine";
 
 const POSTS_KEY = "alpha:church:user-posts";
 const OVERRIDES_KEY = "alpha:church:post-overrides"; // patches applied on top of any post (seed + user)
@@ -7,6 +8,10 @@ const ATT_KEY = "alpha:church:attendance";
 const RES_KEY = "alpha:church:reservations";
 const COND_KEY = "alpha:church:condolences";
 const CONG_KEY = "alpha:church:congrats";
+const COMMENTS_KEY = "alpha:church:post-comments";
+const REACT_KEY = "alpha:church:post-reactions";
+const PRAY_KEY = "alpha:church:post-prayers";
+const SHARE_KEY = "alpha:church:post-shares";
 const ROLE_KEY = "alpha:church:role"; // "priest" | "servant" | "admin" | "member"
 
 export type Reply = { id: string; name: string; text: string; at: number };
@@ -26,6 +31,7 @@ function bumpVersion() {
 }
 function subscribe(l: () => void) {
   listeners.add(l);
+  migrateUserPostImagesOnce();
   const onStorage = () => {
     cache.clear();
     l();
@@ -60,6 +66,25 @@ function write<T>(key: string, value: T) {
 }
 
 /* ------------------------------- user posts ---------------------------------- */
+let userPostImageMigrationDone = false;
+
+/** One-time localStorage migration — must never run inside useSyncExternalStore getSnapshot. */
+export function migrateUserPostImagesOnce() {
+  if (userPostImageMigrationDone || typeof window === "undefined") return;
+  userPostImageMigrationDone = true;
+
+  const raw = read<ChurchPost[]>(POSTS_KEY, []);
+  if (!raw.length) return;
+
+  let changed = false;
+  const next = raw.map((p) => {
+    const fixed = ensurePostImageStored(p);
+    if (fixed.image !== p.image) changed = true;
+    return fixed;
+  });
+  if (changed) write(POSTS_KEY, next);
+}
+
 export function getUserPosts(): ChurchPost[] {
   return read<ChurchPost[]>(POSTS_KEY, []);
 }
@@ -118,6 +143,11 @@ export function getAllPosts(): ChurchPost[] {
 }
 export function getPost(id: string): ChurchPost | undefined {
   return getAllPosts().find((p) => p.id === id);
+}
+
+export function usePost(id: string): ChurchPost | undefined {
+  const all = useAllPosts();
+  return all.find((p) => p.id === id);
 }
 
 export function useAllPosts(): ChurchPost[] {
@@ -281,10 +311,93 @@ export function useReplies(kind: "condolence" | "congrats", postId: string): Rep
   return map[postId] ?? EMPTY_REPLY_LIST;
 }
 
+/* ------------------------------ comments & reactions ------------------------- */
+export type PostComment = { id: string; name: string; text: string; at: number };
+export type ReactionKind = "amen" | "love" | "pray";
+
+const EMPTY_COMMENTS: Record<string, PostComment[]> = Object.freeze({});
+const EMPTY_REACTS: Record<string, Record<ReactionKind, { count: number; mine: boolean }>> = Object.freeze({});
+const EMPTY_PRAY: Record<string, boolean> = Object.freeze({});
+
+export function addComment(postId: string, name: string, text: string) {
+  const map = read<Record<string, PostComment[]>>(COMMENTS_KEY, {});
+  const item: PostComment = { id: String(Date.now()), name, text, at: Date.now() };
+  map[postId] = [item, ...(map[postId] || [])];
+  write(COMMENTS_KEY, map);
+}
+
+export function useComments(postId: string): PostComment[] {
+  const map = useSyncExternalStore(
+    subscribe,
+    () => read<Record<string, PostComment[]>>(COMMENTS_KEY, EMPTY_COMMENTS),
+    () => EMPTY_COMMENTS,
+  );
+  return map[postId] ?? [];
+}
+
+export function toggleReaction(postId: string, kind: ReactionKind): boolean {
+  const map = read<Record<string, Record<ReactionKind, { count: number; mine: boolean }>>>(REACT_KEY, {});
+  const cur = map[postId]?.[kind] ?? { count: 0, mine: false };
+  const next = { count: Math.max(0, cur.count + (cur.mine ? -1 : 1)), mine: !cur.mine };
+  map[postId] = { ...(map[postId] || {}), [kind]: next };
+  write(REACT_KEY, map);
+  return next.mine;
+}
+
+export function useReactions(postId: string) {
+  const map = useSyncExternalStore(
+    subscribe,
+    () => read<Record<string, Record<ReactionKind, { count: number; mine: boolean }>>>(REACT_KEY, EMPTY_REACTS),
+    () => EMPTY_REACTS,
+  );
+  const r = map[postId] || {};
+  return {
+    amen: r.amen ?? { count: 0, mine: false },
+    love: r.love ?? { count: 0, mine: false },
+    pray: r.pray ?? { count: 0, mine: false },
+  };
+}
+
+export function togglePrayed(postId: string): boolean {
+  const map = read<Record<string, boolean>>(PRAY_KEY, {});
+  const next = !map[postId];
+  if (next) map[postId] = true;
+  else delete map[postId];
+  write(PRAY_KEY, map);
+  return next;
+}
+
+export function usePrayed(postId: string) {
+  const map = useSyncExternalStore(
+    subscribe,
+    () => read<Record<string, boolean>>(PRAY_KEY, EMPTY_PRAY),
+    () => EMPTY_PRAY,
+  );
+  const mine = !!map[postId];
+  return { mine, count: 8 + (mine ? 1 : 0) };
+}
+
+const EMPTY_SHARE: Record<string, number> = Object.freeze({});
+
+export function recordShare(postId: string) {
+  const map = read<Record<string, number>>(SHARE_KEY, {});
+  map[postId] = (map[postId] ?? 0) + 1;
+  write(SHARE_KEY, map);
+}
+
+export function useShareCount(postId: string) {
+  const map = useSyncExternalStore(
+    subscribe,
+    () => read<Record<string, number>>(SHARE_KEY, EMPTY_SHARE),
+    () => EMPTY_SHARE,
+  );
+  return map[postId] ?? 0;
+}
+
 /* --------------------------------- roles ------------------------------------- */
 export type ChurchRole = "priest" | "leader" | "servant" | "admin" | "member";
 export function getRole(): ChurchRole {
-  return read<ChurchRole>(ROLE_KEY, "priest"); // demo default: manager
+  return read<ChurchRole>(ROLE_KEY, "member");
 }
 export function setRole(role: ChurchRole) {
   write(ROLE_KEY, role);
@@ -296,9 +409,17 @@ export function canManagePosts(): boolean {
 export function useChurchRole(): ChurchRole {
   return useSyncExternalStore(
     subscribe,
-    () => read<ChurchRole>(ROLE_KEY, "priest"),
-    () => "priest" as ChurchRole,
+    () => read<ChurchRole>(ROLE_KEY, "member"),
+    () => "member" as ChurchRole,
   );
+}
+export function isChurchAdmin(role?: ChurchRole): boolean {
+  const r = role ?? getRole();
+  return r === "priest" || r === "admin";
+}
+export function useIsChurchAdmin(): boolean {
+  const r = useChurchRole();
+  return r === "priest" || r === "admin";
 }
 export function useCanManagePosts(): boolean {
   const r = useChurchRole();

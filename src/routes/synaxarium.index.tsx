@@ -1,10 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Bell, Search, BookOpen, ChevronLeft, Crown, Mountain, Flame, Sparkles, Users } from "lucide-react";
+import { BookOpen, ChevronLeft, Crown, Mountain, Flame, Sparkles, Users, Search } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { SAINTS, getTodaySaint, type Saint } from "@/features/synaxarium";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { GlassSurface } from "@/components/bible/primitives";
-import { CopticCross, CopticWatermark, CopticSeparator } from "@/components/coptic";
+import { CopticCross, CopticWatermark, CopticDivider, CopticTitle } from "@/components/coptic";
+import { AlphaHeader, AlphaHeaderShell } from "@/components/navigation/AlphaHeader";
 import { SearchOverlay } from "@/components/overlays/SearchOverlay";
 import { NotificationsCenter, type NotificationItem } from "@/components/overlays/NotificationsCenter";
 import { cn } from "@/lib/utils";
@@ -99,35 +100,23 @@ function SynaxariumHome() {
       <CopticWatermark />
 
       {/* Header */}
-      <header
-        className="relative z-10 mx-auto w-full max-w-[430px] px-4 flex items-center justify-between"
-        style={{ paddingTop: "max(env(safe-area-inset-top), 14px)", paddingBottom: 8 }}
-      >
-        <button
-          type="button"
-          onClick={() => setNotifOpen(true)}
-          aria-label="التنبيهات"
-          className="relative grid h-10 w-10 place-items-center rounded-full bg-white border border-[#ead9b1] text-[#3a2a18] active:scale-90 transition-transform shadow-[0_4px_10px_-8px_rgba(120,80,30,0.5)]"
-        >
-          <Bell className="h-4 w-4" />
-          <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-[#6a4ab5]" />
-        </button>
-        <div className="flex flex-col items-center -mt-1">
-          <CopticCross className="text-[#b8893a]" size={18} />
-          <h1 className="font-arabic-serif text-[20px] font-extrabold text-[#3a2a18] leading-tight">
-            السنكسار
-          </h1>
-          <p className="text-[10.5px] text-[#6a543a] -mt-0.5">سير القديسين وقراءات اليوم</p>
-        </div>
-        <button
-          type="button"
-          aria-label="البحث في السنكسار"
-          onClick={() => setSearchOpen(true)}
-          className="grid h-10 w-10 place-items-center rounded-full bg-white border border-[#ead9b1] text-[#3a2a18] active:scale-90 transition-transform shadow-[0_4px_10px_-8px_rgba(120,80,30,0.5)]"
-        >
-          <Search className="h-4 w-4" />
-        </button>
-      </header>
+      <AlphaHeaderShell>
+        <AlphaHeader
+          variant="internal"
+          title="السنكسار"
+          subtitle="سير القديسين وقراءات اليوم"
+          onSearchClick={() => setSearchOpen(true)}
+          center={
+            <div className="flex flex-col items-center -mt-1">
+              <CopticCross className="text-[#b8893a]" size={18} />
+              <h1 className="font-arabic-serif text-[20px] font-extrabold text-[#3a2a18] leading-tight">
+                السنكسار
+              </h1>
+              <p className="text-[10.5px] text-[#6a543a] -mt-0.5">سير القديسين وقراءات اليوم</p>
+            </div>
+          }
+        />
+      </AlphaHeaderShell>
 
       <main
         className="relative z-10 mx-auto w-full max-w-[430px] px-4"
@@ -211,12 +200,7 @@ function SynaxariumHome() {
         </Link>
 
         {/* Timeline list */}
-        <h3 className="mt-5 mb-2 px-1 font-arabic-serif text-[14px] font-extrabold text-[#3a2a18] flex items-center gap-2">
-          <span className="text-[#b8893a]/70 text-[12px]">Ⲁ</span>
-          سير القديسين
-          <span className="flex-1 h-px bg-[#ead9b1]" />
-          <span className="text-[#b8893a]/70 text-[12px]">Ⲱ</span>
-        </h3>
+        <CopticTitle>سير القديسين</CopticTitle>
 
         <div className="space-y-3">
           {upcoming.map((s, idx) => {
@@ -307,7 +291,7 @@ function SynaxariumHome() {
           )}
         </div>
 
-        <CopticSeparator />
+        <CopticDivider />
 
         {/* Bottom quick sections */}
         <div className="grid grid-cols-2 gap-2.5">

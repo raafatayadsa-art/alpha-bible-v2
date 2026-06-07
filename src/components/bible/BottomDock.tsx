@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home as HomeIcon, HandHeart, BookOpen, User as UserIcon } from "lucide-react";
+import { Home as HomeIcon, HandHeart, Church as ChurchIcon, User as UserIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import logoBible from "@/assets/home/logo-bible.png";
 import { cn } from "@/lib/utils";
@@ -126,7 +126,7 @@ export function BottomDock({
               to="/bible"
               active={isActive("/bible") || isActive("/books")}
             />
-            <DockItem icon={BookOpen} label="المكتبة" to="/books" active={isActive("/books")} />
+            <DockItem icon={ChurchIcon} label="كنيستك" to="/church" active={isActive("/church")} />
             <DockItem icon={UserIcon} label="الملف الشخصي" to="/profile" active={isActive("/profile")} />
           </div>
         </div>

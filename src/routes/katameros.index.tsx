@@ -1,9 +1,8 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import {
-  Bell,
-  ChevronRight,
   ChevronDown,
+  ChevronRight,
   BookOpen,
   ScrollText,
   Cross,
@@ -19,7 +18,8 @@ import {
 } from "lucide-react";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { GlassSurface } from "@/components/bible/primitives";
-import { CopticCross, CopticWatermark, CopticSeparator } from "@/components/coptic";
+import { CopticCross, CopticWatermark, CopticDivider, CopticTitle } from "@/components/coptic";
+import { AlphaHeader, AlphaHeaderShell } from "@/components/navigation/AlphaHeader";
 import heroImage from "@/assets/katameros-hero.png.asset.json";
 import { NotificationsCenter, type NotificationItem } from "@/components/overlays/NotificationsCenter";
 import {
@@ -59,7 +59,6 @@ const READING_TONE: Record<ReadingType, string> = {
 };
 
 function KatamerosHome() {
-  const router = useRouter();
   const day = getTodayKatameros();
   const { statusOf, setStatus, lastInProgress } = useKatamerosProgress(day.id);
 
@@ -112,36 +111,23 @@ function KatamerosHome() {
     <div dir="rtl" className="relative min-h-dvh bg-[#faf8f3]">
       <CopticWatermark />
 
-      {/* Header — Back · Title · Notifications */}
-      <header
-        className="relative z-10 mx-auto w-full max-w-[430px] px-4 flex items-center justify-between"
-        style={{ paddingTop: "max(env(safe-area-inset-top), 14px)", paddingBottom: 8 }}
-      >
-        <button
-          type="button"
-          onClick={() => router.history.back()}
-          aria-label="رجوع"
-          className="grid h-10 w-10 place-items-center rounded-full bg-white border border-[#ead9b1] text-[#3a2a18] active:scale-90 transition-transform shadow-[0_4px_10px_-8px_rgba(120,80,30,0.5)]"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </button>
-        <div className="flex flex-col items-center -mt-1">
-          <CopticCross className="text-[#b8893a]" size={18} />
-          <h1 className="font-arabic-serif text-[20px] font-extrabold text-[#3a2a18] leading-tight">
-            القطمارس
-          </h1>
-          <p className="text-[10.5px] text-[#6a543a] -mt-0.5">قراءات الكنيسة القبطية لليوم</p>
-        </div>
-        <button
-          type="button"
-          onClick={() => setNotifOpen(true)}
-          aria-label="التنبيهات"
-          className="relative grid h-10 w-10 place-items-center rounded-full bg-white border border-[#ead9b1] text-[#3a2a18] active:scale-90 transition-transform shadow-[0_4px_10px_-8px_rgba(120,80,30,0.5)]"
-        >
-          <Bell className="h-4 w-4" />
-          <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-[#6a4ab5]" />
-        </button>
-      </header>
+      {/* Header */}
+      <AlphaHeaderShell>
+        <AlphaHeader
+          variant="internal"
+          title="القطمارس"
+          subtitle="قراءات الكنيسة القبطية لليوم"
+          center={
+            <div className="flex flex-col items-center -mt-1">
+              <CopticCross className="text-[#b8893a]" size={18} />
+              <h1 className="font-arabic-serif text-[20px] font-extrabold text-[#3a2a18] leading-tight">
+                القطمارس
+              </h1>
+              <p className="text-[10.5px] text-[#6a543a] -mt-0.5">قراءات الكنيسة القبطية لليوم</p>
+            </div>
+          }
+        />
+      </AlphaHeaderShell>
 
       <main
         className="relative z-10 mx-auto w-full max-w-[430px] px-4"
@@ -242,12 +228,7 @@ function KatamerosHome() {
         )}
 
         {/* READINGS */}
-        <h3 className="mt-5 mb-2 px-1 font-arabic-serif text-[14px] font-extrabold text-[#3a2a18] flex items-center gap-2">
-          <span className="text-[#b8893a]/70 text-[12px]">Ⲁ</span>
-          القراءات
-          <span className="flex-1 h-px bg-[#ead9b1]" />
-          <span className="text-[#b8893a]/70 text-[12px]">Ⲱ</span>
-        </h3>
+        <CopticTitle>القراءات</CopticTitle>
 
         <div ref={cardsRef} className="space-y-2.5">
           {day.readings.length === 0 ? (
@@ -272,7 +253,7 @@ function KatamerosHome() {
           )}
         </div>
 
-        <CopticSeparator />
+        <CopticDivider />
 
         {/* DAILY SUMMARY */}
         <GlassSurface className="p-4 bg-white border-[#ead9b1] shadow-[0_10px_24px_-20px_rgba(120,80,30,0.5)]">
@@ -291,12 +272,7 @@ function KatamerosHome() {
         </GlassSurface>
 
         {/* TIMELINE */}
-        <h3 className="mt-5 mb-2 px-1 font-arabic-serif text-[14px] font-extrabold text-[#3a2a18] flex items-center gap-2">
-          <span className="text-[#b8893a]/70 text-[12px]">Ⲁ</span>
-          تسلسل قراءات اليوم
-          <span className="flex-1 h-px bg-[#ead9b1]" />
-          <span className="text-[#b8893a]/70 text-[12px]">Ⲱ</span>
-        </h3>
+        <CopticTitle>تسلسل قراءات اليوم</CopticTitle>
         <GlassSurface className="p-4 bg-white border-[#ead9b1] shadow-[0_10px_24px_-20px_rgba(120,80,30,0.5)]">
           <ol className="space-y-2">
             {day.readings.map((r, idx) => {
@@ -332,12 +308,7 @@ function KatamerosHome() {
         </GlassSurface>
 
         {/* RELATED CONTENT */}
-        <h3 className="mt-5 mb-2 px-1 font-arabic-serif text-[14px] font-extrabold text-[#3a2a18] flex items-center gap-2">
-          <span className="text-[#b8893a]/70 text-[12px]">Ⲁ</span>
-          محتوى مرتبط
-          <span className="flex-1 h-px bg-[#ead9b1]" />
-          <span className="text-[#b8893a]/70 text-[12px]">Ⲱ</span>
-        </h3>
+        <CopticTitle>محتوى مرتبط</CopticTitle>
         <div className="grid grid-cols-2 gap-2.5">
           {day.related.map((item) => {
             const tone =

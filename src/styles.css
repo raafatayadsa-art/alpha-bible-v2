@@ -95,6 +95,7 @@ html, body { font-family: 'Thmanyah Sans', 'Tajawal', 'Segoe UI', system-ui, -ap
 }
 
 :root {
+  --alpha-header-exclusion: calc(env(safe-area-inset-top, 0px) + 56px);
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.129 0.042 264.695);

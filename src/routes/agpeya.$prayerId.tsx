@@ -22,17 +22,21 @@ import {
   AgpeyaErrorState,
   AgpeyaNotFoundState,
   AgpeyaSkeleton,
-  CopticCross,
   getAgpeyaPrayer,
   readPrayerPosition,
   savePrayerPosition,
   useAgpeyaAudio,
   useAgpeyaTheme,
   useSavedAgpeya,
+  useAgpeyaSections,
+  type AgpeyaSupabaseSection,
+  isMidnightRoute,
+  buildMidnightDisplayGroups,
+  type MidnightDisplayGroup,
 } from "@/features/agpeya";
 import { useTypographyPrefs } from "@/lib/reading-state";
 import type { AgpeyaPrayer } from "@/features/agpeya";
-import { CopticWatermark } from "@/components/coptic";
+import { CopticDivider, CopticWatermark } from "@/components/coptic";
 import { cn } from "@/lib/utils";
 
 /* ---------- Lifecycle states ---------- */
@@ -206,21 +210,25 @@ function buildInfoFallback(p: AgpeyaPrayer) {
 function SectionShell({
   id, label, dark, children,
 }: { id: string; label: string; dark: boolean; children: React.ReactNode }) {
+  const gold = dark ? "text-[#f0d78c]/70" : "text-[#b8893a]/70";
   return (
     <section
       id={`section-${id}`}
       data-section-id={id}
       className="scroll-mt-32"
     >
-      <header className="mb-3 flex items-center gap-2 px-1">
-        <CopticCross className={cn("h-3.5 w-3.5", dark ? "text-[#f0d78c]/80" : "text-[#c79356]")} />
-        <h2 className={cn(
-          "font-arabic-serif text-[15px] font-extrabold tracking-tight",
-          dark ? "text-[#f0d78c]" : "text-[#5b3a18]",
-        )}>
-          {label}
+      <header className="mb-3 flex items-center justify-center gap-2 px-1">
+        <h2
+          dir="ltr"
+          className={cn(
+            "font-arabic-serif flex items-center justify-center gap-2 text-[15px] font-extrabold tracking-tight text-center",
+            dark ? "text-[#f0d78c]" : "text-[#5b3a18]",
+          )}
+        >
+          <span className={cn("text-[14px] font-bold leading-none", gold)} aria-hidden>Ⲁ</span>
+          <span dir="rtl">{label}</span>
+          <span className={cn("text-[14px] font-bold leading-none", gold)} aria-hidden>Ⲱ</span>
         </h2>
-        <span className={cn("h-px flex-1", dark ? "bg-white/10" : "bg-[#c79356]/25")} />
       </header>
       {children}
     </section>
@@ -268,28 +276,25 @@ function PsalmCard({
 }: { dark: boolean; psalm: { number: number; title?: string; verses: string[] } }) {
   return (
     <GlassCard dark={dark}>
-      <header className="mb-3 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className={cn(
-            "grid h-9 w-9 place-items-center rounded-full text-[12px] font-extrabold tabular-nums",
-            dark
-              ? "bg-[#f0d78c] text-[#1a1208]"
-              : "bg-gradient-to-br from-[#e7b35a] to-[#b87a22] text-white",
-          )}>
-            {psalm.number}
-          </span>
-          <div>
-            <div className={cn("font-arabic-serif text-[14px] font-bold", dark ? "text-[#f0d78c]" : "text-[#5b3a18]")}>
-              مزمور {psalm.number}
-            </div>
-            {psalm.title && (
-              <div className={cn("text-[11px]", dark ? "text-white/55" : "text-[#8a5a1f]")}>
-                {psalm.title}
-              </div>
-            )}
+      <header className="mb-3 flex items-center gap-2">
+        <span className={cn(
+          "grid h-9 w-9 place-items-center rounded-full text-[12px] font-extrabold tabular-nums",
+          dark
+            ? "bg-[#f0d78c] text-[#1a1208]"
+            : "bg-gradient-to-br from-[#e7b35a] to-[#b87a22] text-white",
+        )}>
+          {psalm.number}
+        </span>
+        <div>
+          <div className={cn("font-arabic-serif text-[14px] font-bold", dark ? "text-[#f0d78c]" : "text-[#5b3a18]")}>
+            مزمور {psalm.number}
           </div>
+          {psalm.title && (
+            <div className={cn("text-[11px]", dark ? "text-white/55" : "text-[#8a5a1f]")}>
+              {psalm.title}
+            </div>
+          )}
         </div>
-        <CopticCross className={cn("h-4 w-4", dark ? "text-[#f0d78c]/70" : "text-[#c79356]")} />
       </header>
       <ol className="space-y-2.5">
         {psalm.verses.map((v, vi) => (
@@ -314,10 +319,9 @@ function GospelCard({
   return (
     <GlassCard dark={dark}>
       <div className={cn(
-        "mb-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold",
+        "mb-3 inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold",
         dark ? "bg-[#f0d78c]/15 text-[#f0d78c]" : "bg-[#5a3d92]/10 text-[#5a3d92]",
       )}>
-        <CopticCross className="h-3 w-3" />
         {g.reference}
       </div>
       {g.intro && (
@@ -343,10 +347,9 @@ function FragmentCard({ dark, f }: { dark: boolean; f: { title: string; body: st
   return (
     <GlassCard dark={dark}>
       <h3 className={cn(
-        "mb-2 flex items-center gap-2 font-arabic-serif text-[14px] font-bold",
+        "mb-2 font-arabic-serif text-[14px] font-bold",
         dark ? "text-[#f0d78c]" : "text-[#5b3a18]",
       )}>
-        <CopticCross className="h-3.5 w-3.5" />
         {f.title}
       </h3>
       {f.body.split(/\n+/).map((line, li) => (
@@ -381,13 +384,71 @@ function InfoCard({
 
 /* ---------- Reader ---------- */
 
+function supabaseSectionToPrayerSection(
+  s: AgpeyaSupabaseSection,
+): PrayerSection {
+  return {
+    id: `sb-${s.id}`,
+    label: s.title_ar,
+    render: ({ dark }: { dark: boolean }) => (
+      <ProseCard dark={dark} paragraphs={paragraphs(s.content_ar)} />
+    ),
+  };
+}
+
+function midnightGroupToPrayerSection(group: MidnightDisplayGroup): PrayerSection {
+  return {
+    id: `mn-${group.id}`,
+    label: group.label,
+    render: ({ dark }: { dark: boolean }) => (
+      <div className="space-y-3">
+        {group.rows.map((row) => {
+          const showAsFragment =
+            group.rows.length > 1 &&
+            row.title_ar.trim() !== group.label.trim();
+
+          if (showAsFragment) {
+            return (
+              <FragmentCard
+                key={row.id}
+                dark={dark}
+                f={{ title: row.title_ar, body: row.content_ar }}
+              />
+            );
+          }
+
+          return (
+            <ProseCard key={row.id} dark={dark} paragraphs={paragraphs(row.content_ar)} />
+          );
+        })}
+      </div>
+    ),
+  };
+}
+
+function buildReaderSections(
+  prayerId: string,
+  rawSections: AgpeyaSupabaseSection[],
+): PrayerSection[] {
+  if (isMidnightRoute(prayerId)) {
+    return buildMidnightDisplayGroups(rawSections, prayerId).map(midnightGroupToPrayerSection);
+  }
+  return rawSections.map(supabaseSectionToPrayerSection);
+}
+
 function PrayerReader() {
   const { prayer } = Route.useLoaderData() as { prayer: AgpeyaPrayer };
-  const prayerId = prayer.id;
+  const { prayerId } = Route.useParams();
   const navigate = useNavigate();
 
   const { prev, next } = useMemo(() => adjacentAgpeyaPrayers(prayerId), [prayerId]);
-  const sections = useMemo(() => buildSections(prayer), [prayer]);
+
+  const sectionsState = useAgpeyaSections(prayerId);
+
+  const sections: PrayerSection[] = useMemo(() => {
+    if (sectionsState.status !== "success") return [];
+    return buildReaderSections(prayerId, sectionsState.sections);
+  }, [sectionsState, prayerId]);
 
   const { prefs, setPrefs } = useTypographyPrefs();
   const fontSize = prefs.fontSize;
@@ -397,43 +458,52 @@ function PrayerReader() {
   const [theme, setTheme] = useAgpeyaTheme();
   const [progress, setProgress] = useState(0);
   const [notice, setNotice] = useState<string | null>(null);
-  const [activeId, setActiveId] = useState<string>(sections[0]?.id ?? "");
+  const [activeId, setActiveId] = useState<string>("");
   const { isSaved, toggle } = useSavedAgpeya();
+
+  useEffect(() => {
+    setActiveId("");
+  }, [prayerId]);
+
+  useEffect(() => {
+    if (sections.length > 0 && activeId === "") {
+      setActiveId(sections[0].id);
+    }
+  }, [sections, activeId]);
 
   const [shareOpen, setShareOpen] = useState(false);
   const [presentOpen, setPresentOpen] = useState(false);
 
   const presentationContent: PresentationContent = useMemo(() => {
     const out: PresentationContent["sections"] = [];
-    const text = prayer.tabs.text?.body ?? "";
-    if (text.trim()) {
-      text
-        .split(/\n\s*\n/)
-        .map((p) => p.trim())
-        .filter(Boolean)
-        .forEach((p, i) =>
-          out.push({ title: i === 0 ? "مقدمة الساعة" : undefined, body: p }),
-        );
+
+    if (sectionsState.status === "success") {
+      if (isMidnightRoute(prayerId)) {
+        buildMidnightDisplayGroups(sectionsState.sections, prayerId).forEach((group) => {
+          const body = group.rows
+            .map((row) => {
+              const heading =
+                group.rows.length > 1 && row.title_ar.trim() !== group.label.trim()
+                  ? `${row.title_ar}\n\n`
+                  : "";
+              return `${heading}${row.content_ar}`;
+            })
+            .join("\n\n");
+          out.push({ title: group.label, body });
+        });
+      } else {
+        sectionsState.sections.forEach((s) => {
+          out.push({ title: s.title_ar, body: s.content_ar });
+        });
+      }
     }
-    (prayer.tabs.psalms?.psalms ?? []).forEach((ps) => {
-      out.push({
-        title: `المزمور ${ps.number}${ps.title ? " — " + ps.title : ""}`,
-        body: ps.verses.join("\n"),
-      });
-    });
-    (prayer.tabs.gospel?.gospel ?? []).forEach((g: any) => {
-      out.push({
-        title: g.title ?? "الإنجيل",
-        body: g.body ?? (Array.isArray(g.verses) ? g.verses.join("\n") : ""),
-        meta: g.reference,
-      });
-    });
-    (prayer.tabs.fragments?.fragments ?? []).forEach((f: any) => {
-      out.push({ title: f.title, body: f.body ?? (f.lines?.join("\n") ?? "") });
-    });
-    if (out.length === 0) out.push({ title: prayer.title, body: prayer.subtitle ?? "" });
+
+    if (out.length === 0) {
+      out.push({ title: prayer.title, body: prayer.subtitle ?? "" });
+    }
+
     return { title: prayer.title, subtitle: prayer.subtitle, sections: out };
-  }, [prayer]);
+  }, [sectionsState, prayer, prayerId]);
 
   // Audio scaffolding — reserved for future player.
   const [, setAudioState] = useAgpeyaAudio();
@@ -636,38 +706,41 @@ function PrayerReader() {
         )}
         style={{ paddingTop: "max(env(safe-area-inset-top), 0px)" }}
       >
-        <div className="mx-auto flex max-w-[640px] items-center justify-between px-3 py-3">
+        <div className="relative mx-auto flex max-w-[640px] items-center justify-between px-3 py-3">
           <Link
             to="/agpeya"
             aria-label="رجوع للأجبية"
             className={cn(
-              "grid h-10 w-10 place-items-center rounded-full border active:scale-95",
+              "relative z-10 grid h-10 w-10 place-items-center rounded-full border active:scale-95",
               dark ? "bg-white/5 border-white/15 text-[#f0d78c]" : "bg-white/60 border-[#c79356]/35 text-[#8a5a1f]",
             )}
           >
             <ChevronLeft className="h-4 w-4 -scale-x-100" />
           </Link>
-          <div className="min-w-0 px-2 text-center">
-            <h1 className="font-arabic-serif flex items-center justify-center gap-1.5 truncate text-[16px] font-bold leading-tight">
-              <span className={cn("opacity-60 text-[12px]", dark ? "text-[#f0d78c]" : "text-[#8a5a1f]")} aria-hidden>Ⲁ</span>
-              {prayer.title}
-              <span className={cn("opacity-60 text-[12px]", dark ? "text-[#f0d78c]" : "text-[#8a5a1f]")} aria-hidden>Ⲱ</span>
-              {isSaved(prayerId) && (
-                <span className={cn(
-                  "rounded-full px-1.5 py-0.5 text-[9px] font-bold",
-                  dark ? "bg-[#f0d78c]/20 text-[#f0d78c]" : "bg-[#5a3d92]/10 text-[#5a3d92]",
-                )}>
-                  محفوظة
-                </span>
-              )}
+          <div className="pointer-events-none absolute inset-x-14 flex flex-col items-center justify-center text-center">
+            <h1
+              dir="ltr"
+              className="font-arabic-serif flex items-center justify-center gap-2 text-[17px] font-bold leading-tight"
+            >
+              <span className={cn("text-[15px] font-bold leading-none", dark ? "text-[#f0d78c]/75" : "text-[#b8893a]/75")} aria-hidden>Ⲁ</span>
+              <span dir="rtl" className="truncate">{prayer.title}</span>
+              <span className={cn("text-[15px] font-bold leading-none", dark ? "text-[#f0d78c]/75" : "text-[#b8893a]/75")} aria-hidden>Ⲱ</span>
             </h1>
-            {prayer.subtitle && (
-              <p className={cn("truncate text-[11px]", dark ? "text-white/55" : "text-[#7a5a32]")}>
+            {(prayer.subtitle || isSaved(prayerId)) && (
+              <p className={cn("mt-0.5 flex items-center justify-center gap-1.5 truncate text-[11px]", dark ? "text-white/55" : "text-[#7a5a32]")}>
                 {prayer.subtitle}
+                {isSaved(prayerId) && (
+                  <span className={cn(
+                    "rounded-full px-1.5 py-0.5 text-[9px] font-bold",
+                    dark ? "bg-[#f0d78c]/20 text-[#f0d78c]" : "bg-[#5a3d92]/10 text-[#5a3d92]",
+                  )}>
+                    محفوظة
+                  </span>
+                )}
               </p>
             )}
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="relative z-10 flex items-center gap-1.5">
             <DisplayButton tone={dark ? "dark" : "light"} onClick={() => setPresentOpen(true)} />
             <IconButton dark={dark} ariaLabel="مشاركة" onClick={handleShare}>
               <Share2 className="h-4 w-4" />
@@ -736,14 +809,6 @@ function PrayerReader() {
         className="relative flex-1 overflow-y-auto"
         style={{ scrollBehavior: "smooth" }}
       >
-        {/* Faint Coptic cross watermark */}
-        <CopticCross
-          className={cn(
-            "pointer-events-none absolute left-1/2 top-16 h-40 w-40 -translate-x-1/2 opacity-[0.04]",
-            dark ? "text-[#f0d78c]" : "text-[#5b3a18]",
-          )}
-        />
-
         <article
           className="relative mx-auto max-w-[640px] px-3 pb-44 pt-5 sm:px-5 font-arabic-serif"
           style={{ fontSize, lineHeight }}
@@ -756,23 +821,43 @@ function PrayerReader() {
             {AGPEYA_DRAFT_NOTICE}
           </div>
 
-          {sections.length === 0 ? (
+          {sectionsState.status === "loading" ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    "h-32 animate-pulse rounded-2xl border",
+                    dark ? "border-white/10 bg-white/5" : "border-[#c79356]/20 bg-white/40",
+                  )}
+                />
+              ))}
+            </div>
+          ) : sectionsState.status === "error" ? (
+            <EmptyTab
+              dark={dark}
+              message={`تعذّر تحميل محتوى الصلاة — ${sectionsState.message}`}
+            />
+          ) : sections.length === 0 ? (
             <EmptyTab dark={dark} message="لا يوجد محتوى لهذه الصلاة بعد." />
           ) : (
-            <div className="space-y-6">
-              {sections.map((s) => (
-                <SectionShell key={s.id} id={s.id} label={s.label} dark={dark}>
-                  {s.render({ dark })}
-                </SectionShell>
+            <div className="space-y-2">
+              {sections.map((s, i) => (
+                <div key={s.id}>
+                  {i > 0 && <CopticDivider tone={dark ? "dark" : "light"} />}
+                  <SectionShell id={s.id} label={s.label} dark={dark}>
+                    {s.render({ dark })}
+                  </SectionShell>
+                </div>
               ))}
             </div>
           )}
 
+          <CopticDivider tone={dark ? "dark" : "light"} className="mt-10" />
           <div className={cn(
-            "mt-10 flex flex-col items-center gap-2 border-t pt-5 text-center text-[12px]",
-            dark ? "border-white/10 text-white/55" : "border-[#c79356]/25 text-[#8a5a1f]",
+            "flex flex-col items-center gap-2 pb-2 text-center text-[12px]",
+            dark ? "text-white/55" : "text-[#8a5a1f]",
           )}>
-            <CopticCross className={cn("h-4 w-4", dark ? "text-[#f0d78c]" : "text-[#c79356]")} />
             نهاية الصلاة — بركة الرب تشملكم
           </div>
 
@@ -827,7 +912,6 @@ function PrayerReader() {
         fontStep={1}
         lineHeight={lineHeight}
         setLineHeight={setLineHeight}
-        lineHeightSteps={[1.7, 1.9, 2.05, 2.25, 2.5]}
       />
 
 
@@ -906,7 +990,6 @@ function EmptyTab({ dark, message = "لا يوجد محتوى لهذا القس�
       "flex flex-col items-center gap-2 rounded-2xl border px-5 py-10 text-center text-[13px]",
       dark ? "border-white/10 bg-white/5 text-white/65" : "border-[#c79356]/30 bg-white/55 text-[#7a5a32]",
     )}>
-      <CopticCross className={cn("h-5 w-5", dark ? "text-[#f0d78c]/60" : "text-[#c79356]")} />
       {message}
     </div>
   );

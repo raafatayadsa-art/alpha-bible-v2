@@ -9,6 +9,11 @@ export type PrayerCategory =
 
 export type PrayerStatus = "active" | "urgent" | "answered";
 
+export type PrayerParticipant = {
+  name: string;
+  avatarUrl?: string;
+};
+
 export type PrayerRequest = {
   id: string;
   name: string;
@@ -24,6 +29,10 @@ export type PrayerRequest = {
   mine?: boolean;
   /** Posted anonymously — hides the name. */
   anonymous?: boolean;
+  /** Requester profile photo when available. */
+  avatarUrl?: string;
+  /** Recent pray-ers — used for avatar stack when photos exist. */
+  prayerParticipants?: PrayerParticipant[];
 };
 
 
@@ -38,6 +47,14 @@ export const PRAYER_REQUESTS: PrayerRequest[] = [
     prayers: 42,
     category: "شفاء",
     status: "urgent",
+    avatarUrl: "https://i.pravatar.cc/80?u=mmina",
+    prayerParticipants: [
+      { name: "مارينا", avatarUrl: "https://i.pravatar.cc/80?u=marina-pray" },
+      { name: "بولس", avatarUrl: "https://i.pravatar.cc/80?u=paul-pray" },
+      { name: "سارة", avatarUrl: "https://i.pravatar.cc/80?u=sara-pray" },
+      { name: "جورج", avatarUrl: "https://i.pravatar.cc/80?u=george-pray" },
+      { name: "مريم" },
+    ],
   },
   {
     id: "2",
@@ -49,6 +66,12 @@ export const PRAYER_REQUESTS: PrayerRequest[] = [
     prayers: 28,
     category: "دراسة",
     status: "active",
+    avatarUrl: "https://i.pravatar.cc/80?u=maryam-j",
+    prayerParticipants: [
+      { name: "أبونا داود", avatarUrl: "https://i.pravatar.cc/80?u=abodaoud" },
+      { name: "كيرلس", avatarUrl: "https://i.pravatar.cc/80?u=kyrillos" },
+      { name: "هبة", avatarUrl: "https://i.pravatar.cc/80?u=heba-pray" },
+    ],
   },
   {
     id: "3",
@@ -60,6 +83,10 @@ export const PRAYER_REQUESTS: PrayerRequest[] = [
     prayers: 67,
     category: "معيشة",
     status: "active",
+    prayerParticipants: [
+      { name: "أنطون" },
+      { name: "فادي" },
+    ],
   },
   {
     id: "4",
@@ -71,6 +98,11 @@ export const PRAYER_REQUESTS: PrayerRequest[] = [
     prayers: 35,
     category: "زواج",
     status: "active",
+    avatarUrl: "https://i.pravatar.cc/80?u=sara-m",
+    prayerParticipants: [
+      { name: "مارينا", avatarUrl: "https://i.pravatar.cc/80?u=marina2" },
+      { name: "بيشوي", avatarUrl: "https://i.pravatar.cc/80?u=bishoy" },
+    ],
   },
   {
     id: "5",
@@ -82,6 +114,13 @@ export const PRAYER_REQUESTS: PrayerRequest[] = [
     prayers: 89,
     category: "راحة نفس",
     status: "answered",
+    avatarUrl: "https://i.pravatar.cc/80?u=george-a",
+    prayerParticipants: [
+      { name: "مينا", avatarUrl: "https://i.pravatar.cc/80?u=mmina2" },
+      { name: "مريم", avatarUrl: "https://i.pravatar.cc/80?u=mariam2" },
+      { name: "بeter", avatarUrl: "https://i.pravatar.cc/80?u=peter2" },
+      { name: "john", avatarUrl: "https://i.pravatar.cc/80?u=john2" },
+    ],
   },
   {
     id: "6",
@@ -94,6 +133,9 @@ export const PRAYER_REQUESTS: PrayerRequest[] = [
     category: "طلبة",
     status: "active",
     mine: true,
+    prayerParticipants: [
+      { name: "مارينا", avatarUrl: "https://i.pravatar.cc/80?u=marina3" },
+    ],
   },
 ];
 
@@ -134,13 +176,35 @@ export type EncouragementMessage = {
   text: string;
   time: string;
   anonymous?: boolean;
+  avatarUrl?: string;
+  churchName?: string;
 };
 
 
 export const ENCOURAGEMENT_MESSAGES: EncouragementMessage[] = [
-  { id: "m1", author: "أ. مارينا", text: "الرب يقويك ويعطيك سلامه", time: "منذ ساعة" },
-  { id: "m2", author: "أ. بيشوي", text: "نصلي من أجلك ومن أجل أسرتك", time: "منذ ٣ ساعات" },
-  { id: "m3", author: "أ. مريم", text: "المسيح معك في كل لحظة", time: "منذ ٥ ساعات" },
+  {
+    id: "m1",
+    author: "أ. مارينا",
+    text: "الرب يقويك ويعطيك سلامه",
+    time: "منذ ساعة",
+    avatarUrl: "https://i.pravatar.cc/80?u=marina-enc",
+    churchName: "كنيسة مارجرجس",
+  },
+  {
+    id: "m2",
+    author: "أ. بيشوي",
+    text: "نصلي من أجلك ومن أجل أسرتك",
+    time: "منذ ٣ ساعات",
+    avatarUrl: "https://i.pravatar.cc/80?u=bishoy-enc",
+    churchName: "كنيسة مارجرجس",
+  },
+  {
+    id: "m3",
+    author: "أ. مريم",
+    text: "المسيح معك في كل لحظة",
+    time: "منذ ٥ ساعات",
+    avatarUrl: "https://i.pravatar.cc/80?u=mary-enc",
+  },
 ];
 
 export const ENCOURAGEMENT_TOTAL = 45;

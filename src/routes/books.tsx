@@ -5,6 +5,7 @@ import { Search } from "lucide-react";
 import { booksQueryOptions } from "@/lib/bible";
 import { groupBooks, displayName } from "@/lib/bible-books";
 import { BackButton, BookCard, BookGridSkeleton, BottomDock, SectionHeader } from "@/components/bible";
+import { AlphaNotificationButton } from "@/components/navigation/AlphaNotificationButton";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/books")({
@@ -83,7 +84,7 @@ function BooksGrid() {
         <header className="flex items-center justify-between gap-2 pt-2">
           <BackButton to="/bible" />
           <h1 className="font-arabic-serif text-[18px] font-bold text-[#3a2a18]">الأسفار</h1>
-          <span className="w-[68px]" aria-hidden />
+          <AlphaNotificationButton />
         </header>
 
         <div className="mt-4">

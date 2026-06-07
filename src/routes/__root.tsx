@@ -12,6 +12,7 @@ import appCss from "../styles.css?url";
 import { DictionaryDebugBadge } from "@/components/DictionaryDebugBadge";
 import { Toaster } from "@/components/ui/sonner";
 import { GlobalBackButton } from "@/components/GlobalBackButton";
+import { AlphaNavigationProvider } from "@/components/navigation/AlphaNavigationProvider";
 
 function NotFoundComponent() {
   return (
@@ -121,10 +122,12 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
-      <GlobalBackButton />
-      <Toaster />
-      {/* <DictionaryDebugBadge /> — disabled with smart highlight */}
+      <AlphaNavigationProvider>
+        <Outlet />
+        <GlobalBackButton />
+        <Toaster />
+        {/* <DictionaryDebugBadge /> — disabled with smart highlight */}
+      </AlphaNavigationProvider>
     </QueryClientProvider>
   );
 }

@@ -9,6 +9,7 @@ import {
   formatDistance, findPlace, type ChurchPlace, type PlaceKind,
 } from "@/data/church-places";
 import heroChurch from "@/assets/home/hero-church-premium.jpg";
+import { AlphaNotificationButton } from "@/components/navigation/AlphaNotificationButton";
 
 export const Route = createFileRoute("/church/directory")({
   ssr: false,
@@ -163,7 +164,7 @@ function Header({ query, hasQuery }: { query: string; hasQuery: boolean }) {
         <h1 className="text-[15px] font-extrabold" style={{ color: TEXT }}>
           الكنائس والأديرة
         </h1>
-        <div className="w-10" />
+        <AlphaNotificationButton />
       </div>
       {hasQuery ? (
         <div className="px-4 pb-2 text-[11px] font-bold text-right" style={{ color: SUB }}>

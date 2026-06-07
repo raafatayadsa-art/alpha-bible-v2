@@ -4,6 +4,7 @@ import { POST_TYPE_META } from "@/data/church-posts";
 import {
   useArchivedPosts, useCanManagePosts, restorePost, isPinned,
 } from "@/features/church/post-store";
+import { PostImage } from "@/features/church/PostImage";
 
 export const Route = createFileRoute("/church/archive")({
   ssr: false,
@@ -62,7 +63,7 @@ function ChurchArchive() {
                   className="flex gap-3 p-2.5 active:scale-[0.99] transition-transform"
                 >
                   <div className="relative h-[78px] w-[88px] shrink-0 overflow-hidden rounded-2xl">
-                    <img src={p.image} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+                    <PostImage post={p} alt="" className="absolute inset-0 h-full w-full object-cover" />
                     {isPinned(p) ? (
                       <span className="absolute top-1 right-1 grid place-items-center h-5 w-5 rounded-full bg-[#b8893a] text-white border border-white/50">
                         <Pin className="h-2.5 w-2.5" strokeWidth={3} />

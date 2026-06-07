@@ -27,7 +27,7 @@ import { GlassSurface, BackButton } from "@/components/bible/primitives";
 import {
   CopticCross,
   CopticWatermark,
-  CopticSeparator,
+  CopticDivider,
   Timeline,
   TimelineItem,
 } from "@/components/coptic";
@@ -407,7 +407,7 @@ function SaintDetails() {
           </GlassSurface>
         </section>
 
-        <CopticSeparator />
+        <CopticDivider />
 
         {/* TIMELINE */}
         <section>

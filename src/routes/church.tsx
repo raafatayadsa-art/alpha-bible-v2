@@ -1,25 +1,21 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight, Phone, MessageCircle, MapPin, ShieldCheck, Users,
   HandHeart, Newspaper, Radio, CalendarDays, BookOpen, Library, Heart,
-  Play, ChevronLeft, Clock, Sparkles, Bell, Flame, Pin, Plus,
+  Play, ChevronLeft, Clock, Sparkles, Bell, Flame, Plus,
   Navigation, Share2, Crown, UserCog, Send, Lock, X, MessageSquareHeart, Check,
 } from "lucide-react";
 import { CHURCH_CONTACTS, type ChurchContact } from "@/data/church-contacts";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { CopticWatermark } from "@/components/coptic";
-import { POST_TYPE_META, type ChurchPost } from "@/data/church-posts";
+import { AlphaHeader, AlphaHeaderShell } from "@/components/navigation/AlphaHeader";
 import {
   PRAYER_REQUESTS, prayerStats, ENCOURAGEMENT_TOTAL,
 } from "@/data/prayer-requests";
-import {
-  useActivePosts, useCanManagePosts, isPinned, pinForDays, pinUntil, unpinPost, archivePost,
-} from "@/features/church/post-store";
+import { useActivePosts } from "@/features/church/post-store";
 import { PostBuilder } from "@/features/church/PostBuilder";
-import {
-  AttendButton, CondolencePopup, CongratsPopup, ReservePopup,
-} from "@/features/church/PostActions";
+import { ChurchPostsHorizontalRail } from "@/features/church/ChurchPostsFeed";
 
 
 
@@ -40,8 +36,17 @@ export const Route = createFileRoute("/church")({
       { name: "description", content: "تجربة كنيسة قبطية أرثوذكسية متكاملة على جهازك." },
     ],
   }),
-  component: ChurchScreen,
+  component: ChurchRoute,
 });
+
+function ChurchRoute() {
+  const isChurchHome = useRouterState({
+    select: (s) => s.location.pathname.replace(/\/+$/, "") === "/church",
+  });
+
+  if (isChurchHome) return <ChurchScreen />;
+  return <Outlet />;
+}
 
 /* ============================================================ */
 /* Premium primitives                                            */
@@ -91,8 +96,8 @@ function SectionTitle({ title, action }: { title: string; action?: React.ReactNo
 
 function Header() {
   return (
-    <header
-      className="sticky top-0 z-30 px-4 pb-2 pt-[max(env(safe-area-inset-top),14px)]"
+    <AlphaHeaderShell
+      sticky
       style={{
         background:
           "linear-gradient(180deg, rgba(244,234,216,0.95) 0%, rgba(244,234,216,0.6) 70%, rgba(244,234,216,0) 100%)",
@@ -100,27 +105,12 @@ function Header() {
         WebkitBackdropFilter: "blur(14px)",
       }}
     >
-      <div className="flex items-center justify-between gap-3">
-        <Link
-          to="/home"
-          aria-label="رجوع"
-          className="inline-grid h-10 w-10 place-items-center rounded-full bg-white/80 border border-[#efe2c4] text-[#3a2a18] active:scale-90 transition-transform shadow-[0_8px_20px_-14px_rgba(120,80,30,0.45)]"
-        >
-          <ChevronLeft className="h-5 w-5 -scale-x-100" strokeWidth={2} />
-        </Link>
-
-        <h1 className="text-[15px] font-extrabold text-[#3a2a18]">كنيستك معاك</h1>
-
-        <Link
-          to="/church/notifications"
-          aria-label="الإشعارات"
-          className="relative inline-grid h-10 w-10 place-items-center rounded-full bg-white/80 border border-[#efe2c4] text-[#3a2a18] active:scale-90 transition-transform shadow-[0_8px_20px_-14px_rgba(120,80,30,0.45)]"
-        >
-          <Bell className="h-5 w-5" strokeWidth={2} />
-          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-[#c44569] border border-white" />
-        </Link>
-      </div>
-    </header>
+      <AlphaHeader
+        variant="internal"
+        backTo="/home"
+        title="كنيستك معاك"
+      />
+    </AlphaHeaderShell>
   );
 }
 
@@ -404,6 +394,13 @@ function QuickGrid() {
                 </Link>
               );
             }
+            if (q.key === "prayers") {
+              return (
+                <Link key={q.key} to="/prayer-requests" className={cls}>
+                  {inner}
+                </Link>
+              );
+            }
             return (
               <button key={q.key} type="button" className={cls}>
                 {inner}
@@ -417,7 +414,7 @@ function QuickGrid() {
 }
 
 /* ============================================================ */
-/* Church Posts Feed (featured + list)                           */
+/* Church Posts — Premium horizontal cards (Apple-style)       */
 /* ============================================================ */
 
 function CategoryPill({ type, size = "sm" }: { type: ChurchPost["type"]; size?: "sm" | "md" }) {
@@ -1048,33 +1045,56 @@ const MEETINGS = [
 
 function MeetingCard({ m }: { m: typeof MEETINGS[number] }) {
   return (
-    <div className="relative flex items-stretch gap-0 overflow-hidden rounded-[24px] border border-white/70 bg-[#fbf3e1]/80 backdrop-blur-xl shadow-[0_16px_40px_-22px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.85)] active:scale-[0.98] transition-transform">
+    <div
+      className={[
+        "relative flex h-full w-full items-stretch gap-0 overflow-hidden rounded-[24px]",
+        "border border-white/75 bg-[#fbf3e1]/82 backdrop-blur-xl",
+        "shadow-[0_3px_10px_-3px_rgba(120,80,30,0.22),0_12px_28px_-16px_rgba(120,80,30,0.32),inset_0_1px_0_rgba(255,255,255,0.92),inset_0_-1px_0_rgba(120,80,30,0.05)]",
+        "ring-1 ring-[#c79356]/[0.07] ring-inset",
+        "active:scale-[0.98] transition-transform",
+      ].join(" ")}
+    >
+      {/* Glass reflection + top highlight */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-[38%] bg-gradient-to-b from-white/26 via-white/7 to-transparent"
+      />
+
       {/* Date block */}
       <div
-        className="flex w-[74px] shrink-0 flex-col items-center justify-center gap-0.5 border-l border-white/60"
-        style={{ background: `linear-gradient(180deg, ${m.tone}18, ${m.tone}08)` }}
+        className="relative flex h-full w-[74px] shrink-0 flex-col items-center justify-center gap-0.5 border-l border-white/55"
+        style={{
+          background: `linear-gradient(165deg, ${m.tone}40 0%, ${m.tone}28 42%, ${m.tone}16 100%)`,
+          boxShadow: `inset 0 1px 0 rgba(255,255,255,0.42), inset 0 -10px 18px -10px ${m.tone}30`,
+        }}
       >
-        <span className="text-[22px] font-extrabold text-[#3a2a18] leading-none">{m.day}</span>
-        <span className="text-[10px] font-bold text-[#b8893a] leading-none">{m.month}</span>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-1 top-1 h-[38%] rounded-lg bg-gradient-to-b from-white/22 to-transparent"
+        />
+        <span className="relative text-[22px] font-extrabold text-[#3a2a18] leading-none">{m.day}</span>
+        <span className="relative text-[10px] font-bold text-[#b8893a] leading-none">{m.month}</span>
       </div>
 
       {/* Content */}
-      <div className="flex-1 p-3.5 text-right">
-        <h4 className="text-[14px] font-extrabold text-[#3a2a18] leading-tight">{m.title}</h4>
-        <div className="mt-2 flex flex-col gap-1">
-          <p className="inline-flex items-center justify-end gap-1.5 text-[11px] text-[#6a543a]">
-            <Clock className="h-3.5 w-3.5 text-[#b8893a]" strokeWidth={2} />
-            {m.time}
+      <div className="relative flex min-w-0 flex-1 flex-col p-3.5 text-right">
+        <h4 className="line-clamp-2 min-h-[2.5rem] text-[14px] font-extrabold leading-tight text-[#3a2a18]">
+          {m.title}
+        </h4>
+        <div className="mt-auto flex shrink-0 flex-col gap-1 pt-1.5">
+          <p className="flex h-4 items-center justify-end gap-1.5 truncate text-[11px] text-[#6a543a]">
+            <Clock className="h-3.5 w-3.5 shrink-0 text-[#b8893a]" strokeWidth={2} />
+            <span className="truncate">{m.time}</span>
           </p>
-          <p className="inline-flex items-center justify-end gap-1.5 text-[11px] text-[#6a543a]">
-            <MapPin className="h-3.5 w-3.5 text-[#b8893a]" strokeWidth={2} />
-            {m.location}
+          <p className="flex h-4 items-center justify-end gap-1.5 truncate text-[11px] text-[#6a543a]">
+            <MapPin className="h-3.5 w-3.5 shrink-0 text-[#b8893a]" strokeWidth={2} />
+            <span className="truncate">{m.location}</span>
           </p>
         </div>
       </div>
 
       {/* Chevron */}
-      <div className="flex items-center px-3">
+      <div className="relative flex w-9 shrink-0 items-center justify-center">
         <ChevronLeft className="h-4 w-4 text-[#c79356]" />
       </div>
     </div>
@@ -1106,7 +1126,7 @@ function UpcomingMeetings() {
       >
         <div className="flex gap-3 px-4 pb-2">
           {MEETINGS.map((m, i) => (
-            <div key={i} className="shrink-0 w-[230px]">
+            <div key={i} className="h-[108px] w-[230px] shrink-0">
               <MeetingCard m={m} />
             </div>
           ))}

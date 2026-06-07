@@ -3,13 +3,20 @@ import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import {
   ChevronLeft, CalendarDays, Share2, Pin, Pencil, Trash2, User,
   Clock, MapPin, Users as UsersIcon, Crown, BookOpen, Heart, Ticket,
+  HandHeart, MessageCircle, Church, Sparkles, Send,
 } from "lucide-react";
 import { CopticWatermark } from "@/components/coptic";
 import { POST_TYPE_META, type ChurchPost } from "@/data/church-posts";
-import { getPost, useReplies, useReservations } from "@/features/church/post-store";
+import {
+  usePost, useReplies, useComments, addComment,
+  useReactions, toggleReaction, usePrayed, togglePrayed,
+} from "@/features/church/post-store";
 import {
   AttendButton, CondolencePopup, CongratsPopup, ReservePopup,
 } from "@/features/church/PostActions";
+import { ParticipantsCounter } from "@/features/church/ParticipantsCounter";
+import { kindForPostType, usePostRegistrations } from "@/features/church/post-registrations";
+import { PostImage } from "@/features/church/PostImage";
 
 export const Route = createFileRoute("/church/post/$id")({
   ssr: false,
@@ -26,7 +33,7 @@ export const Route = createFileRoute("/church/post/$id")({
 
 function ChurchPostScreen() {
   const { id } = useParams({ from: "/church/post/$id" });
-  const post = getPost(id);
+  const post = usePost(id);
 
   if (!post) {
     return (
@@ -42,7 +49,7 @@ function ChurchPostScreen() {
   const meta = POST_TYPE_META[post.type];
 
   return (
-    <main dir="rtl" className="relative min-h-screen w-full overflow-x-hidden bg-[#f4ead8]">
+    <main dir="rtl" className="relative min-h-[100dvh] w-full overflow-x-hidden overflow-y-auto bg-[#f4ead8]">
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0 -z-0"
@@ -56,8 +63,12 @@ function ChurchPostScreen() {
 
       {/* Hero image */}
       <div className="relative">
-        <div className="relative h-[300px] w-full">
-          <img src={post.image} alt={post.title} className="absolute inset-0 h-full w-full object-cover" />
+        <div className="relative h-[min(42vw,300px)] min-h-[220px] w-full overflow-hidden bg-[#3a2a18]">
+          <PostImage
+            post={post}
+            loading="eager"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
           <div className="absolute inset-0 bg-gradient-to-b from-[#0a0603]/55 via-transparent to-[#f4ead8]" />
         </div>
 
@@ -98,23 +109,13 @@ function ChurchPostScreen() {
       </div>
 
       {/* Body */}
-      <div className="relative mx-auto w-full max-w-[440px] px-4 -mt-6 pb-[calc(env(safe-area-inset-bottom,0px)+40px)] space-y-4">
+      <div className="relative mx-auto w-full max-w-[440px] px-4 -mt-6 pb-[calc(env(safe-area-inset-bottom,0px)+96px)] space-y-4">
         <article className="relative rounded-[28px] border border-white/70 bg-[#fbf3e1]/95 backdrop-blur-xl p-5 shadow-[0_24px_50px_-26px_rgba(60,40,16,0.55),inset_0_1px_0_rgba(255,255,255,0.8)]">
           <h1 className="font-arabic-serif text-[22px] font-extrabold text-[#3a2a18] leading-snug text-right">
             {post.title}
           </h1>
 
-          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 justify-end text-[11.5px] text-[#6a543a]">
-            <span className="inline-flex items-center gap-1.5">
-              <User className="h-3.5 w-3.5 text-[#b8893a]" />
-              {post.author}
-            </span>
-            <span className="text-[#c79356]">•</span>
-            <span className="inline-flex items-center gap-1.5">
-              <CalendarDays className="h-3.5 w-3.5 text-[#b8893a]" />
-              {post.date}
-            </span>
-          </div>
+          <PostMetaBar post={post} meta={meta} />
 
           {/* Template-specific details */}
           <TemplateDetails post={post} />
@@ -132,12 +133,21 @@ function ChurchPostScreen() {
           ) : null}
         </article>
 
+        {/* Reactions */}
+        <ReactionsBar postId={post.id} />
+
         {/* Action area */}
         <PostActionArea post={post} />
 
         {/* Replies (condolences / congrats) */}
         {post.type === "condolence" ? <RepliesList postId={post.id} kind="condolence" /> : null}
         {post.type === "wedding" ? <RepliesList postId={post.id} kind="congrats" /> : null}
+
+        {/* Comments */}
+        <CommentsSection postId={post.id} />
+
+        {/* Church context */}
+        <ChurchInfoCard post={post} />
 
         {/* Admin actions */}
         <div className="rounded-[24px] border border-white/70 bg-[#fbf3e1]/85 backdrop-blur-xl p-4">
@@ -165,6 +175,55 @@ function GoldDivider() {
   );
 }
 
+function PostMetaBar({
+  post,
+  meta,
+}: {
+  post: ChurchPost;
+  meta: (typeof POST_TYPE_META)[ChurchPost["type"]];
+}) {
+  const eventWhen = [post.details?.date, post.details?.time].filter(Boolean).join(" · ");
+  return (
+    <div className="mt-3 rounded-2xl bg-white/65 border border-[#efe2c4] px-3 py-2.5">
+      <div className="flex flex-wrap items-center gap-2 justify-end">
+        <span
+          className="inline-flex items-center rounded-full font-extrabold text-white px-2.5 py-0.5 text-[10px] border border-white/30"
+          style={{ background: `linear-gradient(180deg, ${meta.tone}, ${meta.tone}cc)` }}
+        >
+          {meta.label}
+          {post.details?.eventType ? ` · ${post.details.eventType}` : ""}
+        </span>
+      </div>
+      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 justify-end text-[11px] text-[#6a543a]">
+        <span className="inline-flex items-center gap-1.5">
+          <User className="h-3.5 w-3.5 text-[#b8893a] shrink-0" />
+          <span className="font-extrabold text-[#3a2a18]">{post.author}</span>
+        </span>
+        <span className="text-[#c79356]">•</span>
+        <span className="inline-flex items-center gap-1.5">
+          <CalendarDays className="h-3.5 w-3.5 text-[#b8893a] shrink-0" />
+          <span>
+            <span className="text-[10px] font-bold text-[#b8893a]">نُشر </span>
+            {post.date}
+          </span>
+        </span>
+        {eventWhen ? (
+          <>
+            <span className="text-[#c79356]">•</span>
+            <span className="inline-flex items-center gap-1.5">
+              <Clock className="h-3.5 w-3.5 text-[#b8893a] shrink-0" />
+              <span>
+                <span className="text-[10px] font-bold text-[#b8893a]">الموعد </span>
+                {eventWhen}
+              </span>
+            </span>
+          </>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 function DetailRow({ icon: Icon, label, value }: { icon: any; label: string; value?: string | number }) {
   if (value == null || value === "") return null;
   return (
@@ -174,7 +233,7 @@ function DetailRow({ icon: Icon, label, value }: { icon: any; label: string; val
       </span>
       <div className="flex-1 min-w-0">
         <p className="text-[10px] font-extrabold text-[#b8893a] leading-none">{label}</p>
-        <p className="mt-0.5 text-[12.5px] font-extrabold text-[#3a2a18] leading-tight truncate">{String(value)}</p>
+        <p className="mt-0.5 text-[12.5px] font-extrabold text-[#3a2a18] leading-tight break-words">{String(value)}</p>
       </div>
     </div>
   );
@@ -199,7 +258,7 @@ function TemplateDetails({ post }: { post: ChurchPost }) {
     rows.push(<DetailRow key="t" icon={Clock} label="الوقت" value={d.time} />);
     rows.push(<DetailRow key="p" icon={MapPin} label="المكان" value={d.place} />);
     rows.push(<DetailRow key="pr" icon={Crown} label="الكاهن" value={d.priest} />);
-  } else if (post.type === "meeting") {
+  } else if (post.type === "meeting" || post.type === "event") {
     rows.push(<DetailRow key="d" icon={CalendarDays} label="التاريخ" value={d.date} />);
     rows.push(<DetailRow key="t" icon={Clock} label="الوقت" value={d.time} />);
     rows.push(<DetailRow key="p" icon={MapPin} label="المكان" value={d.place} />);
@@ -223,10 +282,27 @@ function TemplateDetails({ post }: { post: ChurchPost }) {
 
 function PostActionArea({ post }: { post: ChurchPost }) {
   const [popup, setPopup] = useState<null | "condolence" | "congrats" | "reserve">(null);
-  const res = useReservations(post.id, post.details?.seats);
+  const regKind = kindForPostType(post.type);
+  const { count, mine } = usePostRegistrations(post.id, regKind ?? "attendance");
+  const remaining = post.details?.seats != null ? Math.max(0, post.details.seats - count) : undefined;
+  const prayed = usePrayed(post.id);
+
+  const counter =
+    regKind != null ? (
+      <ParticipantsCounter
+        postId={post.id}
+        postTitle={post.title}
+        kind={regKind}
+        capacity={post.type === "trip" ? post.details?.seats : undefined}
+        className="mb-2.5"
+      />
+    ) : null;
 
   const wrap = (children: React.ReactNode) => (
-    <div className="rounded-[24px] border border-white/70 bg-[#fbf3e1]/85 backdrop-blur-xl p-4">{children}</div>
+    <div className="rounded-[24px] border border-white/70 bg-[#fbf3e1]/85 backdrop-blur-xl p-4">
+      {counter}
+      {children}
+    </div>
   );
 
   if (post.type === "liturgy" || post.type === "meeting") {
@@ -235,7 +311,18 @@ function PostActionArea({ post }: { post: ChurchPost }) {
         <p className="text-[12px] font-bold text-[#6a543a] text-right">
           هل ستحضر؟ ساعدنا في تقدير الحضور.
         </p>
-        <AttendButton postId={post.id} />
+        <AttendButton postId={post.id} kind="attendance" label="سجل حضوري" activeLabel="✓ سجلت حضوري" />
+      </div>
+    );
+  }
+
+  if (post.type === "event") {
+    return wrap(
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-[12px] font-bold text-[#6a543a] text-right">
+          سجّل حضورك في هذه الفعالية.
+        </p>
+        <AttendButton postId={post.id} kind="event" label="سجل في الفعالية" activeLabel="✓ سجلت في الفعالية" />
       </div>
     );
   }
@@ -248,13 +335,13 @@ function PostActionArea({ post }: { post: ChurchPost }) {
             <div className="flex items-center justify-between gap-3 text-right">
               <p className="text-[12px] font-bold text-[#6a543a]">حجوزاتك في هذه الرحلة</p>
               <span className="font-arabic-serif text-[18px] font-extrabold text-[#3a2a18]">
-                {res.mine.toLocaleString("ar-EG")}
+                {(mine?.seats ?? 0).toLocaleString("ar-EG")}
               </span>
             </div>
             <div className="flex items-center justify-between gap-3 text-right text-[11px] text-[#7a5a30]">
-              <span>إجمالي المحجوز: {res.reserved.toLocaleString("ar-EG")}</span>
-              {res.remaining != null ? (
-                <span>المتاح: {res.remaining.toLocaleString("ar-EG")}</span>
+              <span>إجمالي المحجوز: {count.toLocaleString("ar-EG")}</span>
+              {remaining != null ? (
+                <span>المتاح: {remaining.toLocaleString("ar-EG")}</span>
               ) : null}
             </div>
             <button
@@ -262,7 +349,7 @@ function PostActionArea({ post }: { post: ChurchPost }) {
               onClick={() => setPopup("reserve")}
               className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-[#1f8a5a] text-white text-[13px] font-extrabold py-2.5 shadow-[0_12px_24px_-12px_rgba(31,138,90,0.7)] active:scale-[0.98]"
             >
-              <Ticket className="h-4 w-4" /> حجز مكان
+              <Ticket className="h-4 w-4" /> احجز الآن
             </button>
           </div>
         )}
@@ -307,7 +394,152 @@ function PostActionArea({ post }: { post: ChurchPost }) {
     );
   }
 
+  if (post.type === "prayer") {
+    return wrap(
+      <div className="space-y-2">
+        <p className="text-[12px] font-bold text-[#6a543a] text-right">
+          شارك في الصلاة من أجل هذا الطلب — {prayed.count.toLocaleString("ar-EG")} صلّوا
+        </p>
+        <button
+          type="button"
+          onClick={() => togglePrayed(post.id)}
+          className={
+            "w-full inline-flex items-center justify-center gap-2 rounded-full text-[13px] font-extrabold py-2.5 active:scale-[0.98] " +
+            (prayed.mine
+              ? "bg-[#8a6ec1] text-white shadow-[0_12px_24px_-12px_rgba(138,110,193,0.7)]"
+              : "bg-gradient-to-l from-[#6a4ab5] to-[#8a6ec1] text-white shadow-[0_12px_24px_-12px_rgba(106,74,181,0.7)]")
+          }
+        >
+          <HandHeart className="h-4 w-4" />
+          {prayed.mine ? "صلّيت ✓" : "أنا صلّيت"}
+        </button>
+      </div>
+    );
+  }
+
   return null;
+}
+
+function ReactionsBar({ postId }: { postId: string }) {
+  const r = useReactions(postId);
+  const items = [
+    { kind: "pray" as const, label: "صلِّ", icon: HandHeart, data: r.pray },
+    { kind: "amen" as const, label: "آمين", icon: Sparkles, data: r.amen },
+    { kind: "love" as const, label: "محبة", icon: Heart, data: r.love },
+  ];
+  return (
+    <div className="rounded-[24px] border border-white/70 bg-[#fbf3e1]/85 backdrop-blur-xl p-3">
+      <p className="text-[10.5px] font-bold text-[#b8893a] mb-2 text-right">تفاعلات الكنيسة</p>
+      <div className="flex gap-2">
+        {items.map(({ kind, label, icon: Icon, data }) => (
+          <button
+            key={kind}
+            type="button"
+            onClick={() => toggleReaction(postId, kind)}
+            className={
+              "flex-1 inline-flex flex-col items-center gap-0.5 rounded-2xl border py-2 text-[11px] font-extrabold active:scale-95 transition-transform " +
+              (data.mine
+                ? "bg-[#1f8a5a]/18 border-[#1f8a5a]/40 text-[#1a5a38]"
+                : "bg-white/75 border-[#efe2c4] text-[#3a2a18]")
+            }
+          >
+            <Icon className="h-4 w-4" />
+            <span>{label}</span>
+            <span className="text-[10px] opacity-75">{data.count.toLocaleString("ar-EG")}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CommentsSection({ postId }: { postId: string }) {
+  const comments = useComments(postId);
+  const [text, setText] = useState("");
+  const [name, setName] = useState("عضو الكنيسة");
+
+  const submit = () => {
+    const t = text.trim();
+    if (!t) return;
+    addComment(postId, name.trim() || "عضو الكنيسة", t);
+    setText("");
+  };
+
+  return (
+    <div className="rounded-[24px] border border-white/70 bg-[#fbf3e1]/85 backdrop-blur-xl p-4 text-right">
+      <p className="text-[11px] font-extrabold text-[#b8893a] mb-2 inline-flex items-center gap-1.5">
+        <MessageCircle className="h-3.5 w-3.5" />
+        التعليقات ({comments.length.toLocaleString("ar-EG")})
+      </p>
+      {comments.length > 0 ? (
+        <div className="space-y-2 mb-3">
+          {comments.map((c) => (
+            <div key={c.id} className="rounded-2xl bg-white/80 border border-[#efe2c4] p-2.5">
+              <p className="font-arabic-serif text-[12px] font-extrabold text-[#3a2a18]">{c.name}</p>
+              <p className="mt-1 text-[12px] text-[#3a2a18] leading-snug">{c.text}</p>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-[11px] text-[#6a543a] mb-3">كن أول من يعلّق على هذا المنشور.</p>
+      )}
+      <div className="space-y-2">
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="اسمك"
+          className="w-full rounded-xl bg-white/90 border border-[#efe2c4] px-3 py-2 text-[12px] text-[#3a2a18] outline-none"
+        />
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          rows={2}
+          placeholder="اكتب تعليقًا..."
+          className="w-full resize-none rounded-xl bg-white/90 border border-[#efe2c4] px-3 py-2 text-[12px] text-[#3a2a18] outline-none min-h-[3.5rem]"
+        />
+        <button
+          type="button"
+          onClick={submit}
+          disabled={!text.trim()}
+          className="w-full inline-flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-l from-[#1a7a4a] to-[#2f9d6e] text-white text-[12px] font-extrabold py-2.5 disabled:opacity-50 active:scale-[0.98]"
+        >
+          <Send className="h-3.5 w-3.5 -scale-x-100" />
+          إرسال التعليق
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ChurchInfoCard({ post }: { post: ChurchPost }) {
+  const meta = POST_TYPE_META[post.type];
+  return (
+    <div className="rounded-[24px] border border-white/70 bg-[#fbf3e1]/85 backdrop-blur-xl p-4 text-right">
+      <p className="text-[10.5px] font-bold text-[#b8893a] mb-2">معلومات الكنيسة</p>
+      <div className="flex items-start gap-3">
+        <span
+          className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl text-white border border-white/40"
+          style={{ background: `linear-gradient(180deg, ${meta.tone}, ${meta.tone}cc)` }}
+        >
+          <Church className="h-5 w-5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="font-arabic-serif text-[13.5px] font-extrabold text-[#3a2a18]">كنيسة الشهيد مار جرجس</p>
+          <p className="mt-1 text-[11px] text-[#6a543a] leading-relaxed">
+            نشر بواسطة {post.author} · تصنيف {meta.label}
+            {post.details?.eventType ? ` · ${post.details.eventType}` : ""}
+          </p>
+          <Link
+            to="/church"
+            className="mt-2 inline-flex items-center gap-1 text-[11px] font-extrabold text-[#1f8a5a]"
+          >
+            العودة لمنشورات الكنيسة
+            <ChevronLeft className="h-3 w-3" />
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function RepliesList({ postId, kind }: { postId: string; kind: "condolence" | "congrats" }) {
