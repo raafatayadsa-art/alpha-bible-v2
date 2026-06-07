@@ -1,5 +1,7 @@
-import { useMemo, useState } from "react";
-import { X, ImagePlus, Send, ShieldCheck } from "lucide-react";
+import { useMemo, useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { X, ImagePlus, Send, ShieldCheck, ChevronDown } from "lucide-react";
+import { CopticWatermark } from "@/components/coptic";
 import { POST_TYPE_META, type ChurchPost, type ChurchPostDetails, type PostType } from "@/data/church-posts";
 import { computeDefaultExpiry, newPostId, saveUserPost } from "./post-store";
 import { generatePostImage } from "./post-image-engine";
@@ -33,6 +35,323 @@ export const CATEGORIES: CategoryDef[] = [
   { key: "prayer",       label: "طلبة صلاة",    type: "prayer" },
 ];
 
+const GLASS_CARD =
+  "rounded-[22px] border border-white/70 bg-white/45 backdrop-blur-xl shadow-[0_16px_36px_-20px_rgba(60,40,16,0.42),inset_0_1px_0_rgba(255,255,255,0.75)]";
+const LABEL_CLS = "block text-[11px] font-extrabold text-[#7a5a9a] mb-1";
+
+function pad2(n: number) {
+  return String(n).padStart(2, "0");
+}
+
+function parseDateParts(iso: string) {
+  const [y, m, d] = iso.split("-").map(Number);
+  return { y: y || new Date().getFullYear(), m: m || 1, d: d || 1 };
+}
+
+function formatDateAr(iso: string) {
+  if (!iso) return "اختر التاريخ";
+  const { y, m, d } = parseDateParts(iso);
+  return new Date(y, m - 1, d).toLocaleDateString("ar-EG", { weekday: "short", year: "numeric", month: "short", day: "numeric" });
+}
+
+function formatTimeAr(t: string) {
+  if (!t) return "اختر الوقت";
+  const [h, min] = t.split(":").map(Number);
+  const dt = new Date();
+  dt.setHours(h || 0, min || 0, 0, 0);
+  return dt.toLocaleTimeString("ar-EG", { hour: "numeric", minute: "2-digit", hour12: true });
+}
+
+function to12h(h24: number): { h: number; ampm: "am" | "pm" } {
+  const ampm: "am" | "pm" = h24 >= 12 ? "pm" : "am";
+  let h = h24 % 12;
+  if (h === 0) h = 12;
+  return { h, ampm };
+}
+
+function to24h(h12: number, ampm: "am" | "pm"): number {
+  if (ampm === "am") return h12 === 12 ? 0 : h12;
+  return h12 === 12 ? 12 : h12 + 12;
+}
+
+function WheelColumn({
+  items,
+  value,
+  onChange,
+}: {
+  items: { v: string; label: string }[];
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const idx = items.findIndex((i) => i.v === value);
+    if (idx >= 0) el.scrollTop = idx * 36;
+  }, [items, value]);
+  return (
+    <div ref={ref} className="h-32 flex-1 min-w-0 overflow-y-auto overscroll-contain snap-y snap-mandatory no-scrollbar py-12">
+      {items.map((item) => (
+        <button
+          key={item.v}
+          type="button"
+          onClick={() => onChange(item.v)}
+          className={
+            "snap-center block w-full h-9 text-center text-[16px] font-semibold transition-all " +
+            (item.v === value ? "text-[#3a2a18] scale-105" : "text-[#8a7a9a] opacity-80")
+          }
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function WheelColumnWithLabel({
+  header,
+  items,
+  value,
+  onChange,
+}: {
+  header: string;
+  items: { v: string; label: string }[];
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div className="flex-1 min-w-0 flex flex-col">
+      <p className="shrink-0 text-center text-[10px] font-extrabold text-[#6b5a8a] mb-0.5">{header}</p>
+      <WheelColumn items={items} value={value} onChange={onChange} />
+    </div>
+  );
+}
+
+const LIGHT_OVERLAY = "absolute inset-0 bg-[#1a0f04]/18 backdrop-blur-[3px]";
+const FLOAT_PANEL =
+  "border border-white/80 bg-[#fdf6e8]/97 backdrop-blur-xl shadow-[0_20px_44px_-14px_rgba(60,40,16,0.38)] overflow-hidden";
+const PICKER_PANEL =
+  "border border-[#d8c8ef]/85 bg-[#f0eaf8]/98 backdrop-blur-xl shadow-[0_22px_48px_-14px_rgba(100,70,140,0.3)] overflow-hidden";
+
+function PickerSheet({ title, onClose, onDone, children }: { title: string; onClose: () => void; onDone: () => void; children: React.ReactNode }) {
+  if (typeof document === "undefined") return null;
+  return createPortal(
+    <div className="fixed inset-0 z-[90] flex items-center justify-center overflow-hidden px-4 py-[max(env(safe-area-inset-top,0px),12px)] pb-[max(env(safe-area-inset-bottom,0px),12px)]">
+      <button type="button" aria-label="إغلاق" onClick={onClose} className={LIGHT_OVERLAY} />
+      <div
+        className={
+          "relative z-[1] w-[calc(100%-32px)] max-w-[380px] mx-auto rounded-[22px] " +
+          PICKER_PANEL +
+          " max-h-[min(72dvh,380px)] flex flex-col"
+        }
+      >
+        <div className="shrink-0 flex items-center justify-between px-3 py-2 border-b border-[#ddd0f0]/70">
+          <button type="button" onClick={onClose} className="text-[12px] font-bold text-[#6a543a] px-1">إلغاء</button>
+          <p className="text-[13px] font-extrabold text-[#3a2a18] truncate px-2">{title}</p>
+          <button type="button" onClick={onDone} className="text-[12px] font-extrabold text-[#1f8a5a] px-1">تم</button>
+        </div>
+        <div className="relative flex min-h-0 gap-0.5 px-2 py-1.5 overflow-x-hidden" dir="rtl">
+          <div className="pointer-events-none absolute inset-x-3 top-[calc(50%+6px)] -translate-y-1/2 h-9 rounded-xl bg-[#e8dff5]/75 border border-[#cfc0e8]/70" aria-hidden />
+          {children}
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+function CategoryPickerMenu({
+  activeKey,
+  onSelect,
+  onClose,
+}: {
+  activeKey: CategoryKey;
+  onSelect: (k: CategoryKey) => void;
+  onClose: () => void;
+}) {
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[95] flex items-center justify-center overflow-hidden px-4 py-[max(env(safe-area-inset-top,0px),12px)] pb-[max(env(safe-area-inset-bottom,0px),12px)]">
+      <button type="button" aria-label="إغلاق" onClick={onClose} className={LIGHT_OVERLAY} />
+      <div
+        className={
+          "relative z-[1] flex w-[calc(100%-32px)] max-w-[380px] max-h-[60vh] flex-col rounded-[20px] " +
+          FLOAT_PANEL
+        }
+        role="listbox"
+        aria-label="نوع المنشور"
+      >
+        <div className="shrink-0 px-3 py-2 border-b border-[#efe2c4]/60 text-center">
+          <p className="text-[12px] font-extrabold text-[#3a2a18]">نوع المنشور</p>
+        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2 grid grid-cols-2 gap-1.5 content-start">
+          {CATEGORIES.map((c) => {
+            const m = POST_TYPE_META[c.type];
+            const active = c.key === activeKey;
+            return (
+              <button
+                key={c.key}
+                type="button"
+                role="option"
+                aria-selected={active}
+                onClick={() => {
+                  onSelect(c.key);
+                  onClose();
+                }}
+                className={
+                  "rounded-xl border px-2.5 py-2 text-[11.5px] font-extrabold text-right transition-all active:scale-95 " +
+                  (active ? "bg-[#9b87c4]/20 border-[#9b87c4]/50 text-[#3a2a18]" : "bg-white/75 border-[#efe2c4] text-[#3a2a18]")
+                }
+                style={active ? undefined : { borderColor: `${m.tone}44` }}
+              >
+                {c.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+function IosDateField({ label, value, onChange, required }: { label: string; value: string; onChange: (v: string) => void; required?: boolean }) {
+  const [open, setOpen] = useState(false);
+  const now = new Date();
+  const parts = parseDateParts(value || `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`);
+  const [y, setY] = useState(parts.y);
+  const [m, setM] = useState(parts.m);
+  const [d, setD] = useState(parts.d);
+  const years = Array.from({ length: 8 }, (_, i) => now.getFullYear() - 1 + i);
+  const months = Array.from({ length: 12 }, (_, i) => i + 1);
+  const daysInMonth = new Date(y, m, 0).getDate();
+  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  const commit = () => {
+    const dd = Math.min(d, daysInMonth);
+    onChange(`${y}-${pad2(m)}-${pad2(dd)}`);
+    setOpen(false);
+  };
+  return (
+    <label className="block min-w-0">
+      <span className={LABEL_CLS}>{label}{required ? <span className="text-[#c44569]"> *</span> : null}</span>
+      <button type="button" onClick={() => setOpen(true)} className={"w-full text-right rounded-2xl bg-white/90 border border-[#efe2c4] px-3 py-2.5 text-[13px] font-extrabold text-[#3a2a18] active:scale-[0.99] " + GLASS_CARD}>
+        {formatDateAr(value)}
+      </button>
+      {open ? (
+        <PickerSheet title={label} onClose={() => setOpen(false)} onDone={commit}>
+          <WheelColumnWithLabel
+            header="السنة"
+            items={years.map((yy) => ({ v: String(yy), label: String(yy) }))}
+            value={String(y)}
+            onChange={(v) => setY(Number(v))}
+          />
+          <WheelColumnWithLabel
+            header="الشهر"
+            items={months.map((mm) => ({ v: String(mm), label: pad2(mm) }))}
+            value={String(m)}
+            onChange={(v) => setM(Number(v))}
+          />
+          <WheelColumnWithLabel
+            header="اليوم"
+            items={days.map((dd) => ({ v: String(dd), label: pad2(dd) }))}
+            value={String(d)}
+            onChange={(v) => setD(Number(v))}
+          />
+        </PickerSheet>
+      ) : null}
+    </label>
+  );
+}
+
+function IosTimeField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const parsed24 = Number(value.split(":")[0]);
+  const parsedMin = Number(value.split(":")[1]) || 0;
+  const initial = to12h(Number.isFinite(parsed24) ? parsed24 : 9);
+  const [h12, setH12] = useState(initial.h);
+  const [min, setMin] = useState(parsedMin);
+  const [ampm, setAmpm] = useState<"am" | "pm">(initial.ampm);
+
+  useEffect(() => {
+    if (!open) return;
+    const h24 = Number(value.split(":")[0]);
+    const m = Number(value.split(":")[1]) || 0;
+    const t = to12h(Number.isFinite(h24) ? h24 : 9);
+    setH12(t.h);
+    setMin(m);
+    setAmpm(t.ampm);
+  }, [open, value]);
+
+  const hours12 = Array.from({ length: 12 }, (_, i) => i + 1);
+  const mins = Array.from({ length: 60 }, (_, i) => i);
+  const commit = () => {
+    onChange(`${pad2(to24h(h12, ampm))}:${pad2(min)}`);
+    setOpen(false);
+  };
+
+  return (
+    <label className="block min-w-0">
+      <span className={LABEL_CLS}>{label}</span>
+      <button type="button" onClick={() => setOpen(true)} className={"w-full text-right rounded-2xl bg-white/90 border border-[#efe2c4] px-3 py-2.5 text-[13px] font-extrabold text-[#3a2a18] active:scale-[0.99] " + GLASS_CARD}>
+        {formatTimeAr(value)}
+      </button>
+      {open ? (
+        <PickerSheet title={label} onClose={() => setOpen(false)} onDone={commit}>
+          <WheelColumnWithLabel
+            header="الساعة"
+            items={hours12.map((hh) => ({ v: String(hh), label: String(hh) }))}
+            value={String(h12)}
+            onChange={(v) => setH12(Number(v))}
+          />
+          <WheelColumnWithLabel
+            header="الدقيقة"
+            items={mins.map((mm) => ({ v: String(mm), label: pad2(mm) }))}
+            value={String(min)}
+            onChange={(v) => setMin(Number(v))}
+          />
+          <WheelColumnWithLabel
+            header="ص/م"
+            items={[
+              { v: "am", label: "صباحاً" },
+              { v: "pm", label: "مساءً" },
+            ]}
+            value={ampm}
+            onChange={(v) => setAmpm(v as "am" | "pm")}
+          />
+        </PickerSheet>
+      ) : null}
+    </label>
+  );
+}
+
+function IosDateTimeField({ label, value, onChange, hint }: { label: string; value: string; onChange: (v: string) => void; hint?: string }) {
+  const datePart = value.split("T")[0] ?? "";
+  const timePart = value.split("T")[1]?.slice(0, 5) ?? "";
+  const setDate = (d: string) => onChange(timePart ? `${d}T${timePart}` : d);
+  const setTime = (t: string) => onChange(datePart ? `${datePart}T${t}` : `T${t}`);
+  const display = value
+    ? `${formatDateAr(datePart)} · ${formatTimeAr(timePart)}`
+    : "بدون تاريخ انتهاء — اضغط للضبط";
+  return (
+    <div className={GLASS_CARD + " p-3 text-right w-full min-w-0"}>
+      <div className="flex flex-col gap-1 mb-2 sm:flex-row sm:items-center sm:justify-between">
+        <span className="text-[11.5px] font-extrabold text-[#6aaf8a]">{label}</span>
+        {hint ? <span className="text-[10px] font-bold text-[#7a5a30] leading-snug">{hint}</span> : null}
+      </div>
+      <p className="text-[12px] font-bold text-[#3a2a18] mb-2">{display}</p>
+      <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-2">
+        <IosDateField label="تاريخ الانتهاء" value={datePart} onChange={setDate} />
+        <IosTimeField label="وقت الانتهاء" value={timePart} onChange={setTime} />
+      </div>
+      {value ? (
+        <button type="button" onClick={() => onChange("")} className="mt-2 text-[10.5px] font-extrabold text-[#a8344f]">مسح — استخدام الافتراضي</button>
+      ) : null}
+    </div>
+  );
+}
+
 /* --------------------------------- Primitives -------------------------------- */
 function Field({
   label, value, onChange, placeholder, type = "text", multiline, maxLength, required, rows = 2,
@@ -49,7 +368,7 @@ function Field({
     (isTemporal ? " [color-scheme:light]" : "");
   return (
     <label className="block min-w-0 max-w-full">
-      <span className="block text-[11px] font-extrabold text-[#7a5a30] mb-1">
+      <span className={LABEL_CLS}>
         {label}{required ? <span className="text-[#c44569]"> *</span> : null}
       </span>
       {multiline ? (
@@ -89,7 +408,7 @@ function ImagePicker({
   const shown = value || (useAuto ? preview : null);
   return (
     <div className="block min-w-0 max-w-full">
-      <span className="block text-[11px] font-extrabold text-[#7a5a30] mb-1">صورة المنشور</span>
+      <span className={LABEL_CLS}>صورة المنشور</span>
       <div className="flex items-center gap-3 min-w-0">
         <label className="relative inline-flex items-center justify-center h-[78px] w-[78px] rounded-2xl bg-white/90 border border-dashed border-[#c79356]/60 text-[#7a5a30] cursor-pointer overflow-hidden active:scale-95 transition-transform shrink-0">
           {shown ? (
@@ -346,8 +665,8 @@ function CategoryForm({
           <ImagePicker {...imgProps} />
           <Field label="اسم القداس" value={f.title} onChange={(v) => set("title", v)} required maxLength={120} />
           <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-2.5 min-w-0">
-            <Field label="التاريخ" type="date" value={f.date} onChange={(v) => set("date", v)} required />
-            <Field label="الوقت" type="time" value={f.time} onChange={(v) => set("time", v)} />
+            <IosDateField label="التاريخ" value={f.date} onChange={(v) => set("date", v)} required />
+            <IosTimeField label="الوقت" value={f.time} onChange={(v) => set("time", v)} />
           </div>
           <Field label="المكان" value={f.place} onChange={(v) => set("place", v)} maxLength={120} />
           <Field label="اسم الكاهن" value={f.priest} onChange={(v) => set("priest", v)} maxLength={120} />
@@ -360,8 +679,8 @@ function CategoryForm({
           <ImagePicker {...imgProps} />
           <Field label="اسم الاجتماع" value={f.title} onChange={(v) => set("title", v)} required maxLength={120} />
           <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-2.5 min-w-0">
-            <Field label="التاريخ" type="date" value={f.date} onChange={(v) => set("date", v)} required />
-            <Field label="الوقت" type="time" value={f.time} onChange={(v) => set("time", v)} />
+            <IosDateField label="التاريخ" value={f.date} onChange={(v) => set("date", v)} required />
+            <IosTimeField label="الوقت" value={f.time} onChange={(v) => set("time", v)} />
           </div>
           <Field label="المكان" value={f.place} onChange={(v) => set("place", v)} maxLength={120} />
           <Field label="الفئة المستهدفة" value={f.audience} onChange={(v) => set("audience", v)} placeholder="مثال: الشباب · الأمهات · الأطفال" maxLength={120} />
@@ -374,8 +693,8 @@ function CategoryForm({
           <ImagePicker {...imgProps} />
           <Field label="اسم الرحلة" value={f.title} onChange={(v) => set("title", v)} required maxLength={120} />
           <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-2.5 min-w-0">
-            <Field label="تاريخ الذهاب" type="date" value={f.date} onChange={(v) => set("date", v)} required />
-            <Field label="تاريخ العودة" type="date" value={f.returnDate} onChange={(v) => set("returnDate", v)} />
+            <IosDateField label="تاريخ الذهاب" value={f.date} onChange={(v) => set("date", v)} required />
+            <IosDateField label="تاريخ العودة" value={f.returnDate} onChange={(v) => set("returnDate", v)} />
           </div>
           <Field label="عدد الأماكن المتاحة" type="number" value={f.seats} onChange={(v) => set("seats", v)} placeholder="مثال: 40" />
           <Field label="أماكن الزيارة" value={f.places} onChange={(v) => set("places", v)} maxLength={200} placeholder="دير الأنبا بيشوي · وادي النطرون" />
@@ -392,7 +711,7 @@ function CategoryForm({
             <Field label="اسم العروسة" value={f.bride} onChange={(v) => set("bride", v)} required maxLength={80} />
           </div>
           <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-2.5 min-w-0">
-            <Field label="التاريخ" type="date" value={f.date} onChange={(v) => set("date", v)} required />
+            <IosDateField label="التاريخ" value={f.date} onChange={(v) => set("date", v)} required />
             <Field label="المكان" value={f.place} onChange={(v) => set("place", v)} maxLength={120} />
           </div>
           <Field label="آية كتابية" value={f.verse} onChange={(v) => set("verse", v)} maxLength={200} placeholder="مثال: ما جمعه الله لا يفرّقه إنسان" />
@@ -409,7 +728,7 @@ function CategoryForm({
           </div>
           <ImagePicker {...imgProps} />
           <Field label="اسم المنتقل" value={f.personName} onChange={(v) => set("personName", v)} required maxLength={120} />
-          <Field label="تاريخ الوفاة" type="date" value={f.deathDate} onChange={(v) => set("deathDate", v)} />
+          <IosDateField label="تاريخ الوفاة" value={f.deathDate} onChange={(v) => set("deathDate", v)} />
           <Field label="آية كتابية" value={f.verse} onChange={(v) => set("verse", v)} maxLength={200} placeholder="مثال: أنا هو القيامة والحياة" />
           <Field label="نص المنشور" value={f.body} onChange={(v) => set("body", v)} multiline maxLength={1500} rows={3} />
         </div>
@@ -439,30 +758,13 @@ function ExpirationField({
   cat, f, set,
 }: { cat: CategoryDef; f: FormState; set: (k: keyof FormState, v: string | null) => void }) {
   return (
-    <div className="mt-3 w-full min-w-0 max-w-full overflow-hidden rounded-2xl bg-white/85 border border-[#efe2c4] p-3 text-right">
-      <div className="flex flex-col gap-1 mb-2 sm:flex-row sm:items-center sm:justify-between">
-        <span className="text-[11.5px] font-extrabold text-[#3a2a18]">تاريخ الانتهاء (اختياري)</span>
-        <span className="text-[10.5px] font-bold text-[#7a5a30] leading-snug">{EXPIRY_HINTS[cat.key]}</span>
-      </div>
-      <div className="w-full min-w-0 max-w-full overflow-hidden">
-        <input
-          type="datetime-local"
-          dir="ltr"
-          className="block w-full min-w-0 max-w-full box-border rounded-xl bg-white/90 border border-[#efe2c4] px-3 py-2.5 text-[13px] text-[#3a2a18] outline-none focus:border-[#c79356] [color-scheme:light]"
-          style={{ WebkitAppearance: "none", appearance: "none" }}
-          value={f.expiresAt}
-          onChange={(e) => set("expiresAt", e.target.value)}
-        />
-      </div>
-      {f.expiresAt ? (
-        <button
-          type="button"
-          onClick={() => set("expiresAt", "")}
-          className="mt-2 text-[10.5px] font-extrabold text-[#a8344f]"
-        >
-          مسح — استخدام الافتراضي
-        </button>
-      ) : null}
+    <div className="mt-3">
+      <IosDateTimeField
+        label="تاريخ الانتهاء (اختياري)"
+        hint={EXPIRY_HINTS[cat.key]}
+        value={f.expiresAt}
+        onChange={(v) => set("expiresAt", v)}
+      />
     </div>
   );
 }
@@ -485,6 +787,8 @@ function PublishButton({ onClick }: { onClick: () => void }) {
 export function PostBuilder({ onClose }: { onClose: () => void }) {
   const [activeKey, setActiveKey] = useState<CategoryKey>("news");
   const [form, setForm] = useState<FormState>(EMPTY);
+  const [catOpen, setCatOpen] = useState(false);
+  const catBtnRef = useRef<HTMLButtonElement>(null);
   const cat = useMemo(() => CATEGORIES.find((c) => c.key === activeKey)!, [activeKey]);
   const [error, setError] = useState<string | null>(null);
 
@@ -511,95 +815,71 @@ export function PostBuilder({ onClose }: { onClose: () => void }) {
   const meta = POST_TYPE_META[cat.type];
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      dir="rtl"
-      className="fixed inset-0 z-[70] flex flex-col bg-[#f4ead8]"
-    >
-      {/* Header */}
+    <div role="dialog" aria-modal="true" dir="rtl" className="fixed inset-0 z-[70] flex flex-col bg-[#f4ead8] overflow-hidden">
+      <CopticWatermark />
       <div
-        className="sticky top-0 z-10 px-4 pb-2 pt-[max(env(safe-area-inset-top),14px)]"
+        aria-hidden
+        className="pointer-events-none fixed inset-0 -z-0"
         style={{
           background:
-            "linear-gradient(180deg, rgba(244,234,216,0.98) 0%, rgba(244,234,216,0.85) 100%)",
-          backdropFilter: "blur(14px)",
+            "radial-gradient(120% 50% at 50% 0%, rgba(255,231,184,0.55), transparent 60%)," +
+            "radial-gradient(70% 60% at 100% 30%, rgba(167,139,217,0.15), transparent 65%)",
         }}
+      />
+
+      <div
+        className="sticky top-0 z-10 px-4 pb-2 pt-[max(env(safe-area-inset-top),14px)]"
+        style={{ background: "linear-gradient(180deg, rgba(244,234,216,0.97) 0%, rgba(244,234,216,0.82) 100%)", backdropFilter: "blur(14px)" }}
       >
-        <div className="flex items-center justify-between gap-3">
-          <button
-            type="button"
-            aria-label="إغلاق"
-            onClick={onClose}
-            className="inline-grid h-10 w-10 place-items-center rounded-full bg-white/80 border border-[#efe2c4] text-[#3a2a18] active:scale-90"
-          >
+        <div className="flex items-center justify-between gap-2">
+          <button type="button" aria-label="إغلاق" onClick={onClose} className="inline-grid h-10 w-10 place-items-center rounded-full bg-white/80 border border-[#efe2c4] text-[#3a2a18] active:scale-90 shadow-sm">
             <X className="h-5 w-5" />
           </button>
-          <div className="text-center">
-            <h1 className="text-[15px] font-extrabold text-[#3a2a18] leading-none">إنشاء منشور</h1>
-            <p className="mt-1 inline-flex items-center gap-1 text-[10px] text-[#7a5a30]">
-              <ShieldCheck className="h-3 w-3 text-[#1f8a5a]" /> للكهنة والخدام
-            </p>
+          <div className="flex-1 min-w-0 flex items-center justify-center gap-2">
+            <h1 className="text-[15px] font-extrabold text-[#3a2a18] leading-none shrink-0">إنشاء منشور</h1>
+            <button
+              ref={catBtnRef}
+              type="button"
+              onClick={() => setCatOpen((v) => !v)}
+              aria-expanded={catOpen}
+              aria-haspopup="listbox"
+              className="inline-flex items-center gap-1 rounded-full bg-white/80 border border-[#efe2c4] px-2.5 py-1 text-[11px] font-extrabold text-[#7a5a9a] active:scale-95 shadow-sm max-w-[45%] truncate"
+              style={{ color: meta.tone }}
+            >
+              {cat.label}
+              <ChevronDown className={"h-3.5 w-3.5 shrink-0 opacity-70 transition-transform " + (catOpen ? "rotate-180" : "")} />
+            </button>
           </div>
-          <span className="w-10" aria-hidden />
+          <span className="w-10 shrink-0" aria-hidden />
         </div>
-
-        {/* Category tabs */}
-        <div className="-mx-4 mt-2.5 overflow-x-auto no-scrollbar">
-          <div className="flex gap-2 px-4 pb-1">
-            {CATEGORIES.map((c) => {
-              const m = POST_TYPE_META[c.type];
-              const active = c.key === activeKey;
-              return (
-                <button
-                  key={c.key}
-                  type="button"
-                  onClick={() => setActiveKey(c.key)}
-                  className={
-                    "shrink-0 rounded-full px-3 py-1.5 text-[12px] font-extrabold border backdrop-blur-xl transition-all " +
-                    (active
-                      ? "bg-[#1f8a5a]/22 border-[#1f8a5a]/45 text-[#1a5a38] shadow-[0_6px_14px_-8px_rgba(31,138,90,0.35)]"
-                      : "bg-white/30 border-white/55 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]")
-                  }
-                  style={active ? undefined : { color: m.tone }}
-                >
-                  {c.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <p className="mt-1 text-center text-[10px] text-[#7a5a30] inline-flex items-center justify-center gap-1 w-full">
+          <ShieldCheck className="h-3 w-3 text-[#1f8a5a]" /> للكهنة والخدام
+        </p>
       </div>
 
-      {/* Form body */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-4 pb-2">
-        <div className="mx-auto w-full max-w-[440px] min-w-0">
-          <div className="mb-3 rounded-2xl bg-white/80 border border-[#efe2c4] p-3 text-right">
-            <p className="text-[10.5px] font-extrabold text-[#b8893a]">{meta.label}</p>
-            <p className="mt-0.5 text-[11.5px] text-[#6a543a] leading-snug">
-              املأ الحقول المطلوبة (المعلّمة بـ <span className="text-[#c44569] font-extrabold">*</span>) ثم انشر من الأسفل.
-            </p>
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-3 pb-2">
+        <div className="mx-auto w-full max-w-[400px] min-w-0 space-y-3">
+          <div className={GLASS_CARD + " p-3.5 min-w-0"}>
+            <CategoryForm cat={cat} f={form} set={set} autoPreview={autoPreview} />
           </div>
-
-          <CategoryForm cat={cat} f={form} set={set} autoPreview={autoPreview} />
-
           <ExpirationField cat={cat} f={form} set={set} />
-
-          {error ? (
-            <p className="mt-3 text-[12px] font-extrabold text-[#a8344f] text-right">{error}</p>
-          ) : null}
+          {error ? <p className="text-[12px] font-extrabold text-[#a8344f] text-right">{error}</p> : null}
         </div>
       </div>
 
-      {/* Publish — fixed final action */}
-      <div
-        className="shrink-0 px-4 pt-2 border-t border-[#efe2c4]/80 bg-[#f4ead8]/95 backdrop-blur-xl"
-        style={{ paddingBottom: "max(env(safe-area-inset-bottom), 14px)" }}
-      >
-        <div className="mx-auto w-full max-w-[440px] min-w-0">
+      <div className="shrink-0 px-4 pt-2 border-t border-[#efe2c4]/80 bg-[#f4ead8]/95 backdrop-blur-xl" style={{ paddingBottom: "max(env(safe-area-inset-bottom), 14px)" }}>
+        <div className="mx-auto w-full max-w-[400px] min-w-0">
           <PublishButton onClick={submit} />
         </div>
       </div>
+
+      {catOpen ? (
+        <CategoryPickerMenu
+          activeKey={activeKey}
+          onSelect={setActiveKey}
+          onClose={() => setCatOpen(false)}
+        />
+      ) : null}
     </div>
   );
 }

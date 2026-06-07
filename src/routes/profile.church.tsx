@@ -1,18 +1,31 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { ProfileSubShell, PCard, Field } from "@/components/profile/Shell";
+import { createFileRoute, Outlet, useRouterState } from "@tanstack/react-router";
+import { ProfileSubShell } from "@/components/profile/Shell";
+import { ChurchManagementHub } from "@/features/church-management";
 
 export const Route = createFileRoute("/profile/church")({
   ssr: false,
-  head: () => ({ meta: [{ title: "ألفا — كنيستي" }] }),
-  component: () => (
-    <ProfileSubShell title="كنيستي">
-      <PCard accent="#c98a3c">
-        <Field label="اسم الكنيسة" value="كنيسة الشهيد مار جرجس" hint="إيبارشية شرق القاهرة" />
-        <Field label="الكاهن" value="القمص داود عبد الملاك" />
-        <Field label="الخادم المسؤول" value="الأخ بيتر ميلاد" />
-        <Field label="حالة العضوية" value="عضو فعّال" hint="آخر تحديث: 12 يونيو 2026" />
-        <Field label="تاريخ الانضمام" value="12 يناير 2019" />
-      </PCard>
-    </ProfileSubShell>
-  ),
+  head: () => ({
+    meta: [
+      { title: "إدارة الكنيسة — Alpha" },
+      { name: "description", content: "مركز إدارة الكنيسة وطلبات التأسيس في Alpha." },
+    ],
+  }),
+  component: ProfileChurchRoute,
 });
+
+function ProfileChurchRoute() {
+  const isHub = useRouterState({
+    select: (s) => s.location.pathname.replace(/\/+$/, "") === "/profile/church",
+  });
+
+  if (isHub) return <ChurchManagementPage />;
+  return <Outlet />;
+}
+
+function ChurchManagementPage() {
+  return (
+    <ProfileSubShell title="إدارة الكنيسة" brand="full">
+      <ChurchManagementHub />
+    </ProfileSubShell>
+  );
+}

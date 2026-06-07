@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { ProfileSubShell } from "@/components/profile/Shell";
 import { CopticCross, CopticSeparator } from "@/components/coptic";
-import alphaLogoAsset from "@/assets/alpha-logo.png.asset.json";
+import { AlphaOfficialLogo } from "@/components/brand";
 
 /* ---------- Types ---------- */
 type UserRole = "member" | "servant" | "leader" | "priest";
@@ -170,7 +170,7 @@ function ServiceCard({ service, role }: { service: Service; role: UserRole }) {
         style={{ background: "linear-gradient(90deg, transparent, rgba(216,170,80,0.6), transparent)" }}
       />
 
-      {/* Alpha logo crest at top center */}
+      {/* Official Alpha logo crest at top center */}
       <div
         className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 grid place-items-center h-14 w-14 rounded-full"
         style={{
@@ -181,12 +181,7 @@ function ServiceCard({ service, role }: { service: Service; role: UserRole }) {
             "0 0 22px rgba(231,201,122,0.7), inset 0 1px 0 rgba(255,255,255,0.85), 0 10px 22px -10px rgba(201,138,60,0.55)",
         }}
       >
-        <img
-          src={alphaLogoAsset.url}
-          alt="Alpha"
-          className="h-9 w-9 object-contain"
-          style={{ filter: "drop-shadow(0 1px 2px rgba(122,74,20,0.35))" }}
-        />
+        <AlphaOfficialLogo size="sm" className="scale-[0.85]" />
       </div>
 
       {/* Header: name + role badge */}

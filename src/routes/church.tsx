@@ -4,18 +4,22 @@ import {
   ArrowRight, Phone, MessageCircle, MapPin, ShieldCheck, Users,
   HandHeart, Newspaper, Radio, CalendarDays, BookOpen, Library, Heart,
   Play, ChevronLeft, Clock, Sparkles, Bell, Flame, Plus,
-  Navigation, Share2, Crown, UserCog, Send, Lock, X, MessageSquareHeart, Check,
+  Navigation, Share2, Crown, UserCog, Send, Lock, X, MessageSquareHeart, Check, Church,
 } from "lucide-react";
-import { CHURCH_CONTACTS, type ChurchContact } from "@/data/church-contacts";
+import type { ChurchContact, ContactRoleType } from "@/data/church-contacts";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { CopticWatermark } from "@/components/coptic";
 import { AlphaHeader, AlphaHeaderShell } from "@/components/navigation/AlphaHeader";
-import {
-  PRAYER_REQUESTS, prayerStats, ENCOURAGEMENT_TOTAL,
-} from "@/data/prayer-requests";
-import { useActivePosts } from "@/features/church/post-store";
+import { useActiveUserPosts } from "@/features/church/post-store";
 import { PostBuilder } from "@/features/church/PostBuilder";
 import { ChurchPostsHorizontalRail } from "@/features/church/ChurchPostsFeed";
+import { useChurchDashboard } from "@/features/church/use-church-dashboard";
+import { ChurchDashboardProvider, useChurchDashboardData } from "@/features/church/church-dashboard-context";
+import {
+  prayerStatsFromDashboard,
+  type ChurchDashboardContact,
+  type ChurchDashboardPrayer,
+} from "@/features/church/church-dashboard-api";
 
 
 
@@ -119,14 +123,24 @@ function Header() {
 /* ============================================================ */
 
 function HeroChurchCard() {
+  const { church, contacts } = useChurchDashboardData();
   const [popup, setPopup] = useState<null | "contacts" | "messages">(null);
-  const handleMap = () => window.open(MAPS_URL, "_blank", "noopener,noreferrer");
+  const locationLine = [church.diocese, church.city].filter(Boolean).join(" · ");
+  const mapsUrl =
+    church.locationLat != null && church.locationLng != null
+      ? `https://www.google.com/maps/search/?api=1&query=${church.locationLat},${church.locationLng}`
+      : church.address
+        ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(church.address)}`
+        : undefined;
+  const handleMap = () => {
+    if (mapsUrl) window.open(mapsUrl, "_blank", "noopener,noreferrer");
+  };
   return (
     <section className="relative">
       <div className="relative overflow-hidden rounded-[32px] border border-white/70 shadow-[0_30px_60px_-30px_rgba(60,40,16,0.55),inset_0_1px_0_rgba(255,255,255,0.7)]">
         {/* Church image background */}
         <div className="relative h-[210px] w-full">
-          <img src={cardChurch} alt="كنيسة الشهيد مار جرجس" className="absolute inset-0 h-full w-full object-cover" />
+          <img src={cardChurch} alt={church.name} className="absolute inset-0 h-full w-full object-cover" />
           <div
             className="absolute inset-0"
             style={{
@@ -162,12 +176,14 @@ function HeroChurchCard() {
           {/* Bottom: Church Name & Location */}
           <div className="absolute bottom-3 right-4 left-4 text-right text-white">
             <h2 className="font-arabic-serif text-[22px] font-extrabold leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)]">
-              كنيسة الشهيد مار جرجس
+              {church.name}
             </h2>
-            <p className="mt-1 inline-flex items-center gap-1.5 text-[11.5px] text-white/90">
-              <MapPin className="h-3.5 w-3.5" strokeWidth={2.5} />
-              إيبارشية شرق القاهرة · مدينة نصر
-            </p>
+            {locationLine ? (
+              <p className="mt-1 inline-flex items-center gap-1.5 text-[11.5px] text-white/90">
+                <MapPin className="h-3.5 w-3.5" strokeWidth={2.5} />
+                {locationLine}
+              </p>
+            ) : null}
           </div>
         </div>
 
@@ -190,7 +206,7 @@ function HeroChurchCard() {
             <div className="flex-1 min-w-0 text-right">
               <p className="text-[9.5px] font-bold text-[#b8893a] tracking-wide leading-none">الكاهن المسؤول</p>
               <p className="mt-1 font-arabic-serif text-[15px] font-extrabold text-[#3a2a18] leading-tight whitespace-normal break-words">
-                القمص داود عبد الملاك المقاري
+                {church.primaryPriestName ?? "—"}
               </p>
             </div>
           </div>
@@ -204,17 +220,17 @@ function HeroChurchCard() {
 
           {/* Row 2: Statistics (dedicated row) */}
           <div className="grid grid-cols-3 gap-2">
-            <StatTile icon={Users} value="2,480" label="عضو" tone="#5b8fd1" />
-            <StatTile icon={HandHeart} value="186" label="خادم" tone="#1f8a5a" />
+            <StatTile icon={Users} value={church.memberCount.toLocaleString("ar-EG")} label="عضو" tone="#5b8fd1" />
+            <StatTile icon={HandHeart} value={String(church.servantCount)} label="خادم" tone="#1f8a5a" />
             <StatTile icon={Flame} value="نشط" label="نشاط الصلاة" tone="#c98a3c" />
           </div>
         </div>
       </div>
 
       {popup === "contacts" ? (
-        <ContactsPopup onClose={() => setPopup(null)} />
+        <ContactsPopup contacts={contacts} onClose={() => setPopup(null)} />
       ) : popup === "messages" ? (
-        <MessagesPopup onClose={() => setPopup(null)} />
+        <MessagesPopup contacts={contacts} onClose={() => setPopup(null)} />
       ) : null}
     </section>
   );
@@ -990,7 +1006,7 @@ function PremiumPostCard({ post }: { post: ChurchPost }) {
 }
 
 function ChurchPostsFeed() {
-  const sorted = useActivePosts();
+  const sorted = useActiveUserPosts();
   const [builderOpen, setBuilderOpen] = useState(false);
 
   return (
@@ -1140,7 +1156,7 @@ function UpcomingMeetings() {
 /* Prayer Requests Preview Card (links to /prayer-requests)      */
 /* ============================================================ */
 
-function PrayerCardCompact({ p }: { p: typeof PRAYER_REQUESTS[number] }) {
+function PrayerCardCompact({ p }: { p: ChurchDashboardPrayer }) {
   return (
     <Link
       to="/prayer-requests"
@@ -1186,8 +1202,8 @@ function PrayerCardCompact({ p }: { p: typeof PRAYER_REQUESTS[number] }) {
 }
 
 function PrayerRequestsCard() {
-  const items = PRAYER_REQUESTS;
-  const stats = prayerStats(items);
+  const { prayers } = useChurchDashboardData();
+  const stats = prayerStatsFromDashboard(prayers);
   const trackRef = useRef<HTMLDivElement | null>(null);
   useAutoMarquee(trackRef, { speed: 20, direction: -1 });
 
@@ -1210,20 +1226,26 @@ function PrayerRequestsCard() {
       <div className="grid grid-cols-3 gap-2 mb-2.5">
         <StatPill icon={<Sparkles className="h-3 w-3" strokeWidth={2.6} />} label="نشط" value={stats.active} tone="purple" />
         <StatPill icon={<HandHeart className="h-3 w-3" strokeWidth={2.6} />} label="صلّوا" value={stats.peoplePrayed} tone="green" />
-        <StatPill icon={<MessageSquareHeart className="h-3 w-3" strokeWidth={2.6} />} label="رسالة" value={ENCOURAGEMENT_TOTAL} tone="rose" />
+        <StatPill icon={<MessageSquareHeart className="h-3 w-3" strokeWidth={2.6} />} label="طلب" value={prayers.length} tone="rose" />
       </div>
 
-      <div
-        ref={trackRef}
-        className="-mx-4 overflow-x-auto no-scrollbar scroll-smooth"
-        style={{ WebkitOverflowScrolling: "touch" }}
-      >
-        <div className="flex gap-3 px-4 pb-2">
-          {items.map((p) => (
-            <PrayerCardCompact key={p.id} p={p} />
-          ))}
+      {prayers.length === 0 ? (
+        <Glass className="text-center py-6">
+          <p className="text-[13px] font-bold text-[#6a543a]">لا توجد طلبات صلاة عامة حالياً</p>
+        </Glass>
+      ) : (
+        <div
+          ref={trackRef}
+          className="-mx-4 overflow-x-auto no-scrollbar scroll-smooth"
+          style={{ WebkitOverflowScrolling: "touch" }}
+        >
+          <div className="flex gap-3 px-4 pb-2">
+            {prayers.map((p) => (
+              <PrayerCardCompact key={p.id} p={p} />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </section>
   );
 }
@@ -1413,11 +1435,16 @@ function LiveBroadcast() {
 /* Church Utilities — Map, Contacts, Messages                   */
 /* ============================================================ */
 
-const CHURCH_ADDRESS = "كنيسة الشهيد مار جرجس، مدينة نصر، القاهرة";
-const CHURCH_COORDS = { lat: 30.0626, lng: 31.3470 };
-const MAPS_URL = `https://www.google.com/maps/search/?api=1&query=${CHURCH_COORDS.lat},${CHURCH_COORDS.lng}`;
-
 function LocationRow() {
+  const { church } = useChurchDashboardData();
+  const addressLabel = church.address ?? [church.name, church.city].filter(Boolean).join("، ");
+  const mapsUrl =
+    church.locationLat != null && church.locationLng != null
+      ? `https://www.google.com/maps/search/?api=1&query=${church.locationLat},${church.locationLng}`
+      : addressLabel
+        ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addressLabel)}`
+        : "#";
+
   return (
     <section>
       <SectionTitle title="المواقع والأماكن" />
@@ -1456,7 +1483,7 @@ function LocationRow() {
 
         {/* Quick map card */}
         <a
-          href={MAPS_URL}
+          href={mapsUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="relative block rounded-2xl overflow-hidden border border-white/70 shadow-[0_14px_30px_-18px_rgba(120,80,30,0.5),inset_0_1px_0_rgba(255,255,255,0.75)] active:scale-[0.98] transition-transform"
@@ -1480,7 +1507,7 @@ function LocationRow() {
                 موقع كنيستي
               </p>
               <p className="mt-1 text-[10.5px] text-[#6b5436] leading-snug truncate">
-                {CHURCH_ADDRESS}
+                {addressLabel || "—"}
               </p>
               <span className="mt-2 inline-flex items-center gap-1 text-[10.5px] font-extrabold text-[#c44569]">
                 فتح الخرائط ←
@@ -1493,11 +1520,9 @@ function LocationRow() {
   );
 }
 
-type Contact = ChurchContact;
+type Contact = ChurchContact | ChurchDashboardContact;
 
-const CONTACTS: Contact[] = CHURCH_CONTACTS;
-
-const ROLE_TONE: Record<Contact["roleType"], { bg: string; icon: any; tag: string }> = {
+const ROLE_TONE: Record<ContactRoleType, { bg: string; icon: typeof Crown; tag: string }> = {
   priest: { bg: "linear-gradient(160deg, #7a4a26, #3a2a18)", icon: Crown, tag: "#c79356" },
   servant: { bg: "linear-gradient(160deg, #6a4ab5, #4a2e8e)", icon: HandHeart, tag: "#8a6ec1" },
   admin: { bg: "linear-gradient(160deg, #1f8a5a, #136a44)", icon: UserCog, tag: "#1f8a5a" },
@@ -1656,32 +1681,38 @@ function PopupGroup({ label, children }: { label: string; children: React.ReactN
   );
 }
 
-function groupedContacts() {
+function groupedContacts(contacts: ChurchDashboardContact[]) {
   return {
-    priests: CONTACTS.filter((c) => c.roleType === "priest"),
-    servants: CONTACTS.filter((c) => c.roleType === "servant"),
-    admins: CONTACTS.filter((c) => c.roleType === "admin"),
+    priests: contacts.filter((c) => c.roleType === "priest"),
+    servants: contacts.filter((c) => c.roleType === "servant"),
+    admins: contacts.filter((c) => c.roleType === "admin"),
   };
 }
 
-function ContactsPopup({ onClose }: { onClose: () => void }) {
-  const { priests, servants, admins } = groupedContacts();
+function ContactsPopup({ contacts, onClose }: { contacts: ChurchDashboardContact[]; onClose: () => void }) {
+  const { priests, servants, admins } = groupedContacts(contacts);
   return (
     <PopupShell title="تواصل مع الكنيسة" subtitle="اتصال مباشر أو واتساب" onClose={onClose}>
       {priests.length > 0 && <PopupGroup label="الكاهن">{priests.map((c) => <ContactRow key={c.id} contact={c} />)}</PopupGroup>}
       {servants.length > 0 && <PopupGroup label="الخدام">{servants.map((c) => <ContactRow key={c.id} contact={c} />)}</PopupGroup>}
       {admins.length > 0 && <PopupGroup label="المسؤولون">{admins.map((c) => <ContactRow key={c.id} contact={c} />)}</PopupGroup>}
+      {contacts.length === 0 ? (
+        <p className="px-1 py-4 text-center text-[12px] font-bold text-[#6a543a]">لا توجد جهات اتصال متاحة</p>
+      ) : null}
     </PopupShell>
   );
 }
 
-function MessagesPopup({ onClose }: { onClose: () => void }) {
-  const { priests, servants, admins } = groupedContacts();
+function MessagesPopup({ contacts, onClose }: { contacts: ChurchDashboardContact[]; onClose: () => void }) {
+  const { priests, servants, admins } = groupedContacts(contacts);
   return (
     <PopupShell title="مراسلة قادة الكنيسة" subtitle="بإذن الكاهن" onClose={onClose}>
       {priests.length > 0 && <PopupGroup label="الكاهن">{priests.map((c) => <MessageRow key={c.id} contact={c} onClose={onClose} />)}</PopupGroup>}
-      {servants.length > 0 && <PopupGroup label="الخدام">{servants.map((c, i) => <MessageRow key={c.id} contact={c} unread={i === 0 ? 2 : undefined} onClose={onClose} />)}</PopupGroup>}
+      {servants.length > 0 && <PopupGroup label="الخدام">{servants.map((c) => <MessageRow key={c.id} contact={c} onClose={onClose} />)}</PopupGroup>}
       {admins.length > 0 && <PopupGroup label="المسؤولون">{admins.map((c) => <MessageRow key={c.id} contact={c} onClose={onClose} />)}</PopupGroup>}
+      {contacts.length === 0 ? (
+        <p className="px-1 py-4 text-center text-[12px] font-bold text-[#6a543a]">لا توجد جهات مراسلة متاحة</p>
+      ) : null}
     </PopupShell>
   );
 }
@@ -1691,7 +1722,31 @@ function MessagesPopup({ onClose }: { onClose: () => void }) {
 /* Screen                                                        */
 /* ============================================================ */
 
+function ChurchEmptyState() {
+  return (
+    <Glass className="text-center py-10 px-5">
+      <div className="mx-auto grid h-20 w-20 place-items-center rounded-[22px] border border-[#efe2c4] bg-gradient-to-br from-[#fff8e9] to-[#e7c07a]/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_10px_24px_-12px_rgba(120,80,30,0.45)]">
+        <Church className="h-9 w-9 text-[#7a4a26]" strokeWidth={1.8} />
+      </div>
+      <h2 className="mt-5 font-arabic-serif text-[18px] font-bold text-[#3a2a18]">
+        لا توجد كنيسة معتمدة بعد
+      </h2>
+      <p className="mt-2 text-[13px] leading-relaxed text-[#6a543a]">
+        بعد اعتماد طلب تأسيس الكنيسة ستظهر هنا بيانات كنيستك وخدماتها.
+      </p>
+      <Link
+        to="/profile/church/setup"
+        className="mt-5 inline-flex h-12 items-center justify-center rounded-2xl bg-gradient-to-l from-[#7a4a26] to-[#b8893a] px-6 text-[14px] font-extrabold text-white shadow-[0_10px_20px_-10px_rgba(122,74,38,0.6)] active:scale-[0.98] transition-transform"
+      >
+        طلب تأسيس كنيسة
+      </Link>
+    </Glass>
+  );
+}
+
 function ChurchScreen() {
+  const { data, loading, hasChurch } = useChurchDashboard();
+
   return (
     <main
       dir="rtl"
@@ -1712,15 +1767,23 @@ function ChurchScreen() {
       <Header />
 
       <div className="relative mx-auto w-full max-w-[440px] px-4 pt-2 pb-[calc(env(safe-area-inset-bottom,0px)+120px)] space-y-5">
-        <HeroChurchCard />
-        <QuickGrid />
-        <ChurchPostsFeed />
-        <PrayerRequestsCard />
-        <UpcomingMeetings />
-        <LiveBroadcast />
-        <LocationRow />
-
-
+        {loading ? (
+          <Glass className="text-center py-12">
+            <p className="text-[13px] font-bold text-[#6a543a]">جاري تحميل بيانات الكنيسة…</p>
+          </Glass>
+        ) : !hasChurch || !data ? (
+          <ChurchEmptyState />
+        ) : (
+          <ChurchDashboardProvider data={data}>
+            <HeroChurchCard />
+            <QuickGrid />
+            <ChurchPostsFeed />
+            <PrayerRequestsCard />
+            <UpcomingMeetings />
+            <LiveBroadcast />
+            <LocationRow />
+          </ChurchDashboardProvider>
+        )}
       </div>
 
       <BottomDock />

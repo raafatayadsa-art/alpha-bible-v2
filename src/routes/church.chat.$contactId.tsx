@@ -11,6 +11,7 @@ import {
   ROLE_TONE_MAP,
   type ChatMessage,
 } from "@/data/church-contacts";
+import { fetchChurchRoleById } from "@/features/church/church-dashboard-api";
 
 export const Route = createFileRoute("/church/chat/$contactId")({
   ssr: false,
@@ -33,8 +34,21 @@ function formatTime(minutesAgo: number) {
 
 function ChatScreen() {
   const { contactId } = useParams({ from: "/church/chat/$contactId" });
-  const contact = getChurchContact(contactId);
+  const [contact, setContact] = useState<Awaited<ReturnType<typeof fetchChurchRoleById>> | ReturnType<typeof getChurchContact>>(() =>
+    getChurchContact(contactId),
+  );
   const tone = contact ? ROLE_TONE_MAP[contact.roleType] : null;
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetchChurchRoleById(contactId).then((remote) => {
+      if (cancelled || !remote) return;
+      setContact(remote);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [contactId]);
 
   const [messages, setMessages] = useState<ChatMessage[]>(
     () => SEED_CONVERSATIONS[contactId] ?? []

@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Grid3x3, List as ListIcon, ChevronLeft } from "lucide-react";
+import { Grid3x3, List as ListIcon } from "lucide-react";
 import { chaptersQueryOptions } from "@/lib/bible";
 import { displayName } from "@/lib/bible-books";
-import { BackButton, BottomDock, ChapterGridSkeleton, SectionHeader } from "@/components/bible";
+import { chapterCountLabel, chapterWithNumber } from "@/lib/bible-labels";
+import { BackButton, BottomDock, ChapterGridSkeleton, GlassSurface } from "@/components/bible";
 import { useCurrentSession, useRecentSessions } from "@/lib/reading-state";
 import { cn } from "@/lib/utils";
 
@@ -12,15 +13,14 @@ export const Route = createFileRoute("/$book/")({
   ssr: false,
   head: ({ params }) => ({
     meta: [
-      { title: `${params.book} — الكتاب المقدس` },
-      { name: "description", content: `اختر إصحاحًا من سفر ${params.book}.` },
+      { title: `${displayName(params.book)} — الإصحاحات` },
+      { name: "description", content: `اختر ${chapterWithNumber(params.book, 1).replace(/\d+/, "…")} من سفر ${displayName(params.book)}.` },
     ],
   }),
   component: ChaptersPage,
 });
 
 type Mode = "grid" | "list";
-
 const MODE_KEY = "ab:chapter:view-mode";
 
 function ChaptersPage() {
@@ -51,6 +51,7 @@ function ChaptersPage() {
     return m;
   }, [recent, book]);
 
+  const countLabel = chapters ? chapterCountLabel(book, chapters.length) : "...";
 
   return (
     <main dir="rtl" className="relative min-h-screen w-full overflow-x-hidden bg-[#faf8f3]">
@@ -66,36 +67,30 @@ function ChaptersPage() {
 
       <div className="relative mx-auto w-full max-w-[440px] px-4 pt-[max(env(safe-area-inset-top),12px)] pb-36">
         <header className="flex items-center justify-between gap-2 pt-2">
-          <BackButton to="/books" />
-          <h1 className="font-arabic-serif text-[17px] font-bold text-[#3a2a18] truncate">
-            {displayName(book)}
-          </h1>
-          <span className="w-[68px]" aria-hidden />
+          <BackButton to="/books" compact tone="light" />
+          <div className="text-center min-w-0 flex-1">
+            <h1 className="font-arabic-serif text-[17px] font-bold text-[#3a2a18] truncate">
+              {displayName(book)}
+            </h1>
+            <p className="text-[11px] text-[#6a543a] font-bold">{countLabel}</p>
+          </div>
+          <SegmentedToggle mode={mode} onChange={setModePersist} />
         </header>
 
-        <div className="mt-4 flex items-center justify-between gap-3">
-          <SectionHeader
-            title="الإصحاحات"
-            caption={chapters ? `${chapters.length} إصحاح` : undefined}
-          />
-          <SegmentedToggle mode={mode} onChange={setModePersist} />
-        </div>
-
-
-        {isLoading && <div className="mt-1"><ChapterGridSkeleton count={20} /></div>}
+        {isLoading && <div className="mt-4"><ChapterGridSkeleton count={20} /></div>}
         {error && (
-          <p className="text-center text-[12px] text-red-700/80">
+          <p className="mt-4 text-center text-[12px] text-red-700/80">
             تعذّر التحميل: {(error as Error).message}
           </p>
         )}
         {!isLoading && !error && chapters && chapters.length === 0 && (
-          <p className="text-center text-[12px] text-[#6a543a]">لا توجد إصحاحات.</p>
+          <p className="mt-4 text-center text-[12px] text-[#6a543a]">لا توجد أصحاحات.</p>
         )}
 
         {chapters && chapters.length > 0 && (
-          <div className="mt-1 animate-in fade-in duration-200">
+          <div className="mt-4 animate-in fade-in duration-200">
             {mode === "grid" ? (
-              <ul className="grid grid-cols-5 gap-2.5">
+              <ul className="grid grid-cols-4 gap-2.5">
                 {chapters.map((c) => {
                   const isLast = c === lastRead;
                   return (
@@ -103,16 +98,17 @@ function ChaptersPage() {
                       <Link
                         to="/$book/$chapter"
                         params={{ book, chapter: String(c) }}
+                        aria-label={chapterWithNumber(book, c)}
                         className={cn(
-                          "relative grid aspect-square place-items-center rounded-2xl border font-arabic-serif text-[16px] font-bold transition-all active:scale-95",
+                          "relative grid aspect-square place-items-center rounded-[20px] border font-arabic-serif text-[18px] font-extrabold transition-all active:scale-95 backdrop-blur-xl",
                           isLast
-                            ? "bg-gradient-to-br from-[#fff1c7] to-[#e7c07a] border-transparent text-[#7a4a26] shadow-[0_8px_18px_-10px_rgba(120,80,20,0.5),inset_0_1px_0_rgba(255,255,255,0.7)]"
-                            : "bg-[#fbf3e1]/85 border-[#efe2c4] text-[#3a2a18] shadow-[0_6px_14px_-12px_rgba(120,80,30,0.30)]",
+                            ? "bg-gradient-to-br from-[#fff1c7]/95 to-[#e7c07a]/90 border-[#e7c97a]/60 text-[#7a4a26] shadow-[0_10px_22px_-10px_rgba(120,80,20,0.5),inset_0_1px_0_rgba(255,255,255,0.8)]"
+                            : "bg-white/75 border-white/80 text-[#3a2a18] shadow-[0_8px_18px_-14px_rgba(120,80,30,0.35),inset_0_1px_0_rgba(255,255,255,0.75)]",
                         )}
                       >
                         {c}
                         {isLast && (
-                          <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-[#d96b2a] ring-2 ring-[#f4ead8]" />
+                          <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-[#6a4ab5] ring-2 ring-[#f4ead8]" />
                         )}
                       </Link>
                     </li>
@@ -129,47 +125,46 @@ function ChaptersPage() {
                       <Link
                         to="/$book/$chapter"
                         params={{ book, chapter: String(c) }}
-                        className={cn(
-                          "flex items-center gap-3 rounded-2xl border px-3 py-2.5 transition-transform active:scale-[0.98]",
-                          isLast
-                            ? "bg-gradient-to-br from-[#fff8e9] to-[#f5e7c2] border-[#efe2c4]"
-                            : "bg-[#fbf3e1]/85 border-[#efe2c4]",
-                        )}
+                        className="block active:scale-[0.98] transition-transform"
                       >
-                        <span
+                        <GlassSurface
+                          tone={isLast ? "warm" : "ivory"}
                           className={cn(
-                            "grid h-10 w-10 place-items-center rounded-xl font-arabic-serif text-[15px] font-extrabold",
-                            isLast
-                              ? "bg-gradient-to-br from-[#e7c97a] to-[#a87a35] text-white"
-                              : "bg-white text-[#3a2a18] border border-[#efe2c4]",
+                            "flex items-center gap-3 px-3 py-2.5",
+                            isLast && "ring-1 ring-[#e7c97a]/50",
                           )}
                         >
-                          {c}
-                        </span>
-                        <div className="flex-1 min-w-0 text-right">
-                          <div className="flex items-center gap-1.5">
-                            <p className="text-[13px] font-extrabold text-[#3a2a18]">
-                              الإصحاح {c}
-                            </p>
-                            {isLast && (
-                              <span className="text-[9px] font-bold text-[#d96b2a]">
-                                • آخر قراءة
-                              </span>
+                          <span
+                            className={cn(
+                              "grid h-11 w-11 place-items-center rounded-2xl font-arabic-serif text-[16px] font-extrabold",
+                              isLast
+                                ? "bg-gradient-to-br from-[#e7c97a] to-[#a87a35] text-white"
+                                : "bg-white/80 text-[#3a2a18] border border-[#efe2c4]",
+                            )}
+                          >
+                            {c}
+                          </span>
+                          <div className="flex-1 min-w-0 text-right">
+                            <div className="flex items-center gap-1.5">
+                              <p className="text-[13px] font-extrabold text-[#3a2a18]">
+                                {chapterWithNumber(book, c)}
+                              </p>
+                              {isLast && (
+                                <span className="text-[9px] font-bold text-[#6a4ab5]">
+                                  • آخر قراءة
+                                </span>
+                              )}
+                            </div>
+                            {pct > 0 && (
+                              <div className="mt-1.5 h-1 rounded-full bg-[#ecdcb6] overflow-hidden">
+                                <div
+                                  className="h-full rounded-full bg-gradient-to-r from-[#cdb8ef] to-[#6a4ab5]"
+                                  style={{ width: `${pct}%` }}
+                                />
+                              </div>
                             )}
                           </div>
-                          <div className="mt-1.5 flex items-center gap-2">
-                            <div className="h-1 flex-1 rounded-full bg-[#ecdcb6] overflow-hidden">
-                              <div
-                                className="h-full rounded-full bg-gradient-to-r from-[#e7c97a] via-[#c79356] to-[#7a4a26] transition-[width] duration-500"
-                                style={{ width: `${pct}%` }}
-                              />
-                            </div>
-                            <span className="text-[10px] font-bold text-[#7a4a26] tabular-nums min-w-[28px]">
-                              {pct}%
-                            </span>
-                          </div>
-                        </div>
-                        <ChevronLeft className="h-4 w-4 text-[#b8893a] shrink-0" />
+                        </GlassSurface>
                       </Link>
                     </li>
                   );

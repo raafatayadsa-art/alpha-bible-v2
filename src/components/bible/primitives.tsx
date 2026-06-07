@@ -25,6 +25,7 @@ export function Pressable({
   onClick,
   to,
   params,
+  search,
   className = "",
   ariaLabel,
   as = "auto",
@@ -33,6 +34,7 @@ export function Pressable({
   onClick?: () => void;
   to?: string;
   params?: Record<string, string>;
+  search?: Record<string, unknown>;
   className?: string;
   ariaLabel?: string;
   as?: "auto" | "div";
@@ -43,7 +45,7 @@ export function Pressable({
   );
   if (to) {
     return (
-      <Link to={to as any} params={params as any} aria-label={ariaLabel} className={base}>
+      <Link to={to as any} params={params as any} search={search as any} aria-label={ariaLabel} className={base}>
         {children}
       </Link>
     );
@@ -222,12 +224,14 @@ export function IconBadge({
 
 export function BackButton({
   to,
+  params,
   onBack,
   label = "رجوع",
   compact = false,
   tone = "light",
 }: {
   to?: string;
+  params?: Record<string, string>;
   onBack?: () => void;
   label?: string;
   compact?: boolean;
@@ -255,7 +259,7 @@ export function BackButton({
   );
   if (to) {
     return (
-      <Link to={to as any} aria-label={label} className="inline-block active:scale-95 transition-transform">
+      <Link to={to as any} params={params as any} aria-label={label} className="inline-block active:scale-95 transition-transform">
         {inner}
       </Link>
     );

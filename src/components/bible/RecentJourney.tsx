@@ -2,6 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { Clock } from "lucide-react";
 import { displayName } from "@/lib/bible-books";
 import { useRecentSessions } from "@/lib/reading-state";
+import { BookIcon } from "./BookIcon";
+import { chapterWithNumber } from "@/lib/bible-labels";
 import { cn } from "@/lib/utils";
 
 function timeAgo(ts: number) {
@@ -43,13 +45,16 @@ export function RecentJourney() {
                 "active:scale-[0.97] transition-transform",
               )}
             >
+              <div className="mb-2 h-10 w-10">
+                <BookIcon book={r.book} className="h-full w-full" />
+              </div>
               <p className="text-[10.5px] font-bold text-[#b8893a]">
                 {timeAgo(r.lastOpenedAt)}
               </p>
               <h3 className="mt-0.5 truncate font-arabic-serif text-[13px] font-extrabold text-[#3a2a18]">
                 {displayName(r.bookName || r.book)}
               </h3>
-              <p className="text-[11px] text-[#6a543a]">الإصحاح {r.chapter}</p>
+              <p className="text-[11px] text-[#6a543a]">{chapterWithNumber(r.book, r.chapter)}</p>
               <div className="mt-2 flex items-center gap-1.5">
                 <div className="h-1 flex-1 rounded-full bg-[#ecdcb6] overflow-hidden">
                   <div

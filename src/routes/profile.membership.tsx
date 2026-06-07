@@ -4,7 +4,7 @@ import {
   ChevronRight, Share2, Download, Copy, Check, ScanLine, ShieldCheck,
   Church, Cross, MoreVertical, ChevronLeft, X,
 } from "lucide-react";
-import alphaLogoAsset from "@/assets/alpha-logo.png.asset.json";
+import { AlphaOfficialLogo } from "@/components/brand";
 
 export const Route = createFileRoute("/profile/membership")({
   ssr: false,
@@ -191,7 +191,7 @@ function MembershipScreen() {
                     "0 0 0 3px #ffffff, 0 0 0 5px #c9a14a, 0 6px 14px rgba(0,0,0,0.25)",
                 }}
               >
-                <img src={alphaLogoAsset.url} alt="Alpha" className="h-7 w-7 object-contain" />
+                <AlphaOfficialLogo size="sm" className="scale-75" />
               </span>
             </div>
           </div>
@@ -310,12 +310,7 @@ function MembershipScreen() {
 
         {/* === LOGO SECTION === */}
         <div className="mt-8 flex flex-col items-center">
-          <img
-            src={alphaLogoAsset.url}
-            alt="Alpha Coptic"
-            className="h-[100px] w-auto object-contain"
-            style={{ filter: "drop-shadow(0 6px 14px rgba(184,137,58,0.4))" }}
-          />
+          <AlphaOfficialLogo size="lg" />
         </div>
       </div>
 

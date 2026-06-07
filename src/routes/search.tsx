@@ -1,6 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Search, X, BookOpen, HandHeart, ScrollText, Cross, CalendarHeart, Sparkles, ArrowLeft } from "lucide-react";
+import { BookIcon } from "@/components/bible/BookIcon";
+import { resolveBookId } from "@/lib/bible-icons";
 import { SAINTS } from "@/features/synaxarium/data";
 import { FEASTS } from "@/features/feasts/data";
 import { AGPEYA_PRAYERS } from "@/features/agpeya/data";
@@ -425,14 +427,27 @@ function ResultsView({
                       onClick={onCommit}
                       className="block rounded-2xl bg-white/90 border border-[#ead9b1] px-4 py-3 shadow-[0_8px_18px_-14px_rgba(120,80,30,0.4),inset_0_1px_0_rgba(255,255,255,0.85)] active:scale-[0.99] transition-transform"
                     >
-                      <div className="font-arabic-serif text-[15px] font-extrabold text-[#3a2a18] line-clamp-1">
-                        {r.title}
-                      </div>
-                      {r.subtitle && (
-                        <div className="text-[12px] text-[#7a5a35] mt-0.5 line-clamp-2 leading-relaxed">
-                          {r.subtitle}
+                      <div className="flex items-start gap-3">
+                        {c === "bible" && (
+                          <div className="h-11 w-11 shrink-0 rounded-xl bg-[#fbf3e1] border border-[#ead9b1] p-1">
+                            <BookIcon
+                              bookId={resolveBookId(r.title) ?? resolveBookId(r.to.replace(/^\//, ""))}
+                              book={r.title}
+                              className="h-full w-full"
+                            />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="font-arabic-serif text-[15px] font-extrabold text-[#3a2a18] line-clamp-1">
+                            {r.title}
+                          </div>
+                          {r.subtitle && (
+                            <div className="text-[12px] text-[#7a5a35] mt-0.5 line-clamp-2 leading-relaxed">
+                              {r.subtitle}
+                            </div>
+                          )}
                         </div>
-                      )}
+                      </div>
                     </Link>
                   </li>
                 ))}

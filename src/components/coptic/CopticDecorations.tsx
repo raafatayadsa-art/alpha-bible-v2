@@ -199,13 +199,16 @@ export function CopticWatermark({
   className = "",
   tone = "light",
   position = "fixed",
+  subtle = false,
 }: {
   className?: string;
   tone?: "light" | "dark";
   position?: "fixed" | "absolute";
+  /** Lower opacity for form-heavy screens. */
+  subtle?: boolean;
 }) {
   const color = tone === "dark" ? "#f0d78c" : "#7a4a14";
-  const opacity = tone === "dark" ? 0.035 : 0.055;
+  const opacity = subtle ? 0.028 : tone === "dark" ? 0.035 : 0.055;
   return (
     <div
       className={cn(

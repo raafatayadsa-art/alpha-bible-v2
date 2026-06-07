@@ -9,19 +9,19 @@ import {
   registerForPost,
   cancelRegistration,
   usePostRegistrations,
-  getMemberProfile,
-  saveMemberProfile,
   type RegistrationKind,
 } from "./post-registrations";
+import { currentUserName } from "./current-user";
 
 function PopupShell({
-  title, subtitle, onClose, children, footer,
+  title, subtitle, onClose, children, footer, compact = false,
 }: {
   title: string;
   subtitle?: string;
   onClose: () => void;
   children: React.ReactNode;
   footer?: React.ReactNode;
+  compact?: boolean;
 }) {
   if (typeof document === "undefined") return null;
 
@@ -35,17 +35,20 @@ function PopupShell({
         type="button"
         aria-label="إغلاق"
         onClick={onClose}
-        className="absolute inset-0 bg-[#1a0f04]/55 backdrop-blur-sm"
+        className="absolute inset-0 bg-[#1a0f04]/22"
       />
       <div
-        className="relative flex w-full max-w-[440px] max-h-[min(92dvh,720px)] flex-col rounded-t-[28px] sm:rounded-[28px] border border-white/75 bg-[#fbf3e1]/98 backdrop-blur-2xl shadow-[0_30px_60px_-20px_rgba(60,40,16,0.6)] text-right overflow-hidden"
+        className={
+          "relative flex w-full flex-col rounded-t-[24px] sm:rounded-[24px] border border-white/75 bg-[#fbf3e1]/96 backdrop-blur-md shadow-[0_20px_44px_-18px_rgba(60,40,16,0.45)] text-right overflow-hidden " +
+          (compact ? "max-w-[380px] max-h-[min(52dvh,360px)]" : "max-w-[440px] max-h-[min(92dvh,720px)]")
+        }
         style={{ paddingBottom: "max(env(safe-area-inset-bottom,0px),0px)" }}
       >
-        <div className="shrink-0 flex items-start justify-between gap-2 p-4 pb-2.5 border-b border-[#efe2c4]/70">
+        <div className={"shrink-0 flex items-start justify-between gap-2 border-b border-[#efe2c4]/70 " + (compact ? "p-3 pb-2" : "p-4 pb-2.5")}>
           <div className="min-w-0 flex-1">
-            <h3 className="font-arabic-serif text-[15.5px] font-extrabold text-[#3a2a18] leading-tight">{title}</h3>
+            <h3 className={"font-arabic-serif font-extrabold text-[#3a2a18] leading-tight " + (compact ? "text-[14px]" : "text-[15.5px]")}>{title}</h3>
             {subtitle ? (
-              <p className="mt-0.5 text-[10.5px] text-[#7a5a30] inline-flex items-center gap-1">
+              <p className="mt-0.5 text-[10px] text-[#7a5a30] inline-flex items-center gap-1">
                 <ShieldCheck className="h-3 w-3 text-[#1f8a5a]" /> {subtitle}
               </p>
             ) : null}
@@ -54,16 +57,16 @@ function PopupShell({
             type="button"
             onClick={onClose}
             aria-label="إغلاق"
-            className="grid h-8 w-8 place-items-center rounded-full bg-white/90 border border-[#efe2c4] text-[#7a5a30] active:scale-90 shrink-0"
+            className="grid h-7 w-7 place-items-center rounded-full bg-white/90 border border-[#efe2c4] text-[#7a5a30] active:scale-90 shrink-0"
           >
-            <X className="h-4 w-4" />
+            <X className="h-3.5 w-3.5" />
           </button>
         </div>
-        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 py-3">
+        <div className={"flex-1 min-h-0 overflow-y-auto overscroll-contain " + (compact ? "px-3 py-2" : "px-4 py-3")}>
           {children}
         </div>
         {footer ? (
-          <div className="shrink-0 border-t border-[#efe2c4]/70 px-4 py-3 bg-[#fbf3e1]/95">
+          <div className={"shrink-0 border-t border-[#efe2c4]/70 bg-[#fbf3e1]/95 " + (compact ? "px-3 py-2" : "px-4 py-3")}>
             {footer}
           </div>
         ) : null}
@@ -86,8 +89,8 @@ function Field({
       <span className="block text-[11px] font-extrabold text-[#7a5a30] mb-1">{label}</span>
       {multiline ? (
         <textarea
-          rows={4}
-          className={cls + " resize-none"}
+          rows={3}
+          className={cls + " resize-none min-h-[4.5rem]"}
           value={value}
           maxLength={maxLength}
           placeholder={placeholder}
@@ -106,29 +109,34 @@ function Field({
   );
 }
 
-function SubmitBtn({ disabled, onClick, label }: { disabled?: boolean; onClick: () => void; label: string }) {
+function SubmitBtn({ disabled, onClick, label, compact = false }: { disabled?: boolean; onClick: () => void; label: string; compact?: boolean }) {
   return (
     <button
       type="button"
       disabled={disabled}
       onClick={onClick}
-      className="mt-3 w-full inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-l from-[#7a4a26] to-[#b8893a] text-white text-[13px] font-extrabold py-2.5 shadow-[0_12px_24px_-12px_rgba(122,74,38,0.7)] active:scale-[0.98] transition-transform disabled:opacity-50"
+      className={
+        "w-full inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-l from-[#7a4a26] to-[#b8893a] text-white font-extrabold shadow-[0_12px_24px_-12px_rgba(122,74,38,0.7)] active:scale-[0.98] transition-transform disabled:opacity-50 " +
+        (compact ? "mt-2 text-[12px] py-2" : "mt-3 text-[13px] py-2.5")
+      }
     >
-      <Send className="h-4 w-4 -scale-x-100" />
+      <Send className="h-3.5 w-3.5 -scale-x-100" />
       {label}
     </button>
   );
 }
 
+function senderName(): string {
+  return currentUserName();
+}
+
 /* --------------------------- Condolence popup --------------------------- */
 export function CondolencePopup({ postId, onClose }: { postId: string; onClose: () => void }) {
-  const [name, setName] = useState(() => getMemberProfile().name);
   const [text, setText] = useState("");
-  const valid = name.trim().length > 0 && text.trim().length > 0;
+  const valid = text.trim().length > 0;
   return (
-    <PopupShell title="إرسال تعزية" subtitle="الاسم مطلوب — لا يوجد وضع مجهول" onClose={onClose}>
-      <div className="space-y-2.5 pb-1">
-        <Field label="الاسم" value={name} onChange={setName} placeholder="اسمك الكامل" maxLength={60} />
+    <PopupShell title="إرسال تعزية" onClose={onClose} compact>
+      <div className="pb-0.5">
         <Field
           label="رسالة التعزية"
           value={text}
@@ -138,11 +146,11 @@ export function CondolencePopup({ postId, onClose }: { postId: string; onClose: 
           maxLength={400}
         />
         <SubmitBtn
+          compact
           disabled={!valid}
           label="إرسال التعزية"
           onClick={() => {
-            saveMemberProfile({ name: name.trim() });
-            addCondolence(postId, name.trim(), text.trim());
+            addCondolence(postId, senderName(), text.trim());
             onClose();
           }}
         />
@@ -153,13 +161,11 @@ export function CondolencePopup({ postId, onClose }: { postId: string; onClose: 
 
 /* --------------------------- Congratulation popup --------------------------- */
 export function CongratsPopup({ postId, onClose }: { postId: string; onClose: () => void }) {
-  const [name, setName] = useState(() => getMemberProfile().name);
   const [text, setText] = useState("");
-  const valid = name.trim().length > 0 && text.trim().length > 0;
+  const valid = text.trim().length > 0;
   return (
-    <PopupShell title="مشاركة التهنئة" subtitle="الاسم مطلوب" onClose={onClose}>
-      <div className="space-y-2.5 pb-1">
-        <Field label="الاسم" value={name} onChange={setName} placeholder="اسمك الكامل" maxLength={60} />
+    <PopupShell title="مشاركة التهنئة" onClose={onClose} compact>
+      <div className="pb-0.5">
         <Field
           label="رسالة التهنئة"
           value={text}
@@ -169,11 +175,11 @@ export function CongratsPopup({ postId, onClose }: { postId: string; onClose: ()
           maxLength={400}
         />
         <SubmitBtn
+          compact
           disabled={!valid}
           label="إرسال التهنئة"
           onClick={() => {
-            saveMemberProfile({ name: name.trim() });
-            addCongrats(postId, name.trim(), text.trim());
+            addCongrats(postId, senderName(), text.trim());
             onClose();
           }}
         />
@@ -247,74 +253,74 @@ export function ReservePopup({
   const { count, mine } = usePostRegistrations(postId, "trip");
   const remaining = totalSeats != null ? Math.max(0, totalSeats - count) : undefined;
   const [seats, setSeats] = useState(1);
-  const [name, setName] = useState(() => getMemberProfile().name);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const maxAllowed = remaining != null ? Math.max(0, remaining) : 10;
 
   return (
     <PopupShell
+      compact
       title="حجز الرحلة"
       subtitle={
         totalSeats != null
-          ? `الأماكن المتاحة: ${(remaining ?? 0).toLocaleString("ar-EG")} من ${totalSeats.toLocaleString("ar-EG")}`
-          : `محجوز حتى الآن: ${count.toLocaleString("ar-EG")}`
+          ? `المتاح: ${(remaining ?? 0).toLocaleString("ar-EG")} من ${totalSeats.toLocaleString("ar-EG")}`
+          : `محجوز: ${count.toLocaleString("ar-EG")}`
       }
       onClose={onClose}
       footer={
         <button
           type="button"
           onClick={onClose}
-          className="w-full rounded-full bg-white/90 border border-[#efe2c4] py-2.5 text-[12.5px] font-extrabold text-[#6a543a] active:scale-[0.98]"
+          className="w-full rounded-full bg-white/90 border border-[#efe2c4] py-2 text-[12px] font-extrabold text-[#6a543a] active:scale-[0.98]"
         >
           إلغاء
         </button>
       }
     >
-      <div className="space-y-2.5 pb-1">
+      <div className="space-y-2 pb-0.5">
         {postTitle ? (
-          <div className="rounded-2xl bg-white/90 border border-[#efe2c4] p-3 text-right">
-            <p className="text-[10px] font-extrabold text-[#b8893a]">اسم الرحلة</p>
-            <p className="mt-0.5 font-arabic-serif text-[14px] font-extrabold text-[#3a2a18] leading-snug">{postTitle}</p>
+          <div className="rounded-xl bg-white/90 border border-[#efe2c4] p-2.5 text-right">
+            <p className="text-[9.5px] font-extrabold text-[#b8893a]">اسم الرحلة</p>
+            <p className="mt-0.5 font-arabic-serif text-[13px] font-extrabold text-[#3a2a18] leading-snug line-clamp-2">{postTitle}</p>
             {tripDate ? (
-              <p className="mt-1.5 text-[11px] text-[#6a543a] inline-flex items-center gap-1">
-                <CalendarDays className="h-3.5 w-3.5 text-[#b8893a]" />
+              <p className="mt-1 text-[10.5px] text-[#6a543a] inline-flex items-center gap-1">
+                <CalendarDays className="h-3 w-3 text-[#b8893a]" />
                 {tripDate}
               </p>
             ) : null}
           </div>
         ) : null}
-        <Field label="الاسم" value={name} onChange={setName} placeholder="اسمك الكامل" maxLength={60} />
-        <div className="rounded-2xl bg-white/90 border border-[#efe2c4] p-3 text-right">
-          <p className="text-[11px] font-extrabold text-[#7a5a30] mb-2">عدد الأماكن</p>
+        <div className="rounded-xl bg-white/90 border border-[#efe2c4] p-2.5 text-right">
+          <p className="text-[10px] font-extrabold text-[#7a5a30] mb-1.5">عدد الأماكن</p>
           <div className="flex items-center justify-between gap-2">
             <button
               type="button"
               onClick={() => setSeats((s) => Math.max(1, s - 1))}
-              className="h-9 w-9 rounded-full bg-[#fbf3e1] border border-[#efe2c4] text-[#3a2a18] font-extrabold active:scale-90"
+              className="h-7 w-7 rounded-full bg-[#fbf3e1] border border-[#efe2c4] text-[#3a2a18] text-sm font-extrabold active:scale-90"
               aria-label="نقص"
             >
               −
             </button>
-            <span className="font-arabic-serif text-[22px] font-extrabold text-[#3a2a18] tabular-nums">
+            <span className="font-arabic-serif text-[18px] font-extrabold text-[#3a2a18] tabular-nums">
               {seats.toLocaleString("ar-EG")}
             </span>
             <button
               type="button"
               onClick={() => setSeats((s) => Math.min(maxAllowed, s + 1))}
-              className="h-9 w-9 rounded-full bg-[#fbf3e1] border border-[#efe2c4] text-[#3a2a18] font-extrabold active:scale-90"
+              className="h-7 w-7 rounded-full bg-[#fbf3e1] border border-[#efe2c4] text-[#3a2a18] text-sm font-extrabold active:scale-90"
               aria-label="زيادة"
             >
               +
             </button>
           </div>
           {mine && mine.seats > 0 ? (
-            <p className="mt-2 text-[10.5px] text-[#7a5a30]">حجزت بالفعل {mine.seats.toLocaleString("ar-EG")} مكان</p>
+            <p className="mt-1.5 text-[10px] text-[#7a5a30]">حجزت {mine.seats.toLocaleString("ar-EG")} مكان</p>
           ) : null}
-          {error ? <p className="mt-2 text-[10.5px] font-bold text-[#a8344f]">{error}</p> : null}
+          {error ? <p className="mt-1.5 text-[10px] font-bold text-[#a8344f]">{error}</p> : null}
         </div>
         <SubmitBtn
-          disabled={seats < 1 || maxAllowed < 1 || !name.trim() || busy}
+          compact
+          disabled={seats < 1 || maxAllowed < 1 || busy}
           label="تأكيد الحجز"
           onClick={async () => {
             setBusy(true);
@@ -328,7 +334,7 @@ export function ReservePopup({
               postId,
               kind: "trip",
               seats,
-              userName: name.trim(),
+              userName: senderName(),
             });
             setBusy(false);
             if (!res.ok) setError(res.error ?? "تعذّر الحجز");

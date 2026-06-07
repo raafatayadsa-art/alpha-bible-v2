@@ -1,40 +1,27 @@
 import { useState } from "react";
-import { Link } from "@tanstack/react-router";
-import { CalendarDays, HandHeart, Send, Pin, Ticket } from "lucide-react";
+import { HandHeart, Send, Ticket, Heart, MessageCircle, Share2, ArrowRight } from "lucide-react";
 import { POST_TYPE_META, type ChurchPost } from "@/data/church-posts";
-import { PostImage } from "./PostImage";
-import {
-  useComments,
-  addComment,
+import {  useComments,
+  addCommentAsCurrentUser,
   useReactions,
+  toggleReaction,
   usePrayed,
   togglePrayed,
   isPinned,
   recordShare,
   useShareCount,
+  useReplies,
 } from "./post-store";
-import { AttendButton, ReservePopup } from "./PostActions";
+import { AttendButton, ReservePopup, CondolencePopup, CongratsPopup } from "./PostActions";
 import { kindForPostType, usePostRegistrations } from "./post-registrations";
-import { getMemberProfile, saveMemberProfile } from "./post-registrations";
+import { getCurrentUser } from "./current-user";
+import { MemberAvatar } from "./MemberAvatar";
 
-/** Apple-style card width — first full, second ~80%, third peeks. */
-const CARD_WIDTH = "min(82vw, 300px)";
-const CARD_HEIGHT = 448;
+const TEXT_SAFE =
+  "break-words [overflow-wrap:anywhere] whitespace-normal max-w-full min-w-0 overflow-hidden";
 
 function typeMeta(type: ChurchPost["type"]) {
   return POST_TYPE_META[type];
-}
-
-function CategoryPill({ type }: { type: ChurchPost["type"] }) {
-  const meta = typeMeta(type);
-  return (
-    <span
-      className="inline-flex items-center rounded-full font-extrabold text-white px-2.5 py-0.5 text-[10px] border border-white/30 shadow-[0_6px_14px_-8px_rgba(0,0,0,0.45)]"
-      style={{ background: `linear-gradient(180deg, ${meta.tone}, ${meta.tone}cc)` }}
-    >
-      {meta.label}
-    </span>
-  );
 }
 
 async function sharePost(post: ChurchPost) {
@@ -51,330 +38,265 @@ async function sharePost(post: ChurchPost) {
   }
 }
 
-function PostStatsRow({ post }: { post: ChurchPost }) {
-  const r = useReactions(post.id);
+type CtaConfig = {
+  kind: "reserve" | "congrats" | "condolence" | "attend" | "prayer" | "details";
+  label: string;
+  bg: string;
+  shadow: string;
+  accent: string;
+};
+
+function ctaFor(post: ChurchPost): CtaConfig {
+  const meta = typeMeta(post.type);
+  const tone = meta.tone;
+  const styled = {
+    bg: `linear-gradient(180deg, ${tone}, ${tone}cc)`,
+    shadow: `${tone}88`,
+    accent: tone,
+  };
+  switch (post.type) {
+    case "trip":
+      return { kind: "reserve", label: "احجز الآن", bg: "linear-gradient(180deg, #1f8a5a, #167a4c)", shadow: "#1f8a5a88", accent: "#1f8a5a" };
+    case "prayer":
+      return { kind: "prayer", label: "صلِّ", bg: "linear-gradient(180deg, #8a6ec1, #6a4ea8)", shadow: "#8a6ec188", accent: "#8a6ec1" };
+    case "wedding":
+      return { kind: "congrats", label: "شارك التهنئة", ...styled };
+    case "condolence":
+      return { kind: "condolence", label: "أرسل تعزية", ...styled };
+    case "liturgy":
+    case "meeting":
+    case "event":
+      return { kind: "attend", label: "سجل حضوري", ...styled };
+    default:
+      return { kind: "details", label: "عرض التفاصيل", bg: "linear-gradient(180deg, #1f8a5a, #167a4c)", shadow: "#1f8a5a88", accent: "#1f8a5a" };
+  }
+}
+function statLabelFor(
+  post: ChurchPost,
+  regCount: number,
+  prayedCount: number,
+  replyCount: number,
+  capacity?: number,
+): string {
+  const fmt = (n: number) => n.toLocaleString("ar-EG");
+  if (post.type === "trip" && capacity != null) return `${fmt(regCount)}/${fmt(capacity)} محجوز`;
+  if (post.type === "prayer") return `${fmt(prayedCount)} صلّوا`;
+  if (post.type === "event") return `${fmt(regCount)} مهتم`;
+  if (post.type === "meeting" || post.type === "liturgy") return `${fmt(regCount)} حاضر`;
+  if (post.type === "wedding") return `${fmt(replyCount)} تهنئة`;
+  if (post.type === "condolence") return `${fmt(replyCount)} تعزية`;
+  return `${fmt(regCount)} تفاعل`;
+}
+
+export function PremiumHorizontalPostCard({ post }: { post: ChurchPost }) {
+  const [draft, setDraft] = useState("");
+  const [popup, setPopup] = useState<null | "condolence" | "congrats" | "reserve">(null);
+
+  const cta = ctaFor(post);
   const comments = useComments(post.id);
+  const r = useReactions(post.id);
   const shares = useShareCount(post.id);
   const prayed = usePrayed(post.id);
   const regKind = kindForPostType(post.type);
   const { count: regCount } = usePostRegistrations(post.id, regKind ?? "attendance");
+  const condolences = useReplies("condolence", post.id);
+  const congrats = useReplies("congrats", post.id);
+  const replyCount = post.type === "condolence" ? condolences.length : post.type === "wedding" ? congrats.length : 0;
   const capacity = post.type === "trip" ? post.details?.seats : undefined;
-  const tone = typeMeta(post.type).tone;
-
-  const stat = (emoji: string, value: number, label: string, onClick?: () => void) => (
-    <button
-      type="button"
-      onClick={(e) => {
-        e.stopPropagation();
-        onClick?.();
-      }}
-      className="inline-flex items-center gap-1 text-[10.5px] font-bold text-[#6a543a] active:opacity-70"
-    >
-      <span aria-hidden>{emoji}</span>
-      <span className="tabular-nums text-[#3a2a18]">{value.toLocaleString("ar-EG")}</span>
-      <span className="text-[9.5px]" style={{ color: tone }}>{label}</span>
-    </button>
-  );
-
-  return (
-    <div
-      className="flex flex-wrap items-center gap-x-3 gap-y-1 justify-end pt-2 border-t"
-      style={{ borderColor: `${tone}33` }}
-    >
-      {stat("❤️", r.love.count, "إعجاب")}
-      <Link
-        to="/church/post/$id"
-        params={{ id: post.id }}
-        onClick={(e) => e.stopPropagation()}
-        className="inline-flex items-center gap-1 text-[10.5px] font-bold text-[#6a543a] active:opacity-70"
-      >
-        <span aria-hidden>💬</span>
-        <span className="tabular-nums text-[#3a2a18]">{comments.length.toLocaleString("ar-EG")}</span>
-        <span className="text-[9.5px]" style={{ color: tone }}>تعليق</span>
-      </Link>
-      {stat("↗️", shares, "مشاركة", () => sharePost(post))}
-      {post.type === "trip" && capacity != null ? (
-        <span className="inline-flex items-center gap-1 text-[10.5px] font-bold text-[#6a543a]">
-          <span aria-hidden>👥</span>
-          <span className="tabular-nums text-[#3a2a18]">
-            {regCount.toLocaleString("ar-EG")}/{capacity.toLocaleString("ar-EG")}
-          </span>
-        </span>
-      ) : null}
-      {post.type === "prayer" ? (
-        <span className="inline-flex items-center gap-1 text-[10.5px] font-bold text-[#6a543a]">
-          <span aria-hidden>🙏</span>
-          <span className="tabular-nums text-[#3a2a18]">{prayed.count.toLocaleString("ar-EG")}</span>
-          <span className="text-[9.5px]" style={{ color: tone }}>صلّوا</span>
-        </span>
-      ) : null}
-      {(post.type === "liturgy" || post.type === "meeting" || post.type === "event") && regKind ? (
-        <span className="inline-flex items-center gap-1 text-[10.5px] font-bold text-[#6a543a]">
-          <span aria-hidden>📅</span>
-          <span className="tabular-nums text-[#3a2a18]">{regCount.toLocaleString("ar-EG")}</span>
-          <span className="text-[9.5px]" style={{ color: tone }}>
-            {post.type === "event" ? "مهتم" : "حاضر"}
-          </span>
-        </span>
-      ) : null}
-    </div>
-  );
-}
-
-function LastCommentPreview({ postId }: { postId: string }) {
-  const comments = useComments(postId);
-
-  if (!comments[0]) {
-    return (
-      <p className="text-[10px] font-bold text-[#8a6a3a] text-right py-1">
-        كن أول من يعلق
-      </p>
-    );
-  }
-
   const latest = comments[0];
-  return (
-    <div className="rounded-xl bg-white/75 border border-[#efe2c4] px-2.5 py-2 text-right min-h-[2.75rem]">
-      <p className="text-[9px] font-extrabold text-[#b8893a] leading-none">آخر تعليق</p>
-      <p className="mt-1 text-[10.5px] text-[#3a2a18] leading-snug line-clamp-2">
-        <span className="font-extrabold">{latest.name}:</span> {latest.text}
-      </p>
-    </div>
-  );
-}
+  const user = getCurrentUser();
+  const pinned = isPinned(post);
+  const statText = statLabelFor(post, regCount, prayed.count, replyCount, capacity);
+  const excerptLong = post.excerpt.trim().length > 60;
 
-function QuickCommentBar({ postId }: { postId: string }) {
-  const [text, setText] = useState("");
-
-  const submit = (e: React.MouseEvent | React.KeyboardEvent) => {
+  const sendComment = (e: React.MouseEvent | React.KeyboardEvent) => {
+    e.preventDefault();
     e.stopPropagation();
-    const t = text.trim();
-    if (!t) return;
-    const profile = getMemberProfile();
-    const name = profile.name.trim() || "عضو الكنيسة";
-    saveMemberProfile({ name });
-    addComment(postId, name, t);
-    setText("");
+    const text = draft.trim();
+    if (!text) return;
+    addCommentAsCurrentUser(post.id, text);
+    setDraft("");
+  };
+
+  const stopCardNav = (e: React.SyntheticEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const openPostDirect = () => {
+    window.location.assign(`/church/post/${post.id}`);
+  };
+
+  const onCta = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (cta.kind === "reserve") setPopup("reserve");    else if (cta.kind === "congrats") setPopup("congrats");
+    else if (cta.kind === "condolence") setPopup("condolence");
+    else if (cta.kind === "prayer") togglePrayed(post.id);
+    else window.location.assign(`/church/post/${post.id}`);
   };
 
   return (
-    <div
-      className="flex items-center gap-1.5"
-      onClick={(e) => e.stopPropagation()}
-      onKeyDown={(e) => e.stopPropagation()}
-    >
-      <input
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") submit(e);
-        }}
-        placeholder="اكتب تعليقاً..."
-        className="flex-1 min-w-0 rounded-full bg-white/90 border border-[#efe2c4] px-3 py-1.5 text-[11px] text-[#3a2a18] outline-none focus:border-[#c79356]"
-      />
-      <button
-        type="button"
-        onClick={submit}
-        disabled={!text.trim()}
-        aria-label="إرسال"
-        className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-gradient-to-l from-[#1a7a4a] to-[#2f9d6e] text-white disabled:opacity-40 active:scale-95"
-      >
-        <Send className="h-3.5 w-3.5 -scale-x-100" />
-      </button>
-    </div>
-  );
-}
-
-function PrayButton({ postId, tone }: { postId: string; tone: string }) {
-  const prayed = usePrayed(postId);
-
-  return (
-    <button
-      type="button"
-      onClick={(e) => {
-        e.stopPropagation();
-        togglePrayed(postId);
+    <article
+      role="button"
+      tabIndex={0}
+      onClick={openPostDirect}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          openPostDirect();
+        }
       }}
-      className="w-full inline-flex items-center justify-center gap-1.5 rounded-full text-white text-[11.5px] font-extrabold py-2 active:scale-[0.98] shadow-[0_10px_20px_-12px_rgba(0,0,0,0.35)]"
-      style={{
-        background: prayed.mine
-          ? `linear-gradient(180deg, ${tone}, ${tone}cc)`
-          : "linear-gradient(180deg, #8a6ec1, #6a4ea8)",
-      }}
+      className="shrink-0 snap-center w-[88vw] max-w-[400px] h-[480px] flex flex-col relative rounded-[28px] border border-white/75 bg-[#fbf3e1]/95 backdrop-blur-xl shadow-[0_24px_50px_-26px_rgba(120,80,30,0.55),inset_0_1px_0_rgba(255,255,255,0.9)] overflow-hidden cursor-pointer"
     >
-      <HandHeart className="h-3.5 w-3.5" />
-      {prayed.mine ? "صلّيت ✓" : "أنا صلّيت"}
-    </button>
-  );
-}
-
-function TripReserveButton({
-  post,
-  tone,
-  onOpen,
-}: {
-  post: ChurchPost;
-  tone: string;
-  onOpen: () => void;
-}) {
-  const { count } = usePostRegistrations(post.id, "trip");
-  const capacity = post.details?.seats;
-  const full = capacity != null && count >= capacity;
-
-  return (
-    <button
-      type="button"
-      onClick={(e) => {
-        e.stopPropagation();
-        onOpen();
-      }}
-      disabled={full}
-      className="w-full inline-flex items-center justify-center gap-1.5 rounded-full text-white text-[11.5px] font-extrabold py-2 active:scale-[0.98] disabled:opacity-50 shadow-[0_10px_20px_-12px_rgba(0,0,0,0.35)]"
-      style={{ background: `linear-gradient(180deg, ${tone}, ${tone}cc)` }}
-    >
-      <Ticket className="h-3.5 w-3.5" />
-      احجز الآن
-    </button>
-  );
-}
-
-function PostTypeActionBar({
-  post,
-  tone,
-  onReserve,
-}: {
-  post: ChurchPost;
-  tone: string;
-  onReserve: () => void;
-}) {
-  if (post.type === "trip") {
-    return <TripReserveButton post={post} tone={tone} onOpen={onReserve} />;
-  }
-
-  if (post.type === "prayer") {
-    return <PrayButton postId={post.id} tone={tone} />;
-  }
-
-  if (post.type === "liturgy" || post.type === "meeting") {
-    return (
-      <AttendButton
-        postId={post.id}
-        kind="attendance"
-        label="سجل حضوري"
-        activeLabel="✓ سجلت حضوري"
-        className="w-full"
-      />
-    );
-  }
-
-  if (post.type === "event") {
-    return (
-      <AttendButton
-        postId={post.id}
-        kind="event"
-        label="سجل في الفعالية"
-        activeLabel="✓ سجلت في الفعالية"
-        className="w-full"
-      />
-    );
-  }
-
-  return null;
-}
-
-export function PremiumHorizontalPostCard({ post }: { post: ChurchPost }) {
-  const [reserveOpen, setReserveOpen] = useState(false);
-  const pinned = isPinned(post);
-  const meta = typeMeta(post.type);
-  const hasAction =
-    post.type === "trip" ||
-    post.type === "prayer" ||
-    post.type === "liturgy" ||
-    post.type === "meeting" ||
-    post.type === "event";
-
-  return (
-    <>
-      <article
-        className="relative flex shrink-0 snap-start flex-col overflow-hidden rounded-[28px] border bg-[#fbf3e1]/90 backdrop-blur-xl shadow-[0_22px_48px_-24px_rgba(120,80,30,0.5),inset_0_1px_0_rgba(255,255,255,0.88)]"
-        style={{
-          ["--card-w" as string]: CARD_WIDTH,
-          width: "var(--card-w)",
-          height: CARD_HEIGHT,
-          borderColor: `${meta.tone}55`,
-          boxShadow: `0 22px 48px -24px ${meta.tone}44, inset 0 1px 0 rgba(255,255,255,0.88)`,
-        }}
-      >
-        <Link
-          to="/church/post/$id"
-          params={{ id: post.id }}
-          className="flex min-h-0 flex-1 flex-col text-right active:opacity-95"
-        >
-          <div className="relative h-[168px] w-full shrink-0 bg-[#3a2a18]">
-            <PostImage post={post} className="absolute inset-0 h-full w-full object-cover" />
-            <div
-              className="absolute inset-0 bg-gradient-to-t from-[#1a0f04]/65 via-transparent to-transparent"
-              style={{
-                background: `linear-gradient(to top, ${meta.tone}99 0%, transparent 55%)`,
-              }}
-            />
-            <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <div className="block shrink-0 min-w-0 text-right">
+          <div className="px-3.5 pt-3.5">
+            <div className="relative overflow-hidden rounded-[22px] border border-white/70 shadow-[0_14px_28px_-18px_rgba(60,40,16,0.55)]">
+              <img src={post.image} alt={post.title} className="block h-[168px] w-full object-cover" loading="lazy" draggable={false} />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#1a0f04]/45 via-transparent to-transparent" />
               {pinned ? (
-                <span
-                  className="inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[9px] font-extrabold text-white border border-white/40"
-                  style={{ background: meta.tone }}
-                >
-                  <Pin className="h-2.5 w-2.5" strokeWidth={2.6} /> مثبت
-                </span>
+                <span className="absolute top-2 right-2 rounded-full bg-[#9b87c4]/90 px-2 py-0.5 text-[9px] font-extrabold text-white border border-white/40">مثبت</span>
               ) : null}
-              <CategoryPill type={post.type} />
             </div>
           </div>
 
-          <div className="flex min-h-0 flex-1 flex-col px-3.5 pt-2.5 pb-2">
-            <h3 className="font-arabic-serif text-[15.5px] font-extrabold text-[#3a2a18] leading-snug line-clamp-2">
+          <div className="shrink-0 min-w-0 max-w-full overflow-hidden px-4 pt-3 text-right">
+            <h3
+              className={
+                "font-arabic-serif text-[16.5px] font-extrabold text-[#2a1d10] leading-snug line-clamp-1 " +
+                TEXT_SAFE
+              }
+            >
               {post.title}
             </h3>
-            <p className="mt-1 text-[11.5px] text-[#6a543a] leading-relaxed line-clamp-2 min-h-[2.5rem]">
-              {post.excerpt}
-            </p>
-            <p className="mt-1 inline-flex items-center gap-1 text-[10px] font-bold text-[#8a6a3a]">
-              <CalendarDays className="h-3 w-3" style={{ color: meta.tone }} />
-              {post.date}
-            </p>
-
-            <div className="mt-auto space-y-2 pt-2">
-              <PostStatsRow post={post} />
-              <LastCommentPreview postId={post.id} />
+            <div className="mt-1.5 h-[2.75rem] max-w-full overflow-hidden">
+              <p
+                className={
+                  "text-[12.5px] text-[#4a3a26] leading-snug line-clamp-2 " + TEXT_SAFE
+                }
+              >
+                {post.excerpt}
+              </p>
             </div>
+            {excerptLong ? (
+              <span className="mt-0.5 inline-block text-[11.5px] font-extrabold text-[#7a5a9a]">
+                عرض المزيد
+              </span>
+            ) : null}
           </div>
-        </Link>
-
-        <div
-          className="shrink-0 space-y-2 border-t px-3.5 py-2.5"
-          style={{ borderColor: `${meta.tone}33` }}
-        >
-          <QuickCommentBar postId={post.id} />
-          {hasAction ? (
-            <PostTypeActionBar
-              post={post}
-              tone={meta.tone}
-              onReserve={() => setReserveOpen(true)}
-            />
-          ) : null}
         </div>
-      </article>
+      </div>
 
-      {reserveOpen ? (
-        <ReservePopup
-          postId={post.id}
-          postTitle={post.title}
-          tripDate={post.details?.date}
-          totalSeats={post.details?.seats}
-          onClose={() => setReserveOpen(false)}
-        />
-      ) : null}
-    </>
+      <div
+        dir="rtl"
+        className="mx-4 mt-3 shrink-0 grid grid-cols-3 h-[44px] items-center rounded-2xl bg-white/75 border border-white/80 px-3 text-[12px] font-extrabold text-[#3a2a18]"
+        onClick={stopCardNav}
+      >
+        <button
+          type="button"
+          aria-pressed={r.love.mine}
+          aria-label={r.love.mine ? "إلغاء الإعجاب" : "إعجاب"}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleReaction(post.id, "love");
+          }}
+          className="flex items-center justify-center gap-[6px]"
+        >
+          <Heart className={"h-[18px] w-[18px] " + (r.love.mine ? "text-[#e0464d] fill-current" : "text-[#c44569]")} strokeWidth={2.4} />
+          <span className="tabular-nums leading-none">{r.love.count.toLocaleString("ar-EG")}</span>
+        </button>
+        <button
+          type="button"
+          aria-label="عدد التعليقات"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          className="flex items-center justify-center gap-[6px]"
+        >
+          <MessageCircle className="h-[18px] w-[18px] text-[#5b8fd1]" strokeWidth={2.4} />
+          <span className="tabular-nums leading-none">{comments.length.toLocaleString("ar-EG")}</span>
+        </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            sharePost(post);
+          }}
+          aria-label="مشاركة"
+          className="flex items-center justify-center gap-[6px]"
+        >
+          <Share2 className="h-[18px] w-[18px] text-[#7a4a26]" strokeWidth={2.4} />
+          <span className="tabular-nums leading-none">{shares.toLocaleString("ar-EG")}</span>
+        </button>
+      </div>
+
+      <div className="shrink-0 mx-4 mt-2 space-y-2" onClick={stopCardNav}>        <div className="h-[52px] shrink-0 flex items-start gap-2 rounded-2xl bg-white/60 border border-white/70 px-3 py-2 text-right overflow-hidden">
+          {latest ? (
+            <>
+              <MemberAvatar name={latest.name} avatarUrl={user.avatarUrl} size="sm" />
+              <div className="min-w-0 flex-1">
+                <p className="text-[12px] leading-snug text-[#2a1d10] line-clamp-2">
+                  <span className="font-extrabold text-[#7a4a26]">{latest.name}: </span>
+                  {latest.text}
+                </p>
+              </div>
+            </>
+          ) : (
+            <p className="flex-1 text-[11px] font-bold text-[#8a6a3a]/75 text-right leading-snug py-0.5">كن أول من يعلق</p>
+          )}
+        </div>
+
+        <div className="shrink-0 flex items-center gap-2 rounded-full bg-white/85 border border-[#efe2c4] pl-1 pr-3 py-1">
+          <button
+            type="button"
+            onClick={sendComment}
+            disabled={!draft.trim()}
+            aria-label="إرسال"
+            className="inline-flex h-8 shrink-0 items-center justify-center rounded-full bg-[#1f8a5a] px-3 text-white active:scale-90 shadow-[0_8px_16px_-10px_rgba(31,138,90,0.55)] disabled:opacity-40"
+          >
+            <Send className="h-3.5 w-3.5 -scale-x-100" />
+          </button>
+          <input
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") sendComment(e); }}
+            onClick={(e) => e.stopPropagation()}
+            onFocus={(e) => e.stopPropagation()}
+            placeholder="اكتب تعليق..."
+            className="flex-1 min-w-0 bg-transparent text-right text-[12.5px] text-[#3a2a18] placeholder:text-[#a99060] outline-none py-1"
+            dir="rtl"
+          />
+        </div>
+      </div>
+
+      <div className="shrink-0 px-4 pt-2 pb-4 mt-2 border-t border-[#efe2c4]/50">
+        <div className="grid grid-cols-[0.3fr_0.7fr] items-center gap-2">
+          <div
+            className="h-10 inline-flex items-center justify-center rounded-2xl bg-white/75 border border-white/80 px-2 text-[10px] font-extrabold shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] text-center leading-tight"
+            style={{ color: cta.accent }}
+          >
+            {statText}
+          </div>          {cta.kind === "attend" ? (
+            <AttendButton postId={post.id} kind={post.type === "event" ? "event" : "attendance"} label={cta.label} activeLabel="✓ سجلت" className="h-10 rounded-2xl text-[13px] shadow-[0_14px_26px_-14px_rgba(31,138,90,0.45)]" />
+          ) : (
+            <button type="button" onClick={onCta} className="h-10 inline-flex items-center justify-center gap-2 rounded-2xl text-[13px] font-extrabold text-white active:scale-[0.98] transition-transform" style={{ background: cta.bg, boxShadow: `0 14px 26px -14px ${cta.shadow}` }}>
+              {cta.kind === "prayer" ? (prayed.mine ? "صلّيت ✓" : "صليت من أجله") : cta.label}
+              {cta.kind !== "prayer" ? <ArrowRight className="h-[14px] w-[14px] -scale-x-100" /> : null}
+              {cta.kind === "prayer" ? <HandHeart className="h-3.5 w-3.5" /> : null}
+              {cta.kind === "reserve" ? <Ticket className="h-3.5 w-3.5" /> : null}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {popup === "condolence" ? <CondolencePopup postId={post.id} onClose={() => setPopup(null)} /> : null}
+      {popup === "congrats" ? <CongratsPopup postId={post.id} onClose={() => setPopup(null)} /> : null}
+      {popup === "reserve" ? <ReservePopup postId={post.id} totalSeats={post.details?.seats} onClose={() => setPopup(null)} /> : null}
+    </article>
   );
 }
 
@@ -386,12 +308,8 @@ export function ChurchPostsHorizontalRail({ posts }: { posts: ChurchPost[] }) {
       </p>
     );
   }
-
   return (
-    <div
-      className="-mx-4 overflow-x-auto overflow-y-hidden no-scrollbar scroll-smooth snap-x snap-mandatory"
-      style={{ WebkitOverflowScrolling: "touch" }}
-    >
+    <div className="-mx-4 overflow-x-auto overflow-y-hidden no-scrollbar scroll-smooth snap-x snap-mandatory" style={{ WebkitOverflowScrolling: "touch" }}>
       <div className="flex gap-3 px-4 pb-1" style={{ width: "max-content" }}>
         {posts.map((p) => (
           <PremiumHorizontalPostCard key={p.id} post={p} />
@@ -402,5 +320,4 @@ export function ChurchPostsHorizontalRail({ posts }: { posts: ChurchPost[] }) {
   );
 }
 
-/** @deprecated Use PremiumHorizontalPostCard */
 export const ChurchFeedPostCard = PremiumHorizontalPostCard;

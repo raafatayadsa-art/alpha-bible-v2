@@ -13,6 +13,7 @@ import { DictionaryDebugBadge } from "@/components/DictionaryDebugBadge";
 import { Toaster } from "@/components/ui/sonner";
 import { GlobalBackButton } from "@/components/GlobalBackButton";
 import { AlphaNavigationProvider } from "@/components/navigation/AlphaNavigationProvider";
+import { AuthBootstrap } from "@/features/auth";
 
 function NotFoundComponent() {
   return (
@@ -122,6 +123,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <AuthBootstrap />
       <AlphaNavigationProvider>
         <Outlet />
         <GlobalBackButton />

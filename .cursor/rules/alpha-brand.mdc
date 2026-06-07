@@ -1,0 +1,40 @@
+---
+globs: /**
+alwaysApply: false
+description: Official Alpha logo, slogan, and brand header rules
+---
+
+# Alpha Brand Rules — Official Reference
+
+## Official Logo
+
+Always use the approved logo asset: `src/assets/alpha-logo.png` via `AlphaOfficialLogo` from `@/components/brand`.
+
+The logo image already contains: gold symbol, ALPHA, and ✠ ⲀⲖⲈⲪⲀ ✠.
+
+**Never** re-type ALPHA or ✠ ⲀⲖⲈⲪⲀ ✠ below the logo.
+**Never** redesign, recreate, or substitute with icons or similar fonts.
+
+## Official Slogan
+
+The only approved slogan (literal, unchanged):
+
+`Ⲁ ————THE COPTIC ORTHODOX DIGITAL HOME ————Ⲱ`
+
+Use `ALPHA_OFFICIAL_SLOGAN` from `@/components/brand`.
+
+Do not replace with Welcome To Alpha, Start Your Journey, or any other text.
+
+## Brand Header Pattern
+
+When full identity is required (Church Setup, login, signup, brand headers):
+
+1. `AlphaOfficialLogo` or `AlphaBrandIdentity`
+2. Official slogan
+3. Page title (e.g. طلب تأسيس كنيسة)
+
+Use `AlphaBrandHeader` or `ProfileSubShell` with `brand` prop.
+
+## Visual Style
+
+Premium Gold · Luxury Gold Gradient · Soft Glow · Coptic Orthodox Identity · Warm Beige Background

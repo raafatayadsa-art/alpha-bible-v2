@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { X, ImagePlus, Check } from "lucide-react";
+import { AlphaDatePicker } from "@/components/controls";
 import {
   addService, addActivity,
   SERVICE_TYPE_LABELS, ACTIVITY_TYPES, REPEAT_LABELS,
@@ -312,7 +313,13 @@ function ActivityForm({ onSaved }: { onSaved: (id: string) => void }) {
       <GlassCard className="space-y-3">
         <div className="grid grid-cols-2 gap-3">
           <Field label="التاريخ">
-            <input type="date" className={inputCls} value={date} onChange={(e) => setDate(e.target.value)} />
+            <AlphaDatePicker
+              value={date}
+              onChange={setDate}
+              title="التاريخ"
+              placeholder="اختر التاريخ"
+              className={inputCls}
+            />
           </Field>
           <Field label="الوقت">
             <input type="time" className={inputCls} value={time} onChange={(e) => setTime(e.target.value)} />

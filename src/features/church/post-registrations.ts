@@ -1,5 +1,6 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { currentUserName, getCurrentUser } from "./current-user";
 
 export type RegistrationKind = "attendance" | "trip" | "event" | "reservation";
 export type RegistrationStatus = "registered" | "confirmed" | "cancelled";
@@ -122,16 +123,18 @@ function rowFromDb(r: Record<string, unknown>): PostRegistration {
 }
 
 export function getMemberProfile(): MemberProfile {
-  if (typeof window === "undefined") {
-    return { id: "guest", name: "عضو الكنيسة", churchName: DEFAULT_CHURCH };
+  const user = getCurrentUser();
+  if (!user.id) {
+    return { id: "", name: "", churchName: DEFAULT_CHURCH };
   }
   try {
     const raw = localStorage.getItem(PROFILE_KEY);
-    if (raw) return JSON.parse(raw) as MemberProfile;
+    if (raw) {
+      const parsed = JSON.parse(raw) as MemberProfile;
+      if (parsed.id === user.id) return parsed;
+    }
   } catch { /* ignore */ }
-  const id = localStorage.getItem("alpha:church:guest-id") ?? `guest-${Date.now().toString(36)}`;
-  try { localStorage.setItem("alpha:church:guest-id", id); } catch { /* ignore */ }
-  return { id, name: "عضو الكنيسة", churchName: DEFAULT_CHURCH };
+  return { id: user.id, name: user.name || currentUserName(), churchName: DEFAULT_CHURCH };
 }
 
 export function saveMemberProfile(patch: Partial<MemberProfile>) {
@@ -176,8 +179,8 @@ export async function registerForPost(opts: {
   churchName?: string;
 }): Promise<{ ok: boolean; error?: string; row?: PostRegistration }> {
   const profile = getMemberProfile();
-  const name = (opts.userName ?? profile.name).trim();
-  if (!name) return { ok: false, error: "الاسم مطلوب" };
+  if (!profile.id) return { ok: false, error: "يجب تسجيل الدخول أولاً" };
+  const name = (opts.userName ?? currentUserName()).trim();
 
   const seats = Math.max(1, opts.seats ?? 1);
   const churchName = opts.churchName ?? profile.churchName ?? DEFAULT_CHURCH;

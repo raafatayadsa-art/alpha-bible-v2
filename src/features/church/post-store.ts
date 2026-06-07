@@ -1,6 +1,13 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { CHURCH_POSTS, type ChurchPost, type PostType } from "@/data/church-posts";
 import { ensurePostImageStored } from "./post-image-engine";
+import { currentUserName } from "./current-user";
+import {
+  AUTH_CONTEXT_EVENT,
+  alphaRoleToChurchRole,
+  canManageChurchPosts,
+  getAlphaRoleSync,
+} from "@/features/auth";
 
 const POSTS_KEY = "alpha:church:user-posts";
 const OVERRIDES_KEY = "alpha:church:post-overrides"; // patches applied on top of any post (seed + user)
@@ -11,6 +18,7 @@ const CONG_KEY = "alpha:church:congrats";
 const COMMENTS_KEY = "alpha:church:post-comments";
 const REACT_KEY = "alpha:church:post-reactions";
 const PRAY_KEY = "alpha:church:post-prayers";
+const PRAY_COUNT_KEY = "alpha:church:post-prayer-counts";
 const SHARE_KEY = "alpha:church:post-shares";
 const ROLE_KEY = "alpha:church:role"; // "priest" | "servant" | "admin" | "member"
 
@@ -36,10 +44,20 @@ function subscribe(l: () => void) {
     cache.clear();
     l();
   };
-  if (typeof window !== "undefined") window.addEventListener("storage", onStorage);
+  const onAuth = () => {
+    cache.clear();
+    l();
+  };
+  if (typeof window !== "undefined") {
+    window.addEventListener("storage", onStorage);
+    window.addEventListener(AUTH_CONTEXT_EVENT, onAuth);
+  }
   return () => {
     listeners.delete(l);
-    if (typeof window !== "undefined") window.removeEventListener("storage", onStorage);
+    if (typeof window !== "undefined") {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener(AUTH_CONTEXT_EVENT, onAuth);
+    }
   };
 }
 
@@ -49,7 +67,8 @@ function read<T>(key: string, fallback: T): T {
   if (cache.has(key)) return cache.get(key) as T;
   try {
     const raw = window.localStorage.getItem(key);
-    const v = raw ? (JSON.parse(raw) as T) : fallback;
+    if (raw == null) return fallback;
+    const v = JSON.parse(raw) as T;
     cache.set(key, v);
     return v;
   } catch {
@@ -147,7 +166,9 @@ export function getPost(id: string): ChurchPost | undefined {
 
 export function usePost(id: string): ChurchPost | undefined {
   const all = useAllPosts();
-  return all.find((p) => p.id === id);
+  const key = (id ?? "").trim();
+  if (!key) return undefined;
+  return all.find((p) => p.id === key);
 }
 
 export function useAllPosts(): ChurchPost[] {
@@ -172,6 +193,24 @@ export function useActivePosts(): ChurchPost[] {
   const all = useAllPosts();
   const now = Date.now();
   return all
+    .filter((p) => !isExpired(p, now))
+    .sort((a, b) => Number(isPinned(b, now)) - Number(isPinned(a, now)));
+}
+
+/** Dashboard feed — user-created posts only (no seed/mock posts). */
+export function useActiveUserPosts(): ChurchPost[] {
+  const userOnly = useSyncExternalStore(
+    subscribe,
+    () => {
+      migrateUserPostImagesOnce();
+      const user = getUserPosts();
+      const ov = getOverrides();
+      return user.map((p) => applyOverride(p, ov[p.id]));
+    },
+    () => [] as ChurchPost[],
+  );
+  const now = Date.now();
+  return userOnly
     .filter((p) => !isExpired(p, now))
     .sort((a, b) => Number(isPinned(b, now)) - Number(isPinned(a, now)));
 }
@@ -320,10 +359,17 @@ const EMPTY_REACTS: Record<string, Record<ReactionKind, { count: number; mine: b
 const EMPTY_PRAY: Record<string, boolean> = Object.freeze({});
 
 export function addComment(postId: string, name: string, text: string) {
+  const t = text.trim();
+  if (!t) return;
   const map = read<Record<string, PostComment[]>>(COMMENTS_KEY, {});
-  const item: PostComment = { id: String(Date.now()), name, text, at: Date.now() };
+  const item: PostComment = { id: String(Date.now()), name, text: t, at: Date.now() };
   map[postId] = [item, ...(map[postId] || [])];
   write(COMMENTS_KEY, map);
+}
+
+/** Current-user comment — name from auth later; mocked via currentUserName(). */
+export function addCommentAsCurrentUser(postId: string, text: string) {
+  addComment(postId, currentUserName(), text);
 }
 
 export function useComments(postId: string): PostComment[] {
@@ -336,11 +382,13 @@ export function useComments(postId: string): PostComment[] {
 }
 
 export function toggleReaction(postId: string, kind: ReactionKind): boolean {
-  const map = read<Record<string, Record<ReactionKind, { count: number; mine: boolean }>>>(REACT_KEY, {});
-  const cur = map[postId]?.[kind] ?? { count: 0, mine: false };
+  const prev = read<Record<string, Partial<Record<ReactionKind, { count: number; mine: boolean }>>>>(REACT_KEY, {});
+  const cur = prev[postId]?.[kind] ?? { count: 0, mine: false };
   const next = { count: Math.max(0, cur.count + (cur.mine ? -1 : 1)), mine: !cur.mine };
-  map[postId] = { ...(map[postId] || {}), [kind]: next };
-  write(REACT_KEY, map);
+  write(REACT_KEY, {
+    ...prev,
+    [postId]: { ...(prev[postId] || {}), [kind]: next },
+  });
   return next.mine;
 }
 
@@ -360,12 +408,22 @@ export function useReactions(postId: string) {
 
 export function togglePrayed(postId: string): boolean {
   const map = read<Record<string, boolean>>(PRAY_KEY, {});
+  const counts = read<Record<string, number>>(PRAY_COUNT_KEY, {});
   const next = !map[postId];
-  if (next) map[postId] = true;
-  else delete map[postId];
+  const cur = counts[postId] ?? 0;
+  if (next) {
+    map[postId] = true;
+    counts[postId] = cur + 1;
+  } else {
+    delete map[postId];
+    counts[postId] = Math.max(0, cur - 1);
+  }
   write(PRAY_KEY, map);
+  write(PRAY_COUNT_KEY, counts);
   return next;
 }
+
+const EMPTY_PRAY_COUNTS: Record<string, number> = Object.freeze({});
 
 export function usePrayed(postId: string) {
   const map = useSyncExternalStore(
@@ -373,8 +431,13 @@ export function usePrayed(postId: string) {
     () => read<Record<string, boolean>>(PRAY_KEY, EMPTY_PRAY),
     () => EMPTY_PRAY,
   );
+  const counts = useSyncExternalStore(
+    subscribe,
+    () => read<Record<string, number>>(PRAY_COUNT_KEY, EMPTY_PRAY_COUNTS),
+    () => EMPTY_PRAY_COUNTS,
+  );
   const mine = !!map[postId];
-  return { mine, count: 8 + (mine ? 1 : 0) };
+  return { mine, count: counts[postId] ?? 0 };
 }
 
 const EMPTY_SHARE: Record<string, number> = Object.freeze({});
@@ -397,19 +460,18 @@ export function useShareCount(postId: string) {
 /* --------------------------------- roles ------------------------------------- */
 export type ChurchRole = "priest" | "leader" | "servant" | "admin" | "member";
 export function getRole(): ChurchRole {
-  return read<ChurchRole>(ROLE_KEY, "member");
+  return alphaRoleToChurchRole(getAlphaRoleSync());
 }
 export function setRole(role: ChurchRole) {
   write(ROLE_KEY, role);
 }
 export function canManagePosts(): boolean {
-  const r = getRole();
-  return r === "priest" || r === "servant" || r === "admin" || r === "leader";
+  return canManageChurchPosts(getAlphaRoleSync());
 }
 export function useChurchRole(): ChurchRole {
   return useSyncExternalStore(
     subscribe,
-    () => read<ChurchRole>(ROLE_KEY, "member"),
+    () => alphaRoleToChurchRole(getAlphaRoleSync()),
     () => "member" as ChurchRole,
   );
 }
@@ -422,13 +484,20 @@ export function useIsChurchAdmin(): boolean {
   return r === "priest" || r === "admin";
 }
 export function useCanManagePosts(): boolean {
-  const r = useChurchRole();
-  return r === "priest" || r === "servant" || r === "admin" || r === "leader";
+  return useSyncExternalStore(
+    subscribe,
+    () => canManageChurchPosts(getAlphaRoleSync()),
+    () => false,
+  );
 }
 
 /* --------------------------------- helpers ----------------------------------- */
 export function newPostId(): string {
   return "u-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 7);
+}
+
+export function isUserOwnedPost(id: string): boolean {
+  return getUserPosts().some((p) => p.id === id);
 }
 
 export function useHydrated(): boolean {

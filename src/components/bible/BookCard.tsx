@@ -1,20 +1,21 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Bookmark, BookmarkCheck } from "lucide-react";
-import { PlaceholderArt } from "./primitives";
+import { GlassSurface } from "./primitives";
+import { BookIcon } from "./BookIcon";
+import { chapterCountLabel } from "@/lib/bible-labels";
+import { cn } from "@/lib/utils";
 
 export function BookCard({
   name,
   chaptersCount,
   bookParam,
-  tone = "gold",
   defaultSaved,
   onToggleSave,
 }: {
   name: string;
   chaptersCount?: number;
   bookParam: string;
-  tone?: "gold" | "purple" | "ivory";
   defaultSaved?: boolean;
   onToggleSave?: (saved: boolean) => void;
 }) {
@@ -25,23 +26,23 @@ export function BookCard({
         to="/$book"
         params={{ book: bookParam }}
         aria-label={name}
-        className="block rounded-2xl transition-transform duration-200 active:scale-[0.97] focus:outline-none"
+        className="block rounded-[22px] transition-transform duration-200 active:scale-[0.96] focus:outline-none"
       >
-        <div className="rounded-2xl bg-[#fbf3e1] border border-[#efe2c4] p-2.5 text-right shadow-[0_8px_18px_-14px_rgba(120,80,30,0.4)]">
-          <PlaceholderArt
-            tone={tone}
-            label={name.length > 14 ? name.slice(0, 12) + "…" : name}
-            className="aspect-[4/5] w-full"
-          />
-          <h3 className="mt-2 text-[12px] font-extrabold text-[#3a2a18] leading-tight truncate">
-            {name}
-          </h3>
-          {chaptersCount != null && (
-            <p className="text-[10.5px] text-[#6a543a]">
-              {chaptersCount} إصحاح
-            </p>
-          )}
-        </div>
+        <GlassSurface tone="ivory" className="overflow-hidden p-0 text-center">
+          <div className="relative px-2 pt-3 pb-2.5">
+            <div className="mx-auto h-[72px] w-[72px]">
+              <BookIcon book={bookParam} className="h-full w-full" />
+            </div>
+            <h3 className="mt-2 text-[12px] font-extrabold text-[#3a2a18] leading-tight line-clamp-2 min-h-[2rem]">
+              {name}
+            </h3>
+            {chaptersCount != null && (
+              <p className="mt-1 text-[10px] font-bold text-[#6a543a] tabular-nums">
+                {chapterCountLabel(bookParam, chaptersCount)}
+              </p>
+            )}
+          </div>
+        </GlassSurface>
       </Link>
 
       <button
@@ -54,14 +55,63 @@ export function BookCard({
           setSaved(next);
           onToggleSave?.(next);
         }}
-        className="absolute top-3 left-3 grid h-8 w-8 place-items-center rounded-full bg-white/85 border border-[#efe2c4] text-[#7a4a26] shadow-[0_6px_14px_-10px_rgba(120,80,30,0.4)] active:scale-90 transition-transform"
+        className={cn(
+          "absolute top-2.5 left-2.5 grid h-7 w-7 place-items-center rounded-full border backdrop-blur-sm active:scale-90 transition-transform",
+          saved
+            ? "bg-[#fff1c7]/90 border-[#e7c97a] text-[#7a4a26]"
+            : "bg-white/75 border-[#efe2c4] text-[#7a4a26]",
+        )}
       >
         {saved ? (
-          <BookmarkCheck className="h-4 w-4" />
+          <BookmarkCheck className="h-3.5 w-3.5" />
         ) : (
-          <Bookmark className="h-4 w-4" />
+          <Bookmark className="h-3.5 w-3.5" />
         )}
       </button>
+    </div>
+  );
+}
+
+export function BookDetailHero({
+  book,
+  name,
+  description,
+  chaptersCount,
+}: {
+  book: string;
+  name: string;
+  description: string;
+  chaptersCount: number;
+}) {
+  return (
+    <div className="relative overflow-hidden rounded-[32px] border border-white/70 shadow-[0_20px_48px_-24px_rgba(120,80,30,0.55)]">
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(255,241,199,0.4) 0%, rgba(60,40,20,0.85) 55%, rgba(30,20,12,0.95) 100%)",
+        }}
+      />
+      <div className="relative flex flex-col items-center px-5 pt-6 pb-5 text-center">
+        <div className="h-[140px] w-[140px] drop-shadow-[0_12px_24px_rgba(0,0,0,0.35)]">
+          <BookIcon book={book} className="h-full w-full" />
+        </div>
+        <h1 className="mt-4 font-arabic-serif text-[28px] font-bold text-white leading-tight">
+          {name}
+        </h1>
+        <div className="mt-2 flex items-center gap-2">
+          <span className="h-px w-10 bg-[#e7c97a]/60" />
+          <span className="text-[#e7c97a] text-[10px]">✦</span>
+          <span className="h-px w-10 bg-[#e7c97a]/60" />
+        </div>
+        <p className="mt-2 text-[13px] text-white/85 leading-relaxed max-w-[280px]">
+          {description}
+        </p>
+        <p className="mt-3 rounded-full bg-white/15 border border-white/25 px-4 py-1 text-[11px] font-bold text-[#f7e1ad] backdrop-blur-sm">
+          {chaptersCount} إصحاح
+        </p>
+      </div>
     </div>
   );
 }

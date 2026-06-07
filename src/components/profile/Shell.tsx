@@ -1,16 +1,26 @@
-import { Link } from "@tanstack/react-router";
 import { ReactNode } from "react";
 import { ChevronRight } from "lucide-react";
 import { BottomDock } from "@/components/bible/BottomDock";
+import { AlphaBrandHeader, AlphaBrandLogoOnly } from "@/components/brand";
 import { CopticWatermark, CopticCross } from "@/components/coptic";
+import { useAlphaNavigation } from "@/components/navigation/AlphaNavigationProvider";
+
+export type ProfileSubShellBrand = false | "full" | "logo-only";
 
 export function ProfileSubShell({
   title,
   children,
+  brand = false,
+  subtleWatermark = false,
 }: {
   title: string;
   children: ReactNode;
+  /** `full` = logo + slogan + title; `logo-only` = official logo (+ title). */
+  brand?: ProfileSubShellBrand;
+  subtleWatermark?: boolean;
 }) {
+  const { goBack } = useAlphaNavigation();
+
   return (
     <div dir="rtl" className="relative min-h-screen w-full overflow-x-hidden">
       <div
@@ -22,22 +32,33 @@ export function ProfileSubShell({
             "linear-gradient(180deg,#f7eed6 0%,#f4ead8 50%,#ecdcb6 100%)",
         }}
       />
-      <CopticWatermark />
+      <CopticWatermark subtle={subtleWatermark} />
       <div className="relative mx-auto w-full max-w-[440px] px-4 pb-36 pt-[max(env(safe-area-inset-top),12px)]">
-        <header className="flex items-center justify-between gap-2 pt-2">
-          <Link
-            to={"/profile" as any}
+        <div className="flex items-center justify-between gap-2 pt-2">
+          <button
+            type="button"
+            onClick={goBack}
             aria-label="رجوع"
             className="grid h-10 w-10 place-items-center rounded-full border border-[#efe2c4] bg-white/70 backdrop-blur-xl active:scale-95 transition"
           >
             <ChevronRight className="h-5 w-5 text-[#3a2a18]" />
-          </Link>
-          <div className="flex items-center gap-2">
-            <CopticCross className="text-[#b8893a]" size={14} />
-            <h1 className="text-[15px] font-extrabold text-[#3a2a18]">{title}</h1>
-          </div>
+          </button>
+          {!brand && (
+            <div className="flex items-center gap-2">
+              <CopticCross className="text-[#b8893a]" size={14} />
+              <h1 className="text-[15px] font-extrabold text-[#3a2a18]">{title}</h1>
+            </div>
+          )}
           <div className="h-10 w-10" />
-        </header>
+        </div>
+
+        {brand === "full" ? (
+          <AlphaBrandHeader title={title} className="mt-1" />
+        ) : null}
+        {brand === "logo-only" ? (
+          <AlphaBrandLogoOnly className="mt-1" />
+        ) : null}
+
         <div className="mt-5">{children}</div>
       </div>
       <BottomDock />

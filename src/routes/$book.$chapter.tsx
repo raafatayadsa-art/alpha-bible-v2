@@ -10,6 +10,7 @@ import {
 import { chaptersQueryOptions, versesQueryOptions } from "@/lib/bible";
 import type { BibleVerse } from "@/integrations/supabase/client";
 import { displayName } from "@/lib/bible-books";
+import { chapterWithNumber } from "@/lib/bible-labels";
 import {
   AutoScrollControls,
   BackButton,
@@ -199,7 +200,7 @@ export const Route = createFileRoute("/$book/$chapter")({
   head: ({ params }) => ({
     meta: [
       { title: `${params.book} ${params.chapter} — الكتاب المقدس` },
-      { name: "description", content: `${params.book} المزمور ${params.chapter}.` },
+      { name: "description", content: `${displayName(params.book)} — ${chapterWithNumber(params.book, Number(params.chapter))}.` },
     ],
   }),
   component: ScriptureReader,
@@ -719,7 +720,7 @@ function ScriptureReader() {
           )}
         >
           <p className="text-[11px] font-bold opacity-80">
-            مزمور {ch}
+            {chapterWithNumber(book, ch)}
             {list.length ? ` من ${list.length}` : ""}
           </p>
           <p className="text-[11px] font-bold tabular-nums opacity-80">
@@ -781,7 +782,7 @@ function ScriptureReader() {
                 surfaceClass,
               )}
             >
-              → مزمور {prev}
+              → {chapterWithNumber(book, prev)}
             </Link>
           ) : (
             <span />
@@ -795,7 +796,7 @@ function ScriptureReader() {
                 surfaceClass,
               )}
             >
-              مزمور {next} ←
+              {chapterWithNumber(book, next)} ←
             </Link>
           ) : (
             <span />
@@ -1289,7 +1290,7 @@ function VerticalProgress({
                 key={c}
                 to="/$book/$chapter"
                 params={{ book, chapter: String(c) }}
-                aria-label={`مزمور ${c}`}
+                aria-label={chapterWithNumber(book, c)}
                 className="absolute -translate-x-1/2 left-1/2"
                 style={{ top: `${top}%` }}
               >

@@ -1,12 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ChevronLeft, ChevronRight, MessageSquare, User as UserIcon, Church,
-  Users, Palette, Shield, BadgeCheck, Crown, QrCode, Calendar, Hash, HandHeart,
+  Users, BadgeCheck, Crown, QrCode, Calendar, Hash, HandHeart,
 } from "lucide-react";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { CopticWatermark, CopticCross } from "@/components/coptic";
 import { AlphaHeader, AlphaHeaderShell } from "@/components/navigation/AlphaHeader";
-import alphaLogoAsset from "@/assets/alpha-logo.png.asset.json";
+import { AlphaOfficialLogo } from "@/components/brand";
 
 export const Route = createFileRoute("/profile/")({
   ssr: false,
@@ -869,25 +869,7 @@ function ProfileScreen() {
           </AlphaHeaderShell>
 
           <div className="mt-3 mb-2 flex justify-center">
-            <div
-              className="relative grid place-items-center"
-              style={{ filter: "drop-shadow(0 0 12px rgba(216,168,58,0.45)) drop-shadow(0 2px 6px rgba(60,40,15,0.25))" }}
-            >
-              <span
-                aria-hidden
-                className="absolute inset-0 -m-3 rounded-full"
-                style={{
-                  background: "radial-gradient(circle, rgba(255,244,208,0.55), rgba(216,162,58,0.18) 55%, transparent 75%)",
-                  filter: "blur(8px)",
-                }}
-              />
-              <img
-                src={alphaLogoAsset.url}
-                alt="Alpha"
-                className="relative h-8 w-auto object-contain select-none"
-                draggable={false}
-              />
-            </div>
+            <AlphaOfficialLogo size="sm" />
           </div>
           <ProfileHero />
 
@@ -902,10 +884,9 @@ function ProfileScreen() {
 
           <SectionTitle>إدارة الحساب</SectionTitle>
           <div className="grid grid-cols-2 gap-3">
-            <GridTile to="/profile/church" icon={Church} title="كنيستي" subtitle={MEMBER.church} accent="#c98a3c" glyph="☩" />
+            <GridTile to="/settings" icon={UserIcon} title="مركز التحكم" subtitle="الإعدادات والخصوصية" accent="#3f9d6e" glyph="⚙" />
+            <GridTile to="/profile/church" icon={Church} title="إدارة الكنيسة" subtitle="إعداد وإدارة كنيستك" accent="#c98a3c" glyph="☩" />
             <GridTile to="/profile/service" icon={HandHeart} title="خدمتي" subtitle="خدمة الشباب" accent="#a07ec4" glyph="✿" />
-            <GridTile to="/profile/appearance" icon={Palette} title="المظهر" subtitle="فاتح · داكن · النظام" accent="#d8a83a" glyph="Ⲁ" />
-            <GridTile to="/profile/security" icon={Shield} title="الخصوصية والأمان" subtitle="كلمة المرور والأجهزة" accent="#3f9d6e" glyph="⛨" />
           </div>
 
           <p className="mt-8 text-center text-[10px] text-[#9a7e5a]">

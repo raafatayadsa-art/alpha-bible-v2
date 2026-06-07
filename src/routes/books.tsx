@@ -1,15 +1,23 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueries } from "@tanstack/react-query";
 import { Search } from "lucide-react";
-import { booksQueryOptions } from "@/lib/bible";
+import { booksQueryOptions, chaptersQueryOptions } from "@/lib/bible";
 import { groupBooks, displayName } from "@/lib/bible-books";
-import { BackButton, BookCard, BookGridSkeleton, BottomDock, SectionHeader } from "@/components/bible";
-import { AlphaNotificationButton } from "@/components/navigation/AlphaNotificationButton";
+import { matchesNtFilter, matchesOtFilter, type NtCategory, type OtCategory } from "@/lib/book-meta";
+import { BackButton, BookCard, BookGridSkeleton, BottomDock } from "@/components/bible";
 import { cn } from "@/lib/utils";
+
+type Testament = "old" | "new";
 
 export const Route = createFileRoute("/books")({
   ssr: false,
+  validateSearch: (search: Record<string, unknown>) => ({
+    testament:
+      search.testament === "old" || search.testament === "new"
+        ? (search.testament as Testament)
+        : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "الأسفار — الكتاب المقدس" },
@@ -19,54 +27,68 @@ export const Route = createFileRoute("/books")({
   component: BooksGrid,
 });
 
-type Category = "all" | "ot" | "nt" | "gospels" | "letters" | "prophets" | "wisdom";
-
-const CATEGORIES: { key: Category; label: string }[] = [
+const NT_TABS: { key: NtCategory; label: string }[] = [
   { key: "all", label: "الكل" },
-  { key: "ot", label: "العهد القديم" },
-  { key: "nt", label: "العهد الجديد" },
   { key: "gospels", label: "الأناجيل" },
   { key: "letters", label: "الرسائل" },
-  { key: "prophets", label: "الأنبياء" },
+  { key: "revelation", label: "سفر الرؤيا" },
+];
+
+const OT_TABS: { key: OtCategory; label: string }[] = [
+  { key: "all", label: "الكل" },
+  { key: "law", label: "الشريعة" },
+  { key: "history", label: "التاريخ" },
   { key: "wisdom", label: "الحكمة" },
+  { key: "prophets", label: "الأنبياء" },
 ];
-
-const GOSPELS = ["متى", "مرقس", "لوقا", "يوحنا"];
-const WISDOM = ["أيوب", "المزامير", "الأمثال", "الجامعة", "نشيد الأنشاد"];
-const PROPHETS = [
-  "إشعياء", "إرميا", "مراثي إرميا", "حزقيال", "دانيال",
-  "هوشع", "يوئيل", "عاموس", "عوبديا", "يونان",
-  "ميخا", "ناحوم", "حبقوق", "صفنيا", "حجي", "زكريا", "ملاخي",
-];
-
-function matchesCategory(book: string, cat: Category, ot: string[], nt: string[]): boolean {
-  if (cat === "all") return true;
-  if (cat === "ot") return ot.includes(book);
-  if (cat === "nt") return nt.includes(book);
-  const name = displayName(book);
-  if (cat === "gospels") return GOSPELS.some((g) => name.includes(g));
-  if (cat === "letters")
-    return nt.includes(book) && !GOSPELS.some((g) => name.includes(g)) && !name.includes("أعمال") && !name.includes("رؤيا");
-  if (cat === "prophets") return PROPHETS.some((p) => name.includes(p));
-  if (cat === "wisdom") return WISDOM.some((w) => name.includes(w));
-  return true;
-}
 
 function BooksGrid() {
+  const { testament } = Route.useSearch();
   const { data: books, isLoading, error } = useQuery(booksQueryOptions());
-  const [cat, setCat] = useState<Category>("all");
+  const [ntFilter, setNtFilter] = useState<NtCategory>("all");
+  const [otFilter, setOtFilter] = useState<OtCategory>("all");
   const [q, setQ] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const grouped = useMemo(() => (books ? groupBooks(books) : { old: [], neu: [], other: [] }), [books]);
 
+  const scope = testament ?? "all";
+  const title =
+    scope === "old" ? "العهد القديم" : scope === "new" ? "العهد الجديد" : "الأسفار";
+  const countLabel =
+    scope === "old"
+      ? `${grouped.old.length || 39} سفراً`
+      : scope === "new"
+      ? `${grouped.neu.length || 27} سفراً`
+      : `${(grouped.old.length + grouped.neu.length) || 66} سفراً`;
+
   const filtered = useMemo(() => {
     if (!books) return [] as string[];
-    const all = [...grouped.old, ...grouped.neu, ...grouped.other];
-    const byCat = all.filter((b) => matchesCategory(b, cat, grouped.old, grouped.neu));
+    let list: string[];
+    if (scope === "old") list = grouped.old;
+    else if (scope === "new") list = grouped.neu;
+    else list = [...grouped.old, ...grouped.neu, ...grouped.other];
+
+    if (scope === "new") list = list.filter((b) => matchesNtFilter(b, ntFilter));
+    if (scope === "old") list = list.filter((b) => matchesOtFilter(b, otFilter));
+
     const norm = q.trim();
-    if (!norm) return byCat;
-    return byCat.filter((b) => displayName(b).includes(norm));
-  }, [books, grouped, cat, q]);
+    if (!norm) return list;
+    return list.filter((b) => displayName(b).includes(norm));
+  }, [books, grouped, scope, ntFilter, otFilter, q]);
+
+  const chapterQueries = useQueries({
+    queries: filtered.map((b) => ({
+      ...chaptersQueryOptions(b),
+      staleTime: 1000 * 60 * 60,
+    })),
+  });
+
+  const tabs = scope === "new" ? NT_TABS : scope === "old" ? OT_TABS : null;
+  const activeTab = scope === "new" ? ntFilter : otFilter;
+  const setTab = scope === "new"
+    ? (k: NtCategory | OtCategory) => setNtFilter(k as NtCategory)
+    : (k: NtCategory | OtCategory) => setOtFilter(k as OtCategory);
 
   return (
     <main dir="rtl" className="relative min-h-screen w-full overflow-x-hidden bg-[#faf8f3]">
@@ -82,50 +104,61 @@ function BooksGrid() {
 
       <div className="relative mx-auto w-full max-w-[440px] px-4 pt-[max(env(safe-area-inset-top),12px)] pb-32">
         <header className="flex items-center justify-between gap-2 pt-2">
-          <BackButton to="/bible" />
-          <h1 className="font-arabic-serif text-[18px] font-bold text-[#3a2a18]">الأسفار</h1>
-          <AlphaNotificationButton />
+          <BackButton to="/bible" compact tone="light" />
+          <div className="text-center min-w-0 flex-1">
+            <h1 className="font-arabic-serif text-[18px] font-bold text-[#3a2a18]">{title}</h1>
+            <p className="text-[11px] text-[#6a543a] font-bold">{countLabel}</p>
+          </div>
+          <button
+            type="button"
+            aria-label="بحث"
+            onClick={() => setSearchOpen((o) => !o)}
+            className="inline-grid h-9 w-9 place-items-center rounded-full bg-white/70 border border-[#efe2c4] text-[#3a2a18] active:scale-90 transition-transform"
+          >
+            <Search className="h-4 w-4 text-[#b8893a]" />
+          </button>
         </header>
 
-        <div className="mt-4">
-          <label className="flex items-center gap-2 rounded-2xl bg-white/80 border border-[#efe2c4] px-3 py-2 shadow-[0_8px_18px_-14px_rgba(120,80,30,0.3)]">
-            <Search className="h-4 w-4 text-[#b8893a]" />
-            <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="ابحث عن سفر..."
-              className="w-full bg-transparent text-[13px] text-[#3a2a18] placeholder:text-[#a78f6c] focus:outline-none"
-            />
-          </label>
-        </div>
+        {searchOpen && (
+          <div className="mt-3 animate-in fade-in slide-in-from-top-2 duration-200">
+            <label className="flex items-center gap-2 rounded-2xl bg-white/80 border border-[#efe2c4] px-3 py-2 shadow-[0_8px_18px_-14px_rgba(120,80,30,0.3)]">
+              <Search className="h-4 w-4 text-[#b8893a]" />
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="ابحث عن سفر..."
+                autoFocus
+                className="w-full bg-transparent text-[13px] text-[#3a2a18] placeholder:text-[#a78f6c] focus:outline-none"
+              />
+            </label>
+          </div>
+        )}
 
-        <nav className="mt-3 -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 no-scrollbar" aria-label="التصنيفات">
-          {CATEGORIES.map((c) => {
-            const active = cat === c.key;
-            return (
-              <button
-                key={c.key}
-                type="button"
-                onClick={() => setCat(c.key)}
-                className={cn(
-                  "shrink-0 rounded-full border px-3.5 py-1.5 text-[12px] font-bold transition-colors",
-                  active
-                    ? "bg-gradient-to-br from-[#e7c97a] to-[#a87a35] border-transparent text-white shadow-[0_6px_14px_-8px_rgba(120,80,20,0.55)]"
-                    : "bg-white/75 border-[#efe2c4] text-[#3a2a18]",
-                )}
-              >
-                {c.label}
-              </button>
-            );
-          })}
-        </nav>
+        {tabs && (
+          <nav className="mt-4 flex gap-1.5 overflow-x-auto no-scrollbar" aria-label="التصنيفات">
+            {tabs.map((c) => {
+              const active = activeTab === c.key;
+              return (
+                <button
+                  key={c.key}
+                  type="button"
+                  onClick={() => setTab(c.key)}
+                  className={cn(
+                    "flex-1 min-w-0 shrink-0 rounded-full border px-2 py-2 text-[11px] font-bold transition-colors",
+                    active
+                      ? "bg-gradient-to-br from-[#e7c97a] to-[#a87a35] border-transparent text-white shadow-[0_6px_14px_-8px_rgba(120,80,20,0.55)]"
+                      : "bg-white/75 border-[#efe2c4] text-[#3a2a18]",
+                  )}
+                >
+                  {c.label}
+                </button>
+              );
+            })}
+          </nav>
+        )}
 
         <section className="mt-4">
-          <SectionHeader
-            title={cat === "all" ? "كل الأسفار" : CATEGORIES.find((c) => c.key === cat)!.label}
-            caption={isLoading ? undefined : `${filtered.length} سفر`}
-          />
-          {isLoading && <BookGridSkeleton count={12} />}
+          {isLoading && <BookGridSkeleton count={16} />}
           {error && (
             <p className="text-center text-[12px] text-red-700/80">
               تعذّر التحميل: {(error as Error).message}
@@ -135,29 +168,37 @@ function BooksGrid() {
             <p className="text-center text-[12px] text-[#6a543a]">لا توجد نتائج.</p>
           )}
           {filtered.length > 0 && (
-            <div className="grid grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-4 gap-2">
               {filtered.map((b, i) => (
                 <BookCard
                   key={b}
                   name={displayName(b)}
                   bookParam={b}
-                  tone={i % 3 === 1 ? "purple" : i % 3 === 2 ? "ivory" : "gold"}
+                  chaptersCount={chapterQueries[i]?.data?.length}
                 />
               ))}
-
             </div>
           )}
         </section>
 
-
-        <div className="mt-8 text-center">
-          <Link
-            to="/diagnostics"
-            className="text-[10px] uppercase tracking-[0.3em] text-[#a78f6c] hover:text-[#3a2a18]"
-          >
-            Diagnostics
-          </Link>
-        </div>
+        {!testament && (
+          <div className="mt-8 flex justify-center gap-3">
+            <Link
+              to="/books"
+              search={{ testament: "old" }}
+              className="rounded-full bg-white/80 border border-[#efe2c4] px-4 py-2 text-[12px] font-bold text-[#3a2a18]"
+            >
+              العهد القديم
+            </Link>
+            <Link
+              to="/books"
+              search={{ testament: "new" }}
+              className="rounded-full bg-gradient-to-br from-[#e7c97a] to-[#a87a35] px-4 py-2 text-[12px] font-bold text-white"
+            >
+              العهد الجديد
+            </Link>
+          </div>
+        )}
       </div>
 
       <BottomDock />

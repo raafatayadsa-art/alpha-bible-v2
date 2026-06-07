@@ -7,6 +7,12 @@ Preserve Alpha DNA.
 
 Preserve approved UI.
 
+## Official Date Picker
+
+All date fields app-wide must use `AlphaDatePicker` from `@/components/controls`.
+Never use native `input type="date"` or custom one-off pickers.
+Storage format: `yyyy-mm-dd`. Display via `formatAlphaDateDisplay`.
+
 Preserve Bottom Navigation.
 
 Preserve Glassmorphism.
