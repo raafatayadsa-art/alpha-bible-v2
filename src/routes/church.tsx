@@ -706,55 +706,269 @@ function ManageButton({ post }: { post: ChurchPost }) {
   );
 }
 
-function HorizontalPostCard({ post }: { post: ChurchPost }) {
-  const canManage = useCanManagePosts();
-  const pinned = isPinned(post);
+/* --------- Premium Post Card (swipeable horizontal feed) --------- */
+
+type EngagementState = {
+  liked: boolean;
+  likes: number;
+  comments: { id: string; name: string; text: string; at: number }[];
+  shares: number;
+};
+
+const SEED_NAMES = ["مينا", "ماريان", "توماس", "أندرو", "بيشوي", "ماري"];
+const SEED_TEXTS = [
+  "🙏 متحمس جدا للرحلة",
+  "الرب يشفيه ويبارك حياته",
+  "موجود إن شاء الله",
+  "متشوقين جدا للندوة",
+  "بركة وصلوات",
+];
+
+function seedEngagement(post: ChurchPost): EngagementState {
+  // Stable pseudo-random based on id
+  let h = 0;
+  for (let i = 0; i < post.id.length; i++) h = (h * 31 + post.id.charCodeAt(i)) >>> 0;
+  const likes = 30 + (h % 220);
+  const sharesN = 3 + ((h >> 3) % 40);
+  const nameIdx = h % SEED_NAMES.length;
+  const textIdx = (h >> 5) % SEED_TEXTS.length;
+  return {
+    liked: false,
+    likes,
+    shares: sharesN,
+    comments: [
+      { id: "seed", name: SEED_NAMES[nameIdx], text: SEED_TEXTS[textIdx], at: Date.now() - 3 * 3600 * 1000 },
+    ],
+  };
+}
+
+type CTASpec = {
+  label: string;
+  bg: string;
+  shadow: string;
+  kind: "link" | "reserve" | "attend" | "prayer" | "live" | "details" | "congrats" | "condolence";
+};
+
+function ctaFor(post: ChurchPost): CTASpec {
+  switch (post.type) {
+    case "trip":
+      return { label: "احجز الآن", bg: "linear-gradient(180deg,#1f9d63,#157a4a)", shadow: "rgba(31,138,90,0.55)", kind: "reserve" };
+    case "meeting":
+    case "liturgy":
+      return { label: "سجل حضورك", bg: "linear-gradient(180deg,#7c5ad1,#5a3eb0)", shadow: "rgba(124,90,209,0.55)", kind: "attend" };
+    case "prayer":
+      return { label: "صلي من أجله", bg: "linear-gradient(180deg,#3f7ed6,#2a5fb0)", shadow: "rgba(63,126,214,0.55)", kind: "prayer" };
+    case "announcement":
+      return { label: "عرض التفاصيل", bg: "linear-gradient(180deg,#f59042,#d96f1f)", shadow: "rgba(217,111,31,0.55)", kind: "details" };
+    case "event":
+      return { label: "شاهد البث", bg: "linear-gradient(180deg,#e0464d,#b8232b)", shadow: "rgba(184,35,43,0.55)", kind: "live" };
+    case "wedding":
+      return { label: "شارك التهنئة", bg: "linear-gradient(180deg,#e58aa0,#c44569)", shadow: "rgba(196,69,105,0.5)", kind: "congrats" };
+    case "condolence":
+      return { label: "أرسل تعزية", bg: "linear-gradient(180deg,#8a7257,#6a543a)", shadow: "rgba(106,84,58,0.55)", kind: "condolence" };
+    default:
+      return { label: "عرض التفاصيل", bg: "linear-gradient(180deg,#b8893a,#7a4a26)", shadow: "rgba(122,74,38,0.55)", kind: "details" };
+  }
+}
+
+function PostHeader({ post, canManage, onManage }: { post: ChurchPost; canManage: boolean; onManage: () => void }) {
+  const meta = POST_TYPE_META[post.type];
   return (
-    <div className="shrink-0 w-[260px]">
-      <Glass padded={false} className="overflow-hidden">
-        <Link
-          to="/church/post/$id"
-          params={{ id: post.id }}
-          className="block active:scale-[0.99] transition-transform"
-        >
-          <div className="relative h-[140px]">
-            <img src={post.image} alt={post.title} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#1a0f04]/85 via-[#1a0f04]/15 to-transparent" />
-            <div className="absolute top-2 right-2 flex items-center gap-1.5">
-              {pinned && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-[#b8893a] px-2 py-0.5 text-[9.5px] font-extrabold text-white border border-white/40">
-                  <Pin className="h-3 w-3" strokeWidth={2.6} /> مثبت
-                </span>
-              )}
-              <CategoryPill type={post.type} />
-            </div>
-            {canManage ? <ManageButton post={post} /> : null}
-            <div className="absolute bottom-2 right-2.5 left-2.5 text-right text-white">
-              <h3 className="font-arabic-serif text-[13.5px] font-extrabold leading-snug drop-shadow-[0_2px_8px_rgba(0,0,0,0.65)] line-clamp-2">
-                {post.title}
-              </h3>
-            </div>
-          </div>
-          <div className="px-3 pt-2.5 text-right">
-            <p className="text-[11.5px] text-[#6a543a] leading-snug line-clamp-2">{post.excerpt}</p>
-            <p className="mt-1.5 inline-flex items-center gap-1.5 text-[10px] font-bold text-[#8a6a3a]">
-              <CalendarDays className="h-3 w-3 text-[#b8893a]" />
-              {post.date}
-            </p>
-          </div>
-        </Link>
-        <div className="px-3 pb-3 pt-2">
-          <PostCardActions post={post} />
+    <div className="flex items-center gap-2.5 px-3.5 pt-3.5">
+      <button
+        type="button"
+        aria-label="خيارات"
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (canManage) onManage(); }}
+        className="grid h-8 w-8 place-items-center rounded-full bg-white/85 border border-[#efe2c4] text-[#7a5a30] active:scale-90"
+      >
+        <span className="flex flex-col gap-[2px]">
+          <span className="h-[3px] w-[3px] rounded-full bg-[#7a5a30]" />
+          <span className="h-[3px] w-[3px] rounded-full bg-[#7a5a30]" />
+          <span className="h-[3px] w-[3px] rounded-full bg-[#7a5a30]" />
+        </span>
+      </button>
+      <div className="flex-1 min-w-0 text-right">
+        <div className="flex items-center justify-end gap-1.5">
+          <span
+            className="inline-flex items-center rounded-full px-2 py-[2px] text-[10px] font-extrabold text-white border border-white/40"
+            style={{ background: `linear-gradient(180deg, ${meta.tone}, ${meta.tone}d0)` }}
+          >
+            {meta.label}
+          </span>
+          {isPinned(post) && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#fff3d6] border border-[#e7c97a] px-1.5 py-[2px] text-[9.5px] font-extrabold text-[#8a6a1e]">
+              <Pin className="h-2.5 w-2.5" strokeWidth={3} /> مثبت
+            </span>
+          )}
         </div>
-      </Glass>
+        <div className="mt-0.5 text-[12.5px] font-extrabold text-[#3a2a18] leading-tight truncate">
+          كنيسة العذراء والقديس يوسف
+        </div>
+        <div className="text-[10px] text-[#8a6a3a] font-medium">{post.date}</div>
+      </div>
+      <div className="relative h-10 w-10 shrink-0 rounded-full border border-white/80 overflow-hidden shadow-[0_4px_10px_-4px_rgba(120,80,30,0.4)] ring-2 ring-[#f5e6c2]">
+        <img src={heavenlyChurch} alt="" className="h-full w-full object-cover" />
+      </div>
     </div>
+  );
+}
+
+function PremiumPostCard({ post }: { post: ChurchPost }) {
+  const canManage = useCanManagePosts();
+  const [eng, setEng] = useState<EngagementState>(() => seedEngagement(post));
+  const [draft, setDraft] = useState("");
+  const [expanded, setExpanded] = useState(false);
+  const [popup, setPopup] = useState<null | "condolence" | "congrats" | "reserve" | "manage">(null);
+
+  const cta = ctaFor(post);
+  const latest = eng.comments[0];
+
+  const toggleLike = () =>
+    setEng((s) => ({ ...s, liked: !s.liked, likes: s.likes + (s.liked ? -1 : 1) }));
+
+  const sendComment = () => {
+    const text = draft.trim();
+    if (!text) return;
+    setEng((s) => ({
+      ...s,
+      comments: [{ id: String(Date.now()), name: "أنت", text, at: Date.now() }, ...s.comments],
+    }));
+    setDraft("");
+  };
+
+  const onCta = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (cta.kind === "reserve") setPopup("reserve");
+    else if (cta.kind === "congrats") setPopup("congrats");
+    else if (cta.kind === "condolence") setPopup("condolence");
+    else if (cta.kind === "attend") {
+      // mark attending via store
+      import("@/features/church/post-store").then((m) => m.toggleAttendance(post.id));
+    } else if (cta.kind === "prayer") {
+      toggleLike();
+    } else {
+      // navigate
+      window.location.assign(`/church/post/${post.id}`);
+    }
+  };
+
+  return (
+    <article
+      className="shrink-0 snap-center w-[92vw] max-w-[440px] relative rounded-[28px] border border-white/75 bg-[#fbf3e1]/92 backdrop-blur-xl shadow-[0_24px_50px_-26px_rgba(120,80,30,0.55),inset_0_1px_0_rgba(255,255,255,0.9)] overflow-hidden"
+    >
+      <PostHeader post={post} canManage={canManage} onManage={() => setPopup("manage")} />
+
+      {/* Hero image */}
+      <Link to="/church/post/$id" params={{ id: post.id }} className="block px-3.5 pt-3">
+        <div className="relative overflow-hidden rounded-[22px] border border-white/70 shadow-[0_14px_28px_-18px_rgba(60,40,16,0.55)]">
+          <img src={post.image} alt={post.title} className="block h-[180px] w-full object-cover" loading="lazy" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#1a0f04]/45 via-transparent to-transparent" />
+        </div>
+      </Link>
+
+      {/* Title + excerpt */}
+      <div className="px-4 pt-3 text-right">
+        <h3 className="font-arabic-serif text-[17px] font-extrabold text-[#2a1d10] leading-snug">{post.title}</h3>
+        <p className={"mt-1.5 text-[12.5px] text-[#4a3a26] leading-relaxed " + (expanded ? "" : "line-clamp-2")}>
+          {post.excerpt}
+        </p>
+        {post.excerpt.length > 60 && !expanded ? (
+          <button
+            type="button"
+            onClick={() => setExpanded(true)}
+            className="mt-1 text-[11.5px] font-extrabold text-[#b8893a] active:scale-95"
+          >
+            عرض المزيد
+          </button>
+        ) : null}
+      </div>
+
+      {/* Primary CTA */}
+      <div className="px-4 pt-3">
+        <button
+          type="button"
+          onClick={onCta}
+          className="w-full inline-flex items-center justify-center gap-2 rounded-2xl py-2.5 text-[13px] font-extrabold text-white active:scale-[0.98] transition-transform"
+          style={{ background: cta.bg, boxShadow: `0 14px 26px -14px ${cta.shadow}` }}
+        >
+          {cta.label}
+          <ArrowRight className="h-3.5 w-3.5 -scale-x-100" />
+        </button>
+      </div>
+
+      {/* Counters */}
+      <div className="mx-4 mt-3 flex items-center justify-between rounded-2xl bg-white/70 border border-white/80 px-3 py-2 text-[12px] font-extrabold text-[#3a2a18]">
+        <button
+          type="button"
+          onClick={toggleLike}
+          className="inline-flex items-center gap-1.5 active:scale-95"
+          aria-label="إعجاب"
+        >
+          <Heart className={"h-4 w-4 " + (eng.liked ? "text-[#e0464d] fill-current" : "text-[#c44569]")} strokeWidth={2.4} />
+          <span>{eng.likes.toLocaleString("ar-EG")}</span>
+        </button>
+        <button type="button" className="inline-flex items-center gap-1.5 active:scale-95" aria-label="تعليقات">
+          <MessageCircle className="h-4 w-4 text-[#5b8fd1]" strokeWidth={2.4} />
+          <span>{eng.comments.length.toLocaleString("ar-EG")}</span>
+        </button>
+        <button type="button" className="inline-flex items-center gap-1.5 active:scale-95" aria-label="مشاركة">
+          <Share2 className="h-4 w-4 text-[#7a4a26]" strokeWidth={2.4} />
+          <span>{eng.shares.toLocaleString("ar-EG")}</span>
+        </button>
+      </div>
+
+      {/* Latest comment */}
+      {latest ? (
+        <div className="mx-4 mt-2 flex items-start gap-2 rounded-2xl bg-white/55 border border-white/70 px-3 py-2 text-right">
+          <div className="min-w-0 flex-1">
+            <div className="text-[12px] leading-snug text-[#2a1d10]">
+              <span className="font-extrabold text-[#7a4a26]">{latest.name}: </span>
+              <span>{latest.text}</span>
+            </div>
+          </div>
+          <div className="h-7 w-7 shrink-0 rounded-full bg-gradient-to-br from-[#f5e6c2] to-[#d4b06a] grid place-items-center text-[10.5px] font-extrabold text-[#5a3a1a] border border-white/70">
+            {latest.name.slice(0, 1)}
+          </div>
+        </div>
+      ) : null}
+
+      {/* Quick reply */}
+      <div className="m-4 mt-2 flex items-center gap-2 rounded-full bg-white/85 border border-[#efe2c4] pl-1 pr-3 py-1">
+        <button
+          type="button"
+          onClick={sendComment}
+          aria-label="إرسال"
+          className="grid h-8 w-8 place-items-center rounded-full bg-gradient-to-l from-[#7a4a26] to-[#b8893a] text-white active:scale-90 shadow"
+        >
+          <Send className="h-3.5 w-3.5 -scale-x-100" />
+        </button>
+        <input
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") sendComment(); }}
+          placeholder="اكتب تعليق..."
+          className="flex-1 bg-transparent text-right text-[12.5px] text-[#3a2a18] placeholder:text-[#a99060] outline-none py-1"
+          dir="rtl"
+        />
+      </div>
+
+      {/* Popups */}
+      {popup === "condolence" ? (
+        <CondolencePopup postId={post.id} onClose={() => setPopup(null)} />
+      ) : popup === "congrats" ? (
+        <CongratsPopup postId={post.id} onClose={() => setPopup(null)} />
+      ) : popup === "reserve" ? (
+        <ReservePopup postId={post.id} totalSeats={post.details?.seats} onClose={() => setPopup(null)} />
+      ) : popup === "manage" ? (
+        <PinMenu post={post} onClose={() => setPopup(null)} />
+      ) : null}
+    </article>
   );
 }
 
 function ChurchPostsFeed() {
   const sorted = useActivePosts();
-  const trackRef = useRef<HTMLDivElement | null>(null);
-  useAutoMarquee(trackRef, { speed: 18, direction: -1 });
   const [builderOpen, setBuilderOpen] = useState(false);
 
   return (
@@ -783,13 +997,12 @@ function ChurchPostsFeed() {
         }
       />
       <div
-        ref={trackRef}
-        className="-mx-4 overflow-x-auto no-scrollbar scroll-smooth"
-        style={{ WebkitOverflowScrolling: "touch" }}
+        className="-mx-4 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory"
+        style={{ WebkitOverflowScrolling: "touch", scrollPaddingInline: "16px" }}
       >
-        <div className="flex gap-3 px-4 pb-2">
+        <div className="flex gap-3 px-4 pb-3">
           {sorted.map((p) => (
-            <HorizontalPostCard key={p.id} post={p} />
+            <PremiumPostCard key={p.id} post={p} />
           ))}
         </div>
       </div>
