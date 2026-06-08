@@ -1,13 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  ChevronLeft, Search, MapPin, Navigation, Church, Mountain, Landmark,
+  ChevronLeft, Search, MapPin, Navigation, Church,
   X, Info, Sparkles, Clock,
 } from "lucide-react";
 import {
-  CHURCH_PLACES, KIND_LABEL, PLACE_STATS, mapsUrlFor, getRecentPlaceIds,
-  formatDistance, findPlace, type ChurchPlace, type PlaceKind,
-} from "@/data/church-places";
+  fetchApprovedChurches,
+  getRecentChurchIds,
+  directoryChurchImage,
+  directoryChurchLocation,
+  mapsUrlForChurch,
+  type DirectoryChurch,
+} from "@/features/church/churches-directory-api";
 import heroChurch from "@/assets/home/hero-church-premium.jpg";
 import { AlphaNotificationButton } from "@/components/navigation/AlphaNotificationButton";
 
@@ -31,45 +35,43 @@ const BORDER = "rgba(220,210,235,0.7)";
 const TEXT = "#3a3258";
 const SUB = "#6b658a";
 
-const TABS: { key: "all" | PlaceKind; label: string; icon: any }[] = [
-  { key: "all", label: "الكل", icon: Sparkles },
-  { key: "church", label: "الكنائس", icon: Church },
-  { key: "monastery", label: "الأديرة", icon: Mountain },
-  { key: "landmark", label: "المزارات", icon: Landmark },
-];
+const TABS = [{ key: "all" as const, label: "الكنائس", icon: Church }]; // kept for future filters
 
-const KIND_TONE: Record<PlaceKind, { bg: string; color: string; ring: string }> = {
+const KIND_TONE = {
   church: { bg: `${SKY}0.16)`, color: "#2f5a8a", ring: `${SKY}0.35)` },
-  monastery: { bg: `${LAV}0.20)`, color: "#5a3e8a", ring: `${LAV}0.4)` },
-  landmark: { bg: "rgba(196,179,140,0.22)", color: "#7a5c1f", ring: "rgba(196,179,140,0.45)" },
 };
 
 /* ============================================================ */
 export function DirectoryScreen() {
   const [query, setQuery] = useState("");
-  const [tab, setTab] = useState<(typeof TABS)[number]["key"]>("all");
+  const [churches, setChurches] = useState<DirectoryChurch[]>([]);
+  const [loading, setLoading] = useState(true);
   const [recentIds, setRecentIds] = useState<string[]>([]);
 
-  useEffect(() => { setRecentIds(getRecentPlaceIds()); }, []);
+  const loadChurches = useCallback(async () => {
+    setLoading(true);
+    const rows = await fetchApprovedChurches();
+    setChurches(rows);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    void loadChurches();
+    setRecentIds(getRecentChurchIds());
+  }, [loadChurches]);
 
   const filtered = useMemo(() => {
     const q = query.trim();
-    return CHURCH_PLACES.filter((p) => {
-      if (tab !== "all" && p.kind !== tab) return false;
+    return churches.filter((p) => {
       if (!q) return true;
-      return [p.name, p.type, p.city, p.region ?? "", p.country, p.priest ?? ""]
+      return [p.name, p.city ?? "", p.diocese ?? "", p.governorate ?? "", p.priestName ?? ""]
         .some((s) => s.includes(q));
-    }).sort((a, b) => a.distanceKm - b.distanceKm);
-  }, [query, tab]);
-
-  const nearby = useMemo(
-    () => [...CHURCH_PLACES].sort((a, b) => a.distanceKm - b.distanceKm).slice(0, 6),
-    [],
-  );
+    });
+  }, [churches, query]);
 
   const recent = recentIds
-    .map((id) => findPlace(id))
-    .filter((x): x is ChurchPlace => Boolean(x));
+    .map((id) => churches.find((c) => c.id === id))
+    .filter((x): x is DirectoryChurch => Boolean(x));
 
   return (
     <div
@@ -80,7 +82,6 @@ export function DirectoryScreen() {
           `radial-gradient(120% 80% at 50% 0%, #fbf6ec 0%, #f1ecf7 45%, #e8eef8 100%)`,
       }}
     >
-      {/* ambient halos */}
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0 -z-0"
@@ -94,40 +95,32 @@ export function DirectoryScreen() {
       <Header query={query} hasQuery={!!query} />
 
       <main className="relative mx-auto w-full max-w-[440px] px-4 pt-3 space-y-5">
-        {/* Hero */}
-        <HeroCard />
+        <HeroCard count={churches.length} />
 
-        {/* Search */}
         <SearchBar value={query} onChange={setQuery} />
 
-        {/* Tabs */}
-        <Tabs active={tab} onChange={setTab} />
-
-        {/* Recently viewed */}
-        {recent.length > 0 && !query && tab === "all" ? (
-          <SectionCarousel title="الكنائس التي زرتها مؤخراً" icon={Clock} places={recent} />
+        {recent.length > 0 && !query ? (
+          <SectionCarousel title="الكنائس التي زرتها مؤخراً" icon={Clock} churches={recent} />
         ) : null}
 
-        {/* Nearby */}
-        {!query && tab === "all" ? (
-          <SectionCarousel title="الكنائس القريبة منك" icon={MapPin} places={nearby} />
-        ) : null}
-
-        {/* Results */}
         <section>
           <div className="flex items-center justify-between mb-2.5 px-1">
             <h2 className="text-[14px] font-extrabold" style={{ color: TEXT }}>
-              {query ? "نتائج البحث" : tab === "all" ? "كل المواقع" : TABS.find((t) => t.key === tab)?.label}
+              {query ? "نتائج البحث" : "الكنائس المعتمدة"}
             </h2>
             <span className="text-[11px] font-bold" style={{ color: SUB }}>
-              {filtered.length} نتيجة
+              {filtered.length.toLocaleString("ar-EG")} كنيسة
             </span>
           </div>
-          {filtered.length === 0 ? (
-            <Empty />
+          {loading ? (
+            <div className="rounded-3xl border p-8 text-center backdrop-blur-xl" style={{ background: "rgba(255,255,255,0.75)", borderColor: BORDER }}>
+              <p className="text-[12.5px] font-bold" style={{ color: SUB }}>جاري تحميل دليل الكنائس…</p>
+            </div>
+          ) : filtered.length === 0 ? (
+            <Empty hasChurches={churches.length > 0} />
           ) : (
             <div className="grid grid-cols-1 gap-3">
-              {filtered.map((p) => <PlaceCard key={p.id} p={p} />)}
+              {filtered.map((p) => <PlaceCard key={p.id} church={p} />)}
             </div>
           )}
         </section>
@@ -162,7 +155,7 @@ function Header({ query, hasQuery }: { query: string; hasQuery: boolean }) {
           <ChevronLeft className="h-5 w-5 -scale-x-100" strokeWidth={2} />
         </Link>
         <h1 className="text-[15px] font-extrabold" style={{ color: TEXT }}>
-          الكنائس والأديرة
+          دليل الكنائس
         </h1>
         <AlphaNotificationButton />
       </div>
@@ -176,7 +169,7 @@ function Header({ query, hasQuery }: { query: string; hasQuery: boolean }) {
 }
 
 /* ============================================================ */
-function HeroCard() {
+function HeroCard({ count }: { count: number }) {
   return (
     <section
       className="relative overflow-hidden rounded-[28px] border backdrop-blur-xl shadow-[0_24px_50px_-24px_rgba(120,110,180,0.45),inset_0_1px_0_rgba(255,255,255,0.9)]"
@@ -195,16 +188,14 @@ function HeroCard() {
       </div>
       <div className="px-4 pt-1 pb-4 text-right">
         <h2 className="font-arabic-serif text-[18px] font-extrabold leading-tight" style={{ color: TEXT }}>
-          ابحث عن كنيسة أو دير
+          ابحث عن كنيسة معتمدة
         </h2>
         <p className="mt-1 text-[12px] leading-relaxed" style={{ color: SUB }}>
-          اكتشف الكنائس والأديرة والمزارات القبطية
+          الكنائس المعتمدة على منصة ألفا
         </p>
 
-        <div className="mt-3 grid grid-cols-3 gap-2">
-          <StatChip icon={Church} label="كنيسة" value={PLACE_STATS.churches} tint={`${SKY}0.20)`} ring={`${SKY}0.42)`} color="#2f5a8a" shadowColor="rgba(140,180,220,0.30)" />
-          <StatChip icon={Mountain} label="دير" value={PLACE_STATS.monasteries} tint={`${LAV}0.24)`} ring={`${LAV}0.48)`} color="#5a3e8a" shadowColor="rgba(170,150,210,0.30)" />
-          <StatChip icon={Landmark} label="مزار" value={PLACE_STATS.landmarks} tint="rgba(196,179,140,0.24)" ring="rgba(196,179,140,0.48)" color="#7a5c1f" shadowColor="rgba(196,179,140,0.30)" />
+        <div className="mt-3">
+          <StatChip icon={Church} label="كنيسة معتمدة" value={count} tint={`${SKY}0.20)`} ring={`${SKY}0.42)`} color="#2f5a8a" shadowColor="rgba(140,180,220,0.30)" />
         </div>
       </div>
     </section>
@@ -295,42 +286,9 @@ function SearchBar({ value, onChange }: { value: string; onChange: (v: string) =
   );
 }
 
-/* ============================================================ */
-function Tabs({
-  active, onChange,
-}: { active: (typeof TABS)[number]["key"]; onChange: (k: any) => void }) {
-  return (
-    <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4">
-      {TABS.map((t) => {
-        const on = t.key === active;
-        const Icon = t.icon;
-        return (
-          <button
-            key={t.key}
-            onClick={() => onChange(t.key)}
-            className={
-              "shrink-0 inline-flex items-center gap-1.5 h-9 px-4 rounded-full text-[12px] font-extrabold border backdrop-blur-md transition-all " +
-              (on ? "text-white" : "active:scale-95")
-            }
-            style={
-              on
-                ? { background: "linear-gradient(160deg, #5a4e8a, #3a3258)", borderColor: "transparent", boxShadow: "0 10px 22px -12px rgba(90,78,138,0.6)" }
-                : { background: "rgba(255,255,255,0.75)", borderColor: BORDER, color: TEXT }
-            }
-          >
-            <Icon className="h-3.5 w-3.5" strokeWidth={2.4} />
-            {t.label}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-/* ============================================================ */
 function SectionCarousel({
-  title, icon: Icon, places,
-}: { title: string; icon: any; places: ChurchPlace[] }) {
+  title, icon: Icon, churches,
+}: { title: string; icon: typeof Church; churches: DirectoryChurch[] }) {
   return (
     <section>
       <div className="flex items-center gap-1.5 mb-2 px-1">
@@ -338,18 +296,18 @@ function SectionCarousel({
         <h2 className="text-[13.5px] font-extrabold" style={{ color: TEXT }}>{title}</h2>
       </div>
       <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-4 px-4 pb-1 snap-x snap-mandatory">
-        {places.map((p) => <MiniCard key={p.id} p={p} />)}
+        {churches.map((p) => <MiniCard key={p.id} church={p} />)}
       </div>
     </section>
   );
 }
 
-function MiniCard({ p }: { p: ChurchPlace }) {
-  const tone = KIND_TONE[p.kind];
+function MiniCard({ church }: { church: DirectoryChurch }) {
+  const tone = KIND_TONE.church;
   return (
     <Link
       to="/church/directory/$placeId"
-      params={{ placeId: p.id }}
+      params={{ placeId: church.id }}
       className="snap-start shrink-0 w-[180px] rounded-2xl overflow-hidden border backdrop-blur-xl active:scale-[0.98] transition-transform"
       style={{
         background: "linear-gradient(180deg, rgba(255,255,255,0.9), rgba(241,236,247,0.85))",
@@ -358,28 +316,22 @@ function MiniCard({ p }: { p: ChurchPlace }) {
       }}
     >
       <div className="relative h-[100px] w-full">
-        <img src={p.image} alt={p.name} className="absolute inset-0 h-full w-full object-cover" />
+        <img src={directoryChurchImage(church)} alt={church.name} className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/35 to-transparent" />
-        <span
-          className="absolute top-2 right-2 inline-flex items-center gap-1 px-2 h-[20px] rounded-full text-[10px] font-extrabold backdrop-blur-md text-white"
-          style={{ background: "rgba(0,0,0,0.4)" }}
-        >
-          {p.countryFlag} {p.country}
-        </span>
       </div>
       <div className="p-2.5 text-right">
         <h3 className="text-[12.5px] font-extrabold leading-tight line-clamp-2" style={{ color: TEXT }}>
-          {p.name}
+          {church.name}
         </h3>
         <div className="mt-1.5 flex items-center justify-between">
           <span
             className="inline-flex items-center px-1.5 h-[18px] rounded-full text-[9.5px] font-extrabold"
             style={{ background: tone.bg, color: tone.color, border: `1px solid ${tone.ring}` }}
           >
-            {KIND_LABEL[p.kind]}
+            كنيسة
           </span>
-          <span className="text-[10px] font-bold" style={{ color: SUB }}>
-            {formatDistance(p.distanceKm)}
+          <span className="text-[10px] font-bold truncate max-w-[90px]" style={{ color: SUB }}>
+            {church.city ?? church.diocese ?? ""}
           </span>
         </div>
       </div>
@@ -387,9 +339,9 @@ function MiniCard({ p }: { p: ChurchPlace }) {
   );
 }
 
-/* ============================================================ */
-function PlaceCard({ p }: { p: ChurchPlace }) {
-  const tone = KIND_TONE[p.kind];
+function PlaceCard({ church }: { church: DirectoryChurch }) {
+  const tone = KIND_TONE.church;
+  const location = directoryChurchLocation(church);
   return (
     <article
       className="rounded-[24px] overflow-hidden border backdrop-blur-xl"
@@ -400,49 +352,30 @@ function PlaceCard({ p }: { p: ChurchPlace }) {
       }}
     >
       <div className="relative h-[150px] w-full">
-        <img src={p.image} alt={p.name} className="absolute inset-0 h-full w-full object-cover" />
+        <img src={directoryChurchImage(church)} alt={church.name} className="absolute inset-0 h-full w-full object-cover" />
         <div
           className="absolute inset-0"
           style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.05) 30%, rgba(0,0,0,0.45) 100%)" }}
         />
-        {/* Country badge */}
-        <span
-          className="absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 h-[24px] rounded-full text-[11px] font-extrabold backdrop-blur-md text-white"
-          style={{ background: "rgba(0,0,0,0.42)", border: "1px solid rgba(255,255,255,0.25)" }}
-        >
-          <span className="text-[13px] leading-none">{p.countryFlag}</span>
-          {p.country}
-        </span>
-        {/* Kind */}
-        <span
-          className="absolute top-3 left-3 inline-flex items-center px-2.5 h-[24px] rounded-full text-[10.5px] font-extrabold backdrop-blur-md"
-          style={{ background: tone.bg, color: tone.color, border: `1px solid ${tone.ring}` }}
-        >
-          {KIND_LABEL[p.kind]}
-        </span>
-        {/* Distance */}
-        <span
-          className="absolute bottom-3 right-3 inline-flex items-center gap-1 px-2.5 h-[24px] rounded-full text-[10.5px] font-extrabold text-white backdrop-blur-md"
-          style={{ background: "rgba(0,0,0,0.45)" }}
-        >
-          <MapPin className="h-3 w-3" strokeWidth={2.6} />
-          تبعد {formatDistance(p.distanceKm)}
-        </span>
       </div>
 
       <div className="p-3.5 text-right">
         <h3 className="font-arabic-serif text-[15px] font-extrabold leading-tight" style={{ color: TEXT }}>
-          {p.name}
+          {church.name}
         </h3>
-        <p className="mt-1 text-[11.5px] font-bold" style={{ color: tone.color }}>{p.type}</p>
-        <div className="mt-1 flex items-center gap-1 text-[11.5px]" style={{ color: SUB }}>
-          <MapPin className="h-3 w-3" strokeWidth={2.4} />
-          <span className="truncate">{[p.city, p.region].filter(Boolean).join(" — ")}</span>
-        </div>
+        {church.priestName ? (
+          <p className="mt-1 text-[11.5px] font-bold" style={{ color: tone.color }}>{church.priestName}</p>
+        ) : null}
+        {location ? (
+          <div className="mt-1 flex items-center gap-1 text-[11.5px]" style={{ color: SUB }}>
+            <MapPin className="h-3 w-3" strokeWidth={2.4} />
+            <span className="truncate">{location}</span>
+          </div>
+        ) : null}
 
         <div className="mt-3 grid grid-cols-2 gap-2">
           <a
-            href={mapsUrlFor(p)}
+            href={mapsUrlForChurch(church)}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-1.5 h-10 rounded-full text-[12px] font-extrabold text-white active:scale-[0.98] transition-transform"
@@ -456,7 +389,7 @@ function PlaceCard({ p }: { p: ChurchPlace }) {
           </a>
           <Link
             to="/church/directory/$placeId"
-            params={{ placeId: p.id }}
+            params={{ placeId: church.id }}
             className="inline-flex items-center justify-center gap-1.5 h-10 rounded-full text-[12px] font-extrabold active:scale-[0.98] transition-transform border"
             style={{
               background: `linear-gradient(160deg, rgba(255,255,255,0.95), ${LAV}0.18))`,
@@ -473,7 +406,7 @@ function PlaceCard({ p }: { p: ChurchPlace }) {
   );
 }
 
-function Empty() {
+function Empty({ hasChurches }: { hasChurches?: boolean }) {
   return (
     <div
       className="rounded-3xl border p-10 text-center backdrop-blur-xl"
@@ -485,8 +418,12 @@ function Empty() {
       >
         <Search className="h-6 w-6" strokeWidth={2} />
       </div>
-      <h3 className="text-[14px] font-extrabold mb-1" style={{ color: TEXT }}>لا توجد نتائج</h3>
-      <p className="text-[12px]" style={{ color: SUB }}>جرّب اسمًا، مدينة، أو دولة أخرى.</p>
+      <h3 className="text-[14px] font-extrabold mb-1" style={{ color: TEXT }}>
+        {hasChurches ? "لا توجد نتائج" : "لا توجد كنائس معتمدة بعد"}
+      </h3>
+      <p className="text-[12px]" style={{ color: SUB }}>
+        {hasChurches ? "جرّب اسمًا أو مدينة أخرى." : "ستظهر الكنائس المعتمدة هنا تلقائياً بعد الموافقة عليها."}
+      </p>
     </div>
   );
 }

@@ -3,7 +3,6 @@ export {
   assignCategoryImage,
   assignPostImage,
   ensurePostImageStored,
-  migrateUserPostImagesOnce,
   generatePostImage,
   getDefaultPostImage,
   getFallbackPostImage,

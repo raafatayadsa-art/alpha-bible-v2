@@ -39,7 +39,6 @@ import {
 } from "./settings-store";
 import { AboutAlphaAppCard } from "@/features/platform-admin/AboutAlphaAppCard";
 import { OwnerAccessPinSheet } from "@/features/platform-admin/OwnerAccessPinSheet";
-import { grantOwnerSession } from "@/features/platform-admin/owner-access-store";
 
 function sectionVisible(query: string, keywords: string[]): boolean {
   if (!query.trim()) return true;
@@ -334,10 +333,7 @@ export function AlphaControlCenter() {
               {/* TEMP DEV ACCESS ONLY - REMOVE BEFORE PRODUCTION */}
               <button
                 type="button"
-                onClick={() => {
-                  grantOwnerSession();
-                  navigate({ to: "/platform" });
-                }}
+                onClick={() => setOwnerPinOpen(true)}
                 className="mx-4 mb-2 flex w-[calc(100%-2rem)] flex-col items-center gap-0.5 rounded-2xl border-2 border-dashed border-[#b85450]/50 bg-[#b85450]/10 px-4 py-3 active:scale-[0.98]"
               >
                 <span className="text-[11px] font-extrabold text-[#8b3a36]">Alpha Control Dev Access</span>

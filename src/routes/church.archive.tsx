@@ -2,8 +2,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronLeft, CalendarDays, Pin, RotateCcw } from "lucide-react";
 import { POST_TYPE_META } from "@/data/church-posts";
 import {
-  useArchivedPosts, useCanManagePosts, restorePost, isPinned,
+  useCanManagePosts, isPinned,
 } from "@/features/church/post-store";
+import { patchChurchPost } from "@/features/church/church-posts-api";
+import { useChurchDashboard } from "@/features/church/use-church-dashboard";
+import { useChurchPosts } from "@/features/church/use-church-posts";
 import { PostImage } from "@/features/church/PostImage";
 
 export const Route = createFileRoute("/church/archive")({
@@ -18,7 +21,8 @@ export const Route = createFileRoute("/church/archive")({
 });
 
 function ChurchArchive() {
-  const items = useArchivedPosts();
+  const { data } = useChurchDashboard();
+  const { posts: items, loading } = useChurchPosts(data?.church.id, { archived: true });
   const canManage = useCanManagePosts();
 
   return (
@@ -45,7 +49,9 @@ function ChurchArchive() {
       </header>
 
       <main className="px-4 py-3 space-y-3">
-        {items.length === 0 ? (
+        {loading ? (
+          <p className="mt-10 text-center text-[12.5px] text-[#7a5a30]">جاري التحميل…</p>
+        ) : items.length === 0 ? (
           <p className="mt-10 text-center text-[12.5px] text-[#7a5a30]">
             لا توجد منشورات منتهية أو مؤرشفة بعد.
           </p>
@@ -78,13 +84,10 @@ function ChurchArchive() {
                       >
                         {meta.label}
                       </span>
-                      <span className="inline-flex items-center rounded-full bg-[#6a543a]/15 text-[#6a543a] px-2 py-0.5 text-[9.5px] font-extrabold">
-                        منتهي
-                      </span>
                     </div>
-                    <h4 className="mt-1 text-[13.5px] font-extrabold text-[#3a2a18] leading-tight line-clamp-2">
+                    <h3 className="mt-1 text-[13.5px] font-extrabold text-[#3a2a18] leading-tight line-clamp-2">
                       {p.title}
-                    </h4>
+                    </h3>
                     <p className="mt-1 inline-flex items-center gap-1.5 text-[10.5px] text-[#6a543a]">
                       <CalendarDays className="h-3 w-3 text-[#b8893a]" />
                       {p.date}
@@ -92,14 +95,14 @@ function ChurchArchive() {
                   </div>
                 </Link>
                 {canManage ? (
-                  <div className="px-3 pb-3">
+                  <div className="border-t border-[#efe2c4]/70 px-3 py-2 flex justify-end">
                     <button
                       type="button"
-                      onClick={() => restorePost(p.id)}
-                      className="w-full inline-flex items-center justify-center gap-1.5 rounded-full bg-white/95 border border-[#efe2c4] text-[#3a2a18] text-[11.5px] font-extrabold py-2 active:scale-[0.97]"
+                      onClick={() => void patchChurchPost(p.id, { archived: false, expiresAt: null })}
+                      className="inline-flex items-center gap-1 rounded-full bg-white/85 border border-[#efe2c4] px-3 py-1.5 text-[11px] font-extrabold text-[#3a2a18] active:scale-95"
                     >
-                      <RotateCcw className="h-3.5 w-3.5" />
-                      استعادة المنشور
+                      <RotateCcw className="h-3 w-3" />
+                      استعادة
                     </button>
                   </div>
                 ) : null}
@@ -107,7 +110,6 @@ function ChurchArchive() {
             );
           })
         )}
-        <div className="h-[env(safe-area-inset-bottom,20px)]" />
       </main>
     </div>
   );

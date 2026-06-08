@@ -4,15 +4,39 @@ import {
   ArrowRight, Phone, MessageCircle, MapPin, ShieldCheck, Users,
   HandHeart, Newspaper, Radio, CalendarDays, BookOpen, Library, Heart,
   Play, ChevronLeft, Clock, Sparkles, Bell, Flame, Plus,
-  Navigation, Share2, Crown, UserCog, Send, Lock, X, MessageSquareHeart, Check, Church,
+  Navigation, Share2, Crown, UserCog, Send, Lock, X, MessageSquareHeart, Check, Church, Pin,
 } from "lucide-react";
 import type { ChurchContact, ContactRoleType } from "@/data/church-contacts";
+import { POST_TYPE_META, type ChurchPost } from "@/data/church-posts";
+import { useChurchPosts } from "@/features/church/use-church-posts";
+import { MemberAvatar } from "@/features/church/MemberAvatar";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { CopticWatermark } from "@/components/coptic";
 import { AlphaHeader, AlphaHeaderShell } from "@/components/navigation/AlphaHeader";
-import { useActiveUserPosts } from "@/features/church/post-store";
+import {
+  useCanManagePosts,
+  isPinned,
+  pinForDays,
+  pinUntil,
+  unpinPost,
+  archivePost,
+  useComments,
+  addCommentAsCurrentUser,
+  useReactions,
+  toggleReaction,
+  recordShare,
+  useShareCount,
+  prefetchPostInteractions,
+} from "@/features/church/post-store";
+import { getCurrentUser } from "@/features/church/current-user";
+import {
+  AttendButton,
+  CondolencePopup,
+  CongratsPopup,
+  ReservePopup,
+} from "@/features/church/PostActions";
 import { PostBuilder } from "@/features/church/PostBuilder";
-import { ChurchPostsHorizontalRail } from "@/features/church/ChurchPostsFeed";
+import { AlphaDatePicker } from "@/components/controls";
 import { useChurchDashboard } from "@/features/church/use-church-dashboard";
 import { ChurchDashboardProvider, useChurchDashboardData } from "@/features/church/church-dashboard-context";
 import {
@@ -123,7 +147,8 @@ function Header() {
 /* ============================================================ */
 
 function HeroChurchCard() {
-  const { church, contacts } = useChurchDashboardData();
+  const { church, contacts, prayers } = useChurchDashboardData();
+  const prayerStats = prayerStatsFromDashboard(prayers);
   const [popup, setPopup] = useState<null | "contacts" | "messages">(null);
   const locationLine = [church.diocese, church.city].filter(Boolean).join(" · ");
   const mapsUrl =
@@ -140,7 +165,11 @@ function HeroChurchCard() {
       <div className="relative overflow-hidden rounded-[32px] border border-white/70 shadow-[0_30px_60px_-30px_rgba(60,40,16,0.55),inset_0_1px_0_rgba(255,255,255,0.7)]">
         {/* Church image background */}
         <div className="relative h-[210px] w-full">
-          <img src={cardChurch} alt={church.name} className="absolute inset-0 h-full w-full object-cover" />
+          <img
+            src={church.coverImageUrl || cardChurch}
+            alt={church.name}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
           <div
             className="absolute inset-0"
             style={{
@@ -200,9 +229,12 @@ function HeroChurchCard() {
 
           {/* Row 1: Priest information (dedicated row, full name) */}
           <div className="flex items-center gap-3">
-            <div className="h-[48px] w-[48px] shrink-0 rounded-full bg-gradient-to-br from-[#7a4a26] to-[#3a2a18] grid place-items-center text-[#f3e6c4] font-arabic-serif text-[18px] font-extrabold border-[2.5px] border-[#e7c97a] shadow-[0_8px_20px_-8px_rgba(60,40,16,0.6)]">
-              ✚
-            </div>
+            <MemberAvatar
+              name={church.primaryPriestName ?? "الكاهن"}
+              avatarUrl={church.primaryPriestAvatarUrl ?? undefined}
+              size="lg"
+              className="border-[2.5px] border-[#e7c97a] shadow-[0_8px_20px_-8px_rgba(60,40,16,0.6)]"
+            />
             <div className="flex-1 min-w-0 text-right">
               <p className="text-[9.5px] font-bold text-[#b8893a] tracking-wide leading-none">الكاهن المسؤول</p>
               <p className="mt-1 font-arabic-serif text-[15px] font-extrabold text-[#3a2a18] leading-tight whitespace-normal break-words">
@@ -222,7 +254,7 @@ function HeroChurchCard() {
           <div className="grid grid-cols-3 gap-2">
             <StatTile icon={Users} value={church.memberCount.toLocaleString("ar-EG")} label="عضو" tone="#5b8fd1" />
             <StatTile icon={HandHeart} value={String(church.servantCount)} label="خادم" tone="#1f8a5a" />
-            <StatTile icon={Flame} value="نشط" label="نشاط الصلاة" tone="#c98a3c" />
+            <StatTile icon={Flame} value={String(prayerStats.active)} label="طلبات صلاة" tone="#c98a3c" />
           </div>
         </div>
       </div>
@@ -281,13 +313,9 @@ function StatTile({ icon: Icon, value, label, tone }: { icon: any; value: string
 /* ============================================================ */
 
 const QUICK = [
-  { key: "news", label: "الأخبار", icon: Newspaper, tone: "#c98a3c", img: newsCandle },
-  { key: "live", label: "البث المباشر", icon: Radio, tone: "#c44569", img: heavenlyChurch },
-  { key: "meetings", label: "الاجتماعات", icon: Users, tone: "#5b8fd1", img: newsYouth },
-  { key: "service", label: "الخدمة", icon: HandHeart, tone: "#1f8a5a", img: cardChildren },
-  { key: "prayers", label: "طلبات الصلاة", icon: Heart, tone: "#8a6ec1", img: cardAgpeya },
-  { key: "library", label: "المكتبة", icon: Library, tone: "#6a4ab5", img: cardKatameros },
-  { key: "mass", label: "جدول القداسات", icon: CalendarDays, tone: "#7a4a26", img: newsMass },
+  { key: "prayers", label: "طلبات الصلاة", icon: Heart, tone: "#8a6ec1", img: cardAgpeya, to: "/prayer-requests" },
+  { key: "service", label: "الخدمة", icon: HandHeart, tone: "#1f8a5a", img: cardChildren, to: "/church/service" },
+  { key: "directory", label: "دليل الكنائس", icon: Church, tone: "#5b8fd1", img: cardChurch, to: "/church/directory" },
 ] as const;
 
 /* Shared horizontal auto-marquee for premium rails (RTL-aware). */
@@ -357,10 +385,7 @@ function QuickGrid() {
 
   return (
     <section>
-      <SectionTitle
-        title="وصول سريع"
-        action={<span className="text-[11px] font-bold text-[#b8893a]">عرض الكل</span>}
-      />
+      <SectionTitle title="وصول سريع" />
       <div
         ref={trackRef}
         className="-mx-4 overflow-x-auto no-scrollbar scroll-smooth"
@@ -403,24 +428,10 @@ function QuickGrid() {
             );
             const cls =
               "group shrink-0 w-[124px] h-[150px] relative rounded-3xl overflow-hidden border border-white/70 text-right active:scale-[0.96] transition-transform shadow-[0_18px_36px_-22px_rgba(120,80,30,0.55),inset_0_1px_0_rgba(255,255,255,0.85)]";
-            if (q.key === "service") {
-              return (
-                <Link key={q.key} to="/church/service" className={cls}>
-                  {inner}
-                </Link>
-              );
-            }
-            if (q.key === "prayers") {
-              return (
-                <Link key={q.key} to="/prayer-requests" className={cls}>
-                  {inner}
-                </Link>
-              );
-            }
             return (
-              <button key={q.key} type="button" className={cls}>
+              <Link key={q.key} to={q.to} className={cls}>
                 {inner}
-              </button>
+              </Link>
             );
           })}
         </div>
@@ -606,7 +617,7 @@ function PostCardActions({ post }: { post: ChurchPost }) {
 
 function PinMenu({ post, onClose }: { post: ChurchPost; onClose: () => void }) {
   const [customOpen, setCustomOpen] = useState(false);
-  const [custom, setCustom] = useState("");
+  const [customDate, setCustomDate] = useState("");
   const pinned = isPinned(post);
 
   const apply = (days: number) => {
@@ -614,7 +625,12 @@ function PinMenu({ post, onClose }: { post: ChurchPost; onClose: () => void }) {
     onClose();
   };
   const applyCustom = () => {
-    const ms = Date.parse(custom);
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(customDate.trim());
+    if (!m) return;
+    const year = Number(m[1]);
+    const month = Number(m[2]);
+    const day = Number(m[3]);
+    const ms = new Date(year, month - 1, day, 23, 59, 59, 999).getTime();
     if (Number.isFinite(ms) && ms > Date.now()) {
       pinUntil(post.id, ms);
       onClose();
@@ -666,12 +682,16 @@ function PinMenu({ post, onClose }: { post: ChurchPost; onClose: () => void }) {
         </button>
         {customOpen ? (
           <div className="mt-2 flex items-center gap-2">
-            <input
-              type="datetime-local"
-              value={custom}
-              onChange={(e) => setCustom(e.target.value)}
-              className="flex-1 rounded-xl bg-white/95 border border-[#efe2c4] px-3 py-2 text-[12.5px] text-[#3a2a18] outline-none"
-            />
+            <div className="flex-1 min-w-0">
+              <AlphaDatePicker
+                value={customDate}
+                onChange={setCustomDate}
+                title="تثبيت حتى"
+                placeholder="اختر التاريخ"
+                minYear={new Date().getFullYear()}
+                maxYear={new Date().getFullYear() + 5}
+              />
+            </div>
             <button
               type="button"
               onClick={applyCustom}
@@ -721,84 +741,37 @@ function ManageButton({ post }: { post: ChurchPost }) {
 
 /* --------- Premium Post Card (swipeable horizontal feed) --------- */
 
-type EngagementState = {
-  liked: boolean;
-  likes: number;
-  comments: { id: string; name: string; text: string; at: number; avatar?: string }[];
-  shares: number;
-};
-
-const SEED_NAMES = ["مينا", "ماريان", "توماس", "أندرو", "بيشوي", "ماري"];
-const SEED_TEXTS = [
-  "🙏 متحمس جدا للرحلة",
-  "الرب يشفيه ويبارك حياته",
-  "موجود إن شاء الله",
-  "متشوقين جدا للندوة",
-  "بركة وصلوات",
-];
-const AVATAR_POOL = [cardChildren, cardAgpeya, cardKatameros, cardChurch, newsYouth, newsMass];
-
-function seedEngagement(post: ChurchPost): EngagementState {
-  // Stable pseudo-random based on id
-  let h = 0;
-  for (let i = 0; i < post.id.length; i++) h = (h * 31 + post.id.charCodeAt(i)) >>> 0;
-  const likes = 30 + (h % 220);
-  const sharesN = 3 + ((h >> 3) % 40);
-  const nameIdx = h % SEED_NAMES.length;
-  const textIdx = (h >> 5) % SEED_TEXTS.length;
-  const avatarIdx = (h >> 7) % AVATAR_POOL.length;
-  return {
-    liked: false,
-    likes,
-    shares: sharesN,
-    comments: [
-      {
-        id: "seed",
-        name: SEED_NAMES[nameIdx],
-        text: SEED_TEXTS[textIdx],
-        at: Date.now() - 3 * 3600 * 1000,
-        avatar: AVATAR_POOL[avatarIdx],
-      },
-    ],
-  };
-}
-
 type CTASpec = {
   label: string;
   bg: string;
   shadow: string;
   kind: "link" | "reserve" | "attend" | "prayer" | "live" | "details" | "congrats" | "condolence";
-  statLabel: string;
-  statCount: number;
 };
 
 function ctaFor(post: ChurchPost): CTASpec {
-  let h = 0;
-  for (let i = 0; i < post.id.length; i++) h = (h * 33 + post.id.charCodeAt(i)) >>> 0;
-  const n = (min: number, span: number) => min + ((h >> 2) % span);
-
   switch (post.type) {
     case "trip":
-      return { label: "Book Now", bg: "linear-gradient(180deg,#1f9d63,#157a4a)", shadow: "rgba(31,138,90,0.55)", kind: "reserve", statLabel: "Booked", statCount: n(20, 80) };
+      return { label: "احجز الآن", bg: "linear-gradient(180deg,#1f9d63,#157a4a)", shadow: "rgba(31,138,90,0.55)", kind: "reserve" };
     case "meeting":
     case "liturgy":
-      return { label: "Register", bg: "linear-gradient(180deg,#7c5ad1,#5a3eb0)", shadow: "rgba(124,90,209,0.55)", kind: "attend", statLabel: "Interested", statCount: n(40, 160) };
+      return { label: "سجّل حضورك", bg: "linear-gradient(180deg,#7c5ad1,#5a3eb0)", shadow: "rgba(124,90,209,0.55)", kind: "attend" };
     case "prayer":
-      return { label: "🙏 I Prayed", bg: "linear-gradient(180deg,#3f7ed6,#2a5fb0)", shadow: "rgba(63,126,214,0.55)", kind: "prayer", statLabel: "Prayed", statCount: n(80, 300) };
+      return { label: "صلّيت", bg: "linear-gradient(180deg,#3f7ed6,#2a5fb0)", shadow: "rgba(63,126,214,0.55)", kind: "prayer" };
     case "announcement":
-      return { label: "View Details", bg: "linear-gradient(180deg,#f59042,#d96f1f)", shadow: "rgba(217,111,31,0.55)", kind: "details", statLabel: "Views", statCount: n(120, 500) };
+      return { label: "عرض التفاصيل", bg: "linear-gradient(180deg,#f59042,#d96f1f)", shadow: "rgba(217,111,31,0.55)", kind: "details" };
     case "event":
-      return { label: "Watch Live", bg: "linear-gradient(180deg,#e0464d,#b8232b)", shadow: "rgba(184,35,43,0.55)", kind: "live", statLabel: "Watching Now", statCount: n(15, 80) };
+      return { label: "شاهد البث", bg: "linear-gradient(180deg,#e0464d,#b8232b)", shadow: "rgba(184,35,43,0.55)", kind: "live" };
     case "wedding":
-      return { label: "Send Congrats", bg: "linear-gradient(180deg,#e58aa0,#c44569)", shadow: "rgba(196,69,105,0.5)", kind: "congrats", statLabel: "Congrats", statCount: n(30, 120) };
+      return { label: "أرسل تهنئة", bg: "linear-gradient(180deg,#e58aa0,#c44569)", shadow: "rgba(196,69,105,0.5)", kind: "congrats" };
     case "condolence":
-      return { label: "Send Condolence", bg: "linear-gradient(180deg,#8a7257,#6a543a)", shadow: "rgba(106,84,58,0.55)", kind: "condolence", statLabel: "Condolences", statCount: n(20, 90) };
+      return { label: "أرسل تعزية", bg: "linear-gradient(180deg,#8a7257,#6a543a)", shadow: "rgba(106,84,58,0.55)", kind: "condolence" };
     default:
-      return { label: "View Details", bg: "linear-gradient(180deg,#b8893a,#7a4a26)", shadow: "rgba(122,74,38,0.55)", kind: "details", statLabel: "Views", statCount: n(80, 300) };
+      return { label: "عرض التفاصيل", bg: "linear-gradient(180deg,#b8893a,#7a4a26)", shadow: "rgba(122,74,38,0.55)", kind: "details" };
   }
 }
 
 function PostHeader({ post, canManage, onManage }: { post: ChurchPost; canManage: boolean; onManage: () => void }) {
+  const { church } = useChurchDashboardData();
   const meta = POST_TYPE_META[post.type];
   return (
     <div className="flex items-center gap-2.5 px-3.5 pt-3.5">
@@ -829,38 +802,62 @@ function PostHeader({ post, canManage, onManage }: { post: ChurchPost; canManage
           )}
         </div>
         <div className="mt-0.5 text-[12.5px] font-extrabold text-[#3a2a18] leading-tight truncate">
-          كنيسة العذراء والقديس يوسف
+          {church.name}
         </div>
         <div className="text-[10px] text-[#8a6a3a] font-medium">{post.date}</div>
       </div>
-      <div className="relative h-10 w-10 shrink-0 rounded-full border border-white/80 overflow-hidden shadow-[0_4px_10px_-4px_rgba(120,80,30,0.4)] ring-2 ring-[#f5e6c2]">
-        <img src={heavenlyChurch} alt="" className="h-full w-full object-cover" />
-      </div>
+      <MemberAvatar
+        name={church.primaryPriestName ?? church.name}
+        avatarUrl={church.primaryPriestAvatarUrl ?? undefined}
+        size="md"
+        className="ring-2 ring-[#f5e6c2]"
+      />
     </div>
   );
 }
 
 function PremiumPostCard({ post }: { post: ChurchPost }) {
   const canManage = useCanManagePosts();
-  const [eng, setEng] = useState<EngagementState>(() => seedEngagement(post));
   const [draft, setDraft] = useState("");
   const [expanded, setExpanded] = useState(false);
   const [popup, setPopup] = useState<null | "condolence" | "congrats" | "reserve" | "manage">(null);
 
+  const comments = useComments(post.id);
+  const r = useReactions(post.id);
+  const shares = useShareCount(post.id);
+  const latest = comments[0];
+  const user = getCurrentUser();
   const cta = ctaFor(post);
-  const latest = eng.comments[0];
 
-  const toggleLike = () =>
-    setEng((s) => ({ ...s, liked: !s.liked, likes: s.likes + (s.liked ? -1 : 1) }));
-
-  const sendComment = () => {
+  const sendComment = (e: React.MouseEvent | React.KeyboardEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     const text = draft.trim();
     if (!text) return;
-    setEng((s) => ({
-      ...s,
-      comments: [{ id: String(Date.now()), name: "أنت", text, at: Date.now() }, ...s.comments],
-    }));
+    addCommentAsCurrentUser(post.id, text);
     setDraft("");
+  };
+
+  const onLike = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleReaction(post.id, "love");
+  };
+
+  const onShare = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const url = `${window.location.origin}/church/post/${post.id}`;
+    try {
+      if (typeof navigator.share === "function") {
+        await navigator.share({ title: post.title, text: post.excerpt, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+      }
+      recordShare(post.id);
+    } catch {
+      /* cancelled */
+    }
   };
 
   const onCta = (e: React.MouseEvent) => {
@@ -869,16 +866,14 @@ function PremiumPostCard({ post }: { post: ChurchPost }) {
     if (cta.kind === "reserve") setPopup("reserve");
     else if (cta.kind === "congrats") setPopup("congrats");
     else if (cta.kind === "condolence") setPopup("condolence");
-    else if (cta.kind === "attend") {
-      // mark attending via store
-      import("@/features/church/post-store").then((m) => m.toggleAttendance(post.id));
-    } else if (cta.kind === "prayer") {
-      toggleLike();
-    } else {
-      // navigate
+    else if (cta.kind === "prayer") toggleReaction(post.id, "love");
+    else if (cta.kind === "live" || cta.kind === "link") {
       window.location.assign(`/church/post/${post.id}`);
     }
   };
+
+  const actionButtonClass =
+    "w-full inline-flex items-center justify-center gap-2 rounded-2xl py-2.5 text-[13px] font-extrabold text-white active:scale-[0.98] transition-transform";
 
   return (
     <article
@@ -886,15 +881,13 @@ function PremiumPostCard({ post }: { post: ChurchPost }) {
     >
       <PostHeader post={post} canManage={canManage} onManage={() => setPopup("manage")} />
 
-      {/* Hero image */}
-      <Link to="/church/post/$id" params={{ id: post.id }} className="block px-3.5 pt-3">
+      <div className="px-3.5 pt-3">
         <div className="relative overflow-hidden rounded-[22px] border border-white/70 shadow-[0_14px_28px_-18px_rgba(60,40,16,0.55)]">
           <img src={post.image} alt={post.title} className="block h-[150px] w-full object-cover" loading="lazy" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#1a0f04]/45 via-transparent to-transparent" />
         </div>
-      </Link>
+      </div>
 
-      {/* Title + excerpt */}
       <div className="px-4 pt-2.5 text-right">
         <h3 className="font-arabic-serif text-[16.5px] font-extrabold text-[#2a1d10] leading-snug">{post.title}</h3>
         <p className={"mt-1 text-[12.5px] text-[#4a3a26] leading-relaxed " + (expanded ? "" : "line-clamp-2")}>
@@ -911,87 +904,101 @@ function PremiumPostCard({ post }: { post: ChurchPost }) {
         ) : null}
       </div>
 
-      {/* Primary CTA: [stats 25%] + [action 75%] */}
-      <div className="px-4 pt-2.5 flex items-stretch gap-2">
-        <div
-          className="basis-1/4 shrink-0 rounded-2xl bg-white/85 border border-[#efe2c4] px-2 py-1.5 text-center flex flex-col justify-center"
-          aria-label={`${cta.statCount} ${cta.statLabel}`}
-        >
-          <div className="text-[14px] font-extrabold text-[#2a1d10] leading-none tabular-nums">
-            {cta.statCount.toString()}
-          </div>
-          <div className="mt-0.5 text-[9.5px] font-extrabold text-[#7a5a30] leading-tight">
-            {cta.statLabel}
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={onCta}
-          className="flex-1 inline-flex items-center justify-center gap-2 rounded-2xl py-1.5 text-[13px] font-extrabold text-white active:scale-[0.98] transition-transform"
-          style={{ background: cta.bg, boxShadow: `0 14px 26px -14px ${cta.shadow}` }}
-        >
-          {cta.label}
-          <ArrowRight className="h-3.5 w-3.5 -scale-x-100" />
-        </button>
-      </div>
-
-      {/* Counters */}
       <div className="mx-4 mt-2.5 flex items-center justify-between rounded-2xl bg-white/70 border border-white/80 px-3.5 py-2 text-[13px] font-extrabold text-[#3a2a18]">
         <button
           type="button"
-          onClick={toggleLike}
+          onClick={onLike}
+          aria-pressed={r.love.mine}
           className="inline-flex items-center gap-2 active:scale-95"
-          aria-label="Like"
+          aria-label={r.love.mine ? "إلغاء الإعجاب" : "إعجاب"}
         >
-          <Heart className={"h-[20px] w-[20px] " + (eng.liked ? "text-[#e0464d] fill-current" : "text-[#c44569]")} strokeWidth={2.2} />
-          <span className="tabular-nums">{eng.likes.toString()}</span>
+          <Heart className={"h-[20px] w-[20px] " + (r.love.mine ? "text-[#e0464d] fill-current" : "text-[#c44569]")} strokeWidth={2.2} />
+          <span className="tabular-nums">{r.love.count.toLocaleString("ar-EG")}</span>
         </button>
-        <button type="button" className="inline-flex items-center gap-2 active:scale-95" aria-label="Comments">
+        <Link
+          to="/church/post/$id"
+          params={{ id: post.id }}
+          className="inline-flex items-center gap-2 active:scale-95"
+          aria-label="التعليقات"
+        >
           <MessageCircle className="h-[20px] w-[20px] text-[#5b8fd1]" strokeWidth={2.2} />
-          <span className="tabular-nums">{eng.comments.length.toString()}</span>
-        </button>
-        <button type="button" className="inline-flex items-center gap-2 active:scale-95" aria-label="Share">
+          <span className="tabular-nums">{comments.length.toLocaleString("ar-EG")}</span>
+        </Link>
+        <button type="button" onClick={onShare} className="inline-flex items-center gap-2 active:scale-95" aria-label="مشاركة">
           <Share2 className="h-[20px] w-[20px] text-[#7a4a26]" strokeWidth={2.2} />
-          <span className="tabular-nums">{eng.shares.toString()}</span>
+          <span className="tabular-nums">{shares.toLocaleString("ar-EG")}</span>
         </button>
       </div>
 
-      {/* Latest comment */}
-      {latest ? (
-        <div className="mx-4 mt-2 flex items-start gap-2.5 rounded-2xl bg-white/55 border border-white/70 px-3 py-2 text-right">
-          <div className="min-w-0 flex-1">
-            <div className="text-[12px] font-extrabold text-[#7a4a26] leading-tight">{latest.name}</div>
-            <div className="mt-0.5 text-[12px] leading-snug text-[#2a1d10]">{latest.text}</div>
-          </div>
-          <div className="h-8 w-8 shrink-0 rounded-full overflow-hidden border border-white/70 ring-1 ring-[#efe2c4] bg-[#f5e6c2]">
-            {latest.avatar ? (
-              <img src={latest.avatar} alt="" className="h-full w-full object-cover" />
-            ) : null}
-          </div>
+      <div className="mx-4 mt-2 space-y-2">
+        <div className="h-[52px] shrink-0 flex items-start gap-2 rounded-2xl bg-white/60 border border-white/70 px-3 py-2 text-right overflow-hidden">
+          {latest ? (
+            <>
+              <MemberAvatar name={latest.name} avatarUrl={user.avatarUrl} size="sm" />
+              <div className="min-w-0 flex-1">
+                <p className="text-[12px] leading-snug text-[#2a1d10] line-clamp-2">
+                  <span className="font-extrabold text-[#7a4a26]">{latest.name}: </span>
+                  {latest.text}
+                </p>
+              </div>
+            </>
+          ) : (
+            <p className="flex-1 text-[11px] font-bold text-[#8a6a3a]/75 text-right leading-snug py-0.5">
+              لا توجد تعليقات بعد
+            </p>
+          )}
         </div>
-      ) : null}
 
-      {/* Quick reply */}
-      <div className="m-4 mt-2 flex items-center gap-2 rounded-full bg-white/85 border border-[#efe2c4] pl-1 pr-3 py-1">
-        <button
-          type="button"
-          onClick={sendComment}
-          aria-label="إرسال"
-          className="grid h-8 w-8 place-items-center rounded-full bg-gradient-to-l from-[#7a4a26] to-[#b8893a] text-white active:scale-90 shadow"
-        >
-          <Send className="h-3.5 w-3.5 -scale-x-100" />
-        </button>
-        <input
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter") sendComment(); }}
-          placeholder="اكتب تعليق..."
-          className="flex-1 bg-transparent text-right text-[12.5px] text-[#3a2a18] placeholder:text-[#a99060] outline-none py-1"
-          dir="rtl"
-        />
+        <div className="shrink-0 flex items-center gap-2 rounded-full bg-white/85 border border-[#efe2c4] pl-1 pr-3 py-1">
+          <button
+            type="button"
+            onClick={sendComment}
+            disabled={!draft.trim()}
+            aria-label="إرسال"
+            className="inline-flex h-8 shrink-0 items-center justify-center rounded-full bg-[#1f8a5a] px-3 text-white active:scale-90 shadow-[0_8px_16px_-10px_rgba(31,138,90,0.55)] disabled:opacity-40"
+          >
+            <Send className="h-3.5 w-3.5 -scale-x-100" />
+          </button>
+          <input
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") sendComment(e); }}
+            placeholder="اكتب تعليق..."
+            className="flex-1 min-w-0 bg-transparent text-right text-[12.5px] text-[#3a2a18] placeholder:text-[#a99060] outline-none py-1"
+            dir="rtl"
+          />
+        </div>
       </div>
 
-      {/* Popups */}
+      <div className="px-4 pt-2 pb-4 space-y-2">
+        {cta.kind === "attend" ? (
+          <AttendButton
+            postId={post.id}
+            label="سجّل حضورك"
+            activeLabel="✓ سجّلت حضورك"
+            className={actionButtonClass + " bg-gradient-to-l from-[#7c5ad1] to-[#5a3eb0] shadow-[0_14px_26px_-14px_rgba(124,90,209,0.55)]"}
+          />
+        ) : cta.kind !== "details" ? (
+          <button
+            type="button"
+            onClick={onCta}
+            className={actionButtonClass}
+            style={{ background: cta.bg, boxShadow: `0 14px 26px -14px ${cta.shadow}` }}
+          >
+            {cta.label}
+            <ArrowRight className="h-3.5 w-3.5 -scale-x-100" />
+          </button>
+        ) : null}
+        <Link
+          to="/church/post/$id"
+          params={{ id: post.id }}
+          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-[#efe2c4] bg-white/85 py-2.5 text-[12.5px] font-extrabold text-[#7a4a26] active:scale-[0.98] transition-transform"
+        >
+          عرض التفاصيل
+          <ArrowRight className="h-3.5 w-3.5 -scale-x-100" />
+        </Link>
+      </div>
+
       {popup === "condolence" ? (
         <CondolencePopup postId={post.id} onClose={() => setPopup(null)} />
       ) : popup === "congrats" ? (
@@ -1006,8 +1013,13 @@ function PremiumPostCard({ post }: { post: ChurchPost }) {
 }
 
 function ChurchPostsFeed() {
-  const sorted = useActiveUserPosts();
+  const { church } = useChurchDashboardData();
+  const { posts: sorted, loading: loadingPosts, refresh } = useChurchPosts(church.id);
   const [builderOpen, setBuilderOpen] = useState(false);
+
+  useEffect(() => {
+    if (sorted.length) void prefetchPostInteractions(sorted.map((p) => p.id));
+  }, [sorted]);
 
   return (
     <section>
@@ -1034,17 +1046,34 @@ function ChurchPostsFeed() {
           </div>
         }
       />
-      <div
-        className="-mx-4 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory"
-        style={{ WebkitOverflowScrolling: "touch", scrollPaddingInline: "16px" }}
-      >
-        <div className="flex gap-3 px-4 pb-3">
-          {sorted.map((p) => (
-            <PremiumPostCard key={p.id} post={p} />
-          ))}
+      {loadingPosts ? (
+        <Glass className="text-center py-6">
+          <p className="text-[13px] font-bold text-[#6a543a]">جاري تحميل المنشورات…</p>
+        </Glass>
+      ) : sorted.length === 0 ? (
+        <Glass className="text-center py-8">
+          <Newspaper className="mx-auto mb-2.5 h-8 w-8 text-[#b8893a]/75" strokeWidth={2.2} />
+          <p className="text-[13px] font-bold text-[#6a543a]">لا توجد منشورات بعد</p>
+        </Glass>
+      ) : (
+        <div
+          className="-mx-4 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory"
+          style={{ WebkitOverflowScrolling: "touch", scrollPaddingInline: "16px" }}
+        >
+          <div className="flex gap-3 px-4 pb-3">
+            {sorted.map((p) => (
+              <PremiumPostCard key={p.id} post={p} />
+            ))}
+          </div>
         </div>
-      </div>
-      {builderOpen ? <PostBuilder onClose={() => setBuilderOpen(false)} /> : null}
+      )}
+      {builderOpen ? (
+        <PostBuilder
+          churchId={church.id}
+          onClose={() => setBuilderOpen(false)}
+          onCreated={() => void refresh()}
+        />
+      ) : null}
     </section>
   );
 }
@@ -1735,7 +1764,7 @@ function ChurchEmptyState() {
         بعد اعتماد طلب تأسيس الكنيسة ستظهر هنا بيانات كنيستك وخدماتها.
       </p>
       <Link
-        to="/profile/church/setup"
+        to="/profile/church"
         className="mt-5 inline-flex h-12 items-center justify-center rounded-2xl bg-gradient-to-l from-[#7a4a26] to-[#b8893a] px-6 text-[14px] font-extrabold text-white shadow-[0_10px_20px_-10px_rgba(122,74,38,0.6)] active:scale-[0.98] transition-transform"
       >
         طلب تأسيس كنيسة
@@ -1779,8 +1808,6 @@ function ChurchScreen() {
             <QuickGrid />
             <ChurchPostsFeed />
             <PrayerRequestsCard />
-            <UpcomingMeetings />
-            <LiveBroadcast />
             <LocationRow />
           </ChurchDashboardProvider>
         )}

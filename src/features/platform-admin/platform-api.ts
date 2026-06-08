@@ -361,8 +361,39 @@ export async function syncApprovalSourceStatus(
   sourceTable: string | null | undefined,
   sourceId: string | null | undefined,
   status: ApprovalStatus,
+  approvalId?: string,
+  approvalKind?: string,
 ): Promise<void> {
-  if (sourceTable !== "church_setup_requests" || !sourceId) return;
+  let setupRequestId =
+    sourceTable === "church_setup_requests" && sourceId ? sourceId : null;
+
+  if (!setupRequestId && approvalId) {
+    const { data: approval } = await supabase
+      .from("platform_approvals")
+      .select("source_table, source_id, kind, type")
+      .eq("id", approvalId)
+      .maybeSingle();
+
+    if (approval?.source_table === "church_setup_requests" && approval.source_id) {
+      setupRequestId = approval.source_id;
+    } else if (
+      (approval?.kind === "church_setup" || approval?.type === "church_setup") &&
+      approval.source_id
+    ) {
+      setupRequestId = approval.source_id;
+    }
+  }
+
+  if (
+    !setupRequestId &&
+    (approvalKind === "church_setup" || sourceTable === "church_setup_requests")
+  ) {
+    console.warn("syncApprovalSourceStatus: church_setup approval missing source_id", approvalId);
+    return;
+  }
+
+  if (!setupRequestId) return;
+
   const mapped =
     status === "approved"
       ? "approved"
@@ -376,12 +407,14 @@ export async function syncApprovalSourceStatus(
   const { error } = await supabase
     .from("church_setup_requests")
     .update({ status: mapped, updated_at: new Date().toISOString() })
-    .eq("id", sourceId);
+    .eq("id", setupRequestId);
   if (error) console.error("supabase error", error);
 
   if (status === "approved") {
     const { provisionChurchFromSetupRequest } = await import("@/features/church/church-provisioning");
-    await provisionChurchFromSetupRequest(sourceId);
+    const { getAuthUserId } = await import("@/features/auth");
+    const fallbackUserId = await getAuthUserId();
+    await provisionChurchFromSetupRequest(setupRequestId, fallbackUserId);
   }
 }
 

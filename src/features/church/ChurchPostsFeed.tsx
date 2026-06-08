@@ -246,7 +246,7 @@ export function PremiumHorizontalPostCard({ post }: { post: ChurchPost }) {
               </div>
             </>
           ) : (
-            <p className="flex-1 text-[11px] font-bold text-[#8a6a3a]/75 text-right leading-snug py-0.5">كن أول من يعلق</p>
+            <p className="flex-1 text-[11px] font-bold text-[#8a6a3a]/75 text-right leading-snug py-0.5">لا توجد تعليقات بعد</p>
           )}
         </div>
 

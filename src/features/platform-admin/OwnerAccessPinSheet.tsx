@@ -46,7 +46,7 @@ export function OwnerAccessPinSheet({
       setError(`محاولات كثيرة — انتظر ${Math.ceil(lockoutRemainingSec / 60)} د`);
       return;
     }
-    const result = verifyPin(pin);
+    const result = verifyPin(pin.trim());
     if (result === "ok") {
       setDigits([]);
       setError("");

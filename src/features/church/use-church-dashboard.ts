@@ -1,8 +1,18 @@
 import { useCallback, useEffect, useState } from "react";
+import { AUTH_CONTEXT_EVENT } from "@/features/auth";
 import {
   fetchChurchDashboard,
+  fetchChurchProfileContext,
+  resolveChurchHubDashboardAccess,
   type ChurchDashboardData,
+  type ChurchProfileContext,
 } from "./church-dashboard-api";
+import { PRAYER_REQUESTS_CHANGED } from "./prayer-requests-api";
+
+const EMPTY_PROFILE: ChurchProfileContext = {
+  hasApprovedChurch: false,
+  setupStatus: "none",
+};
 
 export function useChurchDashboard() {
   const [data, setData] = useState<ChurchDashboardData | null>(null);
@@ -27,11 +37,14 @@ export function useChurchDashboard() {
   useEffect(() => {
     void refresh();
     const onHub = () => void refresh();
+    const onPrayers = () => void refresh();
     window.addEventListener("ab:church-hub", onHub);
     window.addEventListener("storage", onHub);
+    window.addEventListener(PRAYER_REQUESTS_CHANGED, onPrayers);
     return () => {
       window.removeEventListener("ab:church-hub", onHub);
       window.removeEventListener("storage", onHub);
+      window.removeEventListener(PRAYER_REQUESTS_CHANGED, onPrayers);
     };
   }, [refresh]);
 
@@ -42,4 +55,73 @@ export function useChurchDashboard() {
     hasChurch: !!data,
     refresh,
   };
+}
+
+export function useChurchProfile() {
+  const [profile, setProfile] = useState<ChurchProfileContext>(EMPTY_PROFILE);
+  const [loading, setLoading] = useState(true);
+
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    try {
+      const next = await fetchChurchProfileContext();
+      setProfile(next);
+    } catch (e) {
+      console.error("useChurchProfile", e);
+      setProfile(EMPTY_PROFILE);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void refresh();
+    const onHub = () => void refresh();
+    const onAuth = () => void refresh();
+    window.addEventListener("ab:church-hub", onHub);
+    window.addEventListener("storage", onHub);
+    window.addEventListener(AUTH_CONTEXT_EVENT, onAuth);
+    return () => {
+      window.removeEventListener("ab:church-hub", onHub);
+      window.removeEventListener("storage", onHub);
+      window.removeEventListener(AUTH_CONTEXT_EVENT, onAuth);
+    };
+  }, [refresh]);
+
+  return { profile, loading, refresh };
+}
+
+/** /profile/church — direct membership + church gate (no setup_requests). */
+export function useChurchHubDashboardAccess() {
+  const [canOpenDashboard, setCanOpenDashboard] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    try {
+      const next = await resolveChurchHubDashboardAccess();
+      setCanOpenDashboard(next.canOpenDashboard);
+    } catch (e) {
+      console.error("useChurchHubDashboardAccess", e);
+      setCanOpenDashboard(false);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void refresh();
+    const onHub = () => void refresh();
+    const onAuth = () => void refresh();
+    window.addEventListener("ab:church-hub", onHub);
+    window.addEventListener("storage", onHub);
+    window.addEventListener(AUTH_CONTEXT_EVENT, onAuth);
+    return () => {
+      window.removeEventListener("ab:church-hub", onHub);
+      window.removeEventListener("storage", onHub);
+      window.removeEventListener(AUTH_CONTEXT_EVENT, onAuth);
+    };
+  }, [refresh]);
+
+  return { canOpenDashboard, loading, refresh };
 }

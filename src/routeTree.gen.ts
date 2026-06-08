@@ -49,6 +49,7 @@ import { Route as PlatformApprovalsRouteImport } from './routes/platform.approva
 import { Route as PlatformAnalyticsRouteImport } from './routes/platform.analytics'
 import { Route as PlatformAiRouteImport } from './routes/platform.ai'
 import { Route as FeastsEventIdRouteImport } from './routes/feasts.$eventId'
+import { Route as DevAuthRouteImport } from './routes/dev.auth'
 import { Route as ChurchServiceRouteImport } from './routes/church.service'
 import { Route as ChurchNotificationsRouteImport } from './routes/church.notifications'
 import { Route as ChurchDirectoryRouteImport } from './routes/church.directory'
@@ -265,6 +266,11 @@ const FeastsEventIdRoute = FeastsEventIdRouteImport.update({
   path: '/feasts/$eventId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DevAuthRoute = DevAuthRouteImport.update({
+  id: '/dev/auth',
+  path: '/dev/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ChurchServiceRoute = ChurchServiceRouteImport.update({
   id: '/service',
   path: '/service',
@@ -364,6 +370,7 @@ export interface FileRoutesByFullPath {
   '/church/directory': typeof ChurchDirectoryRouteWithChildren
   '/church/notifications': typeof ChurchNotificationsRoute
   '/church/service': typeof ChurchServiceRoute
+  '/dev/auth': typeof DevAuthRoute
   '/feasts/$eventId': typeof FeastsEventIdRoute
   '/platform/ai': typeof PlatformAiRoute
   '/platform/analytics': typeof PlatformAnalyticsRoute
@@ -420,6 +427,7 @@ export interface FileRoutesByTo {
   '/church/directory': typeof ChurchDirectoryRouteWithChildren
   '/church/notifications': typeof ChurchNotificationsRoute
   '/church/service': typeof ChurchServiceRoute
+  '/dev/auth': typeof DevAuthRoute
   '/feasts/$eventId': typeof FeastsEventIdRoute
   '/platform/ai': typeof PlatformAiRoute
   '/platform/analytics': typeof PlatformAnalyticsRoute
@@ -478,6 +486,7 @@ export interface FileRoutesById {
   '/church/directory': typeof ChurchDirectoryRouteWithChildren
   '/church/notifications': typeof ChurchNotificationsRoute
   '/church/service': typeof ChurchServiceRoute
+  '/dev/auth': typeof DevAuthRoute
   '/feasts/$eventId': typeof FeastsEventIdRoute
   '/platform/ai': typeof PlatformAiRoute
   '/platform/analytics': typeof PlatformAnalyticsRoute
@@ -537,6 +546,7 @@ export interface FileRouteTypes {
     | '/church/directory'
     | '/church/notifications'
     | '/church/service'
+    | '/dev/auth'
     | '/feasts/$eventId'
     | '/platform/ai'
     | '/platform/analytics'
@@ -593,6 +603,7 @@ export interface FileRouteTypes {
     | '/church/directory'
     | '/church/notifications'
     | '/church/service'
+    | '/dev/auth'
     | '/feasts/$eventId'
     | '/platform/ai'
     | '/platform/analytics'
@@ -650,6 +661,7 @@ export interface FileRouteTypes {
     | '/church/directory'
     | '/church/notifications'
     | '/church/service'
+    | '/dev/auth'
     | '/feasts/$eventId'
     | '/platform/ai'
     | '/platform/analytics'
@@ -701,6 +713,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   AgpeyaPrayerIdRoute: typeof AgpeyaPrayerIdRoute
   AgpeyaSavedRoute: typeof AgpeyaSavedRoute
+  DevAuthRoute: typeof DevAuthRoute
   FeastsEventIdRoute: typeof FeastsEventIdRoute
   PlatformAiRoute: typeof PlatformAiRoute
   PlatformAnalyticsRoute: typeof PlatformAnalyticsRoute
@@ -1012,6 +1025,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FeastsEventIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dev/auth': {
+      id: '/dev/auth'
+      path: '/dev/auth'
+      fullPath: '/dev/auth'
+      preLoaderRoute: typeof DevAuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/church/service': {
       id: '/church/service'
       path: '/service'
@@ -1227,6 +1247,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   AgpeyaPrayerIdRoute: AgpeyaPrayerIdRoute,
   AgpeyaSavedRoute: AgpeyaSavedRoute,
+  DevAuthRoute: DevAuthRoute,
   FeastsEventIdRoute: FeastsEventIdRoute,
   PlatformAiRoute: PlatformAiRoute,
   PlatformAnalyticsRoute: PlatformAnalyticsRoute,

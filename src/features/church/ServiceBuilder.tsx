@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { X, ImagePlus, Check } from "lucide-react";
-import { AlphaDatePicker } from "@/components/controls";
+import { AlphaDatePicker, AlphaTimePicker } from "@/components/controls";
 import {
   addService, addActivity,
   SERVICE_TYPE_LABELS, ACTIVITY_TYPES, REPEAT_LABELS,
@@ -322,7 +322,13 @@ function ActivityForm({ onSaved }: { onSaved: (id: string) => void }) {
             />
           </Field>
           <Field label="الوقت">
-            <input type="time" className={inputCls} value={time} onChange={(e) => setTime(e.target.value)} />
+            <AlphaTimePicker
+              value={time}
+              onChange={setTime}
+              title="الوقت"
+              placeholder="اختر الوقت"
+              className={inputCls}
+            />
           </Field>
         </div>
         <Field label="المكان">

@@ -126,7 +126,12 @@ export function BottomDock({
               to="/bible"
               active={isActive("/bible") || isActive("/books")}
             />
-            <DockItem icon={ChurchIcon} label="كنيستك" to="/church" active={isActive("/church")} />
+            <DockItem
+              icon={ChurchIcon}
+              label="كنيستك"
+              to="/profile/church"
+              active={isActive("/profile/church") || isActive("/church")}
+            />
             <DockItem icon={UserIcon} label="الملف الشخصي" to="/profile" active={isActive("/profile")} />
           </div>
         </div>

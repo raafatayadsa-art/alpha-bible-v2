@@ -1,12 +1,10 @@
-import { type ReactNode } from "react";
-import { Church, LayoutDashboard } from "lucide-react";
+import { type ReactNode, useEffect, useState } from "react";
+import { Church } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { CopticCross } from "@/components/coptic";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 import { setupGreenButton } from "./church-setup-styles";
-import { useChurchHub } from "./church-hub-store";
-import type { ApprovedChurch } from "./types";
-
 function HubCard({
   children,
   accent = "#b8893a",
@@ -44,7 +42,7 @@ function HubButton({
   variant = "primary",
 }: {
   children: ReactNode;
-  to: "/profile/church/setup" | "/church";
+  to: "/profile/church/setup";
   variant?: "primary" | "secondary";
 }) {
   const navigate = useNavigate();
@@ -105,11 +103,6 @@ function StatePending() {
           </p>
         </div>
       </div>
-      <div className="mt-5">
-        <HubButton to="/profile/church/setup" variant="secondary">
-          عرض الطلب
-        </HubButton>
-      </div>
     </HubCard>
   );
 }
@@ -139,39 +132,96 @@ function StateNeedsInfo({ adminNotes }: { adminNotes?: string }) {
   );
 }
 
-function StateApproved({ church }: { church?: ApprovedChurch }) {
-  return (
-    <HubCard accent="#3f9d6e" className="animate-in fade-in duration-300">
-      <div className="text-right">
-        <CopticCross className="mb-3 text-[#3f9d6e]" size={20} />
-        <h2 className="font-arabic-serif text-[18px] font-bold text-[#3a2a18]">
-          لوحة إدارة الكنيسة
-        </h2>
-        {church?.name && (
-          <p className="mt-1.5 text-[13px] font-bold text-[#6a543a]">{church.name}</p>
-        )}
-      </div>
-      <div className="mt-5">
-        <HubButton to="/church">
-          <LayoutDashboard className="h-4 w-4" />
-          فتح لوحة الإدارة
-        </HubButton>
-      </div>
-    </HubCard>
-  );
-}
-
 export function ChurchManagementHub() {
-  const { state } = useChurchHub();
+  const navigate = useNavigate();
+  const [membershipChecked, setMembershipChecked] = useState(false);
+  const [sessionUserId, setSessionUserId] = useState<string | null>(null);
+  const [membership, setMembership] = useState<{ id: string | number } | null>(null);
 
-  return (
-    <div className="space-y-4">
-      {state.status === "none" && <StateNone />}
-      {state.status === "pending" && <StatePending />}
-      {state.status === "needs_info" && (
-        <StateNeedsInfo adminNotes={state.request?.adminNotes} />
-      )}
-      {state.status === "approved" && <StateApproved church={state.church} />}
-    </div>
-  );
+  useEffect(() => {
+    let cancelled = false;
+
+    void (async () => {
+      let session: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"] = null;
+      const deadline = Date.now() + 8000;
+
+      while (Date.now() < deadline && !cancelled) {
+        const { data: { session: nextSession } } = await supabase.auth.getSession();
+        if (nextSession?.user?.id) {
+          session = nextSession;
+          break;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 150));
+      }
+
+      if (cancelled) return;
+
+      if (!session?.user?.id) {
+        const { data: { session: finalSession } } = await supabase.auth.getSession();
+        session = finalSession;
+      }
+
+      if (cancelled) return;
+
+      if (!session?.user?.id) {
+        setSessionUserId(null);
+        setMembership(null);
+        if (import.meta.env.DEV) {
+          navigate({ to: "/dev/auth", replace: true });
+        }
+        return;
+      }
+
+      const userId = session.user.id;
+      setSessionUserId(userId);
+
+      const { data: membershipRow } = await supabase
+        .from("church_memberships")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("status", "active")
+        .eq("membership_status", "approved")
+        .limit(1)
+        .maybeSingle();
+
+      setMembership(membershipRow ?? null);
+
+      if (cancelled) return;
+
+      if (membershipRow?.id != null) {
+        navigate({ to: "/church", replace: true });
+        return;
+      }
+
+      setMembershipChecked(true);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate]);
+
+  const loading = !membershipChecked;
+  const canOpenDashboard = undefined;
+  const dashboardUnlocked = undefined;
+  const renderBranch = !membershipChecked ? "loading" : "setup_card_state_none";
+
+  console.log({
+    loading,
+    membership,
+    canOpenDashboard,
+    dashboardUnlocked,
+    sessionUserId,
+    renderBranch,
+  });
+
+  if (!membershipChecked) {
+    return (
+      <HubCard accent="#3f9d6e" className="animate-in fade-in duration-300">
+        <p className="text-center text-[13px] font-bold text-[#6a543a]">جاري فتح لوحة الكنيسة…</p>
+      </HubCard>
+    );
+  }
+
+  return <StateNone />;
 }

@@ -5,5 +5,6 @@ export * from "./alpha-icon-registry";
 export * from "./AlphaControlBar";
 export * from "./AlphaReadingControlBar";
 export * from "./AlphaDatePicker";
+export * from "./AlphaTimePicker";
 export * from "./alpha-control-cycles";
 export * from "./useReadingAutoscroll";

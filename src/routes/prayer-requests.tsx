@@ -1,16 +1,29 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  Heart, Sparkles, Clock, HandHeart, Flame,
+  Heart, Sparkles, Clock, HandHeart, Flame, Plus,
   ShieldCheck, MessageSquareHeart, Send, X, Check, EyeOff, User as UserIcon,
 } from "lucide-react";
 import { CopticWatermark } from "@/components/coptic";
 import { AlphaHeader, AlphaHeaderShell } from "@/components/navigation/AlphaHeader";
 import {
-  PRAYER_REQUESTS, PRAYER_TABS, filterPrayers, prayerStats,
-  ENCOURAGEMENT_MESSAGES, ENCOURAGEMENT_TOTAL, ENCOURAGEMENT_CHIPS, ENCOURAGEMENT_MAX,
-  type PrayerFilter, type PrayerRequest, type EncouragementMessage, type PrayerCategory,
+  PRAYER_TABS,
+  type PrayerFilter,
+  type PrayerRequest,
+  type EncouragementMessage,
+  type PrayerCategory,
+  ENCOURAGEMENT_CHIPS,
+  ENCOURAGEMENT_MAX,
 } from "@/data/prayer-requests";
+import {
+  createPrayerRequest,
+  decrementPrayerCount,
+  fetchCommunityPrayerRequests,
+  filterPrayers,
+  incrementPrayerCount,
+  prayerStatsFromItems,
+  PRAYER_REQUESTS_CHANGED,
+} from "@/features/church/prayer-requests-api";
 import {
   PrayerUserAvatar, PrayerStackAvatars, firstNameFrom,
 } from "@/features/prayer/prayer-avatars";
@@ -54,25 +67,44 @@ function categoryAccent(cat: PrayerCategory) {
 function PrayerRequestsScreen() {
   const [tab, setTab] = useState<PrayerFilter>("all");
   const [prayedIds, setPrayedIds] = useState<Set<string>>(() => new Set());
-  const [messages, setMessages] = useState<EncouragementMessage[]>(ENCOURAGEMENT_MESSAGES);
+  const [messages, setMessages] = useState<EncouragementMessage[]>([]);
   const [encourageFor, setEncourageFor] = useState<PrayerRequest | null>(null);
   const [showAdd, setShowAdd] = useState(false);
-  const [items, setItems] = useState<PrayerRequest[]>(PRAYER_REQUESTS);
+  const [items, setItems] = useState<PrayerRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [addError, setAddError] = useState<string | null>(null);
+
+  const loadItems = useCallback(async () => {
+    setLoading(true);
+    const rows = await fetchCommunityPrayerRequests();
+    setItems(rows);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    void loadItems();
+    const onChange = () => void loadItems();
+    window.addEventListener(PRAYER_REQUESTS_CHANGED, onChange);
+    return () => window.removeEventListener(PRAYER_REQUESTS_CHANGED, onChange);
+  }, [loadItems]);
 
   const filtered = useMemo(
     () => filterPrayers(items, tab).sort((a, b) => a.ageMinutes - b.ageMinutes),
-    [items, tab]
+    [items, tab],
   );
-  const stats = useMemo(() => prayerStats(items), [items]);
+  const stats = useMemo(() => prayerStatsFromItems(items), [items]);
   const prayedCount = prayedIds.size;
-  const totalMessages = ENCOURAGEMENT_TOTAL + (messages.length - ENCOURAGEMENT_MESSAGES.length);
+  const totalMessages = messages.length;
 
   const togglePray = (id: string) => {
+    const wasPrayed = prayedIds.has(id);
     setPrayedIds((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (wasPrayed) next.delete(id);
+      else next.add(id);
       return next;
     });
+    void (wasPrayed ? decrementPrayerCount(id) : incrementPrayerCount(id)).then(() => void loadItems());
   };
 
   const addEncouragement = (text: string, anonymous: boolean) => {
@@ -91,24 +123,14 @@ function PrayerRequestsScreen() {
     setEncourageFor(null);
   };
 
-  const addRequest = (title: string, body: string, anonymous: boolean) => {
-    const t = title.trim();
-    const b = body.trim();
-    if (!t || !b) return;
-    const item: PrayerRequest = {
-      id: `local-${Date.now()}`,
-      name: anonymous ? "طلب صلاة مجهول" : "أنت",
-      title: t,
-      request: b,
-      time: "الآن",
-      ageMinutes: 0,
-      prayers: 0,
-      category: "طلبة",
-      status: "active",
-      mine: true,
-      anonymous,
-    };
-    setItems((prev) => [item, ...prev]);
+  const addRequest = async (title: string, body: string, anonymous: boolean) => {
+    setAddError(null);
+    const result = await createPrayerRequest({ title, body, anonymous });
+    if (!result.ok) {
+      setAddError(result.error);
+      return;
+    }
+    setItems((prev) => [result.request, ...prev]);
     setShowAdd(false);
   };
 
@@ -206,10 +228,16 @@ function PrayerRequestsScreen() {
 
         {/* Horizontal carousel — compact prayer request cards */}
         <section>
-          {filtered.length === 0 ? (
+          {loading ? (
+            <div className="mx-4 rounded-2xl bg-white/70 border border-[#efe2c4] p-6 text-center">
+              <p className="text-[12.5px] font-bold text-[#5a4a38]">جاري تحميل طلبات الصلاة…</p>
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="mx-4 rounded-2xl bg-white/70 border border-dashed border-[#c79356]/40 p-6 text-center">
               <Sparkles className="h-6 w-6 text-[#b8893a] mx-auto" strokeWidth={2.2} />
-              <p className="mt-2 text-[12.5px] font-bold text-[#5a4a38]">لا توجد طلبات في هذا التصنيف</p>
+              <p className="mt-2 text-[12.5px] font-bold text-[#5a4a38]">
+                {items.length === 0 ? "لا توجد طلبات صلاة بعد" : "لا توجد طلبات في هذا التصنيف"}
+              </p>
             </div>
           ) : (
             <div
@@ -218,7 +246,7 @@ function PrayerRequestsScreen() {
             >
               {filtered.map((req) => {
                 const hasPrayed = prayedIds.has(req.id);
-                const liveCount = req.prayers + (hasPrayed ? 1 : 0);
+                const liveCount = req.prayers;
                 const accent = categoryAccent(req.category);
                 return (
                   <article
@@ -375,7 +403,11 @@ function PrayerRequestsScreen() {
         <EncourageModal onClose={() => setEncourageFor(null)} onSend={addEncouragement} />
       ) : null}
       {showAdd ? (
-        <AddRequestModal onClose={() => setShowAdd(false)} onAdd={addRequest} />
+        <AddRequestModal
+          onClose={() => { setShowAdd(false); setAddError(null); }}
+          onAdd={(title, body, anonymous) => void addRequest(title, body, anonymous)}
+          error={addError}
+        />
       ) : null}
 
       <style>{`
@@ -526,8 +558,8 @@ function EncourageModal({
 }
 
 function AddRequestModal({
-  onClose, onAdd,
-}: { onClose: () => void; onAdd: (title: string, body: string, anonymous: boolean) => void }) {
+  onClose, onAdd, error,
+}: { onClose: () => void; onAdd: (title: string, body: string, anonymous: boolean) => void; error?: string | null }) {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [anonymous, setAnonymous] = useState(false);
@@ -586,6 +618,7 @@ function AddRequestModal({
             إضافة
           </button>
         </div>
+        {error ? <p className="mt-2 text-[11px] font-bold text-[#a8344f] text-right">{error}</p> : null}
       </div>
     </div>
   );

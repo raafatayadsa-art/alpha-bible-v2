@@ -1,7 +1,8 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { CHURCH_POSTS, type ChurchPost, type PostType } from "@/data/church-posts";
+import type { ChurchPost, PostType } from "@/data/church-posts";
 import { ensurePostImageStored } from "./post-image-engine";
 import { currentUserName } from "./current-user";
+import { deleteChurchPost, patchChurchPost } from "./church-posts-api";
 import {
   AUTH_CONTEXT_EVENT,
   alphaRoleToChurchRole,
@@ -15,8 +16,6 @@ const ATT_KEY = "alpha:church:attendance";
 const RES_KEY = "alpha:church:reservations";
 const COND_KEY = "alpha:church:condolences";
 const CONG_KEY = "alpha:church:congrats";
-const COMMENTS_KEY = "alpha:church:post-comments";
-const REACT_KEY = "alpha:church:post-reactions";
 const PRAY_KEY = "alpha:church:post-prayers";
 const PRAY_COUNT_KEY = "alpha:church:post-prayer-counts";
 const SHARE_KEY = "alpha:church:post-shares";
@@ -31,7 +30,8 @@ export type PostOverride = Partial<
 >;
 type OverridesMap = Record<string, PostOverride>;
 
-/* ------------------------ tiny pub/sub on localStorage ------------------------ */
+const EMPTY_USER_POSTS: ChurchPost[] = [];
+const EMPTY_OVERRIDES: OverridesMap = {};
 const listeners = new Set<() => void>();
 function bumpVersion() {
   cache.clear();
@@ -67,11 +67,15 @@ function read<T>(key: string, fallback: T): T {
   if (cache.has(key)) return cache.get(key) as T;
   try {
     const raw = window.localStorage.getItem(key);
-    if (raw == null) return fallback;
+    if (raw == null) {
+      cache.set(key, fallback);
+      return fallback;
+    }
     const v = JSON.parse(raw) as T;
     cache.set(key, v);
     return v;
   } catch {
+    cache.set(key, fallback);
     return fallback;
   }
 }
@@ -92,7 +96,7 @@ export function migrateUserPostImagesOnce() {
   if (userPostImageMigrationDone || typeof window === "undefined") return;
   userPostImageMigrationDone = true;
 
-  const raw = read<ChurchPost[]>(POSTS_KEY, []);
+  const raw = read<ChurchPost[]>(POSTS_KEY, EMPTY_USER_POSTS);
   if (!raw.length) return;
 
   let changed = false;
@@ -105,7 +109,7 @@ export function migrateUserPostImagesOnce() {
 }
 
 export function getUserPosts(): ChurchPost[] {
-  return read<ChurchPost[]>(POSTS_KEY, []);
+  return read<ChurchPost[]>(POSTS_KEY, EMPTY_USER_POSTS);
 }
 export function saveUserPost(post: ChurchPost) {
   const list = getUserPosts();
@@ -115,15 +119,16 @@ export function saveUserPost(post: ChurchPost) {
   write(POSTS_KEY, list);
 }
 export function deleteUserPost(id: string) {
+  void deleteChurchPost(id);
   write(POSTS_KEY, getUserPosts().filter((p) => p.id !== id));
 }
 
 /* --------------------------------- overrides --------------------------------- */
 export function getOverrides(): OverridesMap {
-  return read<OverridesMap>(OVERRIDES_KEY, {});
+  return read<OverridesMap>(OVERRIDES_KEY, EMPTY_OVERRIDES);
 }
 export function patchPost(id: string, patch: PostOverride) {
-  // For user-owned posts, persist on the post itself (so it survives clearing overrides).
+  void patchChurchPost(id, patch);
   const user = getUserPosts();
   const idx = user.findIndex((p) => p.id === id);
   if (idx >= 0) {
@@ -136,30 +141,41 @@ export function patchPost(id: string, patch: PostOverride) {
   write(OVERRIDES_KEY, map);
 }
 
-/* ------------------------------- merged feed --------------------------------- */
+/* ------------------------------- merged feed (legacy local — prefer Supabase) --------------------------------- */
 const FEED_CACHE_KEY = "__feed__";
-const SERVER_FEED: ChurchPost[] = [...CHURCH_POSTS];
 
 function applyOverride(p: ChurchPost, ov?: PostOverride): ChurchPost {
   return ov ? { ...p, ...ov } : p;
 }
 
 export function getAllPosts(): ChurchPost[] {
-  if (typeof window === "undefined") return SERVER_FEED;
+  if (typeof window === "undefined") return [];
   const user = getUserPosts();
   const ov = getOverrides();
   const cached = cache.get(FEED_CACHE_KEY) as
     | { user: ChurchPost[]; ov: OverridesMap; feed: ChurchPost[] }
     | undefined;
   if (cached && cached.user === user && cached.ov === ov) return cached.feed;
-  const seedIds = new Set(user.map((p) => p.id));
-  const feed = [
-    ...user.map((p) => applyOverride(p, ov[p.id])),
-    ...CHURCH_POSTS.filter((p) => !seedIds.has(p.id)).map((p) => applyOverride(p, ov[p.id])),
-  ];
+  const feed = user.map((p) => applyOverride(p, ov[p.id]));
   cache.set(FEED_CACHE_KEY, { user, ov, feed });
   return feed;
 }
+
+const USER_FEED_CACHE_KEY = "__user_feed__";
+
+function getUserPostsSnapshot(): ChurchPost[] {
+  if (typeof window === "undefined") return [];
+  const user = getUserPosts();
+  const ov = getOverrides();
+  const cached = cache.get(USER_FEED_CACHE_KEY) as
+    | { user: ChurchPost[]; ov: OverridesMap; feed: ChurchPost[] }
+    | undefined;
+  if (cached && cached.user === user && cached.ov === ov) return cached.feed;
+  const feed = user.map((p) => applyOverride(p, ov[p.id]));
+  cache.set(USER_FEED_CACHE_KEY, { user, ov, feed });
+  return feed;
+}
+
 export function getPost(id: string): ChurchPost | undefined {
   return getAllPosts().find((p) => p.id === id);
 }
@@ -172,7 +188,7 @@ export function usePost(id: string): ChurchPost | undefined {
 }
 
 export function useAllPosts(): ChurchPost[] {
-  return useSyncExternalStore(subscribe, getAllPosts, () => SERVER_FEED);
+  return useSyncExternalStore(subscribe, getAllPosts, () => [] as ChurchPost[]);
 }
 
 /* ----------------- expiration / pinning derived helpers ---------------------- */
@@ -199,16 +215,7 @@ export function useActivePosts(): ChurchPost[] {
 
 /** Dashboard feed — user-created posts only (no seed/mock posts). */
 export function useActiveUserPosts(): ChurchPost[] {
-  const userOnly = useSyncExternalStore(
-    subscribe,
-    () => {
-      migrateUserPostImagesOnce();
-      const user = getUserPosts();
-      const ov = getOverrides();
-      return user.map((p) => applyOverride(p, ov[p.id]));
-    },
-    () => [] as ChurchPost[],
-  );
+  const userOnly = useSyncExternalStore(subscribe, getUserPostsSnapshot, () => [] as ChurchPost[]);
   const now = Date.now();
   return userOnly
     .filter((p) => !isExpired(p, now))
@@ -350,61 +357,18 @@ export function useReplies(kind: "condolence" | "congrats", postId: string): Rep
   return map[postId] ?? EMPTY_REPLY_LIST;
 }
 
-/* ------------------------------ comments & reactions ------------------------- */
-export type PostComment = { id: string; name: string; text: string; at: number };
-export type ReactionKind = "amen" | "love" | "pray";
+/* ------------------------------ comments & reactions (Supabase) ------------------------- */
+export type { PostComment, ReactionKind } from "./post-interactions";
+export {
+  addComment,
+  addCommentAsCurrentUser,
+  useComments,
+  toggleReaction,
+  useReactions,
+  prefetchPostInteractions,
+} from "./post-interactions";
 
-const EMPTY_COMMENTS: Record<string, PostComment[]> = Object.freeze({});
-const EMPTY_REACTS: Record<string, Record<ReactionKind, { count: number; mine: boolean }>> = Object.freeze({});
 const EMPTY_PRAY: Record<string, boolean> = Object.freeze({});
-
-export function addComment(postId: string, name: string, text: string) {
-  const t = text.trim();
-  if (!t) return;
-  const map = read<Record<string, PostComment[]>>(COMMENTS_KEY, {});
-  const item: PostComment = { id: String(Date.now()), name, text: t, at: Date.now() };
-  map[postId] = [item, ...(map[postId] || [])];
-  write(COMMENTS_KEY, map);
-}
-
-/** Current-user comment — name from auth later; mocked via currentUserName(). */
-export function addCommentAsCurrentUser(postId: string, text: string) {
-  addComment(postId, currentUserName(), text);
-}
-
-export function useComments(postId: string): PostComment[] {
-  const map = useSyncExternalStore(
-    subscribe,
-    () => read<Record<string, PostComment[]>>(COMMENTS_KEY, EMPTY_COMMENTS),
-    () => EMPTY_COMMENTS,
-  );
-  return map[postId] ?? [];
-}
-
-export function toggleReaction(postId: string, kind: ReactionKind): boolean {
-  const prev = read<Record<string, Partial<Record<ReactionKind, { count: number; mine: boolean }>>>>(REACT_KEY, {});
-  const cur = prev[postId]?.[kind] ?? { count: 0, mine: false };
-  const next = { count: Math.max(0, cur.count + (cur.mine ? -1 : 1)), mine: !cur.mine };
-  write(REACT_KEY, {
-    ...prev,
-    [postId]: { ...(prev[postId] || {}), [kind]: next },
-  });
-  return next.mine;
-}
-
-export function useReactions(postId: string) {
-  const map = useSyncExternalStore(
-    subscribe,
-    () => read<Record<string, Record<ReactionKind, { count: number; mine: boolean }>>>(REACT_KEY, EMPTY_REACTS),
-    () => EMPTY_REACTS,
-  );
-  const r = map[postId] || {};
-  return {
-    amen: r.amen ?? { count: 0, mine: false },
-    love: r.love ?? { count: 0, mine: false },
-    pray: r.pray ?? { count: 0, mine: false },
-  };
-}
 
 export function togglePrayed(postId: string): boolean {
   const map = read<Record<string, boolean>>(PRAY_KEY, {});

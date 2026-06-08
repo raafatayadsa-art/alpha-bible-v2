@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
-import { isPlatformOwnerSync } from "@/features/auth";
 
 const PIN_STORAGE_KEY = "ab:owner-pin";
 const LOCKOUT_KEY = "ab:owner-lockout";
 const SESSION_KEY = "ab:owner-session";
 const FAIL_KEY = "ab:owner-fail-count";
 
-const DEFAULT_PIN = "198203";
+const DEFAULT_PIN = "000000";
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_MS = 5 * 60 * 1000;
 
@@ -15,7 +14,9 @@ type LockoutState = { until: number; attempts: number };
 function readPin(): string {
   if (typeof window === "undefined") return DEFAULT_PIN;
   try {
-    return localStorage.getItem(PIN_STORAGE_KEY) ?? DEFAULT_PIN;
+    const stored = localStorage.getItem(PIN_STORAGE_KEY);
+    const pin = (stored ?? DEFAULT_PIN).trim();
+    return pin.length > 0 ? pin : DEFAULT_PIN;
   } catch {
     return DEFAULT_PIN;
   }
@@ -59,7 +60,7 @@ function writeLockout(state: LockoutState | null) {
 export function isOwnerSessionActive(): boolean {
   if (typeof window === "undefined") return false;
   try {
-    return sessionStorage.getItem(SESSION_KEY) === "1" && isPlatformOwnerSync();
+    return sessionStorage.getItem(SESSION_KEY) === "1";
   } catch {
     return false;
   }
@@ -86,7 +87,7 @@ export function revokeOwnerSession() {
 export function setOwnerPin(pin: string) {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(PIN_STORAGE_KEY, pin);
+    localStorage.setItem(PIN_STORAGE_KEY, pin.trim());
   } catch { /* ignore */ }
 }
 
@@ -124,10 +125,10 @@ export function useOwnerAccess() {
       return "locked";
     }
 
-    if (input === readPin()) {
-      if (!isPlatformOwnerSync()) {
-        return "wrong";
-      }
+    const normalizedInput = input.trim();
+    const expectedPin = readPin();
+
+    if (normalizedInput === expectedPin) {
       grantOwnerSession();
       setSessionActive(true);
       setLockout(null);

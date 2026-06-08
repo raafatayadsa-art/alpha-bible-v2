@@ -112,7 +112,14 @@ async function applyPatch(
   });
   if (!ok) return false;
 
-  await syncApprovalSourceStatus(item.sourceTable, item.sourceId, merged.status);
+  const linked = (await fetchApprovalById(id)) ?? item;
+  await syncApprovalSourceStatus(
+    linked.sourceTable,
+    linked.sourceId,
+    merged.status,
+    id,
+    linked.kind,
+  );
 
   await insertAuditDb(auditAction, auditReason);
   if (notify) await notifyRequester(merged, notify.kind, notify.body);

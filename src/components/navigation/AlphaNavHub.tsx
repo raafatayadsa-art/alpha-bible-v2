@@ -22,7 +22,7 @@ const NAV_ITEMS = [
   { key: "katameros", label: "القطمارس", to: "/katameros", icon: BookMarked, tone: "#4a9e6e" },
   { key: "synaxarium", label: "السنكسار", to: "/synaxarium", icon: Sparkles, tone: "#c98a3c" },
   { key: "library", label: "المكتبة", to: "/books", icon: Library, tone: "#6a4ab5" },
-  { key: "church", label: "كنيستك معاك", to: "/church", icon: Church, tone: "#5b8fd1" },
+  { key: "church", label: "كنيستك معاك", to: "/profile/church", icon: Church, tone: "#5b8fd1" },
   { key: "profile", label: "الملف الشخصي", to: "/profile", icon: User, tone: "#8a6ec1" },
   { key: "settings", label: "الإعدادات", to: "/settings", icon: Settings, tone: "#3f9d6e" },
 ] as const;

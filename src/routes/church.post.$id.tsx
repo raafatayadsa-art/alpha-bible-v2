@@ -9,12 +9,14 @@ import {
 import { CopticWatermark } from "@/components/coptic";
 import { POST_TYPE_META, type ChurchPost } from "@/data/church-posts";
 import {
-  usePost, useReplies, useComments, addCommentAsCurrentUser,
+  useReplies, useComments, addCommentAsCurrentUser,
   useReactions, toggleReaction, usePrayed, togglePrayed,
   recordShare, useShareCount, isPinned,
   useCanManagePosts, pinForDays, unpinPost, archivePost,
   deleteUserPost, isUserOwnedPost,
 } from "@/features/church/post-store";
+import { useChurchPost } from "@/features/church/use-church-posts";
+import { useChurchDashboard } from "@/features/church/use-church-dashboard";
 import {
   AttendButton, CondolencePopup, CongratsPopup, ReservePopup,
 } from "@/features/church/PostActions";
@@ -23,7 +25,6 @@ import { getCurrentUser } from "@/features/church/current-user";
 import { MemberAvatar } from "@/features/church/MemberAvatar";
 import { PostImage } from "@/features/church/PostImage";
 
-const CHURCH_NAME = "كنيسة الشهيد مار جرجس";
 const GLASS =
   "rounded-[24px] border border-white/70 bg-[#fbf3e1]/90 backdrop-blur-xl shadow-[0_20px_44px_-24px_rgba(60,40,16,0.5),inset_0_1px_0_rgba(255,255,255,0.85)]";
 const ATTENDEES_HEAD = 3;
@@ -102,7 +103,17 @@ export const Route = createFileRoute("/church/post/$id")({
 function ChurchPostScreen() {
   const { id } = useParams({ from: "/church/post/$id" });
   const postId = (id ?? "").trim();
-  const post = usePost(postId);
+  const { post, loading } = useChurchPost(postId);
+  const { data } = useChurchDashboard();
+  const churchName = data?.church.name ?? "الكنيسة";
+
+  if (loading) {
+    return (
+      <main dir="rtl" className="min-h-screen grid place-items-center bg-[#f4ead8] px-4">
+        <p className="text-[13px] font-bold text-[#6a543a]">جاري تحميل المنشور…</p>
+      </main>
+    );
+  }
 
   if (!postId || !post) {
     return <PostNotFound />;
@@ -132,7 +143,7 @@ function ChurchPostScreen() {
 
       <div className="relative mx-auto w-full max-w-[420px] px-4 -mt-5 pb-[calc(env(safe-area-inset-bottom,0px)+96px)] space-y-3">
         <article className={GLASS + " p-4 min-w-0 overflow-hidden"}>
-          <p className="text-[10.5px] font-extrabold text-[#6aaf8a] text-right">{CHURCH_NAME}</p>
+          <p className="text-[10.5px] font-extrabold text-[#6aaf8a] text-right">{churchName}</p>
           <h1
             className={
               "mt-1 font-arabic-serif text-[21px] font-extrabold text-[#3a2a18] leading-snug text-right break-words [overflow-wrap:anywhere] max-w-full min-w-0"
@@ -577,7 +588,7 @@ function CommentsSection({ postId }: { postId: string }) {
           ))}
         </div>
       ) : (
-        <p className="text-[11px] text-[#6a543a] mb-3">كن أول من يعلّق على هذا المنشور.</p>
+        <p className="text-[11px] text-[#6a543a] mb-3">لا توجد تعليقات بعد</p>
       )}
       <div className="flex items-center gap-2 rounded-full bg-white/85 border border-[#efe2c4] pl-1 pr-3 py-1">
         <button
@@ -603,6 +614,8 @@ function CommentsSection({ postId }: { postId: string }) {
 }
 
 function ChurchInfoCard({ post }: { post: ChurchPost }) {
+  const { data } = useChurchDashboard();
+  const churchName = data?.church.name ?? "الكنيسة";
   const meta = typeMeta(post.type);
   return (
     <div className={GLASS + " p-4 text-right"}>
@@ -612,7 +625,7 @@ function ChurchInfoCard({ post }: { post: ChurchPost }) {
           <Church className="h-5 w-5" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="font-arabic-serif text-[13.5px] font-extrabold text-[#3a2a18]">{CHURCH_NAME}</p>
+          <p className="font-arabic-serif text-[13.5px] font-extrabold text-[#3a2a18]">{churchName}</p>
           <p className="mt-1 text-[11px] text-[#6a543a] leading-relaxed">
             نشر بواسطة {post.author || "الكنيسة"} · {meta.label}
           </p>
