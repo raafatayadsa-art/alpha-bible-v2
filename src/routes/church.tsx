@@ -38,6 +38,7 @@ import {
 import { PostBuilder } from "@/features/church/PostBuilder";
 import { AlphaDatePicker } from "@/components/controls";
 import { useChurchDashboard } from "@/features/church/use-church-dashboard";
+import type { ContextualSearchContext } from "@/features/search/contextual-search";
 import { ChurchDashboardProvider, useChurchDashboardData } from "@/features/church/church-dashboard-context";
 import {
   prayerStatsFromDashboard,
@@ -122,7 +123,7 @@ function SectionTitle({ title, action }: { title: string; action?: React.ReactNo
 /* Header                                                        */
 /* ============================================================ */
 
-function Header() {
+function Header({ searchContext }: { searchContext?: ContextualSearchContext }) {
   return (
     <AlphaHeaderShell
       sticky
@@ -137,6 +138,8 @@ function Header() {
         variant="internal"
         backTo="/home"
         title="كنيستك معاك"
+        searchScope="church"
+        searchContext={searchContext}
       />
     </AlphaHeaderShell>
   );
@@ -1775,6 +1778,15 @@ function ChurchEmptyState() {
 
 function ChurchScreen() {
   const { data, loading, hasChurch } = useChurchDashboard();
+  const churchId = data?.church.id ?? "";
+  const { posts } = useChurchPosts(churchId);
+  const searchContext: ContextualSearchContext | undefined = data
+    ? {
+        churchContacts: data.contacts,
+        churchPrayers: data.prayers,
+        churchPosts: posts.map((p) => ({ id: p.id, title: p.title, excerpt: p.excerpt })),
+      }
+    : undefined;
 
   return (
     <main
@@ -1793,7 +1805,7 @@ function ChurchScreen() {
       />
       <CopticWatermark />
 
-      <Header />
+      <Header searchContext={searchContext} />
 
       <div className="relative mx-auto w-full max-w-[440px] px-4 pt-2 pb-[calc(env(safe-area-inset-bottom,0px)+120px)] space-y-5">
         {loading ? (

@@ -27,6 +27,7 @@ export type AlphaReadingControlBarProps = {
   fontMax?: number;
   onToggleTheme: () => void;
   className?: string;
+  compact?: boolean;
 };
 
 export function AlphaReadingControlBar({
@@ -44,12 +45,18 @@ export function AlphaReadingControlBar({
   fontMax,
   onToggleTheme,
   className,
+  compact,
 }: AlphaReadingControlBarProps) {
   return (
-    <AlphaControlBarShell dark={dark} className={className}>
-      <AlphaControlPlayButton playing={playing} onToggle={onTogglePlay} dark={dark} />
+    <AlphaControlBarShell dark={dark} className={className} compact={compact}>
+      <AlphaControlPlayButton
+        playing={playing}
+        onToggle={onTogglePlay}
+        dark={dark}
+        size={compact ? "sm" : "md"}
+      />
 
-      <AlphaControlDivider dark={dark} />
+      <AlphaControlDivider dark={dark} compact={compact} />
 
       <AlphaControlCycleButton
         icon={Gauge}
@@ -57,6 +64,7 @@ export function AlphaReadingControlBar({
         ariaLabel={`السرعة: ${speedLabel}`}
         onClick={onCycleSpeed}
         dark={dark}
+        compact={compact}
       />
 
       <AlphaControlCycleButton
@@ -65,9 +73,10 @@ export function AlphaReadingControlBar({
         ariaLabel={`تباعد الأسطر: ${spacingLabel}`}
         onClick={onCycleSpacing}
         dark={dark}
+        compact={compact}
       />
 
-      <AlphaControlDivider dark={dark} />
+      <AlphaControlDivider dark={dark} compact={compact} />
 
       <AlphaControlFontStepper
         value={fontDisplay}
@@ -78,6 +87,7 @@ export function AlphaReadingControlBar({
         max={fontMax}
         onDecrease={onFontDecrease}
         onIncrease={onFontIncrease}
+        compact={compact}
       />
 
       <AlphaControlIconButton
@@ -85,6 +95,7 @@ export function AlphaReadingControlBar({
         ariaLabel={dark ? "وضع نهاري" : "وضع ليلي"}
         onClick={onToggleTheme}
         dark={dark}
+        compact={compact}
       />
     </AlphaControlBarShell>
   );

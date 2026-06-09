@@ -91,6 +91,7 @@ export function AutoScrollControls({
       aria-label="وضع القراءة"
     >
       <AlphaReadingControlBar
+        compact
         dark={spiritualMode}
         playing={playing}
         onTogglePlay={togglePlay}

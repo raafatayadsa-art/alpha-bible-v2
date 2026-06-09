@@ -13,6 +13,7 @@ import { DictionaryDebugBadge } from "@/components/DictionaryDebugBadge";
 import { Toaster } from "@/components/ui/sonner";
 import { GlobalBackButton } from "@/components/GlobalBackButton";
 import { AlphaNavigationProvider } from "@/components/navigation/AlphaNavigationProvider";
+import { BibleSearchProvider } from "@/features/bible-search";
 import { AuthBootstrap } from "@/features/auth";
 
 function NotFoundComponent() {
@@ -125,10 +126,12 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthBootstrap />
       <AlphaNavigationProvider>
-        <Outlet />
-        <GlobalBackButton />
-        <Toaster />
-        {/* <DictionaryDebugBadge /> — disabled with smart highlight */}
+        <BibleSearchProvider>
+          <Outlet />
+          <GlobalBackButton />
+          <Toaster />
+          {/* <DictionaryDebugBadge /> — disabled with smart highlight */}
+        </BibleSearchProvider>
       </AlphaNavigationProvider>
     </QueryClientProvider>
   );

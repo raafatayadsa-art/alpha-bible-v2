@@ -10,6 +10,7 @@ import {
 import { useRouter, useRouterState } from "@tanstack/react-router";
 import { AlphaNavHub } from "@/components/navigation/AlphaNavHub";
 import { AlphaEdgeGestures } from "@/components/navigation/AlphaEdgeGestures";
+import { AlphaNotificationsProvider } from "@/components/navigation/AlphaNotificationsProvider";
 import {
   canBackFromEdge,
   canOpenNavFromEdge,
@@ -71,11 +72,13 @@ export function AlphaNavigationProvider({ children }: { children: ReactNode }) {
   );
 
   return (
-    <AlphaNavigationContext.Provider value={value}>
-      {children}
-      <AlphaEdgeGestures />
-      <AlphaNavHub open={navOpen} onClose={closeNavHub} />
-    </AlphaNavigationContext.Provider>
+    <AlphaNotificationsProvider>
+      <AlphaNavigationContext.Provider value={value}>
+        {children}
+        <AlphaEdgeGestures />
+        <AlphaNavHub open={navOpen} onClose={closeNavHub} />
+      </AlphaNavigationContext.Provider>
+    </AlphaNotificationsProvider>
   );
 }
 

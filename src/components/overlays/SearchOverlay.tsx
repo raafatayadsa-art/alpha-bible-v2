@@ -70,7 +70,9 @@ export function SearchOverlay({
       aria-hidden={!open}
       className={cn(
         "fixed inset-0 z-[120] transition-opacity duration-200",
-        open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
+        open
+          ? "opacity-100 pointer-events-auto"
+          : "opacity-0 pointer-events-none [&_*]:pointer-events-none",
       )}
     >
       {/* Backdrop */}
@@ -111,6 +113,9 @@ export function SearchOverlay({
                   onChange={(e) => onQueryChange(e.target.value)}
                   placeholder={placeholder}
                   aria-label={title}
+                  type="search"
+                  enterKeyHint="search"
+                  autoComplete="off"
                   className="w-full h-11 rounded-2xl bg-[#faf3e3] border border-[#ead9b1] pr-9 pl-3 text-[13px] text-[#3a2a18] placeholder:text-[#b08a55] focus:outline-none focus:border-[#6a4ab5]"
                 />
               </div>

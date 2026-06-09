@@ -1,0 +1,185 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Alpha Bible — Premium Light Theme
+ * Warm beige base + soft accent palette for each content type.
+ * All colors in oklch. All component styles use these semantic tokens.
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+
+  --font-display: "Cairo", "Tajawal", system-ui, sans-serif;
+  --font-body: "Tajawal", "Cairo", system-ui, sans-serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Alpha Bible content accents */
+  --color-urgent: var(--urgent);
+  --color-urgent-foreground: var(--urgent-foreground);
+  --color-urgent-soft: var(--urgent-soft);
+
+  --color-meeting: var(--meeting);
+  --color-meeting-foreground: var(--meeting-foreground);
+  --color-meeting-soft: var(--meeting-soft);
+
+  --color-trip: var(--trip);
+  --color-trip-foreground: var(--trip-foreground);
+  --color-trip-soft: var(--trip-soft);
+
+  --color-prayer: var(--prayer);
+  --color-prayer-foreground: var(--prayer-foreground);
+  --color-prayer-soft: var(--prayer-soft);
+
+  --color-celebration: var(--celebration);
+  --color-celebration-foreground: var(--celebration-foreground);
+  --color-celebration-soft: var(--celebration-soft);
+
+  --color-condolence: var(--condolence);
+  --color-condolence-foreground: var(--condolence-foreground);
+  --color-condolence-soft: var(--condolence-soft);
+
+  --color-reflection: var(--reflection);
+  --color-reflection-foreground: var(--reflection-foreground);
+  --color-reflection-soft: var(--reflection-soft);
+}
+
+:root {
+  --radius: 1.25rem;
+
+  /* Warm beige canvas */
+  --background: oklch(0.975 0.012 80);
+  --foreground: oklch(0.22 0.02 280);
+
+  --card: oklch(0.995 0.005 80);
+  --card-foreground: oklch(0.22 0.02 280);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.22 0.02 280);
+
+  --primary: oklch(0.32 0.08 285);
+  --primary-foreground: oklch(0.985 0.005 80);
+  --secondary: oklch(0.95 0.015 80);
+  --secondary-foreground: oklch(0.3 0.04 285);
+
+  --muted: oklch(0.94 0.015 80);
+  --muted-foreground: oklch(0.5 0.025 280);
+
+  --accent: oklch(0.93 0.025 80);
+  --accent-foreground: oklch(0.3 0.04 285);
+
+  --destructive: oklch(0.62 0.21 25);
+  --destructive-foreground: oklch(0.99 0 0);
+
+  --border: oklch(0.9 0.015 80 / 0.7);
+  --input: oklch(0.92 0.015 80);
+  --ring: oklch(0.65 0.12 285);
+
+  /* Content accents */
+  --urgent: oklch(0.64 0.2 22);
+  --urgent-foreground: oklch(0.99 0 0);
+  --urgent-soft: oklch(0.96 0.04 22);
+
+  --meeting: oklch(0.58 0.16 250);
+  --meeting-foreground: oklch(0.99 0 0);
+  --meeting-soft: oklch(0.95 0.04 250);
+
+  --trip: oklch(0.55 0.13 160);
+  --trip-foreground: oklch(0.99 0 0);
+  --trip-soft: oklch(0.95 0.04 160);
+
+  --prayer: oklch(0.55 0.16 300);
+  --prayer-foreground: oklch(0.99 0 0);
+  --prayer-soft: oklch(0.95 0.04 300);
+
+  --celebration: oklch(0.72 0.13 75);
+  --celebration-foreground: oklch(0.2 0.04 80);
+  --celebration-soft: oklch(0.96 0.05 80);
+
+  --condolence: oklch(0.28 0.02 280);
+  --condolence-foreground: oklch(0.99 0 0);
+  --condolence-soft: oklch(0.94 0.01 280);
+
+  --reflection: oklch(0.5 0.15 290);
+  --reflection-foreground: oklch(0.99 0 0);
+  --reflection-soft: oklch(0.95 0.04 290);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html,
+  body {
+    background-color: oklch(0.93 0.015 80);
+    color: var(--color-foreground);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    min-height: 100vh;
+  }
+}
+
+@utility font-display {
+  font-family: var(--font-display);
+}
+
+@utility glass {
+  background: color-mix(in oklab, var(--color-card) 70%, transparent);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+}
+
+@utility shadow-luxe {
+  box-shadow:
+    0 1px 0 oklch(1 0 0 / 0.6) inset,
+    0 1px 2px oklch(0 0 0 / 0.04),
+    0 12px 30px -12px oklch(0.3 0.05 280 / 0.18),
+    0 30px 60px -30px oklch(0.3 0.05 280 / 0.18);
+}
+
+@utility shadow-soft {
+  box-shadow:
+    0 1px 2px oklch(0 0 0 / 0.04),
+    0 8px 20px -10px oklch(0.3 0.05 280 / 0.15);
+}
+
+/* Hide scrollbars on horizontal category strip */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

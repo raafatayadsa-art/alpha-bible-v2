@@ -37,16 +37,19 @@ export function AlphaControlBarShell({
   dark,
   children,
   className,
+  compact,
 }: {
   dark?: boolean;
   children: React.ReactNode;
   className?: string;
+  compact?: boolean;
 }) {
   const theme = useAlphaControlTheme(Boolean(dark));
   return (
     <div
       className={cn(
-        "flex items-center gap-1 rounded-full border backdrop-blur-2xl px-1.5 py-1",
+        "flex items-center rounded-full border backdrop-blur-2xl",
+        compact ? "gap-0.5 px-1 py-0.5" : "gap-1 px-1.5 py-1",
         theme.barBg,
         className,
       )}
@@ -56,9 +59,11 @@ export function AlphaControlBarShell({
   );
 }
 
-export function AlphaControlDivider({ dark }: { dark?: boolean }) {
+export function AlphaControlDivider({ dark, compact }: { dark?: boolean; compact?: boolean }) {
   const theme = useAlphaControlTheme(Boolean(dark));
-  return <span className={cn("mx-0.5 h-5 w-px shrink-0", theme.divider)} aria-hidden />;
+  return (
+    <span className={cn("mx-0.5 w-px shrink-0", compact ? "h-4" : "h-5", theme.divider)} aria-hidden />
+  );
 }
 
 export function AlphaControlPlayButton({
@@ -137,6 +142,7 @@ export function AlphaControlIconButton({
   dark,
   disabled,
   children,
+  compact,
 }: {
   icon?: LucideIcon;
   ariaLabel: string;
@@ -144,6 +150,7 @@ export function AlphaControlIconButton({
   dark?: boolean;
   disabled?: boolean;
   children?: React.ReactNode;
+  compact?: boolean;
 }) {
   const theme = useAlphaControlTheme(Boolean(dark));
   return (
@@ -154,11 +161,12 @@ export function AlphaControlIconButton({
       style={theme.textShadow}
       onClick={onClick}
       className={cn(
-        "grid h-8 w-8 place-items-center rounded-full border active:scale-95 transition-transform disabled:opacity-40",
+        "grid place-items-center rounded-full border active:scale-95 transition-transform disabled:opacity-40",
+        compact ? "h-7 w-7" : "h-8 w-8",
         theme.ctrlBtn,
       )}
     >
-      {children ?? (Icon ? <Icon className="h-3.5 w-3.5" /> : null)}
+      {children ?? (Icon ? <Icon className={compact ? "h-3 w-3" : "h-3.5 w-3.5"} /> : null)}
     </button>
   );
 }
@@ -172,6 +180,7 @@ export function AlphaControlFontStepper({
   max,
   decreaseIcon: DecreaseIcon,
   increaseIcon: IncreaseIcon,
+  compact,
 }: {
   value: number | string;
   onDecrease: () => void;
@@ -181,10 +190,12 @@ export function AlphaControlFontStepper({
   max?: number;
   decreaseIcon: LucideIcon;
   increaseIcon: LucideIcon;
+  compact?: boolean;
 }) {
   const theme = useAlphaControlTheme(Boolean(dark));
   const atMin = typeof min === "number" && typeof value === "number" ? value <= min : false;
   const atMax = typeof max === "number" && typeof value === "number" ? value >= max : false;
+  const btnSize = compact ? "h-7 w-7" : "h-8 w-8";
   return (
     <>
       <button
@@ -194,14 +205,18 @@ export function AlphaControlFontStepper({
         style={theme.textShadow}
         onClick={onDecrease}
         className={cn(
-          "grid h-8 w-8 place-items-center rounded-full border active:scale-95 transition-transform disabled:opacity-40",
+          "grid place-items-center rounded-full border active:scale-95 transition-transform disabled:opacity-40",
+          btnSize,
           theme.ctrlBtn,
         )}
       >
-        <DecreaseIcon className="h-3 w-3" />
+        <DecreaseIcon className={compact ? "h-2.5 w-2.5" : "h-3 w-3"} />
       </button>
       <span
-        className="min-w-8 text-center text-[10.5px] font-bold tabular-nums px-0.5"
+        className={cn(
+          "text-center font-bold tabular-nums px-0.5",
+          compact ? "min-w-7 text-[9.5px]" : "min-w-8 text-[10.5px]",
+        )}
         style={theme.textShadow}
       >
         {value}
@@ -213,11 +228,12 @@ export function AlphaControlFontStepper({
         style={theme.textShadow}
         onClick={onIncrease}
         className={cn(
-          "grid h-8 w-8 place-items-center rounded-full border active:scale-95 transition-transform disabled:opacity-40",
+          "grid place-items-center rounded-full border active:scale-95 transition-transform disabled:opacity-40",
+          btnSize,
           theme.ctrlBtn,
         )}
       >
-        <IncreaseIcon className="h-4 w-4" />
+        <IncreaseIcon className={compact ? "h-3.5 w-3.5" : "h-4 w-4"} />
       </button>
     </>
   );

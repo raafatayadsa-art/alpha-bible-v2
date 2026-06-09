@@ -212,7 +212,7 @@ export function CopticWatermark({
   return (
     <div
       className={cn(
-        "pointer-events-none inset-0 overflow-hidden select-none z-0",
+        "pointer-events-none inset-0 overflow-hidden select-none z-0 [&_*]:pointer-events-none",
         position === "fixed" ? "fixed" : "absolute",
         className,
       )}

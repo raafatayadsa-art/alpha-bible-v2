@@ -4,6 +4,11 @@ import { cn } from "@/lib/utils";
 import { BackButton } from "@/components/bible/primitives";
 import { useAlphaNavigation } from "@/components/navigation/AlphaNavigationProvider";
 import { AlphaNotificationButton, ALPHA_HEADER_BTN } from "@/components/navigation/AlphaNotificationButton";
+import { useContextualSearch } from "@/hooks/useContextualSearch";
+import type {
+  ContextualSearchContext,
+  ContextualSearchScope,
+} from "@/features/search/contextual-search";
 
 export { ALPHA_HEADER_BTN };
 
@@ -23,6 +28,8 @@ export type AlphaHeaderProps = {
   showNotifications?: boolean;
   onSearchClick?: () => void;
   searchTo?: string;
+  searchScope?: ContextualSearchScope;
+  searchContext?: ContextualSearchContext;
 };
 
 export function AlphaHeaderShell({
@@ -61,8 +68,11 @@ export function AlphaHeader({
   showNotifications = variant !== "reading",
   onSearchClick,
   searchTo = "/search",
+  searchScope,
+  searchContext,
 }: AlphaHeaderProps) {
   const { openNavHub, goBack } = useAlphaNavigation();
+  const contextualSearch = useContextualSearch(searchScope, searchContext);
   const btnClass =
     tone === "dark"
       ? "grid h-11 w-11 place-items-center rounded-full border border-white/10 bg-[#0e1a2e]/55 backdrop-blur-xl text-[#f3e6c4] active:scale-95 transition"
@@ -70,8 +80,10 @@ export function AlphaHeader({
   const titleClass = tone === "dark" ? "text-[#f3e6c4]" : "text-[#3a2a18]";
   const subtitleClass = tone === "dark" ? "text-[#c79356]/80" : "text-[#6a543a]";
 
-  const searchBtn = onSearchClick ? (
-    <button type="button" aria-label="بحث" onClick={onSearchClick} className={btnClass}>
+  const handleSearch = onSearchClick ?? (searchScope ? contextualSearch.openSearch : undefined);
+
+  const searchBtn = handleSearch ? (
+    <button type="button" aria-label="بحث" onClick={handleSearch} className={btnClass}>
       <Search className="h-5 w-5" />
     </button>
   ) : (
@@ -85,6 +97,7 @@ export function AlphaHeader({
   ) : null;
 
   return (
+    <>
     <header dir="rtl" className={cn("flex items-center justify-between gap-2", className)}>
       <div className="flex h-11 w-11 shrink-0 items-center justify-center">
         {variant === "home" ? (
@@ -116,5 +129,7 @@ export function AlphaHeader({
         {searchBtn}
       </div>
     </header>
+    {searchScope ? contextualSearch.overlay : null}
+    </>
   );
 }

@@ -180,6 +180,8 @@ function PrayerRequestsScreen() {
         <AlphaHeader
           variant="internal"
           backTo="/church"
+          searchScope="community"
+          searchContext={{ prayerRequests: items }}
           title={
             <span className="inline-flex items-center gap-1.5">
               <HandHeart className="h-4 w-4 text-[#b8893a]" strokeWidth={2.6} />

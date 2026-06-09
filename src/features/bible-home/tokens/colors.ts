@@ -1,0 +1,25 @@
+export const bibleHomeColors = {
+  background: "#FDFBF7",
+  backgroundWarm: "#FAF8F3",
+  ivory: "#FBF6EC",
+  champagne: "#F5E8C8",
+  gold: "#D4AF37",
+  goldDeep: "#B8893A",
+  goldSoft: "#E7C97A",
+  purple: "#6A4AB5",
+  purpleDeep: "#4B2E8A",
+  purpleSoft: "#E8DFF5",
+  cardBackground: "#FBF3E1",
+  cardBorder: "rgba(255,255,255,0.85)",
+  textPrimary: "#3A2A18",
+  textSecondary: "#6A543A",
+  textMuted: "#8A7355",
+  glowGold: "rgba(212,175,55,0.55)",
+  glowPurple: "rgba(106,74,181,0.45)",
+  glowWarm: "rgba(231,201,122,0.4)",
+  navGlass: "rgba(253,251,247,0.92)",
+  shadowSoft: "rgba(120,90,40,0.12)",
+  shadowCard: "rgba(70,55,30,0.10)",
+} as const;
+
+export type BibleHomeColors = typeof bibleHomeColors;

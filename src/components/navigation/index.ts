@@ -2,5 +2,7 @@ export * from "./alpha-screen-kind";
 export * from "./AlphaNavigationProvider";
 export * from "./AlphaEdgeGestures";
 export * from "./AlphaNotificationButton";
+export * from "./AlphaNotificationsProvider";
+export * from "./AlphaNotificationsPanel";
 export * from "./AlphaHeader";
 export * from "./AlphaNavHub";

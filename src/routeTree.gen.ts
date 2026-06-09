@@ -16,6 +16,7 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as DiagnosticsRouteImport } from './routes/diagnostics'
 import { Route as ChurchesDirectoryRouteImport } from './routes/churches-directory'
+import { Route as ChurchFeedLabRouteImport } from './routes/church-feed-lab'
 import { Route as ChurchRouteImport } from './routes/church'
 import { Route as BooksRouteImport } from './routes/books'
 import { Route as BibleRouteImport } from './routes/bible'
@@ -54,8 +55,15 @@ import { Route as ChurchServiceRouteImport } from './routes/church.service'
 import { Route as ChurchNotificationsRouteImport } from './routes/church.notifications'
 import { Route as ChurchDirectoryRouteImport } from './routes/church.directory'
 import { Route as ChurchArchiveRouteImport } from './routes/church.archive'
+import { Route as BibleTodayRouteImport } from './routes/bible.today'
+import { Route as BibleTimelineRouteImport } from './routes/bible.timeline'
+import { Route as BibleSearchRouteImport } from './routes/bible.search'
 import { Route as BibleSavedRouteImport } from './routes/bible.saved'
+import { Route as BibleQuestionsRouteImport } from './routes/bible.questions'
+import { Route as BiblePsalmsRouteImport } from './routes/bible.psalms'
+import { Route as BiblePlacesRouteImport } from './routes/bible.places'
 import { Route as BibleNotesRouteImport } from './routes/bible.notes'
+import { Route as BibleCharactersRouteImport } from './routes/bible.characters'
 import { Route as AgpeyaSavedRouteImport } from './routes/agpeya.saved'
 import { Route as AgpeyaPrayerIdRouteImport } from './routes/agpeya.$prayerId'
 import { Route as BookChapterRouteImport } from './routes/$book.$chapter'
@@ -99,6 +107,11 @@ const DiagnosticsRoute = DiagnosticsRouteImport.update({
 const ChurchesDirectoryRoute = ChurchesDirectoryRouteImport.update({
   id: '/churches-directory',
   path: '/churches-directory',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChurchFeedLabRoute = ChurchFeedLabRouteImport.update({
+  id: '/church-feed-lab',
+  path: '/church-feed-lab',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChurchRoute = ChurchRouteImport.update({
@@ -291,14 +304,49 @@ const ChurchArchiveRoute = ChurchArchiveRouteImport.update({
   path: '/archive',
   getParentRoute: () => ChurchRoute,
 } as any)
+const BibleTodayRoute = BibleTodayRouteImport.update({
+  id: '/today',
+  path: '/today',
+  getParentRoute: () => BibleRoute,
+} as any)
+const BibleTimelineRoute = BibleTimelineRouteImport.update({
+  id: '/timeline',
+  path: '/timeline',
+  getParentRoute: () => BibleRoute,
+} as any)
+const BibleSearchRoute = BibleSearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => BibleRoute,
+} as any)
 const BibleSavedRoute = BibleSavedRouteImport.update({
   id: '/saved',
   path: '/saved',
   getParentRoute: () => BibleRoute,
 } as any)
+const BibleQuestionsRoute = BibleQuestionsRouteImport.update({
+  id: '/questions',
+  path: '/questions',
+  getParentRoute: () => BibleRoute,
+} as any)
+const BiblePsalmsRoute = BiblePsalmsRouteImport.update({
+  id: '/psalms',
+  path: '/psalms',
+  getParentRoute: () => BibleRoute,
+} as any)
+const BiblePlacesRoute = BiblePlacesRouteImport.update({
+  id: '/places',
+  path: '/places',
+  getParentRoute: () => BibleRoute,
+} as any)
 const BibleNotesRoute = BibleNotesRouteImport.update({
   id: '/notes',
   path: '/notes',
+  getParentRoute: () => BibleRoute,
+} as any)
+const BibleCharactersRoute = BibleCharactersRouteImport.update({
+  id: '/characters',
+  path: '/characters',
   getParentRoute: () => BibleRoute,
 } as any)
 const AgpeyaSavedRoute = AgpeyaSavedRouteImport.update({
@@ -354,6 +402,7 @@ export interface FileRoutesByFullPath {
   '/bible': typeof BibleRouteWithChildren
   '/books': typeof BooksRoute
   '/church': typeof ChurchRouteWithChildren
+  '/church-feed-lab': typeof ChurchFeedLabRoute
   '/churches-directory': typeof ChurchesDirectoryRoute
   '/diagnostics': typeof DiagnosticsRoute
   '/home': typeof HomeRoute
@@ -364,8 +413,15 @@ export interface FileRoutesByFullPath {
   '/$book/$chapter': typeof BookChapterRoute
   '/agpeya/$prayerId': typeof AgpeyaPrayerIdRoute
   '/agpeya/saved': typeof AgpeyaSavedRoute
+  '/bible/characters': typeof BibleCharactersRoute
   '/bible/notes': typeof BibleNotesRoute
+  '/bible/places': typeof BiblePlacesRoute
+  '/bible/psalms': typeof BiblePsalmsRoute
+  '/bible/questions': typeof BibleQuestionsRoute
   '/bible/saved': typeof BibleSavedRoute
+  '/bible/search': typeof BibleSearchRoute
+  '/bible/timeline': typeof BibleTimelineRoute
+  '/bible/today': typeof BibleTodayRoute
   '/church/archive': typeof ChurchArchiveRoute
   '/church/directory': typeof ChurchDirectoryRouteWithChildren
   '/church/notifications': typeof ChurchNotificationsRoute
@@ -411,6 +467,7 @@ export interface FileRoutesByTo {
   '/bible': typeof BibleRouteWithChildren
   '/books': typeof BooksRoute
   '/church': typeof ChurchRouteWithChildren
+  '/church-feed-lab': typeof ChurchFeedLabRoute
   '/churches-directory': typeof ChurchesDirectoryRoute
   '/diagnostics': typeof DiagnosticsRoute
   '/home': typeof HomeRoute
@@ -421,8 +478,15 @@ export interface FileRoutesByTo {
   '/$book/$chapter': typeof BookChapterRoute
   '/agpeya/$prayerId': typeof AgpeyaPrayerIdRoute
   '/agpeya/saved': typeof AgpeyaSavedRoute
+  '/bible/characters': typeof BibleCharactersRoute
   '/bible/notes': typeof BibleNotesRoute
+  '/bible/places': typeof BiblePlacesRoute
+  '/bible/psalms': typeof BiblePsalmsRoute
+  '/bible/questions': typeof BibleQuestionsRoute
   '/bible/saved': typeof BibleSavedRoute
+  '/bible/search': typeof BibleSearchRoute
+  '/bible/timeline': typeof BibleTimelineRoute
+  '/bible/today': typeof BibleTodayRoute
   '/church/archive': typeof ChurchArchiveRoute
   '/church/directory': typeof ChurchDirectoryRouteWithChildren
   '/church/notifications': typeof ChurchNotificationsRoute
@@ -470,6 +534,7 @@ export interface FileRoutesById {
   '/bible': typeof BibleRouteWithChildren
   '/books': typeof BooksRoute
   '/church': typeof ChurchRouteWithChildren
+  '/church-feed-lab': typeof ChurchFeedLabRoute
   '/churches-directory': typeof ChurchesDirectoryRoute
   '/diagnostics': typeof DiagnosticsRoute
   '/home': typeof HomeRoute
@@ -480,8 +545,15 @@ export interface FileRoutesById {
   '/$book/$chapter': typeof BookChapterRoute
   '/agpeya/$prayerId': typeof AgpeyaPrayerIdRoute
   '/agpeya/saved': typeof AgpeyaSavedRoute
+  '/bible/characters': typeof BibleCharactersRoute
   '/bible/notes': typeof BibleNotesRoute
+  '/bible/places': typeof BiblePlacesRoute
+  '/bible/psalms': typeof BiblePsalmsRoute
+  '/bible/questions': typeof BibleQuestionsRoute
   '/bible/saved': typeof BibleSavedRoute
+  '/bible/search': typeof BibleSearchRoute
+  '/bible/timeline': typeof BibleTimelineRoute
+  '/bible/today': typeof BibleTodayRoute
   '/church/archive': typeof ChurchArchiveRoute
   '/church/directory': typeof ChurchDirectoryRouteWithChildren
   '/church/notifications': typeof ChurchNotificationsRoute
@@ -530,6 +602,7 @@ export interface FileRouteTypes {
     | '/bible'
     | '/books'
     | '/church'
+    | '/church-feed-lab'
     | '/churches-directory'
     | '/diagnostics'
     | '/home'
@@ -540,8 +613,15 @@ export interface FileRouteTypes {
     | '/$book/$chapter'
     | '/agpeya/$prayerId'
     | '/agpeya/saved'
+    | '/bible/characters'
     | '/bible/notes'
+    | '/bible/places'
+    | '/bible/psalms'
+    | '/bible/questions'
     | '/bible/saved'
+    | '/bible/search'
+    | '/bible/timeline'
+    | '/bible/today'
     | '/church/archive'
     | '/church/directory'
     | '/church/notifications'
@@ -587,6 +667,7 @@ export interface FileRouteTypes {
     | '/bible'
     | '/books'
     | '/church'
+    | '/church-feed-lab'
     | '/churches-directory'
     | '/diagnostics'
     | '/home'
@@ -597,8 +678,15 @@ export interface FileRouteTypes {
     | '/$book/$chapter'
     | '/agpeya/$prayerId'
     | '/agpeya/saved'
+    | '/bible/characters'
     | '/bible/notes'
+    | '/bible/places'
+    | '/bible/psalms'
+    | '/bible/questions'
     | '/bible/saved'
+    | '/bible/search'
+    | '/bible/timeline'
+    | '/bible/today'
     | '/church/archive'
     | '/church/directory'
     | '/church/notifications'
@@ -645,6 +733,7 @@ export interface FileRouteTypes {
     | '/bible'
     | '/books'
     | '/church'
+    | '/church-feed-lab'
     | '/churches-directory'
     | '/diagnostics'
     | '/home'
@@ -655,8 +744,15 @@ export interface FileRouteTypes {
     | '/$book/$chapter'
     | '/agpeya/$prayerId'
     | '/agpeya/saved'
+    | '/bible/characters'
     | '/bible/notes'
+    | '/bible/places'
+    | '/bible/psalms'
+    | '/bible/questions'
     | '/bible/saved'
+    | '/bible/search'
+    | '/bible/timeline'
+    | '/bible/today'
     | '/church/archive'
     | '/church/directory'
     | '/church/notifications'
@@ -704,6 +800,7 @@ export interface RootRouteChildren {
   BibleRoute: typeof BibleRouteWithChildren
   BooksRoute: typeof BooksRoute
   ChurchRoute: typeof ChurchRouteWithChildren
+  ChurchFeedLabRoute: typeof ChurchFeedLabRoute
   ChurchesDirectoryRoute: typeof ChurchesDirectoryRoute
   DiagnosticsRoute: typeof DiagnosticsRoute
   HomeRoute: typeof HomeRoute
@@ -792,6 +889,13 @@ declare module '@tanstack/react-router' {
       path: '/churches-directory'
       fullPath: '/churches-directory'
       preLoaderRoute: typeof ChurchesDirectoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/church-feed-lab': {
+      id: '/church-feed-lab'
+      path: '/church-feed-lab'
+      fullPath: '/church-feed-lab'
+      preLoaderRoute: typeof ChurchFeedLabRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/church': {
@@ -1060,6 +1164,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChurchArchiveRouteImport
       parentRoute: typeof ChurchRoute
     }
+    '/bible/today': {
+      id: '/bible/today'
+      path: '/today'
+      fullPath: '/bible/today'
+      preLoaderRoute: typeof BibleTodayRouteImport
+      parentRoute: typeof BibleRoute
+    }
+    '/bible/timeline': {
+      id: '/bible/timeline'
+      path: '/timeline'
+      fullPath: '/bible/timeline'
+      preLoaderRoute: typeof BibleTimelineRouteImport
+      parentRoute: typeof BibleRoute
+    }
+    '/bible/search': {
+      id: '/bible/search'
+      path: '/search'
+      fullPath: '/bible/search'
+      preLoaderRoute: typeof BibleSearchRouteImport
+      parentRoute: typeof BibleRoute
+    }
     '/bible/saved': {
       id: '/bible/saved'
       path: '/saved'
@@ -1067,11 +1192,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BibleSavedRouteImport
       parentRoute: typeof BibleRoute
     }
+    '/bible/questions': {
+      id: '/bible/questions'
+      path: '/questions'
+      fullPath: '/bible/questions'
+      preLoaderRoute: typeof BibleQuestionsRouteImport
+      parentRoute: typeof BibleRoute
+    }
+    '/bible/psalms': {
+      id: '/bible/psalms'
+      path: '/psalms'
+      fullPath: '/bible/psalms'
+      preLoaderRoute: typeof BiblePsalmsRouteImport
+      parentRoute: typeof BibleRoute
+    }
+    '/bible/places': {
+      id: '/bible/places'
+      path: '/places'
+      fullPath: '/bible/places'
+      preLoaderRoute: typeof BiblePlacesRouteImport
+      parentRoute: typeof BibleRoute
+    }
     '/bible/notes': {
       id: '/bible/notes'
       path: '/notes'
       fullPath: '/bible/notes'
       preLoaderRoute: typeof BibleNotesRouteImport
+      parentRoute: typeof BibleRoute
+    }
+    '/bible/characters': {
+      id: '/bible/characters'
+      path: '/characters'
+      fullPath: '/bible/characters'
+      preLoaderRoute: typeof BibleCharactersRouteImport
       parentRoute: typeof BibleRoute
     }
     '/agpeya/saved': {
@@ -1153,13 +1306,27 @@ const BookRouteChildren: BookRouteChildren = {
 const BookRouteWithChildren = BookRoute._addFileChildren(BookRouteChildren)
 
 interface BibleRouteChildren {
+  BibleCharactersRoute: typeof BibleCharactersRoute
   BibleNotesRoute: typeof BibleNotesRoute
+  BiblePlacesRoute: typeof BiblePlacesRoute
+  BiblePsalmsRoute: typeof BiblePsalmsRoute
+  BibleQuestionsRoute: typeof BibleQuestionsRoute
   BibleSavedRoute: typeof BibleSavedRoute
+  BibleSearchRoute: typeof BibleSearchRoute
+  BibleTimelineRoute: typeof BibleTimelineRoute
+  BibleTodayRoute: typeof BibleTodayRoute
 }
 
 const BibleRouteChildren: BibleRouteChildren = {
+  BibleCharactersRoute: BibleCharactersRoute,
   BibleNotesRoute: BibleNotesRoute,
+  BiblePlacesRoute: BiblePlacesRoute,
+  BiblePsalmsRoute: BiblePsalmsRoute,
+  BibleQuestionsRoute: BibleQuestionsRoute,
   BibleSavedRoute: BibleSavedRoute,
+  BibleSearchRoute: BibleSearchRoute,
+  BibleTimelineRoute: BibleTimelineRoute,
+  BibleTodayRoute: BibleTodayRoute,
 }
 
 const BibleRouteWithChildren = BibleRoute._addFileChildren(BibleRouteChildren)
@@ -1238,6 +1405,7 @@ const rootRouteChildren: RootRouteChildren = {
   BibleRoute: BibleRouteWithChildren,
   BooksRoute: BooksRoute,
   ChurchRoute: ChurchRouteWithChildren,
+  ChurchFeedLabRoute: ChurchFeedLabRoute,
   ChurchesDirectoryRoute: ChurchesDirectoryRoute,
   DiagnosticsRoute: DiagnosticsRoute,
   HomeRoute: HomeRoute,

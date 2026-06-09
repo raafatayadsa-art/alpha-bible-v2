@@ -117,6 +117,7 @@ function KatamerosHome() {
           variant="internal"
           title="القطمارس"
           subtitle="قراءات الكنيسة القبطية لليوم"
+          searchScope="katameros"
           center={
             <div className="flex flex-col items-center -mt-1">
               <CopticCross className="text-[#b8893a]" size={18} />

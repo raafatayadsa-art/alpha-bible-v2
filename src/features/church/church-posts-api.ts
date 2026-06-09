@@ -1,4 +1,5 @@
 import type { ChurchPost, ChurchPostDetails, PostType } from "@/data/church-posts";
+import { createChurchPostNotification } from "@/data/notifications-api";
 import { supabase } from "@/integrations/supabase/client";
 import { assignPostImage } from "./post-image-engine";
 import type { PostOverride } from "./post-store";
@@ -121,6 +122,11 @@ export async function createChurchPost(
 
   const saved = mapRowToChurchPost(data as ChurchPostRow);
   notifyChurchPostsChanged();
+  void createChurchPostNotification({
+    churchId,
+    postId: saved.id,
+    postTitle: saved.title,
+  });
   return { ok: true, post: saved };
 }
 

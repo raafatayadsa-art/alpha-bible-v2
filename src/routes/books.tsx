@@ -6,21 +6,28 @@ import { booksQueryOptions, chaptersQueryOptions } from "@/lib/bible";
 import { groupBooks, displayName } from "@/lib/bible-books";
 import { matchesNtFilter, matchesOtFilter, type NtCategory, type OtCategory } from "@/lib/book-meta";
 import { BackButton, BookCard, BookGridSkeleton, BottomDock } from "@/components/bible";
+import { useBibleSearch } from "@/features/bible-search";
 import { cn } from "@/lib/utils";
 
-type Testament = "old" | "new";
+type Testament = "old" | "new" | "all";
+
+function booksPageTitle(testament?: Testament) {
+  if (testament === "old") return "العهد القديم — الكتاب المقدس";
+  if (testament === "new") return "العهد الجديد — الكتاب المقدس";
+  return "الأسفار — الكتاب المقدس";
+}
 
 export const Route = createFileRoute("/books")({
   ssr: false,
   validateSearch: (search: Record<string, unknown>) => ({
     testament:
-      search.testament === "old" || search.testament === "new"
+      search.testament === "old" || search.testament === "new" || search.testament === "all"
         ? (search.testament as Testament)
         : undefined,
   }),
-  head: () => ({
+  head: ({ search }) => ({
     meta: [
-      { title: "الأسفار — الكتاب المقدس" },
+      { title: booksPageTitle(search.testament) },
       { name: "description", content: "تصفّح كل أسفار الكتاب المقدس مع تصنيفات وبحث ذكي." },
     ],
   }),
@@ -47,14 +54,12 @@ function BooksGrid() {
   const { data: books, isLoading, error } = useQuery(booksQueryOptions());
   const [ntFilter, setNtFilter] = useState<NtCategory>("all");
   const [otFilter, setOtFilter] = useState<OtCategory>("all");
-  const [q, setQ] = useState("");
-  const [searchOpen, setSearchOpen] = useState(false);
+  const { openSearch } = useBibleSearch();
 
   const grouped = useMemo(() => (books ? groupBooks(books) : { old: [], neu: [], other: [] }), [books]);
 
-  const scope = testament ?? "all";
-  const title =
-    scope === "old" ? "العهد القديم" : scope === "new" ? "العهد الجديد" : "الأسفار";
+  const scope = testament === "old" || testament === "new" ? testament : "all";
+  const title = booksPageTitle(testament).replace(" — الكتاب المقدس", "");
   const countLabel =
     scope === "old"
       ? `${grouped.old.length || 39} سفراً`
@@ -72,10 +77,8 @@ function BooksGrid() {
     if (scope === "new") list = list.filter((b) => matchesNtFilter(b, ntFilter));
     if (scope === "old") list = list.filter((b) => matchesOtFilter(b, otFilter));
 
-    const norm = q.trim();
-    if (!norm) return list;
-    return list.filter((b) => displayName(b).includes(norm));
-  }, [books, grouped, scope, ntFilter, otFilter, q]);
+    return list;
+  }, [books, grouped, scope, ntFilter, otFilter]);
 
   const chapterQueries = useQueries({
     queries: filtered.map((b) => ({
@@ -112,27 +115,12 @@ function BooksGrid() {
           <button
             type="button"
             aria-label="بحث"
-            onClick={() => setSearchOpen((o) => !o)}
+            onClick={openSearch}
             className="inline-grid h-9 w-9 place-items-center rounded-full bg-white/70 border border-[#efe2c4] text-[#3a2a18] active:scale-90 transition-transform"
           >
             <Search className="h-4 w-4 text-[#b8893a]" />
           </button>
         </header>
-
-        {searchOpen && (
-          <div className="mt-3 animate-in fade-in slide-in-from-top-2 duration-200">
-            <label className="flex items-center gap-2 rounded-2xl bg-white/80 border border-[#efe2c4] px-3 py-2 shadow-[0_8px_18px_-14px_rgba(120,80,30,0.3)]">
-              <Search className="h-4 w-4 text-[#b8893a]" />
-              <input
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="ابحث عن سفر..."
-                autoFocus
-                className="w-full bg-transparent text-[13px] text-[#3a2a18] placeholder:text-[#a78f6c] focus:outline-none"
-              />
-            </label>
-          </div>
-        )}
 
         {tabs && (
           <nav className="mt-4 flex gap-1.5 overflow-x-auto no-scrollbar" aria-label="التصنيفات">
@@ -181,7 +169,7 @@ function BooksGrid() {
           )}
         </section>
 
-        {!testament && (
+        {scope === "all" && (
           <div className="mt-8 flex justify-center gap-3">
             <Link
               to="/books"
