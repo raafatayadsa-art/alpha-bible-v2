@@ -49,6 +49,7 @@ import {
 
 
 import cardChurch from "@/assets/home/card-church.jpg";
+import heroChurchPremium from "@/assets/home/hero-church-premium.jpg";
 import newsCandle from "@/assets/home/news-candle.jpg";
 import newsYouth from "@/assets/home/news-youth.jpg";
 import newsMass from "@/assets/home/news-mass.jpg";
@@ -165,11 +166,11 @@ function HeroChurchCard() {
   };
   return (
     <section className="relative">
-      <div className="relative overflow-hidden rounded-[32px] border border-white/70 shadow-[0_30px_60px_-30px_rgba(60,40,16,0.55),inset_0_1px_0_rgba(255,255,255,0.7)]">
+      <div className="relative overflow-hidden rounded-[32px] border border-[#e7c97a]/50 shadow-[0_30px_60px_-20px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.7)]">
         {/* Church image background */}
         <div className="relative h-[210px] w-full">
           <img
-            src={church.coverImageUrl || cardChurch}
+            src={church.coverImageUrl || heroChurchPremium}
             alt={church.name}
             className="absolute inset-0 h-full w-full object-cover"
           />
@@ -177,7 +178,7 @@ function HeroChurchCard() {
             className="absolute inset-0"
             style={{
               background:
-                "linear-gradient(180deg, rgba(15,10,4,0.15) 0%, rgba(15,10,4,0.4) 55%, rgba(15,10,4,0.9) 100%)",
+                "linear-gradient(180deg, rgba(15,10,4,0.1) 0%, rgba(15,10,4,0.3) 50%, rgba(15,10,4,0.85) 100%)",
             }}
           />
           <div
@@ -243,6 +244,11 @@ function HeroChurchCard() {
               <p className="mt-1 font-arabic-serif text-[15px] font-extrabold text-[#3a2a18] leading-tight whitespace-normal break-words">
                 {church.primaryPriestName ?? "—"}
               </p>
+              {church.diocese && (
+                <p className="mt-0.5 text-[10px] text-[#6a543a] font-medium leading-none">
+                  {church.diocese}
+                </p>
+              )}
             </div>
           </div>
 
@@ -298,15 +304,20 @@ function FloatAction({ icon: Icon, label, onClick }: { icon: any; label: string;
 
 function StatTile({ icon: Icon, value, label, tone }: { icon: any; value: string; label: string; tone: string }) {
   return (
-    <div className="rounded-2xl bg-white/80 border border-white/80 px-2 py-2 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_8px_18px_-12px_rgba(120,80,30,0.45)]">
+    <div
+      className="relative overflow-hidden rounded-[20px] border border-white/80 px-2 py-3 text-center shadow-[0_12px_24px_-12px_rgba(120,80,30,0.3),inset_0_1px_0_rgba(255,255,255,1)] backdrop-blur-2xl"
+      style={{
+        background: "linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.65) 100%)",
+      }}
+    >
       <div
-        className="mx-auto grid h-7 w-7 place-items-center rounded-lg border border-white/70"
-        style={{ background: `linear-gradient(160deg, ${tone}22, ${tone}55)`, color: tone }}
+        className="mx-auto grid h-10 w-10 place-items-center rounded-2xl border border-white/90 shadow-[0_6px_14px_-6px_rgba(0,0,0,0.2)]"
+        style={{ background: `linear-gradient(135deg, ${tone}15, ${tone}45)`, color: tone }}
       >
-        <Icon className="h-4 w-4" strokeWidth={2.2} />
+        <Icon className="h-5 w-5" strokeWidth={2.2} />
       </div>
-      <p className="mt-1 text-[12.5px] font-extrabold text-[#3a2a18] leading-none">{value}</p>
-      <p className="mt-0.5 text-[9px] font-bold text-[#6a543a] leading-none">{label}</p>
+      <p className="mt-2.5 text-[15px] font-extrabold text-[#3a2a18] leading-none tracking-tight drop-shadow-sm">{value}</p>
+      <p className="mt-1.5 text-[10px] font-bold text-[#6a543a] leading-none">{label}</p>
     </div>
   );
 }

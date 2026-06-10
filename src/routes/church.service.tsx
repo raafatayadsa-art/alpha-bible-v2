@@ -11,6 +11,7 @@ import {
   type UserService, type UserActivity,
 } from "@/features/church/service-store";
 import { ServiceBuilder } from "@/features/church/ServiceBuilder";
+import { AlphaNotificationButton } from "@/components/navigation/AlphaNotificationButton";
 import cardChildren from "@/assets/home/card-children.jpg";
 import newsYouth from "@/assets/home/news-youth.jpg";
 import cardChurch from "@/assets/home/card-church.jpg";
@@ -18,6 +19,7 @@ import cardAgpeya from "@/assets/home/card-agpeya.jpg";
 import newsMass from "@/assets/home/news-mass.jpg";
 import newsCandle from "@/assets/home/news-candle.jpg";
 import cardKatameros from "@/assets/home/card-katameros.jpg";
+import heroService from "@/assets/home/hero-service-premium.jpg";
 import heavenlyChurch from "@/assets/home/heavenly-church.png";
 
 export const Route = createFileRoute("/church/service")({
@@ -85,7 +87,7 @@ function Header() {
         WebkitBackdropFilter: "blur(14px)",
       }}
     >
-      <div className="flex items-center justify-between gap-3">
+      <div className="mx-auto flex w-full max-w-[440px] items-center justify-between gap-3">
         <Link
           to="/church"
           aria-label="رجوع"
@@ -94,7 +96,7 @@ function Header() {
           <ChevronLeft className="h-5 w-5 -scale-x-100" strokeWidth={2} />
         </Link>
         <h1 className="text-[15px] font-extrabold text-[#3a2a18]">الخدمة</h1>
-        <span className="w-10" />
+        <AlphaNotificationButton className="h-10 w-10" />
       </div>
     </header>
   );
@@ -108,8 +110,8 @@ function Hero() {
   return (
     <section className="relative">
       <div className="relative overflow-hidden rounded-[32px] border border-white/70 shadow-[0_30px_60px_-30px_rgba(60,40,16,0.55),inset_0_1px_0_rgba(255,255,255,0.7)]">
-        <div className="relative h-[200px] w-full">
-          <img src={cardChurch} alt="الخدمة" className="absolute inset-0 h-full w-full object-cover" />
+        <div className="relative h-[240px] w-full">
+          <img src={heroService} alt="الخدمة" className="absolute inset-0 h-full w-full object-cover" />
           <div
             className="absolute inset-0"
             style={{
@@ -127,32 +129,29 @@ function Hero() {
           />
           <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#e7c97a]/80 to-transparent" />
 
-          {/* Title block */}
-          <div className="absolute bottom-3 right-4 left-4 text-right text-white">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/30 px-2.5 py-1 text-[10px] font-extrabold mb-2">
-              <HandHeart className="h-3 w-3" strokeWidth={2.6} />
+          {/* Top Badge */}
+          <div className="absolute top-4 right-4">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 px-3 py-1.5 text-[11px] font-extrabold text-white shadow-sm">
+              <HandHeart className="h-3.5 w-3.5" strokeWidth={2.6} />
               مركز الخدمة الكنسية
             </span>
-            <h2 className="font-arabic-serif text-[24px] font-extrabold leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)]">
+          </div>
+
+          {/* Title block */}
+          <div className="absolute bottom-3 right-4 left-4 text-right text-white">
+            <h2 className="font-arabic-serif text-[28px] font-extrabold leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)]">
               الخدمة
             </h2>
-            <p className="mt-1 text-[11.5px] text-white/90 leading-snug">
+            <p className="mt-1 text-[13px] text-white/90 leading-snug">
               خدمات الكنيسة والاجتماعات والأنشطة
             </p>
           </div>
         </div>
 
-        {/* Glass stats footer */}
-        <div
-          className="relative px-4 py-3 grid grid-cols-3 gap-2"
-          style={{
-            background:
-              "linear-gradient(180deg, rgba(251,243,225,0.95) 0%, rgba(243,228,250,0.92) 100%)",
-            backdropFilter: "blur(20px)",
-          }}
-        >
-          <div className="absolute top-0 inset-x-4 h-px bg-gradient-to-r from-transparent via-[#c79356]/40 to-transparent" />
-          <HeroStat icon={Users} value={totalMembers.toLocaleString("ar-EG")} label="مخدوم" tone="#5b8fd1" />
+        {/* Transparent stats footer */}
+        <div className="relative px-3 py-2 grid grid-cols-3 gap-2 bg-transparent">
+          <div className="absolute top-0 inset-x-4 h-px bg-gradient-to-r from-transparent via-[#c79356]/30 to-transparent" />
+          <HeroStat icon={Users} value={totalMembers.toLocaleString("ar-EG")} label="مخدوم" tone="#3a6db0" />
           <HeroStat icon={HandHeart} value={totalServants.toLocaleString("ar-EG")} label="خادم" tone="#1f8a5a" />
           <HeroStat icon={Calendar} value={CATEGORIES.length.toLocaleString("ar-EG")} label="فريق" tone="#8a6ec1" />
         </div>
@@ -163,15 +162,12 @@ function Hero() {
 
 function HeroStat({ icon: Icon, value, label, tone }: { icon: any; value: string; label: string; tone: string }) {
   return (
-    <div className="rounded-2xl bg-white/80 border border-white/80 px-2 py-2 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_8px_18px_-12px_rgba(120,80,30,0.45)]">
-      <div
-        className="mx-auto grid h-7 w-7 place-items-center rounded-lg border border-white/70"
-        style={{ background: `linear-gradient(160deg, ${tone}22, ${tone}55)`, color: tone }}
-      >
-        <Icon className="h-4 w-4" strokeWidth={2.2} />
+    <div className="flex flex-col items-center justify-center py-1.5">
+      <div className="flex items-center gap-1.5">
+        <Icon className="h-5 w-5" style={{ color: tone }} strokeWidth={2.5} />
+        <span className="text-[18px] font-extrabold text-[#3a2a18] leading-none tracking-tight drop-shadow-sm tabular-nums">{value}</span>
       </div>
-      <p className="mt-1 text-[13px] font-extrabold text-[#3a2a18] leading-none tabular-nums">{value}</p>
-      <p className="mt-0.5 text-[9px] font-bold text-[#6a543a] leading-none">{label}</p>
+      <span className="mt-1.5 text-[11px] font-bold text-[#6a543a] leading-none">{label}</span>
     </div>
   );
 }
@@ -217,20 +213,20 @@ function CategoryCard({ c }: { c: Category }) {
 
         {/* Title */}
         <div className="absolute bottom-2.5 right-2.5 left-2.5 text-right text-white">
-          <p className="font-arabic-serif text-[13.5px] font-extrabold leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
+          <p className="font-arabic-serif text-[15px] font-extrabold leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
             {c.label}
           </p>
         </div>
       </div>
 
       {/* Stats footer */}
-      <div className="flex items-center justify-between gap-1.5 px-2.5 py-2 bg-[#fbf3e1]/95 backdrop-blur-md">
-        <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-[#3a6db0]">
-          <Users className="h-3 w-3" strokeWidth={2.6} />
+      <div className="flex items-center justify-between gap-1.5 px-3 py-2.5 bg-transparent">
+        <span className="inline-flex items-center gap-1.5 text-[15px] font-extrabold text-[#3a6db0] tabular-nums drop-shadow-sm">
+          <Users className="h-5 w-5" strokeWidth={2.5} />
           {c.members.toLocaleString("ar-EG")}
         </span>
-        <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-[#1f8a5a]">
-          <HandHeart className="h-3 w-3" strokeWidth={2.6} />
+        <span className="inline-flex items-center gap-1.5 text-[15px] font-extrabold text-[#1f8a5a] tabular-nums drop-shadow-sm">
+          <HandHeart className="h-5 w-5" strokeWidth={2.5} />
           {c.servants.toLocaleString("ar-EG")}
         </span>
       </div>
@@ -472,7 +468,7 @@ function ServiceHub() {
   return (
     <div dir="rtl" className="min-h-screen bg-[#f4ead8]">
       <Header />
-      <main className="px-4 pb-[max(env(safe-area-inset-bottom),16px)] space-y-5">
+      <main className="mx-auto w-full max-w-[440px] px-4 pb-[max(env(safe-area-inset-bottom),16px)] space-y-5">
         <Hero />
         <RoleSwitcher role={role} />
         <ManagementBar role={role} onAction={onAction} />

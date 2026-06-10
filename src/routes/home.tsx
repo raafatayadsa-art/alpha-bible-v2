@@ -348,6 +348,7 @@ function HomeScreen() {
   type PrimaryCard = { key: string; title: string; sub: string; image: string; to: string; accent: string; glyph: "Ⲁ" | "Ⲱ" };
   const primary: PrimaryCard[] = [
     { key: "bible", title: "الكتاب المقدس", sub: "اقرأ كلمة الله", image: cardBible, to: "/bible", accent: "#8a6ec1", glyph: "Ⲁ" },
+    { key: "bible2", title: "الكتاب المقدس 2", sub: "تجربة القراءة الفاخرة", image: cardBible, to: "/bible-2", accent: "#d4af37", glyph: "Ⲁ" },
     { key: "agpeya", title: "الأجبية", sub: "صلوات السبع ساعات", image: cardAgpeya, to: "/agpeya", accent: "#c98a3c", glyph: "Ⲱ" },
     { key: "katameros", title: "القطمارس", sub: "قراءات اليوم", image: cardKatameros, to: "/katameros", accent: "#4a9e6e", glyph: "Ⲁ" },
     { key: "synaxarium", title: "السنكسار", sub: "سير القديسين", image: cardSynaxarium, to: "/synaxarium", accent: "#a85450", glyph: "Ⲱ" },

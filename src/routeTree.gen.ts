@@ -18,7 +18,10 @@ import { Route as DiagnosticsRouteImport } from './routes/diagnostics'
 import { Route as ChurchesDirectoryRouteImport } from './routes/churches-directory'
 import { Route as ChurchFeedLabRouteImport } from './routes/church-feed-lab'
 import { Route as ChurchRouteImport } from './routes/church'
+import { Route as BooksV2RouteImport } from './routes/books-v2'
 import { Route as BooksRouteImport } from './routes/books'
+import { Route as BibleLovableRouteImport } from './routes/bible-lovable'
+import { Route as Bible2RouteImport } from './routes/bible-2'
 import { Route as BibleRouteImport } from './routes/bible'
 import { Route as BookRouteImport } from './routes/$book'
 import { Route as IndexRouteImport } from './routes/index'
@@ -119,9 +122,24 @@ const ChurchRoute = ChurchRouteImport.update({
   path: '/church',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BooksV2Route = BooksV2RouteImport.update({
+  id: '/books-v2',
+  path: '/books-v2',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BooksRoute = BooksRouteImport.update({
   id: '/books',
   path: '/books',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BibleLovableRoute = BibleLovableRouteImport.update({
+  id: '/bible-lovable',
+  path: '/bible-lovable',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Bible2Route = Bible2RouteImport.update({
+  id: '/bible-2',
+  path: '/bible-2',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BibleRoute = BibleRouteImport.update({
@@ -400,7 +418,10 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$book': typeof BookRouteWithChildren
   '/bible': typeof BibleRouteWithChildren
+  '/bible-2': typeof Bible2Route
+  '/bible-lovable': typeof BibleLovableRoute
   '/books': typeof BooksRoute
+  '/books-v2': typeof BooksV2Route
   '/church': typeof ChurchRouteWithChildren
   '/church-feed-lab': typeof ChurchFeedLabRoute
   '/churches-directory': typeof ChurchesDirectoryRoute
@@ -465,7 +486,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/bible': typeof BibleRouteWithChildren
+  '/bible-2': typeof Bible2Route
+  '/bible-lovable': typeof BibleLovableRoute
   '/books': typeof BooksRoute
+  '/books-v2': typeof BooksV2Route
   '/church': typeof ChurchRouteWithChildren
   '/church-feed-lab': typeof ChurchFeedLabRoute
   '/churches-directory': typeof ChurchesDirectoryRoute
@@ -532,7 +556,10 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/$book': typeof BookRouteWithChildren
   '/bible': typeof BibleRouteWithChildren
+  '/bible-2': typeof Bible2Route
+  '/bible-lovable': typeof BibleLovableRoute
   '/books': typeof BooksRoute
+  '/books-v2': typeof BooksV2Route
   '/church': typeof ChurchRouteWithChildren
   '/church-feed-lab': typeof ChurchFeedLabRoute
   '/churches-directory': typeof ChurchesDirectoryRoute
@@ -600,7 +627,10 @@ export interface FileRouteTypes {
     | '/'
     | '/$book'
     | '/bible'
+    | '/bible-2'
+    | '/bible-lovable'
     | '/books'
+    | '/books-v2'
     | '/church'
     | '/church-feed-lab'
     | '/churches-directory'
@@ -665,7 +695,10 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/bible'
+    | '/bible-2'
+    | '/bible-lovable'
     | '/books'
+    | '/books-v2'
     | '/church'
     | '/church-feed-lab'
     | '/churches-directory'
@@ -731,7 +764,10 @@ export interface FileRouteTypes {
     | '/'
     | '/$book'
     | '/bible'
+    | '/bible-2'
+    | '/bible-lovable'
     | '/books'
+    | '/books-v2'
     | '/church'
     | '/church-feed-lab'
     | '/churches-directory'
@@ -798,7 +834,10 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BookRoute: typeof BookRouteWithChildren
   BibleRoute: typeof BibleRouteWithChildren
+  Bible2Route: typeof Bible2Route
+  BibleLovableRoute: typeof BibleLovableRoute
   BooksRoute: typeof BooksRoute
+  BooksV2Route: typeof BooksV2Route
   ChurchRoute: typeof ChurchRouteWithChildren
   ChurchFeedLabRoute: typeof ChurchFeedLabRoute
   ChurchesDirectoryRoute: typeof ChurchesDirectoryRoute
@@ -905,11 +944,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChurchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/books-v2': {
+      id: '/books-v2'
+      path: '/books-v2'
+      fullPath: '/books-v2'
+      preLoaderRoute: typeof BooksV2RouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/books': {
       id: '/books'
       path: '/books'
       fullPath: '/books'
       preLoaderRoute: typeof BooksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bible-lovable': {
+      id: '/bible-lovable'
+      path: '/bible-lovable'
+      fullPath: '/bible-lovable'
+      preLoaderRoute: typeof BibleLovableRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bible-2': {
+      id: '/bible-2'
+      path: '/bible-2'
+      fullPath: '/bible-2'
+      preLoaderRoute: typeof Bible2RouteImport
       parentRoute: typeof rootRouteImport
     }
     '/bible': {
@@ -1403,7 +1463,10 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BookRoute: BookRouteWithChildren,
   BibleRoute: BibleRouteWithChildren,
+  Bible2Route: Bible2Route,
+  BibleLovableRoute: BibleLovableRoute,
   BooksRoute: BooksRoute,
+  BooksV2Route: BooksV2Route,
   ChurchRoute: ChurchRouteWithChildren,
   ChurchFeedLabRoute: ChurchFeedLabRoute,
   ChurchesDirectoryRoute: ChurchesDirectoryRoute,
