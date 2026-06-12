@@ -4,6 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft } from "lucide-react";
 import { SearchOverlay } from "@/components/overlays/SearchOverlay";
 import { booksQueryOptions } from "@/lib/bible";
+import { katamerosDayQueryOptions } from "@/features/katameros";
+import { synaxariumSaintsQueryOptions } from "@/features/synaxarium";
 import {
   CONTEXTUAL_SEARCH_META,
   searchContextual,
@@ -25,12 +27,24 @@ export function useContextualSearch(
     enabled: scope === "bible",
   });
 
+  const { data: katamerosDay } = useQuery({
+    ...katamerosDayQueryOptions("today"),
+    enabled: scope === "katameros",
+  });
+
+  const { data: synaxariumSaints } = useQuery({
+    ...synaxariumSaintsQueryOptions(),
+    enabled: scope === "synaxarium",
+  });
+
   const mergedContext = useMemo<ContextualSearchContext>(
     () => ({
       ...context,
       books: context.books ?? books,
+      katamerosReadings: context.katamerosReadings ?? katamerosDay?.readings,
+      synaxariumSaints: context.synaxariumSaints ?? synaxariumSaints,
     }),
-    [context, books],
+    [context, books, katamerosDay, synaxariumSaints],
   );
 
   const results = useMemo(() => {

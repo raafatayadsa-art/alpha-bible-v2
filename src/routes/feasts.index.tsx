@@ -1,8 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Bell, Search, BookOpen, Calendar, Moon, BellRing, ChevronLeft, Star, Cross, Fish, Church } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { FEASTS, CATEGORIES, getTodayFeast, type FeastCategory } from "@/features/feasts";
-import { getTodaySaint } from "@/features/synaxarium";
+import { todaySynaxariumSaintQueryOptions } from "@/features/synaxarium";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { GlassSurface } from "@/components/bible/primitives";
 import { CopticCross, CopticWatermark, CopticSeparator } from "@/components/coptic";
@@ -40,6 +41,7 @@ const ACCENT_COLORS: Record<string, string> = {
 function FeastsHome() {
   const [active, setActive] = useState<FeastCategory | "all">("all");
   const today = getTodayFeast();
+  const { data: todaySaint } = useQuery(todaySynaxariumSaintQueryOptions());
   const list = active === "all" ? FEASTS : FEASTS.filter((f) => f.category === active);
   const navigate = useNavigate();
   const [notifOpen, setNotifOpen] = useState(false);
@@ -296,19 +298,17 @@ function FeastsHome() {
 
 
         {/* Synaxarium Today */}
-        {(() => {
-          const saint = getTodaySaint();
-          return (
+        {todaySaint ? (
             <Link
               to="/synaxarium/$saintId"
-              params={{ saintId: saint.id }}
+              params={{ saintId: todaySaint.id }}
               className="block mt-5 active:scale-[0.99] transition-transform"
             >
               <GlassSurface className="p-3.5 bg-white border-[#ead9b1] shadow-[0_14px_30px_-22px_rgba(120,80,30,0.55)]">
                 <div className="flex items-center gap-3.5">
                   <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-[#f4ead8] ring-1 ring-inset ring-[#ead9b1] shadow-[0_8px_18px_-12px_rgba(120,80,30,0.55)]">
                     <img
-                      src={saint.image}
+                      src={todaySaint.image}
                       alt=""
                       loading="lazy"
                       decoding="async"
@@ -323,10 +323,10 @@ function FeastsHome() {
                       <span className="text-[#b8893a]/60">Ⲁ Ⲱ</span>
                     </div>
                     <div className="font-arabic-serif text-[17px] font-extrabold text-[#3a2a18] leading-tight mt-1 line-clamp-2">
-                      {saint.name}
+                      {todaySaint.name}
                     </div>
                     <div className="text-[12px] text-[#5a4630] leading-snug line-clamp-1 mt-1">
-                      {saint.summary}
+                      {todaySaint.summary}
                     </div>
                     <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-l from-[#6a4ab5] to-[#8c6fd1] text-white px-3.5 h-8 text-[11.5px] font-bold shadow-[0_8px_16px_-8px_rgba(106,74,181,0.6)]">
                       <BookOpen className="h-3.5 w-3.5" />
@@ -337,8 +337,7 @@ function FeastsHome() {
                 </div>
               </GlassSurface>
             </Link>
-          );
-        })()}
+        ) : null}
 
         <CopticSeparator />
 

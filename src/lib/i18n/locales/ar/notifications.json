@@ -1,0 +1,15 @@
+{
+  "savedToFavorites": "تم الحفظ في المفضلة",
+  "removedFromFavorites": "أُزيل من المفضلة",
+  "linkCopied": "تم نسخ الرابط",
+  "linkCopyFailed": "تعذّر نسخ الرابط",
+  "textCopied": "تم نسخ النص",
+  "textCopyFailed": "تعذّر نسخ النص",
+  "imageLinkCopied": "تم نسخ رابط الصورة",
+  "imageShareFailed": "تعذّر مشاركة الصورة",
+  "virtueHighlight": "الفضيلة: {{name}}",
+  "noLinkedContent": "لا يوجد محتوى مرتبط بعد",
+  "comingSoonItem": "{{title}} — قريباً",
+  "passwordUpdated": "تم تحديث كلمة المرور بنجاح",
+  "languageChanged": "تم تغيير اللغة"
+}

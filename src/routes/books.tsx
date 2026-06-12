@@ -7,7 +7,7 @@ import { groupBooks, displayName } from "@/lib/bible-books";
 import { matchesNtFilter, matchesOtFilter, type NtCategory, type OtCategory } from "@/lib/book-meta";
 import { BackButton, BookCard, BookGridSkeleton, BottomDock } from "@/components/bible";
 import { useBibleSearch } from "@/features/bible-search";
-import { cn } from "@/lib/utils";
+import { ORTHODOX_BIBLE_BOOK_COUNT, ORTHODOX_NT_BOOK_COUNT, ORTHODOX_OT_BOOK_COUNT } from "@/lib/bible-expected-chapters";
 
 type Testament = "old" | "new" | "all";
 
@@ -62,10 +62,10 @@ function BooksGrid() {
   const title = booksPageTitle(testament).replace(" — الكتاب المقدس", "");
   const countLabel =
     scope === "old"
-      ? `${grouped.old.length || 39} سفراً`
+      ? `${grouped.old.length || ORTHODOX_OT_BOOK_COUNT} سفراً`
       : scope === "new"
-      ? `${grouped.neu.length || 27} سفراً`
-      : `${(grouped.old.length + grouped.neu.length) || 66} سفراً`;
+      ? `${grouped.neu.length || ORTHODOX_NT_BOOK_COUNT} سفراً`
+      : `${(grouped.old.length + grouped.neu.length) || ORTHODOX_BIBLE_BOOK_COUNT} سفراً`;
 
   const filtered = useMemo(() => {
     if (!books) return [] as string[];

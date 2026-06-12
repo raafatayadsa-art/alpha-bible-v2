@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { dbBookNamesForQuery } from "@/lib/bible-book-names";
+import { dbVerseNumberForQuery } from "@/lib/bible-verse-normalize";
 
 /**
  * Dictionary entry — standardized English schema.
@@ -374,12 +376,14 @@ export async function fetchVerseText(
   chapter: number,
   verse: number,
 ): Promise<string | null> {
+  const names = dbBookNamesForQuery(book);
+  const dbVerse = dbVerseNumberForQuery(book, chapter, verse);
   const { data, error } = await supabase
     .from("bible_verses")
     .select("verse_text")
-    .eq("book_name", book)
+    .in("book_name", names)
     .eq("chapter_number", chapter)
-    .eq("verse_number", verse)
+    .eq("verse_number", dbVerse)
     .limit(1);
   if (error) return null;
   return ((data ?? [])[0] as any)?.verse_text ?? null;

@@ -1,0 +1,166 @@
+{
+  "$schema": "alpha-bible/st-takla-discovery/v1",
+  "locale_policy": {
+    "schema": "bilingual_ar_en",
+    "scrape_phase": "ar_only",
+    "en_columns_nullable": true
+  },
+  "katamaros_day": {
+    "id": "1742-05-05",
+    "id_format": "{coptic_year}-{coptic_month:02d}-{coptic_day:02d}",
+    "coptic_month": 5,
+    "coptic_day": 5,
+    "coptic_year": 1742,
+    "coptic_date_label_ar": "5 بؤونة 1742",
+    "coptic_date_label_en": null,
+    "gregorian_date_label_ar": "الجمعة, 12 يونية 2026",
+    "gregorian_date_label_en": null,
+    "liturgical_day_ar": "قراءات الجمعة, 12 يونية 2026 --- 5 بؤونة 1742",
+    "liturgical_day_en": null,
+    "occasion_ar": "",
+    "occasion_en": null,
+    "season": "ordinary",
+    "accent_hex": "#6a4ab5",
+    "source": {
+      "provider": "st-takla.org",
+      "url": "https://st-takla.org/zJ/index.php/en-readings-katamaros?c=&dbl=ar&iday=12&imonth=6&iyear=2026&sm=5-5&view=reading-arabic",
+      "fetched_at": null
+    },
+    "readings": [
+      {
+        "reading_key": "vespers_psalm",
+        "reading_type": "vespers_psalm",
+        "title_ar": "مزمور العشية",
+        "title_en": null,
+        "reference_ar": "مزامير 32:11 ; 33:1 ; 32:6",
+        "reference_en": null,
+        "source_ar": "العشية",
+        "source_en": null,
+        "estimated_min": 3,
+        "body_ar": "…",
+        "body_en": null,
+        "display_order": 10,
+        "verses": [
+          { "book_ar": "مزامير", "chapter": 32, "verse_start": 11, "verse_end": 11 },
+          { "book_ar": "مزامير", "chapter": 33, "verse_start": 1, "verse_end": 1 }
+        ]
+      },
+      {
+        "reading_key": "vespers_gospel",
+        "reading_type": "vespers_gospel",
+        "title_ar": "إنجيل العشية",
+        "title_en": null,
+        "reference_ar": "متى 25 : 14 - 23",
+        "reference_en": null,
+        "source_ar": "العشية",
+        "source_en": null,
+        "display_order": 20,
+        "body_ar": "…"
+      },
+      {
+        "reading_key": "matins_psalm",
+        "reading_type": "matins_psalm",
+        "display_order": 30
+      },
+      {
+        "reading_key": "matins_gospel",
+        "reading_type": "matins_gospel",
+        "display_order": 40
+      },
+      {
+        "reading_key": "pauline",
+        "reading_type": "pauline",
+        "display_order": 50
+      },
+      {
+        "reading_key": "catholic",
+        "reading_type": "catholic",
+        "display_order": 60
+      },
+      {
+        "reading_key": "praxis",
+        "reading_type": "praxis",
+        "display_order": 70
+      },
+      {
+        "reading_key": "synaxarium_intro",
+        "reading_type": "synaxarium",
+        "title_ar": "السنكسار",
+        "body_ar": "اليوم 5 من الشهر المبارك بؤونة…",
+        "display_order": 80,
+        "synaxarium_saint_keys": ["1742-05-05-01", "1742-05-05-02", "1742-05-05-03"]
+      },
+      {
+        "reading_key": "liturgy_psalm",
+        "reading_type": "liturgy_psalm",
+        "display_order": 90
+      },
+      {
+        "reading_key": "liturgy_gospel",
+        "reading_type": "liturgy_gospel",
+        "display_order": 100
+      },
+      {
+        "reading_key": "prophecy_1",
+        "reading_type": "prophecy",
+        "title_ar": "من خروج",
+        "reference_ar": "خروج 2 : 23 - 3 : 5",
+        "display_order": 5,
+        "season": "great_lent",
+        "notes": "Only present in Lent; may repeat prophecy_2, prophecy_3…"
+      }
+    ],
+    "related": [
+      {
+        "kind": "synaxarium",
+        "day_id": "1742-05-05",
+        "title_ar": "سنكسار 5 بؤونة"
+      }
+    ]
+  },
+  "synaxarium_day": {
+    "id": "1742-05-05",
+    "coptic_month": 5,
+    "coptic_day": 5,
+    "coptic_year": 1742,
+    "heading_ar": "05- اليوم الخامس - شهر بؤونة",
+    "heading_en": null,
+    "intro_ar": "اليوم 5 من الشهر المبارك بؤونة…",
+    "intro_en": null,
+    "church_reading_suppressed": false,
+    "church_reading_note_ar": null,
+    "source": {
+      "primary_ar": "https://st-takla.org/Full-Free-Coptic-Books/Synaxarium-or-Synaxarion/10-Bawoonah/05-Bawoonah.html",
+      "primary_en": "https://st-takla.org/books/en/church/synaxarium/10-bawoonah/05-paona.html",
+      "katamaros_embed_ar": "https://st-takla.org/zJ/index.php/en-readings-katamaros?…"
+    },
+    "saints": ["1742-05-05-01", "1742-05-05-02", "1742-05-05-03"]
+  },
+  "synaxarium_saint": {
+    "id": "1742-05-05-01",
+    "day_id": "1742-05-05",
+    "display_order": 1,
+    "slug": "james-of-the-east",
+    "name_ar": "يعقوب المشرقى",
+    "name_en": null,
+    "title_ar": "نياحة القديس يعقوب المشرقى ( 5 بـؤونة)",
+    "title_en": null,
+    "occasion_type": "departure",
+    "occasion_type_ar": "نياحة",
+    "summary_ar": "في مثل هذا اليوم تنيح القديس يعقوب المشرقي…",
+    "summary_en": null,
+    "bio_ar": "…",
+    "bio_en": null,
+    "closing_ar": "صلاته تكون معنا . آمين",
+    "coptic_date_label_ar": "5 بؤونة",
+    "gregorian_date_label_ar": null,
+    "image_urls": [],
+    "source_url_ar": "https://st-takla.org/Full-Free-Coptic-Books/Synaxarium-or-Synaxarion/10-Bawoonah/05-Bawoonah.html#…"
+  },
+  "dedupe_keys": {
+    "katamaros_day": "id",
+    "katamaros_reading": ["day_id", "reading_key"],
+    "synaxarium_day": "id",
+    "synaxarium_saint": ["day_id", "display_order"]
+  }
+}

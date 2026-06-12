@@ -1,0 +1,34 @@
+{
+  "appName": "Alpha Coptic",
+  "nav": {
+    "home": "الرئيسية",
+    "prayer": "الصلاة",
+    "bible": "الكتاب المقدس",
+    "church": "كنيستك",
+    "profile": "الملف الشخصي",
+    "bottomDockAria": "التنقل السفلي"
+  },
+  "actions": {
+    "goHome": "العودة للرئيسية",
+    "tryAgain": "حاول مرة أخرى",
+    "readMore": "اقرأ المزيد",
+    "logout": "تسجيل الخروج",
+    "active": "نشط",
+    "comingSoon": "قريباً"
+  },
+  "errors": {
+    "notFoundTitle": "الصفحة غير موجودة",
+    "notFoundBody": "الصفحة التي تبحث عنها غير موجودة أو تم نقلها.",
+    "loadFailedTitle": "تعذّر تحميل الصفحة",
+    "loadFailedBody": "حدث خطأ من جانبنا. يمكنك تحديث الصفحة أو العودة للرئيسية."
+  },
+  "language": {
+    "label": "اللغة",
+    "arabic": "العربية",
+    "english": "English",
+    "switchHint": "يُطبَّق فوراً بدون إعادة تشغيل"
+  },
+  "brand": {
+    "footerTag": "ⲁⲗⲫⲁ · Alpha Coptic"
+  }
+}

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import {
   Bookmark,
   Share2,
@@ -20,8 +21,8 @@ import {
   FileText,
   Check,
 } from "lucide-react";
-import { toast } from "sonner";
-import { getSaint, SAINTS } from "@/features/synaxarium";
+import { notify, notifyError } from "@/lib/i18n/notify";
+import { synaxariumSaintQueryOptions, synaxariumSaintsQueryOptions } from "@/features/synaxarium";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { GlassSurface, BackButton } from "@/components/bible/primitives";
 import {
@@ -99,13 +100,15 @@ function writeFavorites(ids: string[]) {
 
 function SaintDetails() {
   const { saintId } = Route.useParams();
-  const saint = getSaint(saintId);
+  const { data: saint, isPending, isError } = useQuery(synaxariumSaintQueryOptions(saintId));
+  const { data: saints = [] } = useQuery(synaxariumSaintsQueryOptions());
   const navigate = useNavigate();
   const [saved, setSaved] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [presentOpen, setPresentOpen] = useState(false);
 
   const presentationContent: PresentationContent = useMemo(() => {
+    if (!saint) return { title: "", subtitle: "", sections: [] };
     const paras = saint.bio.split("\n\n").filter(Boolean);
     const sections = [
       { title: "نبذة", body: saint.summary, meta: saint.copticDate },
@@ -130,16 +133,74 @@ function SaintDetails() {
 
   // Prev / next saint for swipe navigation
   const { prevSaint, nextSaint } = useMemo(() => {
-    const idx = SAINTS.findIndex((s) => s.id === saint.id);
-    const prev = idx > 0 ? SAINTS[idx - 1] : SAINTS[SAINTS.length - 1];
-    const next = idx < SAINTS.length - 1 ? SAINTS[idx + 1] : SAINTS[0];
+    if (!saint || saints.length === 0) {
+      return { prevSaint: null, nextSaint: null };
+    }
+    const idx = saints.findIndex((s) => s.id === saint.id);
+    if (idx < 0) return { prevSaint: null, nextSaint: null };
+    const prev = idx > 0 ? saints[idx - 1] : saints[saints.length - 1];
+    const next = idx < saints.length - 1 ? saints[idx + 1] : saints[0];
     return { prevSaint: prev, nextSaint: next };
-  }, [saint.id]);
+  }, [saint, saints]);
 
   // Load favorite state
   useEffect(() => {
+    if (!saint) return;
     setSaved(readFavorites().includes(saint.id));
-  }, [saint.id]);
+  }, [saint]);
+
+  const pageUrl = () =>
+    typeof window !== "undefined" ? window.location.href : "";
+
+  if (isPending) {
+    return (
+      <div dir="rtl" className="relative min-h-dvh bg-[#faf8f3]">
+        <CopticWatermark />
+        <header className="relative z-10 mx-auto w-full max-w-[430px] px-4 flex items-center justify-between" style={{ paddingTop: "max(env(safe-area-inset-top), 14px)", paddingBottom: 8 }}>
+          <BackButton compact to="/synaxarium" />
+          <h1 className="font-arabic-serif text-[15px] font-extrabold text-[#3a2a18]">سيرة قديس</h1>
+          <span className="w-11" />
+        </header>
+        <main className="mx-auto w-full max-w-[430px] px-4 py-16 text-center text-[13px] text-[#6a543a]">
+          جاري تحميل السيرة...
+        </main>
+        <BottomDock />
+      </div>
+    );
+  }
+
+  if (isError || !saint) {
+    return (
+      <div dir="rtl" className="relative min-h-dvh bg-[#faf8f3]">
+        <CopticWatermark />
+        <header className="relative z-10 mx-auto w-full max-w-[430px] px-4 flex items-center justify-between" style={{ paddingTop: "max(env(safe-area-inset-top), 14px)", paddingBottom: 8 }}>
+          <BackButton compact to="/synaxarium" />
+          <h1 className="font-arabic-serif text-[15px] font-extrabold text-[#3a2a18]">سيرة قديس</h1>
+          <span className="w-11" />
+        </header>
+        <main className="mx-auto w-full max-w-[430px] px-4 py-10">
+          <GlassSurface className="p-8 bg-white border-[#ead9b1] text-center">
+            <CopticCross className="mx-auto text-[#b8893a]" size={28} />
+            <h2 className="font-arabic-serif text-[18px] font-extrabold text-[#3a2a18] mt-4">
+              السيرة غير متوفرة
+            </h2>
+            <p className="text-[12.5px] text-[#6a543a] mt-3 leading-relaxed">
+              لم نجد سيرة هذا القديس في قاعدة البيانات.
+            </p>
+            <Link
+              to="/synaxarium"
+              className="mt-5 inline-flex items-center justify-center rounded-full bg-gradient-to-l from-[#6a4ab5] to-[#8c6fd1] text-white px-5 h-10 text-[12px] font-bold"
+            >
+              العودة إلى السنكسار
+            </Link>
+          </GlassSurface>
+        </main>
+        <BottomDock />
+      </div>
+    );
+  }
+
+  const shareText = `${saint.name} — ${saint.title}\n${saint.summary}`;
 
   const toggleSave = () => {
     const favs = readFavorites();
@@ -148,13 +209,8 @@ function SaintDetails() {
       : [...favs, saint.id];
     writeFavorites(next);
     setSaved(next.includes(saint.id));
-    toast(next.includes(saint.id) ? "تم الحفظ في المفضلة" : "أُزيل من المفضلة");
+    notify(next.includes(saint.id) ? "savedToFavorites" : "removedFromFavorites");
   };
-
-  const pageUrl = () =>
-    typeof window !== "undefined" ? window.location.href : "";
-
-  const shareText = `${saint.name} — ${saint.title}\n${saint.summary}`;
 
   const handleNativeShare = async () => {
     const data = { title: saint.name, text: shareText, url: pageUrl() };
@@ -172,9 +228,9 @@ function SaintDetails() {
   const copyLink = async () => {
     try {
       await navigator.clipboard.writeText(pageUrl());
-      toast("تم نسخ الرابط");
+      notify("linkCopied");
     } catch {
-      toast("تعذّر نسخ الرابط");
+      notifyError("linkCopyFailed");
     }
     setShareOpen(false);
   };
@@ -182,9 +238,9 @@ function SaintDetails() {
   const copyText = async () => {
     try {
       await navigator.clipboard.writeText(`${shareText}\n${pageUrl()}`);
-      toast("تم نسخ النص");
+      notify("textCopied");
     } catch {
-      toast("تعذّر نسخ النص");
+      notifyError("textCopyFailed");
     }
     setShareOpen(false);
   };
@@ -211,9 +267,9 @@ function SaintDetails() {
           ? saint.image
           : new URL(saint.image, window.location.origin).toString(),
       );
-      toast("تم نسخ رابط الصورة");
+      notify("imageLinkCopied");
     } catch {
-      toast("تعذّر مشاركة الصورة");
+      notifyError("imageShareFailed");
     }
     setShareOpen(false);
   };
@@ -240,7 +296,7 @@ function SaintDetails() {
   const scrollToBio = (highlight?: string) => {
     bioRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     if (highlight) {
-      toast(`الفضيلة: ${highlight}`);
+      notify("virtueHighlight", { name: highlight });
     }
   };
 
@@ -265,17 +321,17 @@ function SaintDetails() {
 
   const goRelated = (kind: string, item?: { id: string; title: string }) => {
     if (!item) {
-      toast("لا يوجد محتوى مرتبط بعد");
+      notify("noLinkedContent");
       return;
     }
     if (kind === "similar") {
-      const exists = SAINTS.some((s) => s.id === item.id);
+      const exists = saints.some((s) => s.id === item.id);
       if (exists) {
         navigate({ to: "/synaxarium/$saintId", params: { saintId: item.id } });
         return;
       }
     }
-    toast(`${item.title} — قريباً`);
+    notify("comingSoonItem", { title: item.title });
   };
 
   return (

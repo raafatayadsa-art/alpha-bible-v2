@@ -1,0 +1,185 @@
+{
+  "pageTitle": "مركز التحكم",
+  "pageFooter": "ⲁⲗⲫⲁ · Alpha Coptic · مركز التحكم",
+  "hero": {
+    "title": "مركز التحكم الشخصي",
+    "subtitle": "إعدادات الخصوصية والأمان وتجربتك الروحية"
+  },
+  "searchPlaceholder": "ابحث في الإعدادات...",
+  "trustCard": {
+    "title": "مركز الثقة والأمان",
+    "subtitle": "شفافية كاملة لحماية خصوصيتك وحقوقك"
+  },
+  "security": {
+    "excellent": "ممتاز",
+    "veryGood": "جيد جداً",
+    "good": "جيد",
+    "needsImprovement": "يحتاج تحسين",
+    "protectionExcellent": "الحماية ممتازة",
+    "protectionVeryGood": "الحماية جيدة جداً",
+    "protectionGood": "الحماية جيدة",
+    "protectionNeedsImprovement": "الحماية تحتاج تحسين",
+    "activeDevices": "{{count}} أجهزة نشطة"
+  },
+  "sections": {
+    "privacy": {
+      "title": "الخصوصية والأمان",
+      "description": "تحكم كامل في الخصوصية والحماية والحساب",
+      "keywords": ["خصوصية", "أمان", "كلمة", "جهاز", "face", "touch", "تحقق", "حظر", "رسائل", "privacy", "security", "password", "device"]
+    },
+    "appearance": {
+      "title": "المظهر والقراءة",
+      "description": "الوضع الفاتح والداكن وتجربة العرض",
+      "keywords": ["مظهر", "فاتح", "داكن", "dark", "theme", "language", "لغة", "appearance"]
+    },
+    "notifications": {
+      "title": "الإشعارات",
+      "description": "إدارة جميع التنبيهات والإشعارات",
+      "keywords": ["إشعار", "آية", "صلاة", "قديس", "قطمارس", "اجتماع", "رحلة", "تعليق", "notification"]
+    },
+    "bible": {
+      "title": "الكتاب المقدس والأجبية",
+      "description": "إعدادات المحتوى الروحي",
+      "keywords": ["كتاب", "قراءة", "ترجمة", "آيات", "تمرير", "أجبية", "كنيسة", "bible"]
+    },
+    "prayer": {
+      "title": "الصلاة والتذكيرات",
+      "description": "تذكيرات الصلاة والأجبية اليومية",
+      "keywords": ["صلاة", "تذكير", "صمت", "نوم", "باكر", "أجبية", "prayer"]
+    },
+    "storage": {
+      "title": "التخزين والبيانات",
+      "description": "إدارة التخزين والمزامنة",
+      "keywords": ["تخزين", "كاش", "مزامنة", "بيانات", "إنترنت", "محفوظ", "مجتمع", "storage", "sync"]
+    },
+    "a11y": {
+      "title": "إمكانية الوصول",
+      "description": "تخصيص تجربة القراءة والتفاعل",
+      "keywords": ["وصول", "تباين", "صوت", "اهتزاز", "حركة", "خط", "accessibility"]
+    },
+    "about": {
+      "title": "حول Alpha",
+      "description": "معلومات التطبيق والدعم الفني",
+      "keywords": ["alpha", "إصدار", "خصوصية", "شروط", "دعم", "تقييم", "حول", "about"]
+    },
+    "heroKeywords": ["مركز", "تحكم", "أمان", "خصوصية", "hero", "score", "control"],
+    "trustKeywords": ["ثقة", "أمان", "خصوصية", "حقوق", "شفافية", "trust", "safety"]
+  },
+  "labels": {
+    "security": "الأمان",
+    "privacy": "الخصوصية",
+    "privateMessages": "رسائل خاصة",
+    "spiritual": "روحيات",
+    "church": "الكنيسة",
+    "community": "المجتمع",
+    "spiritualPrefs": "تفضيلات روحية",
+    "savedContent": "المحتوى المحفوظ"
+  },
+  "rows": {
+    "biometric": { "label": "Face ID / Touch ID", "subtitle": "فتح التطبيق بالبصمة" },
+    "twoFactor": { "label": "التحقق بخطوتين", "subtitle": "حماية إضافية عند تسجيل الدخول" },
+    "registeredDevices": { "label": "الأجهزة المسجلة" },
+    "logoutAllDevices": { "label": "تسجيل الخروج من جميع الأجهزة", "subtitle": "إنهاء كل الجلسات النشطة" },
+    "activeSessions": "جلسات تسجيل الدخول النشطة",
+    "blockedUsers": { "label": "المستخدمون المحظورون", "subtitle": "إدارة قائمة الحظر" },
+    "profileVisibility": "من يرى ملفي الشخصي",
+    "whoCanMessage": "من يستطيع مراسلتي",
+    "hidePhone": "إخفاء رقم الهاتف",
+    "hideEmail": "إخفاء البريد الإلكتروني",
+    "hideChurch": "إخفاء الكنيسة",
+    "hideBirthdate": "إخفاء تاريخ الميلاد",
+    "messageDeleteDuration": "مدة حذف الرسائل الافتراضية",
+    "blockStrangers": "منع استقبال رسائل الغرباء",
+    "notifyVerse": "آية اليوم",
+    "notifyPrayer": "صلاة اليوم",
+    "notifySaint": "قديس اليوم",
+    "notifyKatameros": "القطمارس",
+    "notifyMeetings": "الاجتماعات",
+    "notifyTrips": "الرحلات",
+    "notifyPrayerRequests": "طلبات الصلاة",
+    "notifyComments": "التعليقات",
+    "notifyReplies": "الردود",
+    "notifyMentions": "الإشارات",
+    "bibleFontSize": "حجم خط القراءة",
+    "bibleFontFamily": "نوع خط القراءة",
+    "bibleSaveLastRead": "حفظ آخر قراءة",
+    "bibleAutoscrollSpeed": "سرعة التمرير التلقائي",
+    "biblePreferredTranslation": "الترجمة المفضلة",
+    "bibleShowVerseNumbers": "إظهار أرقام الآيات",
+    "savedChurches": { "title": "الكنائس المحفوظة", "subtitle": "كنائسك المفضلة" },
+    "favoritePriests": { "label": "الكهنة المفضلون", "subtitle": "قائمة الكهنة المتابَعين" },
+    "favoriteServants": { "label": "الخدام المفضلون", "subtitle": "خدم وخدّام مميزون" },
+    "savedMeetings": { "label": "الاجتماعات المحفوظة", "subtitle": "اجتماعاتك القادمة" },
+    "prayerReminder": "تذكير الصلاة",
+    "prayerHours": { "label": "ساعات الصلاة المفضلة", "subtitle": "الإعداد قريباً" },
+    "prayerSilentMode": "وضع الصمت أثناء الصلاة",
+    "prayerBedtimeReminder": "تذكير صلاة النوم",
+    "prayerMorningReminder": "تذكير صلاة باكر",
+    "localDataSize": { "label": "حجم البيانات المحلية", "subtitle": "~24 ميجابايت" },
+    "clearCache": { "label": "مسح الكاش", "subtitle": "تحرير مساحة التخزين" },
+    "syncNow": { "label": "مزامنة الآن", "subtitle": "مزامنة مع السحابة" },
+    "lastSync": "آخر مزامنة",
+    "offlineDownload": { "label": "تحميل المحتوى للاستخدام بدون إنترنت", "subtitle": "الكتاب المقدس والأجبية" },
+    "savedPosts": { "label": "المحتوى المحفوظ", "subtitle": "منشورات ومواد محفوظة" },
+    "likedPosts": { "label": "المنشورات المعجب بها", "subtitle": "تفاعلاتك في المجتمع" },
+    "friendRequests": { "label": "طلبات الصداقة", "subtitle": "إدارة طلبات التواصل" },
+    "largeText": "تكبير الخط",
+    "highContrast": "التباين العالي",
+    "screenReader": "القراءة الصوتية",
+    "haptics": "الاهتزازات"
+  },
+  "options": {
+    "everyone": "الجميع",
+    "church": "الكنيسة",
+    "friends": "الأصدقاء",
+    "afterView": "بعد المشاهدة",
+    "oneHour": "بعد ساعة",
+    "oneDay": "بعد يوم",
+    "oneWeek": "بعد أسبوع",
+    "fontSmall": "صغير",
+    "fontMedium": "متوسط",
+    "fontLarge": "كبير",
+    "fontXLarge": "أكبر",
+    "serif": "Serif",
+    "sans": "Sans",
+    "scrollSlow": "بطيء",
+    "scrollMedium": "متوسط",
+    "scrollFast": "سريع"
+  },
+  "darkMode": {
+    "title": "🌙 الوضع الداكن",
+    "enabled": "الوضع الداكن مفعل",
+    "disabled": "الوضع الفاتح مفعل",
+    "ariaLabel": "الوضع الداكن",
+    "light": "الوضع الفاتح",
+    "dark": "الوضع الداكن",
+    "system": "النظام التلقائي",
+    "lightSub": "Alpha Cream",
+    "darkSub": "Alpha Dark",
+    "systemSub": "حسب النظام"
+  },
+  "password": {
+    "title": "تغيير كلمة المرور",
+    "lastUpdated": "آخر تحديث: منذ شهرين",
+    "current": "كلمة المرور الحالية",
+    "new": "كلمة المرور الجديدة",
+    "confirm": "تأكيد كلمة المرور الجديدة",
+    "submit": "تحديث كلمة المرور",
+    "submitting": "جاري التحديث...",
+    "errors": {
+      "fillAll": "يرجى ملء جميع الحقول",
+      "mismatch": "تأكيد كلمة المرور غير متطابق",
+      "tooShort": "كلمة المرور الجديدة يجب أن تكون 8 أحرف على الأقل",
+      "updateFailed": "تعذّر تحديث كلمة المرور. حاول مرة أخرى."
+    }
+  },
+  "sessions": {
+    "iphone": { "device": "iPhone 15", "detail": "الجهاز الحالي · آخر نشاط: الآن" },
+    "web": { "device": "Web Chrome", "detail": "آخر نشاط: منذ 3 ساعات" }
+  },
+  "devAccess": {
+    "title": "Alpha Control Dev Access",
+    "subtitle": "دخول مؤقت إلى Alpha Control · للتطوير فقط"
+  },
+  "preferredTranslation": "النسخة القبطية"
+}

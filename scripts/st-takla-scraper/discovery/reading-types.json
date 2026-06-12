@@ -1,0 +1,139 @@
+{
+  "$schema": "proposal",
+  "version": "1.0.0",
+  "description": "Canonical katamaros reading_type values for Alpha Bible scraper + DB. Extensible via reading_type_registry.",
+  "core_types": [
+    {
+      "reading_type": "prophecy",
+      "source_heading_ar": ["النبوة", "باكر (نبوات)", "صلاة باكر"],
+      "source_heading_en": ["Prophecy", "Matins prophecy"],
+      "ui_card_group": "prophecy",
+      "notes": "Great Lent / special seasons: one or more OT prophecy blocks before matins psalm. St-Takla often omits explicit 'النبوة' heading and lists book refs under first 'باكر' block."
+    },
+    {
+      "reading_type": "vespers_psalm",
+      "source_heading_ar": ["العشية", "مزمور العشية"],
+      "source_heading_en": ["Vespers", "Vespers Psalm"],
+      "ui_card_group": "vespers"
+    },
+    {
+      "reading_type": "vespers_gospel",
+      "source_heading_ar": ["إنجيل العشية"],
+      "source_heading_en": ["Vespers Gospel"],
+      "ui_card_group": "vespers"
+    },
+    {
+      "reading_type": "matins_psalm",
+      "source_heading_ar": ["باكر", "مزمور باكر"],
+      "source_heading_en": ["Matins", "Matins Psalm"],
+      "ui_card_group": "matins",
+      "notes": "After prophecy block during Lent; second 'باكر' section on same page."
+    },
+    {
+      "reading_type": "matins_gospel",
+      "source_heading_ar": ["إنجيل باكر"],
+      "source_heading_en": ["Matins Gospel"],
+      "ui_card_group": "matins"
+    },
+    {
+      "reading_type": "pauline",
+      "source_heading_ar": ["البولس", "قراءات القداس"],
+      "source_heading_en": ["Pauline", "Liturgy Pauline"],
+      "ui_card_group": "liturgy"
+    },
+    {
+      "reading_type": "catholic",
+      "source_heading_ar": ["الكاثوليكون"],
+      "source_heading_en": ["Catholic Epistle"],
+      "ui_card_group": "liturgy"
+    },
+    {
+      "reading_type": "praxis",
+      "source_heading_ar": ["الإبركسيس"],
+      "source_heading_en": ["Praxis", "Acts"],
+      "ui_card_group": "liturgy"
+    },
+    {
+      "reading_type": "synaxarium",
+      "source_heading_ar": ["السنكسار"],
+      "source_heading_en": ["Synaxarium"],
+      "ui_card_group": "synaxarium",
+      "notes": "Intro paragraph + h2/h3 saint entries. Stored in synaxarium_saints; optional summary row in katamaros_readings for cross-link only."
+    },
+    {
+      "reading_type": "liturgy_psalm",
+      "source_heading_ar": ["مزمور القداس"],
+      "source_heading_en": ["Liturgy Psalm"],
+      "ui_card_group": "liturgy_gospel_pair"
+    },
+    {
+      "reading_type": "liturgy_gospel",
+      "source_heading_ar": ["إنجيل القداس"],
+      "source_heading_en": ["Liturgy Gospel"],
+      "ui_card_group": "liturgy_gospel_pair"
+    }
+  ],
+  "discovered_extension_candidates": [
+    {
+      "reading_type": "season_note",
+      "trigger_text_ar": "لا يُقرأ في الكنيسة خلال هذه الفترة",
+      "notes": "Metadata flag on synaxarium block during Pentecost; not a readable lesson."
+    },
+    {
+      "reading_type": "prophecy",
+      "prophecy_index": "2+",
+      "notes": "Multiple prophecies per day in Lent static HTML; use display_order + reading_key suffix."
+    }
+  ],
+  "section_order_variants": [
+    {
+      "season": "ordinary",
+      "order": [
+        "vespers_psalm",
+        "vespers_gospel",
+        "matins_psalm",
+        "matins_gospel",
+        "pauline",
+        "catholic",
+        "praxis",
+        "synaxarium",
+        "liturgy_psalm",
+        "liturgy_gospel"
+      ],
+      "sample_url": "https://st-takla.org/zJ/index.php/en-readings-katamaros?c=&dbl=ar&iday=12&imonth=6&iyear=2026&sm=5-5&view=reading-arabic"
+    },
+    {
+      "season": "pentecost",
+      "order": [
+        "vespers_psalm",
+        "vespers_gospel",
+        "matins_psalm",
+        "matins_gospel",
+        "pauline",
+        "catholic",
+        "praxis",
+        "liturgy_psalm",
+        "liturgy_gospel",
+        "season_note",
+        "synaxarium"
+      ],
+      "sample_url": "https://st-takla.org/zJ/index.php/en-readings-katamaros?c=&dbl=ar&iday=5&imonth=5&iyear=1742&sm=5-5&view=reading-arabic"
+    },
+    {
+      "season": "great_lent",
+      "order": [
+        "prophecy",
+        "matins_psalm",
+        "matins_gospel",
+        "pauline",
+        "catholic",
+        "praxis",
+        "synaxarium",
+        "liturgy_psalm",
+        "liturgy_gospel"
+      ],
+      "notes": "No vespers block on Lent day 1 sample.",
+      "sample_url": "https://st-takla.org/zJ/index.php/en-readings-katamaros?c=&dbl=ar&iday=16&imonth=2&iyear=2026&sm=2-16&view=reading-arabic"
+    }
+  ]
+}

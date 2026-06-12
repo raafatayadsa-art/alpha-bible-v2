@@ -1,5 +1,6 @@
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 import {
   type LucideIcon,
   Check,
@@ -14,13 +15,7 @@ import {
 import { AlphaIcon3D } from "@/components/controls/AlphaIcon3D";
 import { AlphaPremiumIcon } from "@/components/controls/AlphaPremiumIcon";
 import { cn } from "@/lib/utils";
-
-function protectionBadgeLabel(scoreLabel: string): string {
-  if (scoreLabel === "ممتاز") return "الحماية ممتازة";
-  if (scoreLabel === "جيد جداً") return "الحماية جيدة جداً";
-  if (scoreLabel === "جيد") return "الحماية جيدة";
-  return "الحماية تحتاج تحسين";
-}
+import type { SecurityLabelKey } from "./settings-store";
 
 export function GlassCard({
   children,
@@ -138,6 +133,8 @@ export function DarkModeToggle({
   checked: boolean;
   onChange: (v: boolean) => void;
 }) {
+  const { t } = useTranslation("settings");
+
   return (
     <div className="flex items-center gap-3.5 rounded-[18px] px-4 py-3.5 transition hover:bg-white/25">
       <div
@@ -151,17 +148,17 @@ export function DarkModeToggle({
       >
         <Moon className={cn("h-5 w-5 transition-colors", checked ? "text-[#e7c97a]" : "text-[#8a5a14]")} />
       </div>
-      <div className="min-w-0 flex-1 text-right">
-        <p className="text-[13px] font-extrabold text-[#2a1f12]">🌙 الوضع الداكن</p>
+      <div className="min-w-0 flex-1 text-start">
+        <p className="text-[13px] font-extrabold text-[#2a1f12]">{t("darkMode.title")}</p>
         <p className="mt-0.5 text-[10.5px] text-[#6a543a]">
-          {checked ? "الوضع الداكن مفعل" : "الوضع الفاتح مفعل"}
+          {checked ? t("darkMode.enabled") : t("darkMode.disabled")}
         </p>
       </div>
       <button
         type="button"
         role="switch"
         aria-checked={checked}
-        aria-label="الوضع الداكن"
+        aria-label={t("darkMode.ariaLabel")}
         onClick={() => onChange(!checked)}
         className={cn(
           "relative h-[30px] w-[52px] shrink-0 rounded-full transition-colors duration-300",
@@ -196,7 +193,7 @@ export function LinkCard({
 }) {
   return (
     <Link
-      to={to as "/"}
+      to={to}
       className="flex items-center gap-3 rounded-[18px] px-3 py-3 transition hover:bg-white/40 active:scale-[0.99]"
     >
       <div
@@ -318,14 +315,16 @@ export function SettingsSearch({
   value: string;
   onChange: (v: string) => void;
 }) {
+  const { t } = useTranslation("settings");
+
   return (
     <div className="relative mb-4">
-      <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9a7e5a]" />
+      <Search className="pointer-events-none absolute end-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9a7e5a]" />
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="ابحث في الإعدادات..."
-        className="w-full rounded-2xl border border-[#efe2c4]/90 bg-white/65 py-2.5 pl-3 pr-10 text-[13px] font-semibold text-[#3a2a18] placeholder:text-[#9a7e5a]/80 shadow-[inset_0_1px_2px_rgba(120,80,30,0.04)] backdrop-blur-sm outline-none focus:border-[#4fd4a8]/50 focus:ring-2 focus:ring-[#4fd4a8]/20"
+        placeholder={t("searchPlaceholder")}
+        className="w-full rounded-2xl border border-[#efe2c4]/90 bg-white/65 py-2.5 pe-10 ps-3 text-[13px] font-semibold text-[#3a2a18] placeholder:text-[#9a7e5a]/80 shadow-[inset_0_1px_2px_rgba(120,80,30,0.04)] backdrop-blur-sm outline-none focus:border-[#4fd4a8]/50 focus:ring-2 focus:ring-[#4fd4a8]/20"
       />
     </div>
   );
@@ -343,14 +342,21 @@ export function SectionLabel({ children }: { children: ReactNode }) {
 
 export function ControlCenterHero({
   score,
-  scoreLabel,
+  scoreLabelKey,
 }: {
   score: number;
-  scoreLabel: string;
+  scoreLabelKey: SecurityLabelKey;
   devices?: number;
   verified?: boolean;
 }) {
-  const badgeText = protectionBadgeLabel(scoreLabel);
+  const { t } = useTranslation("settings");
+  const protectionKeyMap: Record<SecurityLabelKey, string> = {
+    excellent: "security.protectionExcellent",
+    veryGood: "security.protectionVeryGood",
+    good: "security.protectionGood",
+    needsImprovement: "security.protectionNeedsImprovement",
+  };
+  const badgeText = t(protectionKeyMap[scoreLabelKey]);
 
   return (
     <GlassCard
@@ -377,13 +383,13 @@ export function ControlCenterHero({
             color: "transparent",
           }}
         >
-          مركز التحكم الشخصي
+          {t("hero.title")}
         </h1>
         <p className="mt-1 text-[11px] font-extrabold tracking-[0.14em] text-[#a67c32]">
           Alpha Control Center
         </p>
         <p className="mx-auto mt-2 max-w-[300px] text-[13.5px] font-semibold leading-relaxed text-[#3f3224]">
-          إعدادات الخصوصية والأمان وتجربتك الروحية
+          {t("hero.subtitle")}
         </p>
 
         <div className="mt-3 inline-flex items-center gap-2.5 rounded-full border border-[#efe2c4]/90 bg-[#fffdf8]/80 px-3 py-1.5 shadow-[0_6px_18px_-14px_rgba(120,80,30,0.35)]">
@@ -397,13 +403,15 @@ export function ControlCenterHero({
 }
 
 export function LogoutButton({ onClick }: { onClick?: () => void }) {
+  const { t } = useTranslation("common");
+
   return (
     <button
       type="button"
       onClick={onClick}
       className="mt-2 w-full grid place-items-center rounded-2xl border border-[#e8b4b4]/60 bg-gradient-to-l from-[#c14545] to-[#d86a6a] py-3.5 font-extrabold text-[#fdf8f0] shadow-[0_10px_24px_-12px_rgba(193,69,69,0.55)] backdrop-blur-sm transition active:scale-[0.98]"
     >
-      تسجيل الخروج
+      {t("actions.logout")}
     </button>
   );
 }
@@ -438,6 +446,7 @@ export function PasswordChangeForm({
 }: {
   onSubmit?: (data: { current: string; next: string }) => void | Promise<void>;
 }) {
+  const { t } = useTranslation("settings");
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -449,15 +458,15 @@ export function PasswordChangeForm({
     setError("");
     setSuccess(false);
     if (!current.trim() || !next.trim() || !confirm.trim()) {
-      setError("يرجى ملء جميع الحقول");
+      setError(t("password.errors.fillAll"));
       return;
     }
     if (next !== confirm) {
-      setError("تأكيد كلمة المرور غير متطابق");
+      setError(t("password.errors.mismatch"));
       return;
     }
     if (next.length < 8) {
-      setError("كلمة المرور الجديدة يجب أن تكون 8 أحرف على الأقل");
+      setError(t("password.errors.tooShort"));
       return;
     }
     setLoading(true);
@@ -468,7 +477,7 @@ export function PasswordChangeForm({
       setNext("");
       setConfirm("");
     } catch {
-      setError("تعذّر تحديث كلمة المرور. حاول مرة أخرى.");
+      setError(t("password.errors.updateFailed"));
     } finally {
       setLoading(false);
     }
@@ -476,32 +485,32 @@ export function PasswordChangeForm({
 
   return (
     <div className="mx-1.5 my-1 rounded-[18px] border border-[#efe2c4]/70 bg-white/25 p-1 backdrop-blur-sm">
-      <p className="px-3 pt-2.5 text-right text-[12px] font-extrabold text-[#2a1f12]">تغيير كلمة المرور</p>
-      <p className="px-3 pb-1 text-right text-[10px] text-[#6a543a]">آخر تحديث: منذ شهرين</p>
+      <p className="px-3 pt-2.5 text-start text-[12px] font-extrabold text-[#2a1f12]">{t("password.title")}</p>
+      <p className="px-3 pb-1 text-start text-[10px] text-[#6a543a]">{t("password.lastUpdated")}</p>
       <PasswordField
-        label="كلمة المرور الحالية"
+        label={t("password.current")}
         value={current}
         onChange={setCurrent}
         autoComplete="current-password"
       />
       <PasswordField
-        label="كلمة المرور الجديدة"
+        label={t("password.new")}
         value={next}
         onChange={setNext}
         autoComplete="new-password"
       />
       <PasswordField
-        label="تأكيد كلمة المرور الجديدة"
+        label={t("password.confirm")}
         value={confirm}
         onChange={setConfirm}
         autoComplete="new-password"
       />
       {error && (
-        <p className="px-3 pb-1 text-right text-[10.5px] font-bold text-[#EF4444]">{error}</p>
+        <p className="px-3 pb-1 text-start text-[10.5px] font-bold text-[#EF4444]">{error}</p>
       )}
       {success && (
-        <p className="px-3 pb-1 text-right text-[10.5px] font-bold text-[#1f6e54]">
-          تم تحديث كلمة المرور بنجاح
+        <p className="px-3 pb-1 text-start text-[10.5px] font-bold text-[#1f6e54]">
+          {t("passwordUpdated", { ns: "notifications" })}
         </p>
       )}
       <div className="px-3 py-2.5">
@@ -511,7 +520,7 @@ export function PasswordChangeForm({
           disabled={loading}
           className="w-full rounded-xl bg-gradient-to-l from-[#1f6e54] to-[#3eb482] py-2.5 text-[12.5px] font-extrabold text-[#fdf8f0] shadow-[0_8px_20px_-10px_rgba(31,110,84,0.55)] transition active:scale-[0.98] disabled:opacity-60"
         >
-          {loading ? "جاري التحديث..." : "تحديث كلمة المرور"}
+          {loading ? t("password.submitting") : t("password.submit")}
         </button>
       </div>
     </div>
@@ -519,15 +528,17 @@ export function PasswordChangeForm({
 }
 
 const DEFAULT_ACTIVE_SESSIONS = [
-  { id: "iphone", device: "iPhone 15", detail: "الجهاز الحالي · آخر نشاط: الآن", current: true },
-  { id: "web", device: "Web Chrome", detail: "آخر نشاط: منذ 3 ساعات", current: false },
+  { id: "iphone", current: true },
+  { id: "web", current: false },
 ] as const;
 
 export function ActiveSessionsList({
   sessions = DEFAULT_ACTIVE_SESSIONS,
 }: {
-  sessions?: readonly { id: string; device: string; detail: string; current: boolean }[];
+  sessions?: readonly { id: string; current: boolean }[];
 }) {
+  const { t } = useTranslation(["settings", "common"]);
+
   return (
     <div className="space-y-1 px-1.5 py-1">
       {sessions.map((s) => (
@@ -544,13 +555,17 @@ export function ActiveSessionsList({
           >
             <Smartphone className="h-4.5 w-4.5 text-[#4a86c1]" />
           </div>
-          <div className="min-w-0 flex-1 text-right">
-            <p className="text-[12.5px] font-bold text-[#3a2a18]">{s.device}</p>
-            <p className="text-[10px] text-[#6a543a]">{s.detail}</p>
+          <div className="min-w-0 flex-1 text-start">
+            <p className="text-[12.5px] font-bold text-[#3a2a18]">
+              {t(`sessions.${s.id}.device`, { ns: "settings" })}
+            </p>
+            <p className="text-[10px] text-[#6a543a]">
+              {t(`sessions.${s.id}.detail`, { ns: "settings" })}
+            </p>
           </div>
           {s.current && (
             <span className="shrink-0 rounded-full bg-[#3f9d6e]/15 px-2 py-0.5 text-[9px] font-extrabold text-[#1f6e54]">
-              نشط
+              {t("actions.active", { ns: "common" })}
             </span>
           )}
         </div>
@@ -559,11 +574,7 @@ export function ActiveSessionsList({
   );
 }
 
-const THEME_OPTIONS = [
-  { id: "light" as const, label: "الوضع الفاتح", sub: "Alpha Cream", icon: Sun },
-  { id: "dark" as const, label: "الوضع الداكن", sub: "Alpha Dark", icon: Moon },
-  { id: "system" as const, label: "النظام التلقائي", sub: "حسب النظام", icon: Monitor },
-];
+const THEME_OPTION_IDS = ["light", "dark", "system"] as const;
 
 export function ThemeModePicker({
   value,
@@ -572,9 +583,21 @@ export function ThemeModePicker({
   value: "light" | "dark" | "system";
   onChange: (v: "light" | "dark" | "system") => void;
 }) {
+  const { t } = useTranslation("settings");
+  const themeOptions = useMemo(
+    () =>
+      THEME_OPTION_IDS.map((id) => ({
+        id,
+        label: t(`darkMode.${id}`),
+        sub: t(`darkMode.${id}Sub`),
+        icon: id === "light" ? Sun : id === "dark" ? Moon : Monitor,
+      })),
+    [t],
+  );
+
   return (
     <div className="space-y-1 px-1.5 py-1">
-      {THEME_OPTIONS.map((o) => {
+      {themeOptions.map((o) => {
         const active = value === o.id;
         const Icon = o.icon;
         return (

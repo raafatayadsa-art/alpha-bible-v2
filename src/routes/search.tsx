@@ -1,12 +1,15 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Search, X, BookOpen, HandHeart, ScrollText, Cross, CalendarHeart, Sparkles, ArrowLeft } from "lucide-react";
 import { BookIcon } from "@/components/bible/BookIcon";
 import { resolveBookId } from "@/lib/bible-icons";
-import { SAINTS } from "@/features/synaxarium/data";
 import { FEASTS } from "@/features/feasts/data";
 import { AGPEYA_PRAYERS } from "@/features/agpeya/data";
-import { TODAY_KATAMEROS } from "@/features/katameros/data";
+import { katamerosDayQueryOptions } from "@/features/katameros";
+import { synaxariumSaintsQueryOptions } from "@/features/synaxarium";
+import type { DailyReading } from "@/features/katameros/types";
+import type { Saint } from "@/features/synaxarium/types";
 
 export const Route = createFileRoute("/search")({
   ssr: false,
@@ -83,7 +86,11 @@ type Result = {
   to: string;
 };
 
-function searchAll(q: string): Result[] {
+function searchAll(
+  q: string,
+  katamerosReadings: DailyReading[] = [],
+  synaxariumSaints: Saint[] = [],
+): Result[] {
   const nq = norm(q);
   if (!nq) return [];
   const out: Result[] = [];
@@ -110,21 +117,21 @@ function searchAll(q: string): Result[] {
   }
 
   // Katameros (today's readings)
-  for (const r of TODAY_KATAMEROS.readings) {
+  for (const r of katamerosReadings) {
     const hay = norm(`${r.title} ${r.reference ?? ""} ${r.body ?? ""}`);
     if (hay.includes(nq)) {
       out.push({
         id: `k:${r.id}`,
         category: "katameros",
         title: r.title,
-        subtitle: r.reference,
+        subtitle: r.reference || r.source,
         to: "/katameros",
       });
     }
   }
 
   // Synaxarium (saints)
-  for (const s of SAINTS) {
+  for (const s of synaxariumSaints) {
     const hay = norm(`${s.name} ${s.title} ${s.summary ?? ""} ${s.bio ?? ""}`);
     if (hay.includes(nq)) {
       out.push({
@@ -192,6 +199,8 @@ function SearchHub() {
   const [query, setQuery] = useState("");
   const [scope, setScope] = useState<Scope>("all");
   const [recent, setRecent] = useState<string[]>([]);
+  const { data: katamerosDay } = useQuery(katamerosDayQueryOptions("today"));
+  const { data: synaxariumSaints = [] } = useQuery(synaxariumSaintsQueryOptions());
 
   useEffect(() => {
     setRecent(loadRecent());
@@ -200,9 +209,9 @@ function SearchHub() {
   }, []);
 
   const results = useMemo(() => {
-    const all = searchAll(query);
+    const all = searchAll(query, katamerosDay?.readings ?? [], synaxariumSaints);
     return scope === "all" ? all : all.filter((r) => r.category === scope);
-  }, [query, scope]);
+  }, [query, scope, katamerosDay, synaxariumSaints]);
 
   const grouped = useMemo(() => {
     const map = new Map<Category, Result[]>();

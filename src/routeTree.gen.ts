@@ -13,6 +13,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as PrayerRequestsRouteImport } from './routes/prayer-requests'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as KatamerosTestRouteImport } from './routes/katameros-test'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as DiagnosticsRouteImport } from './routes/diagnostics'
 import { Route as ChurchesDirectoryRouteImport } from './routes/churches-directory'
@@ -33,6 +34,7 @@ import { Route as FeastsIndexRouteImport } from './routes/feasts.index'
 import { Route as AgpeyaIndexRouteImport } from './routes/agpeya.index'
 import { Route as BookIndexRouteImport } from './routes/$book.index'
 import { Route as SynaxariumSaintIdRouteImport } from './routes/synaxarium.$saintId'
+import { Route as SettingsTrustRouteImport } from './routes/settings.trust'
 import { Route as ProfileServiceRouteImport } from './routes/profile.service'
 import { Route as ProfileSecurityRouteImport } from './routes/profile.security'
 import { Route as ProfilePersonalRouteImport } from './routes/profile.personal'
@@ -95,6 +97,11 @@ const PrayerRequestsRoute = PrayerRequestsRouteImport.update({
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KatamerosTestRoute = KatamerosTestRouteImport.update({
+  id: '/katameros-test',
+  path: '/katameros-test',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HomeRoute = HomeRouteImport.update({
@@ -196,6 +203,11 @@ const SynaxariumSaintIdRoute = SynaxariumSaintIdRouteImport.update({
   id: '/synaxarium/$saintId',
   path: '/synaxarium/$saintId',
   getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsTrustRoute = SettingsTrustRouteImport.update({
+  id: '/trust',
+  path: '/trust',
+  getParentRoute: () => SettingsRoute,
 } as any)
 const ProfileServiceRoute = ProfileServiceRouteImport.update({
   id: '/profile/service',
@@ -427,10 +439,11 @@ export interface FileRoutesByFullPath {
   '/churches-directory': typeof ChurchesDirectoryRoute
   '/diagnostics': typeof DiagnosticsRoute
   '/home': typeof HomeRoute
+  '/katameros-test': typeof KatamerosTestRoute
   '/onboarding': typeof OnboardingRoute
   '/prayer-requests': typeof PrayerRequestsRoute
   '/search': typeof SearchRoute
-  '/settings': typeof SettingsRoute
+  '/settings': typeof SettingsRouteWithChildren
   '/$book/$chapter': typeof BookChapterRoute
   '/agpeya/$prayerId': typeof AgpeyaPrayerIdRoute
   '/agpeya/saved': typeof AgpeyaSavedRoute
@@ -468,6 +481,7 @@ export interface FileRoutesByFullPath {
   '/profile/personal': typeof ProfilePersonalRoute
   '/profile/security': typeof ProfileSecurityRoute
   '/profile/service': typeof ProfileServiceRoute
+  '/settings/trust': typeof SettingsTrustRoute
   '/synaxarium/$saintId': typeof SynaxariumSaintIdRoute
   '/$book/': typeof BookIndexRoute
   '/agpeya/': typeof AgpeyaIndexRoute
@@ -495,10 +509,11 @@ export interface FileRoutesByTo {
   '/churches-directory': typeof ChurchesDirectoryRoute
   '/diagnostics': typeof DiagnosticsRoute
   '/home': typeof HomeRoute
+  '/katameros-test': typeof KatamerosTestRoute
   '/onboarding': typeof OnboardingRoute
   '/prayer-requests': typeof PrayerRequestsRoute
   '/search': typeof SearchRoute
-  '/settings': typeof SettingsRoute
+  '/settings': typeof SettingsRouteWithChildren
   '/$book/$chapter': typeof BookChapterRoute
   '/agpeya/$prayerId': typeof AgpeyaPrayerIdRoute
   '/agpeya/saved': typeof AgpeyaSavedRoute
@@ -536,6 +551,7 @@ export interface FileRoutesByTo {
   '/profile/personal': typeof ProfilePersonalRoute
   '/profile/security': typeof ProfileSecurityRoute
   '/profile/service': typeof ProfileServiceRoute
+  '/settings/trust': typeof SettingsTrustRoute
   '/synaxarium/$saintId': typeof SynaxariumSaintIdRoute
   '/$book': typeof BookIndexRoute
   '/agpeya': typeof AgpeyaIndexRoute
@@ -565,10 +581,11 @@ export interface FileRoutesById {
   '/churches-directory': typeof ChurchesDirectoryRoute
   '/diagnostics': typeof DiagnosticsRoute
   '/home': typeof HomeRoute
+  '/katameros-test': typeof KatamerosTestRoute
   '/onboarding': typeof OnboardingRoute
   '/prayer-requests': typeof PrayerRequestsRoute
   '/search': typeof SearchRoute
-  '/settings': typeof SettingsRoute
+  '/settings': typeof SettingsRouteWithChildren
   '/$book/$chapter': typeof BookChapterRoute
   '/agpeya/$prayerId': typeof AgpeyaPrayerIdRoute
   '/agpeya/saved': typeof AgpeyaSavedRoute
@@ -606,6 +623,7 @@ export interface FileRoutesById {
   '/profile/personal': typeof ProfilePersonalRoute
   '/profile/security': typeof ProfileSecurityRoute
   '/profile/service': typeof ProfileServiceRoute
+  '/settings/trust': typeof SettingsTrustRoute
   '/synaxarium/$saintId': typeof SynaxariumSaintIdRoute
   '/$book/': typeof BookIndexRoute
   '/agpeya/': typeof AgpeyaIndexRoute
@@ -636,6 +654,7 @@ export interface FileRouteTypes {
     | '/churches-directory'
     | '/diagnostics'
     | '/home'
+    | '/katameros-test'
     | '/onboarding'
     | '/prayer-requests'
     | '/search'
@@ -677,6 +696,7 @@ export interface FileRouteTypes {
     | '/profile/personal'
     | '/profile/security'
     | '/profile/service'
+    | '/settings/trust'
     | '/synaxarium/$saintId'
     | '/$book/'
     | '/agpeya/'
@@ -704,6 +724,7 @@ export interface FileRouteTypes {
     | '/churches-directory'
     | '/diagnostics'
     | '/home'
+    | '/katameros-test'
     | '/onboarding'
     | '/prayer-requests'
     | '/search'
@@ -745,6 +766,7 @@ export interface FileRouteTypes {
     | '/profile/personal'
     | '/profile/security'
     | '/profile/service'
+    | '/settings/trust'
     | '/synaxarium/$saintId'
     | '/$book'
     | '/agpeya'
@@ -773,6 +795,7 @@ export interface FileRouteTypes {
     | '/churches-directory'
     | '/diagnostics'
     | '/home'
+    | '/katameros-test'
     | '/onboarding'
     | '/prayer-requests'
     | '/search'
@@ -814,6 +837,7 @@ export interface FileRouteTypes {
     | '/profile/personal'
     | '/profile/security'
     | '/profile/service'
+    | '/settings/trust'
     | '/synaxarium/$saintId'
     | '/$book/'
     | '/agpeya/'
@@ -843,10 +867,11 @@ export interface RootRouteChildren {
   ChurchesDirectoryRoute: typeof ChurchesDirectoryRoute
   DiagnosticsRoute: typeof DiagnosticsRoute
   HomeRoute: typeof HomeRoute
+  KatamerosTestRoute: typeof KatamerosTestRoute
   OnboardingRoute: typeof OnboardingRoute
   PrayerRequestsRoute: typeof PrayerRequestsRoute
   SearchRoute: typeof SearchRoute
-  SettingsRoute: typeof SettingsRoute
+  SettingsRoute: typeof SettingsRouteWithChildren
   AgpeyaPrayerIdRoute: typeof AgpeyaPrayerIdRoute
   AgpeyaSavedRoute: typeof AgpeyaSavedRoute
   DevAuthRoute: typeof DevAuthRoute
@@ -907,6 +932,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/katameros-test': {
+      id: '/katameros-test'
+      path: '/katameros-test'
+      fullPath: '/katameros-test'
+      preLoaderRoute: typeof KatamerosTestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/home': {
@@ -1048,6 +1080,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/synaxarium/$saintId'
       preLoaderRoute: typeof SynaxariumSaintIdRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/settings/trust': {
+      id: '/settings/trust'
+      path: '/trust'
+      fullPath: '/settings/trust'
+      preLoaderRoute: typeof SettingsTrustRouteImport
+      parentRoute: typeof SettingsRoute
     }
     '/profile/service': {
       id: '/profile/service'
@@ -1424,6 +1463,18 @@ const ChurchRouteChildren: ChurchRouteChildren = {
 const ChurchRouteWithChildren =
   ChurchRoute._addFileChildren(ChurchRouteChildren)
 
+interface SettingsRouteChildren {
+  SettingsTrustRoute: typeof SettingsTrustRoute
+}
+
+const SettingsRouteChildren: SettingsRouteChildren = {
+  SettingsTrustRoute: SettingsTrustRoute,
+}
+
+const SettingsRouteWithChildren = SettingsRoute._addFileChildren(
+  SettingsRouteChildren,
+)
+
 interface PlatformApprovalsRouteChildren {
   PlatformApprovalsIdRoute: typeof PlatformApprovalsIdRoute
 }
@@ -1472,10 +1523,11 @@ const rootRouteChildren: RootRouteChildren = {
   ChurchesDirectoryRoute: ChurchesDirectoryRoute,
   DiagnosticsRoute: DiagnosticsRoute,
   HomeRoute: HomeRoute,
+  KatamerosTestRoute: KatamerosTestRoute,
   OnboardingRoute: OnboardingRoute,
   PrayerRequestsRoute: PrayerRequestsRoute,
   SearchRoute: SearchRoute,
-  SettingsRoute: SettingsRoute,
+  SettingsRoute: SettingsRouteWithChildren,
   AgpeyaPrayerIdRoute: AgpeyaPrayerIdRoute,
   AgpeyaSavedRoute: AgpeyaSavedRoute,
   DevAuthRoute: DevAuthRoute,

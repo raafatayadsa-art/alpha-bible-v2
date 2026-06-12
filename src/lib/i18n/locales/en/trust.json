@@ -1,0 +1,233 @@
+{
+  "pageTitle": "Trust & Safety Center",
+  "pageSubtitle": "Full transparency to protect your privacy and rights",
+  "hero": {
+    "title": "We protect your privacy and security at every step",
+    "summary": "At Alpha, we are committed to protecting users, churches, and personal data through security and technical safeguards designed to provide a safe, trusted environment for everyone.",
+    "protectionLevel": "Protection level: Very good"
+  },
+  "guaranteesIntro": "Choose a guarantee to explore how we protect your Alpha experience.",
+  "guaranteesLabel": "Security guarantees",
+  "guarantees": {
+    "faith": {
+      "tab": "Environment",
+      "title": "Safe Christian environment",
+      "summary": "A respectful spiritual community with protection against abuse and fake accounts.",
+      "points": [
+        "Block and Report system with report review.",
+        "Offensive language detection and graduated automatic penalties.",
+        "Temporary suspension for violations and permanent ban for serious cases.",
+        "Trust Score, Email Verification, and Church Verification.",
+        "Trusted Contact and review of violating accounts.",
+        "Suspicious activity detection and limits on new account misuse."
+      ],
+      "metric": "Trusted environment",
+      "metricValue": "100%"
+    },
+    "transparency": {
+      "tab": "Transparency",
+      "title": "Full transparency",
+      "summary": "You have the right to know, manage, and delete your data at any time.",
+      "points": [
+        "Know what data is collected.",
+        "Edit your data at any time.",
+        "Delete your account or request data deletion.",
+        "Review privacy and security policies at any time."
+      ],
+      "metric": "Policy clarity",
+      "metricValue": "Full"
+    },
+    "privacy": {
+      "tab": "Privacy",
+      "title": "Guaranteed privacy",
+      "summary": "Your data is protected — no advertising sharing and no selling to third parties.",
+      "points": [
+        "Data access restricted by permissions.",
+        "Personal data is not shared for advertising.",
+        "User data is never sold to third parties.",
+        "Passwords are encrypted — no one, including the Alpha team, can view them.",
+        "Private messages are not visible to priests or churches."
+      ],
+      "metric": "Data protection",
+      "metricValue": "Active"
+    },
+    "control": {
+      "tab": "Control",
+      "title": "Full control of your data",
+      "summary": "You control your account, devices, and access recovery methods.",
+      "points": [
+        "Passkeys, Face ID / Touch ID, and two-factor authentication.",
+        "Recovery Codes and Trusted Contact Recovery.",
+        "Church Verification Recovery and linked device management.",
+        "Review sign-in history and sign out from all devices.",
+        "Account recovery via email, phone, or Passkeys."
+      ],
+      "metric": "Your permissions",
+      "metricValue": "Full"
+    }
+  },
+  "dataProtection": {
+    "title": "How we protect your data",
+    "subtitle": "Learn what data we collect and how we keep it safe.",
+    "summary": [
+      { "title": "Access restriction", "subtitle": "Data access is limited to authorized permissions only." },
+      { "title": "Church isolation", "subtitle": "Each church sees only its own members — not other churches' data." },
+      { "title": "No advertising sharing", "subtitle": "Personal data is not shared for advertising purposes." },
+      { "title": "No data selling", "subtitle": "User data is never sold to any third party." }
+    ],
+    "detailsTitle": "Personal data protection",
+    "detailsPoints": [
+      "Data access is restricted by permissions.",
+      "Each church sees only its own members.",
+      "Each priest sees only their church's data.",
+      "Other churches' data cannot be accessed.",
+      "Personal data is not shared for advertising.",
+      "User data is never sold to third parties."
+    ]
+  },
+  "detailSectionsLabel": "Protection and rights details",
+  "detailSectionsIntro": "Review privacy and security policies for every part of your experience.",
+  "sections": {
+    "rights": {
+      "title": "Your rights in Alpha",
+      "description": "Know, edit, delete, and review policies for your data.",
+      "blocks": [
+        {
+          "title": "Transparency",
+          "points": [
+            "Know what data is collected.",
+            "Edit your data.",
+            "Delete your account.",
+            "Request data deletion.",
+            "Review privacy and security policies at any time."
+          ]
+        }
+      ]
+    },
+    "messages": {
+      "title": "Message privacy",
+      "description": "Your private messages are protected and not accessible to churches or priests.",
+      "blocks": [
+        {
+          "title": "Message privacy",
+          "points": [
+            "Private messages are not visible to priests or churches.",
+            "Private messages are not visible to other users.",
+            "Automatic message deletion supported.",
+            "Block and report any user.",
+            "Protection against spam and abuse."
+          ]
+        }
+      ]
+    },
+    "churches": {
+      "title": "Churches and priests",
+      "description": "Isolated church data and restricted priest and servant permissions.",
+      "blocks": [
+        {
+          "title": "Church security",
+          "points": [
+            "Each church's data is isolated from others.",
+            "Priest and servant permissions are restricted.",
+            "Churches cannot access private messages.",
+            "Churches cannot access passwords.",
+            "Sensitive admin activity is reviewed."
+          ]
+        },
+        {
+          "title": "Personal data protection",
+          "points": [
+            "Each church sees only its own members.",
+            "Each priest sees only their church's data.",
+            "Other churches' data cannot be accessed."
+          ]
+        }
+      ]
+    },
+    "recovery": {
+      "title": "Security and account recovery",
+      "description": "Account protection, passwords, devices, and recovery methods.",
+      "blocks": [
+        {
+          "title": "Account protection",
+          "points": [
+            "Email confirmation.",
+            "Passkeys.",
+            "Face ID / Touch ID.",
+            "Two-factor authentication (when enabled).",
+            "Recovery Codes.",
+            "Trusted Contact Recovery.",
+            "Church Verification Recovery.",
+            "Manage linked devices.",
+            "Review sign-in history."
+          ]
+        },
+        {
+          "title": "Password protection",
+          "points": [
+            "Passwords are never stored in plain text.",
+            "Secure encryption and processing for passwords.",
+            "Priests, churches, and other users cannot view passwords.",
+            "The Alpha team cannot view your password."
+          ]
+        },
+        {
+          "title": "Devices and sessions",
+          "points": [
+            "See devices linked to your account.",
+            "Review recent sign-ins.",
+            "Sign out from one device.",
+            "Sign out from all devices.",
+            "Detect unknown devices."
+          ]
+        },
+        {
+          "title": "Account recovery",
+          "points": [
+            "Email.",
+            "Recovery Codes.",
+            "Trusted Contact.",
+            "Church Verification Recovery.",
+            "Phone number (when enabled).",
+            "Passkeys."
+          ]
+        }
+      ]
+    },
+    "community": {
+      "title": "Community guidelines",
+      "description": "Protecting the community from abuse and fake accounts.",
+      "blocks": [
+        {
+          "title": "Abuse protection",
+          "points": [
+            "Block system.",
+            "Report system.",
+            "Report review.",
+            "Offensive language detection.",
+            "Graduated automatic penalties.",
+            "Temporary suspension for violations.",
+            "Permanent ban for serious cases."
+          ]
+        },
+        {
+          "title": "Fake account protection",
+          "points": [
+            "Trust Score.",
+            "Email Verification.",
+            "Church Verification.",
+            "Trusted Contact.",
+            "Review of violating accounts.",
+            "Suspicious activity detection.",
+            "Limits on new account misuse."
+          ]
+        }
+      ]
+    }
+  },
+  "footer": {
+    "commitment": "We are committed to building a safe, trusted platform that respects user and church privacy and provides the highest level of protection while keeping the experience easy to use and spiritually meaningful.",
+    "goal": "Our goal is for every user to feel that their data, account, and privacy are safe within Alpha.",
+    "tagline": "Ⲁ — Your digital Coptic home — Ⲱ"
+  }
+}

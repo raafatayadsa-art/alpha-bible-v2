@@ -1,12 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
+import type { AppLocale } from "@/lib/i18n";
 
 const STORAGE_KEY = "ab:alpha-settings";
 
 export type MessageDeleteDuration = "after_view" | "1h" | "1d" | "1w";
 export type ThemeMode = "light" | "dark" | "system";
 export type LineSpacing = "compact" | "normal" | "relaxed";
+export type SecurityLabelKey = "excellent" | "veryGood" | "good" | "needsImprovement";
 
 export type SettingsState = {
+  locale: AppLocale;
   themeMode: ThemeMode;
   uiFontSize: number;
   uiFontFamily: "serif" | "sans";
@@ -55,6 +58,7 @@ export type SettingsState = {
 };
 
 export const DEFAULT_SETTINGS: SettingsState = {
+  locale: "ar",
   themeMode: "light",
   uiFontSize: 16,
   uiFontFamily: "serif",
@@ -89,7 +93,7 @@ export const DEFAULT_SETTINGS: SettingsState = {
   bibleReduceMotion: false,
   bibleSaveLastRead: true,
   bibleAutoscrollSpeed: 2,
-  biblePreferredTranslation: "النسخة القبطية",
+  biblePreferredTranslation: "coptic",
   bibleShowVerseNumbers: true,
   prayerReminder: true,
   prayerSilentMode: true,
@@ -121,6 +125,14 @@ function write(state: SettingsState) {
   } catch { /* ignore */ }
 }
 
+export function readSettingsState(): SettingsState {
+  return read();
+}
+
+export function writeSettingsState(partial: Partial<SettingsState>) {
+  write({ ...read(), ...partial });
+}
+
 export function computeSecurityScore(s: SettingsState): number {
   let score = 55;
   if (s.biometric) score += 15;
@@ -133,11 +145,23 @@ export function computeSecurityScore(s: SettingsState): number {
   return Math.min(100, score);
 }
 
+export function securityLabelKey(score: number): SecurityLabelKey {
+  if (score >= 90) return "excellent";
+  if (score >= 75) return "veryGood";
+  if (score >= 60) return "good";
+  return "needsImprovement";
+}
+
+/** @deprecated Use securityLabelKey with i18n */
 export function securityLabel(score: number): string {
-  if (score >= 90) return "ممتاز";
-  if (score >= 75) return "جيد جداً";
-  if (score >= 60) return "جيد";
-  return "يحتاج تحسين";
+  const key = securityLabelKey(score);
+  const labels: Record<SecurityLabelKey, string> = {
+    excellent: "ممتاز",
+    veryGood: "جيد جداً",
+    good: "جيد",
+    needsImprovement: "يحتاج تحسين",
+  };
+  return labels[key];
 }
 
 export function useSettings() {
@@ -165,7 +189,7 @@ export function useSettings() {
     try {
       const keys = Object.keys(localStorage).filter((k) => k.startsWith("alpha:") || k.startsWith("ab:"));
       keys.forEach((k) => {
-        if (k !== STORAGE_KEY) localStorage.removeItem(k);
+        if (k !== STORAGE_KEY && k !== "ab:locale") localStorage.removeItem(k);
       });
     } catch { /* ignore */ }
   }, []);

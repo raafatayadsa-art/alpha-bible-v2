@@ -1,6 +1,6 @@
+import type { DailyReading } from "@/features/katameros/types";
+import type { Saint } from "@/features/synaxarium/types";
 import { AGPEYA_PRAYERS } from "@/features/agpeya/data";
-import { getTodayKatameros } from "@/features/katameros";
-import { SAINTS } from "@/features/synaxarium/data";
 import { FEASTS } from "@/features/feasts/data";
 import { displayName } from "@/lib/bible-books";
 import type { ChurchDashboardContact, ChurchDashboardPrayer } from "@/features/church/church-dashboard-api";
@@ -27,6 +27,8 @@ export type ContextualSearchResult = {
 
 export type ContextualSearchContext = {
   books?: string[];
+  katamerosReadings?: DailyReading[];
+  synaxariumSaints?: Saint[];
   churchContacts?: ChurchDashboardContact[];
   churchPrayers?: ChurchDashboardPrayer[];
   churchPosts?: { id: string; title: string; excerpt?: string }[];
@@ -134,26 +136,28 @@ export function searchContextual(
       }));
 
     case "katameros":
-      return getTodayKatameros().readings
+      return (context.katamerosReadings ?? [])
         .filter((r) => includesQuery(`${r.title} ${r.reference ?? ""} ${r.body ?? ""}`, query))
         .map((r) => ({
           id: `kat:${r.id}`,
           title: r.title,
-          subtitle: r.reference,
+          subtitle: r.reference || r.source,
           to: "/katameros",
         }));
 
     case "synaxarium":
-      return SAINTS.filter((s) =>
-        includesQuery(`${s.name} ${s.title} ${s.summary} ${s.copticDate}`, query),
-      ).map((s) => ({
-        id: `saint:${s.id}`,
-        title: s.name,
-        subtitle: `${s.copticDate} · ${s.title}`,
-        to: "/synaxarium/$saintId",
-        params: { saintId: s.id },
-        image: s.image,
-      }));
+      return (context.synaxariumSaints ?? [])
+        .filter((s) =>
+          includesQuery(`${s.name} ${s.title} ${s.summary} ${s.copticDate}`, query),
+        )
+        .map((s) => ({
+          id: `saint:${s.id}`,
+          title: s.name,
+          subtitle: `${s.copticDate} · ${s.title}`,
+          to: "/synaxarium/$saintId",
+          params: { saintId: s.id },
+          image: s.image,
+        }));
 
     case "feasts":
       return FEASTS.filter((f) =>

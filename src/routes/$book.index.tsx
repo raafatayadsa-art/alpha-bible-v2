@@ -5,6 +5,7 @@ import { Grid3x3, List as ListIcon } from "lucide-react";
 import { chaptersQueryOptions } from "@/lib/bible";
 import { displayName } from "@/lib/bible-books";
 import { chapterCountLabel, chapterWithNumber } from "@/lib/bible-labels";
+import { chapterCountStatus, expectedChapterCount } from "@/lib/bible-expected-chapters";
 import { BackButton, BottomDock, ChapterGridSkeleton, GlassSurface } from "@/components/bible";
 import { useCurrentSession, useRecentSessions } from "@/lib/reading-state";
 import { cn } from "@/lib/utils";
@@ -52,6 +53,8 @@ function ChaptersPage() {
   }, [recent, book]);
 
   const countLabel = chapters ? chapterCountLabel(book, chapters.length) : "...";
+  const expected = expectedChapterCount(book);
+  const chapterStatus = chapters ? chapterCountStatus(book, chapters.length) : "unknown";
 
   return (
     <main dir="rtl" className="relative min-h-screen w-full overflow-x-hidden bg-[#faf8f3]">
@@ -73,6 +76,11 @@ function ChaptersPage() {
               {displayName(book)}
             </h1>
             <p className="text-[11px] text-[#6a543a] font-bold">{countLabel}</p>
+            {chapterStatus !== "ok" && expected != null && chapters && (
+              <p className="text-[10px] font-bold text-amber-700">
+                متوقع {expected} — يظهر {chapters.length} فقط
+              </p>
+            )}
           </div>
           <SegmentedToggle mode={mode} onChange={setModePersist} />
         </header>

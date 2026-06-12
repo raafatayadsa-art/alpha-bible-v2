@@ -1,8 +1,10 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Home as HomeIcon, HandHeart, Church as ChurchIcon, User as UserIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import logoBible from "@/assets/home/logo-bible.png";
 import { cn } from "@/lib/utils";
+import { useLocale } from "@/lib/i18n/use-locale";
 
 /**
  * Persistent floating Alpha Bible bottom navigation.
@@ -19,6 +21,8 @@ export function BottomDock({
   spiritualMode?: boolean;
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { t } = useTranslation("common");
+  const { dir } = useLocale();
 
   const isActive = (match: string | RegExp) =>
     typeof match === "string" ? pathname === match || pathname.startsWith(match + "/") : match.test(pathname);
@@ -88,8 +92,8 @@ export function BottomDock({
 
   return (
     <nav
-      dir="rtl"
-      aria-label="التنقل السفلي"
+      dir={dir}
+      aria-label={t("nav.bottomDockAria")}
       aria-hidden={isHidden}
       className={cn(
         "fixed inset-x-0 bottom-0 z-50",
@@ -118,21 +122,21 @@ export function BottomDock({
           )}
         >
           <div className="grid grid-cols-5 items-end px-3 pt-2 pb-1.5 gap-1">
-            <DockItem icon={HomeIcon} label="الرئيسية" to="/home" active={isActive("/home")} />
-            <DockItem icon={HandHeart} label="الصلاة" to="/agpeya" active={isActive("/agpeya")} />
+            <DockItem icon={HomeIcon} label={t("nav.home")} to="/home" active={isActive("/home")} />
+            <DockItem icon={HandHeart} label={t("nav.prayer")} to="/agpeya" active={isActive("/agpeya")} />
             <DockItem
               raised
-              label="الكتاب المقدس"
+              label={t("nav.bible")}
               to="/bible"
               active={isActive("/bible") || isActive("/books")}
             />
             <DockItem
               icon={ChurchIcon}
-              label="كنيستك"
+              label={t("nav.church")}
               to="/profile/church"
               active={isActive("/profile/church") || isActive("/church")}
             />
-            <DockItem icon={UserIcon} label="الملف الشخصي" to="/profile" active={isActive("/profile")} />
+            <DockItem icon={UserIcon} label={t("nav.profile")} to="/profile" active={isActive("/profile")} />
           </div>
         </div>
       </div>

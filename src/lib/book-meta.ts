@@ -80,8 +80,8 @@ export function matchesOtFilter(book: string, filter: OtCategory): boolean {
   if (filter === "all") return true;
   const n = norm(book);
   if (filter === "law") return ["تكوين", "خروج", "لاويين", "عدد", "تثنية"].some((x) => n.includes(x));
-  if (filter === "history") return ["يشوع", "قضاة", "راعوث", "صموئيل", "ملوك", "اخبار", "عزرا", "نحميا", "استير"].some((x) => n.includes(x));
-  if (filter === "wisdom") return ["ايوب", "مزامير", "امثال", "جامعة", "نشيد"].some((x) => n.includes(x));
+  if (filter === "history") return ["يشوع", "قضاة", "راعوث", "صموئيل", "ملوك", "اخبار", "عزرا", "نحميا", "استير", "طوبيا", "يهوديت", "مكابيين"].some((x) => n.includes(x));
+  if (filter === "wisdom") return ["ايوب", "مزامير", "امثال", "جامعة", "نشيد", "حكمة", "سيراخ", "باروخ", "مراثي"].some((x) => n.includes(x));
   if (filter === "prophets") return ["اشعياء", "ارميا", "حزقيال", "دانيال", "هوشع", "يوئيل", "عاموس", "عوبديا", "يونان", "ميخا", "ناحوم", "حبقوق", "صفنيا", "حجي", "زكريا", "ملاخي"].some((x) => n.includes(x));
   return true;
 }

@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { BookOpen, ChevronLeft, Crown, Mountain, Flame, Sparkles, Users, Search } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { SAINTS, getTodaySaint, type Saint } from "@/features/synaxarium";
+import { synaxariumSaintsQueryOptions, todaySynaxariumSaintQueryOptions, type Saint } from "@/features/synaxarium";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { GlassSurface } from "@/components/bible/primitives";
 import { CopticCross, CopticWatermark, CopticDivider, CopticTitle } from "@/components/coptic";
@@ -39,38 +40,67 @@ const CATEGORY_ICONS: Record<SaintCategory, ReactNode> = {
   saintesses: <Sparkles className="h-3.5 w-3.5" />,
 };
 
-// Local-only categorization (UI only — no backend changes to data model)
-const SAINT_CATEGORY: Record<string, Exclude<SaintCategory, "all">> = {
-  shenouda: "monks",
-  antony: "monks",
-  "shenouda-2": "monks",
-};
+function saintCategoryId(s: Saint): Exclude<SaintCategory, "all"> | null {
+  const hay = `${s.type ?? ""} ${s.service ?? ""} ${s.title} ${s.feast}`;
+  if (/شهيد|استشهاد/i.test(hay)) return "martyrs";
+  if (/راهب|متوحد|رهب/i.test(hay)) return "monks";
+  if (/بطريرك|أسقف|بابا/i.test(hay)) return "patriarchs";
+  if (/قديسة|عذراء/i.test(hay)) return "saintesses";
+  return null;
+}
 
 const ACCENTS = ["#6a4ab5", "#b8893a", "#3e7a55", "#3a6a9b"];
 
+function SynaxariumStatusPanel({
+  title,
+  description,
+}: {
+  title: string;
+  description?: string;
+}) {
+  return (
+    <div className="mt-8 rounded-3xl border border-[#ead9b1] bg-white p-8 text-center shadow-[0_14px_30px_-22px_rgba(120,80,30,0.45)]">
+      <CopticCross className="mx-auto text-[#b8893a]" size={28} />
+      <h2 className="font-arabic-serif text-[18px] font-extrabold text-[#3a2a18] mt-4">{title}</h2>
+      {description ? (
+        <p className="text-[12.5px] text-[#6a543a] mt-3 leading-relaxed">{description}</p>
+      ) : null}
+    </div>
+  );
+}
+
 function SynaxariumHome() {
   const [active, setActive] = useState<SaintCategory>("all");
-  const today = getTodaySaint();
+  const { data: saints = [], isPending, isError } = useQuery(synaxariumSaintsQueryOptions());
+  const { data: today } = useQuery(todaySynaxariumSaintQueryOptions());
   const list: Saint[] =
-    active === "all" ? SAINTS : SAINTS.filter((s) => SAINT_CATEGORY[s.id] === active);
-  const upcoming = list.filter((s) => s.id !== today.id);
+    active === "all" ? saints : saints.filter((s) => saintCategoryId(s) === active);
+  const upcoming = today ? list.filter((s) => s.id !== today.id) : list;
   const navigate = useNavigate();
   const [searchOpen, setSearchOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [query, setQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const topRef = useRef<HTMLDivElement | null>(null);
-  const [notifications, setNotifications] = useState<NotificationItem[]>(() => [
-    {
-      id: "saint-today",
-      title: `سيرة اليوم: ${today.name}`,
-      description: today.summary,
-      time: "اليوم",
-      read: false,
-      icon: <CopticCross size={14} />,
-      onOpen: () => navigate({ to: "/synaxarium/$saintId", params: { saintId: today.id } }),
-    },
-  ]);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+
+  useEffect(() => {
+    if (!today) {
+      setNotifications([]);
+      return;
+    }
+    setNotifications([
+      {
+        id: "saint-today",
+        title: `سيرة اليوم: ${today.name}`,
+        description: today.summary,
+        time: "اليوم",
+        read: false,
+        icon: <CopticCross size={14} />,
+        onOpen: () => navigate({ to: "/synaxarium/$saintId", params: { saintId: today.id } }),
+      },
+    ]);
+  }, [today, navigate]);
 
   useEffect(() => {
     if (searchOpen) {
@@ -84,7 +114,7 @@ function SynaxariumHome() {
     topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const searchResults = SAINTS.filter((s) => {
+  const searchResults = saints.filter((s) => {
     if (!query.trim()) return true;
     const q = query.trim();
     return (
@@ -94,6 +124,39 @@ function SynaxariumHome() {
       s.copticDate.includes(q)
     );
   });
+
+  if (isPending) {
+    return (
+      <div ref={topRef} dir="rtl" className="relative min-h-dvh bg-[#faf8f3]">
+        <CopticWatermark />
+        <AlphaHeaderShell>
+          <AlphaHeader variant="internal" title="السنكسار" subtitle="سير القديسين وقراءات اليوم" onSearchClick={() => setSearchOpen(true)} />
+        </AlphaHeaderShell>
+        <main className="relative z-10 mx-auto w-full max-w-[430px] px-4" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 110px)" }}>
+          <SynaxariumStatusPanel title="جاري تحميل السنكسار..." />
+        </main>
+        <BottomDock />
+      </div>
+    );
+  }
+
+  if (isError || saints.length === 0) {
+    return (
+      <div ref={topRef} dir="rtl" className="relative min-h-dvh bg-[#faf8f3]">
+        <CopticWatermark />
+        <AlphaHeaderShell>
+          <AlphaHeader variant="internal" title="السنكسار" subtitle="سير القديسين وقراءات اليوم" onSearchClick={() => setSearchOpen(true)} />
+        </AlphaHeaderShell>
+        <main className="relative z-10 mx-auto w-full max-w-[430px] px-4" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 110px)" }}>
+          <SynaxariumStatusPanel
+            title="لا توجد سير قديسين بعد"
+            description="لم تُضَف بيانات السنكسار في قاعدة البيانات. بعد إدخال البيانات في Supabase ستظهر السير هنا."
+          />
+        </main>
+        <BottomDock />
+      </div>
+    );
+  }
 
   return (
     <div ref={topRef} dir="rtl" className="relative min-h-dvh bg-[#faf8f3]">
@@ -147,6 +210,7 @@ function SynaxariumHome() {
         </div>
 
         {/* Today hero — Saint of the day */}
+        {today ? (
         <Link
           to="/synaxarium/$saintId"
           params={{ saintId: today.id }}
@@ -198,11 +262,19 @@ function SynaxariumHome() {
             </div>
           </GlassSurface>
         </Link>
+        ) : null}
 
         {/* Timeline list */}
         <CopticTitle>سير القديسين</CopticTitle>
 
         <div className="space-y-3">
+          {upcoming.length === 0 ? (
+            <div className="rounded-2xl bg-white border border-[#ead9b1] p-6 text-center text-[12px] text-[#6a543a]">
+              {active === "all"
+                ? "لا توجد سير إضافية بعد."
+                : "لا توجد سير ضمن هذا التصنيف بعد."}
+            </div>
+          ) : null}
           {upcoming.map((s, idx) => {
             const accent = ACCENTS[idx % ACCENTS.length];
             return (
@@ -284,17 +356,13 @@ function SynaxariumHome() {
               </Link>
             );
           })}
-          {upcoming.length === 0 && (
-            <div className="rounded-2xl bg-white border border-[#ead9b1] p-6 text-center text-[12px] text-[#6a543a]">
-              لا توجد سير ضمن هذا التصنيف بعد.
-            </div>
-          )}
         </div>
 
         <CopticDivider />
 
         {/* Bottom quick sections */}
         <div className="grid grid-cols-2 gap-2.5">
+          {today ? (
           <QuickTile
             tone="#6a4ab5"
             icon={<CopticCross size={14} />}
@@ -303,6 +371,7 @@ function SynaxariumHome() {
             to="/synaxarium/$saintId"
             params={{ saintId: today.id }}
           />
+          ) : null}
           <QuickTile
             tone="#b8423a"
             icon={<Flame className="h-3.5 w-3.5" />}

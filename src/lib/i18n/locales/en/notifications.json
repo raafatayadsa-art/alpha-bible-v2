@@ -1,0 +1,15 @@
+{
+  "savedToFavorites": "Saved to favorites",
+  "removedFromFavorites": "Removed from favorites",
+  "linkCopied": "Link copied",
+  "linkCopyFailed": "Could not copy link",
+  "textCopied": "Text copied",
+  "textCopyFailed": "Could not copy text",
+  "imageLinkCopied": "Image link copied",
+  "imageShareFailed": "Could not share image",
+  "virtueHighlight": "Virtue: {{name}}",
+  "noLinkedContent": "No linked content yet",
+  "comingSoonItem": "{{title}} — coming soon",
+  "passwordUpdated": "Password updated successfully",
+  "languageChanged": "Language changed"
+}

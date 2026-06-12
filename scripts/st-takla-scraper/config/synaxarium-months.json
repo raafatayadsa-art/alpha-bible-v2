@@ -1,0 +1,19 @@
+{
+  "coptic_year": 1742,
+  "base_url": "https://st-takla.org/Full-Free-Coptic-Books/Synaxarium-or-Synaxarion",
+  "months": [
+    { "coptic_month": 1, "name_ar": "توت", "folder": "01-Toot", "suffix": "Toot", "days": 30 },
+    { "coptic_month": 2, "name_ar": "بابه", "folder": "02-Babah", "suffix": "Babah", "days": 30 },
+    { "coptic_month": 3, "name_ar": "هاتور", "folder": "03-Hatoor", "suffix": "Hatoor", "days": 30 },
+    { "coptic_month": 4, "name_ar": "كيهك", "folder": "04-Keyahk", "suffix": "Keyahk", "days": 30 },
+    { "coptic_month": 5, "name_ar": "طوبه", "folder": "05-Topah", "suffix": "Topah", "days": 30 },
+    { "coptic_month": 6, "name_ar": "أمشير", "folder": "06-Amsheer", "suffix": "Amsheer", "days": 30 },
+    { "coptic_month": 7, "name_ar": "برمهات", "folder": "07-Baramhat", "suffix": "Baramhat", "days": 30 },
+    { "coptic_month": 8, "name_ar": "برموده", "folder": "08-Bermodah", "suffix": "Bermodah", "days": 30 },
+    { "coptic_month": 9, "name_ar": "بشنس", "folder": "09-Bashans", "suffix": "Bashans", "days": 30 },
+    { "coptic_month": 10, "name_ar": "بؤونه", "folder": "10-Bawoonah", "suffix": "Bawoonah", "days": 30 },
+    { "coptic_month": 11, "name_ar": "أبيب", "folder": "11-Abeeb", "suffix": "Abeeb", "days": 30 },
+    { "coptic_month": 12, "name_ar": "مسرى", "folder": "12-Mesraa", "suffix": "Mesraa", "days": 30 },
+    { "coptic_month": 13, "name_ar": "نسئ", "folder": "13-Nasea", "suffix": "Nasea", "days": 5, "extra_days_if_leap": 1 }
+  ]
+}

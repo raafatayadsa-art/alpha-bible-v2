@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useRouterState } from "@tanstack/react-router";
 import { AlphaControlCenter } from "@/features/settings";
 
 export const Route = createFileRoute("/settings")({
@@ -9,5 +9,14 @@ export const Route = createFileRoute("/settings")({
       { name: "description", content: "مركز التحكم الشخصي — إدارة حسابك وخصوصيتك وتجربتك الروحية في Alpha." },
     ],
   }),
-  component: AlphaControlCenter,
+  component: SettingsLayout,
 });
+
+function SettingsLayout() {
+  const isIndex = useRouterState({
+    select: (s) => s.location.pathname.replace(/\/+$/, "") === "/settings",
+  });
+
+  if (isIndex) return <AlphaControlCenter />;
+  return <Outlet />;
+}
