@@ -104,7 +104,7 @@ function OnboardingScreen() {
           "transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
           pressed ? "scale-[0.97]" : "scale-100",
         ].join(" ")}
-        style={{ bottom: "0", width: "90%", height: "9%" }}
+        style={{ bottom: "env(safe-area-inset-bottom, 0px)", width: "90%", height: "9%" }}
       />
 
       <div

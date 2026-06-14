@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { ChevronLeft, Bookmark, BookOpen } from "lucide-react";
 import {
   AGPEYA_PRAYERS,
@@ -21,7 +21,17 @@ export const Route = createFileRoute("/agpeya/saved")({
 });
 
 function SavedAgpeya() {
+  const router = useRouter();
   const { saved, toggle } = useSavedAgpeya();
+
+  const goBack = () => {
+    const idx =
+      typeof window !== "undefined"
+        ? (((window.history.state as Record<string, unknown>)?.idx as number) ?? 0)
+        : 0;
+    if (idx > 0) { router.history.back(); return; }
+    void router.navigate({ to: "/agpeya" });
+  };
   const prayers = saved
     .map((id) => AGPEYA_PRAYERS.find((p) => p.id === id))
     .filter((p): p is (typeof AGPEYA_PRAYERS)[number] => Boolean(p));
@@ -29,15 +39,19 @@ function SavedAgpeya() {
   return (
     <div dir="rtl" className="relative min-h-dvh bg-[#faf8f3] pb-32">
       <CopticWatermark />
-      <header className="sticky top-0 z-30 backdrop-blur-xl border-b border-[#c79356]/25 bg-[#fbf3e1]/85">
+      <header
+        className="sticky top-0 z-30 backdrop-blur-xl border-b border-[#c79356]/25 bg-[#fbf3e1]/85"
+        style={{ paddingTop: "max(env(safe-area-inset-top), 0px)" }}
+      >
         <div className="mx-auto flex max-w-[480px] items-center justify-between px-4 py-3">
-          <Link
-            to="/agpeya"
+          <button
+            type="button"
+            onClick={goBack}
             aria-label="رجوع للأجبية"
             className="grid h-9 w-9 place-items-center rounded-full bg-white/70 border border-[#c79356]/35 text-[#8a5a1f] active:scale-95"
           >
             <ChevronLeft className="h-4 w-4 -scale-x-100" />
-          </Link>
+          </button>
           <div className="text-center">
             <h1 className="font-arabic-serif text-[17px] font-extrabold text-[#5b3a18]">
               المحفوظات

@@ -21,6 +21,7 @@ const HIDE_ON_EXACT = new Set<string>([
   "/",
   "/home",
   "/agpeya",
+  "/audio",
   "/bible",
   "/synaxarium",
   "/feasts",

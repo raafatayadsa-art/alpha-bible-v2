@@ -327,3 +327,100 @@ html, body {
   background: rgba(20, 180, 130, 0.28);
   color: #d6fff0;
 }
+
+/* ===== Alpha Messaging Design Tokens ===== */
+/* Custom color variables for the messaging system */
+:root {
+  --gold:                    #c8952a;
+  --gold-soft:               #e8c56a;
+  --gold-deep:               #a07020;
+  --navy-deep:               #0a0e1a;
+  --alpha-purple:            #6b5fad;
+  --alpha-purple-foreground: #ffffff;
+  --security:                #3ab87a;
+  --online:                  #22c55e;
+  --beige:                   #d4c4a0;
+  --shield-blue:             #3b5998;
+  --shield-blue-deep:        #1a3a6e;
+  --shield-silver:           #b8bcd8;
+  --shield-green:            #2e8b57;
+  --shield-green-deep:       #1a5e3a;
+  --shield-royal:            #4a1f6e;
+  /* Audio screen */
+  --ivory:                   #f4eee6;
+  --ink:                     #3a2a18;
+  --live:                    #e04545;
+}
+
+@theme inline {
+  /* Gold */
+  --color-gold:                    var(--gold);
+  --color-gold-soft:               var(--gold-soft);
+  --color-gold-deep:               var(--gold-deep);
+  /* Navy */
+  --color-navy-deep:               var(--navy-deep);
+  /* Alpha purple (message bubbles, badges) */
+  --color-alpha-purple:            var(--alpha-purple);
+  --color-alpha-purple-foreground: var(--alpha-purple-foreground);
+  /* Status */
+  --color-security:                var(--security);
+  --color-online:                  var(--online);
+  /* Beige (incoming message bubbles) */
+  --color-beige:                   var(--beige);
+  /* Shield grades */
+  --color-shield-blue:             var(--shield-blue);
+  --color-shield-blue-deep:        var(--shield-blue-deep);
+  --color-shield-silver:           var(--shield-silver);
+  --color-shield-green:            var(--shield-green);
+  --color-shield-green-deep:       var(--shield-green-deep);
+  --color-shield-royal:            var(--shield-royal);
+}
+
+/* Messaging screen backgrounds */
+.alpha-messaging-bg {
+  background:
+    radial-gradient(120% 55% at 50% 0%, rgba(200,149,42,0.22), transparent 60%),
+    radial-gradient(80% 60% at 100% 30%, rgba(200,149,42,0.10), transparent 65%),
+    radial-gradient(80% 60% at 0% 80%, rgba(180,140,70,0.14), transparent 65%),
+    linear-gradient(180deg, #f7eed6 0%, #f4ead8 50%, #ecdcb6 100%);
+}
+.alpha-chat-bg {
+  background:
+    radial-gradient(120% 55% at 50% 0%, rgba(200,149,42,0.18), transparent 60%),
+    radial-gradient(80% 60% at 0% 80%, rgba(107,95,173,0.08), transparent 65%),
+    linear-gradient(180deg, #f5ebd4 0%, #f2e7d0 50%, #e9d9b0 100%);
+}
+
+/* Gold glow shadow utility */
+.gold-glow {
+  box-shadow: 0 0 18px 2px rgba(200,149,42,0.45), 0 4px 24px rgba(200,149,42,0.28);
+}
+
+/* Audio screen glass surfaces */
+.glass-card {
+  border: 1px solid rgba(200, 149, 42, 0.15);
+  background: rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 8px 24px -12px rgba(120, 80, 30, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.glass-circle {
+  border: 1px solid rgba(200, 149, 42, 0.2);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 14px -8px rgba(120, 80, 30, 0.2);
+}
+
+/* Arabic / Coptic font utilities */
+.font-arabic  { font-family: 'Thmanyah Sans', 'Tajawal', system-ui, sans-serif; }
+.font-quran   { font-family: 'Amiri', 'Tajawal', serif; }
+
+/* ===== Alpha Onboarding animations ===== */
+@keyframes alphaLogoEntry {
+  from { opacity: 0; transform: scale(0.88) translateY(12px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0px); }
+}
+@keyframes alphaFadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

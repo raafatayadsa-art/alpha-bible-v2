@@ -2,6 +2,11 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
   plugins: [],
+  // Always open /home on `npm run dev` — prevents browser from restoring a
+  // previous Bible/chapter URL from the last session.
+  server: {
+    open: "/home",
+  },
   tanstackStart: {
     server: { entry: "server" },
   },

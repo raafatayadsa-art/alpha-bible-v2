@@ -11,10 +11,16 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as RegisterRouteImport } from './routes/register'
 import { Route as PrayerRequestsRouteImport } from './routes/prayer-requests'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as MessagesRouteImport } from './routes/messages'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as KatamerosTestRouteImport } from './routes/katameros-test'
+import { Route as IntroRouteImport } from './routes/intro'
 import { Route as HomeRouteImport } from './routes/home'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DiagnosticsRouteImport } from './routes/diagnostics'
 import { Route as ChurchesDirectoryRouteImport } from './routes/churches-directory'
 import { Route as ChurchFeedLabRouteImport } from './routes/church-feed-lab'
@@ -24,6 +30,7 @@ import { Route as BooksRouteImport } from './routes/books'
 import { Route as BibleLovableRouteImport } from './routes/bible-lovable'
 import { Route as Bible2RouteImport } from './routes/bible-2'
 import { Route as BibleRouteImport } from './routes/bible'
+import { Route as AudioRouteImport } from './routes/audio'
 import { Route as BookRouteImport } from './routes/$book'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SynaxariumIndexRouteImport } from './routes/synaxarium.index'
@@ -89,6 +96,16 @@ const SearchRoute = SearchRouteImport.update({
   path: '/search',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrayerRequestsRoute = PrayerRequestsRouteImport.update({
   id: '/prayer-requests',
   path: '/prayer-requests',
@@ -99,14 +116,34 @@ const OnboardingRoute = OnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MessagesRoute = MessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const KatamerosTestRoute = KatamerosTestRouteImport.update({
   id: '/katameros-test',
   path: '/katameros-test',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IntroRoute = IntroRouteImport.update({
+  id: '/intro',
+  path: '/intro',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HomeRoute = HomeRouteImport.update({
   id: '/home',
   path: '/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DiagnosticsRoute = DiagnosticsRouteImport.update({
@@ -152,6 +189,11 @@ const Bible2Route = Bible2RouteImport.update({
 const BibleRoute = BibleRouteImport.update({
   id: '/bible',
   path: '/bible',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AudioRoute = AudioRouteImport.update({
+  id: '/audio',
+  path: '/audio',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BookRoute = BookRouteImport.update({
@@ -429,6 +471,7 @@ const PlatformScanTrustTrustIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$book': typeof BookRouteWithChildren
+  '/audio': typeof AudioRoute
   '/bible': typeof BibleRouteWithChildren
   '/bible-2': typeof Bible2Route
   '/bible-lovable': typeof BibleLovableRoute
@@ -438,10 +481,16 @@ export interface FileRoutesByFullPath {
   '/church-feed-lab': typeof ChurchFeedLabRoute
   '/churches-directory': typeof ChurchesDirectoryRoute
   '/diagnostics': typeof DiagnosticsRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/home': typeof HomeRoute
+  '/intro': typeof IntroRoute
   '/katameros-test': typeof KatamerosTestRoute
+  '/login': typeof LoginRoute
+  '/messages': typeof MessagesRoute
   '/onboarding': typeof OnboardingRoute
   '/prayer-requests': typeof PrayerRequestsRoute
+  '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRouteWithChildren
   '/$book/$chapter': typeof BookChapterRoute
@@ -499,6 +548,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/audio': typeof AudioRoute
   '/bible': typeof BibleRouteWithChildren
   '/bible-2': typeof Bible2Route
   '/bible-lovable': typeof BibleLovableRoute
@@ -508,10 +558,16 @@ export interface FileRoutesByTo {
   '/church-feed-lab': typeof ChurchFeedLabRoute
   '/churches-directory': typeof ChurchesDirectoryRoute
   '/diagnostics': typeof DiagnosticsRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/home': typeof HomeRoute
+  '/intro': typeof IntroRoute
   '/katameros-test': typeof KatamerosTestRoute
+  '/login': typeof LoginRoute
+  '/messages': typeof MessagesRoute
   '/onboarding': typeof OnboardingRoute
   '/prayer-requests': typeof PrayerRequestsRoute
+  '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRouteWithChildren
   '/$book/$chapter': typeof BookChapterRoute
@@ -571,6 +627,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$book': typeof BookRouteWithChildren
+  '/audio': typeof AudioRoute
   '/bible': typeof BibleRouteWithChildren
   '/bible-2': typeof Bible2Route
   '/bible-lovable': typeof BibleLovableRoute
@@ -580,10 +637,16 @@ export interface FileRoutesById {
   '/church-feed-lab': typeof ChurchFeedLabRoute
   '/churches-directory': typeof ChurchesDirectoryRoute
   '/diagnostics': typeof DiagnosticsRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/home': typeof HomeRoute
+  '/intro': typeof IntroRoute
   '/katameros-test': typeof KatamerosTestRoute
+  '/login': typeof LoginRoute
+  '/messages': typeof MessagesRoute
   '/onboarding': typeof OnboardingRoute
   '/prayer-requests': typeof PrayerRequestsRoute
+  '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRouteWithChildren
   '/$book/$chapter': typeof BookChapterRoute
@@ -644,6 +707,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/$book'
+    | '/audio'
     | '/bible'
     | '/bible-2'
     | '/bible-lovable'
@@ -653,10 +717,16 @@ export interface FileRouteTypes {
     | '/church-feed-lab'
     | '/churches-directory'
     | '/diagnostics'
+    | '/forgot-password'
     | '/home'
+    | '/intro'
     | '/katameros-test'
+    | '/login'
+    | '/messages'
     | '/onboarding'
     | '/prayer-requests'
+    | '/register'
+    | '/reset-password'
     | '/search'
     | '/settings'
     | '/$book/$chapter'
@@ -714,6 +784,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/audio'
     | '/bible'
     | '/bible-2'
     | '/bible-lovable'
@@ -723,10 +794,16 @@ export interface FileRouteTypes {
     | '/church-feed-lab'
     | '/churches-directory'
     | '/diagnostics'
+    | '/forgot-password'
     | '/home'
+    | '/intro'
     | '/katameros-test'
+    | '/login'
+    | '/messages'
     | '/onboarding'
     | '/prayer-requests'
+    | '/register'
+    | '/reset-password'
     | '/search'
     | '/settings'
     | '/$book/$chapter'
@@ -785,6 +862,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/$book'
+    | '/audio'
     | '/bible'
     | '/bible-2'
     | '/bible-lovable'
@@ -794,10 +872,16 @@ export interface FileRouteTypes {
     | '/church-feed-lab'
     | '/churches-directory'
     | '/diagnostics'
+    | '/forgot-password'
     | '/home'
+    | '/intro'
     | '/katameros-test'
+    | '/login'
+    | '/messages'
     | '/onboarding'
     | '/prayer-requests'
+    | '/register'
+    | '/reset-password'
     | '/search'
     | '/settings'
     | '/$book/$chapter'
@@ -857,6 +941,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BookRoute: typeof BookRouteWithChildren
+  AudioRoute: typeof AudioRoute
   BibleRoute: typeof BibleRouteWithChildren
   Bible2Route: typeof Bible2Route
   BibleLovableRoute: typeof BibleLovableRoute
@@ -866,10 +951,16 @@ export interface RootRouteChildren {
   ChurchFeedLabRoute: typeof ChurchFeedLabRoute
   ChurchesDirectoryRoute: typeof ChurchesDirectoryRoute
   DiagnosticsRoute: typeof DiagnosticsRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   HomeRoute: typeof HomeRoute
+  IntroRoute: typeof IntroRoute
   KatamerosTestRoute: typeof KatamerosTestRoute
+  LoginRoute: typeof LoginRoute
+  MessagesRoute: typeof MessagesRoute
   OnboardingRoute: typeof OnboardingRoute
   PrayerRequestsRoute: typeof PrayerRequestsRoute
+  RegisterRoute: typeof RegisterRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SearchRoute: typeof SearchRoute
   SettingsRoute: typeof SettingsRouteWithChildren
   AgpeyaPrayerIdRoute: typeof AgpeyaPrayerIdRoute
@@ -920,6 +1011,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SearchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/prayer-requests': {
       id: '/prayer-requests'
       path: '/prayer-requests'
@@ -934,6 +1039,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/messages': {
+      id: '/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof MessagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/katameros-test': {
       id: '/katameros-test'
       path: '/katameros-test'
@@ -941,11 +1060,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KatamerosTestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/intro': {
+      id: '/intro'
+      path: '/intro'
+      fullPath: '/intro'
+      preLoaderRoute: typeof IntroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/home': {
       id: '/home'
       path: '/home'
       fullPath: '/home'
       preLoaderRoute: typeof HomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/diagnostics': {
@@ -1009,6 +1142,13 @@ declare module '@tanstack/react-router' {
       path: '/bible'
       fullPath: '/bible'
       preLoaderRoute: typeof BibleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/audio': {
+      id: '/audio'
+      path: '/audio'
+      fullPath: '/audio'
+      preLoaderRoute: typeof AudioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/$book': {
@@ -1513,6 +1653,7 @@ const ProfileChurchRouteWithChildren = ProfileChurchRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BookRoute: BookRouteWithChildren,
+  AudioRoute: AudioRoute,
   BibleRoute: BibleRouteWithChildren,
   Bible2Route: Bible2Route,
   BibleLovableRoute: BibleLovableRoute,
@@ -1522,10 +1663,16 @@ const rootRouteChildren: RootRouteChildren = {
   ChurchFeedLabRoute: ChurchFeedLabRoute,
   ChurchesDirectoryRoute: ChurchesDirectoryRoute,
   DiagnosticsRoute: DiagnosticsRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   HomeRoute: HomeRoute,
+  IntroRoute: IntroRoute,
   KatamerosTestRoute: KatamerosTestRoute,
+  LoginRoute: LoginRoute,
+  MessagesRoute: MessagesRoute,
   OnboardingRoute: OnboardingRoute,
   PrayerRequestsRoute: PrayerRequestsRoute,
+  RegisterRoute: RegisterRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SearchRoute: SearchRoute,
   SettingsRoute: SettingsRouteWithChildren,
   AgpeyaPrayerIdRoute: AgpeyaPrayerIdRoute,

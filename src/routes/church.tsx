@@ -136,8 +136,7 @@ function Header({ searchContext }: { searchContext?: ContextualSearchContext }) 
       }}
     >
       <AlphaHeader
-        variant="internal"
-        backTo="/home"
+        variant="main"
         title="كنيستك معاك"
         searchScope="church"
         searchContext={searchContext}

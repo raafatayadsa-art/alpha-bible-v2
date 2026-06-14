@@ -12,6 +12,7 @@ const MAIN_ROOTS = [
   "/feasts",
   "/agpeya",
   "/katameros",
+  "/audio",
   "/search",
   "/prayer-requests",
 ] as const;

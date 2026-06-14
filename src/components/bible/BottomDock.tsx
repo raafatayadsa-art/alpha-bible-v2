@@ -133,7 +133,7 @@ export function BottomDock({
             <DockItem
               icon={ChurchIcon}
               label={t("nav.church")}
-              to="/profile/church"
+              to="/church"
               active={isActive("/profile/church") || isActive("/church")}
             />
             <DockItem icon={UserIcon} label={t("nav.profile")} to="/profile" active={isActive("/profile")} />

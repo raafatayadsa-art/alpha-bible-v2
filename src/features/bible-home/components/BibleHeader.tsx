@@ -1,5 +1,5 @@
+import { ChevronLeft, Search } from "lucide-react";
 import { useRouter } from "@tanstack/react-router";
-import { Search } from "lucide-react";
 import { alphaOmegaLogo, headerCathedralBg } from "@/assets/bible-home";
 import { useBibleSearch } from "@/features/bible-search";
 import { bibleHomeColors } from "../tokens/colors";
@@ -16,11 +16,12 @@ export function BibleHeader({ onSearchClick }: { onSearchClick?: () => void }) {
   };
 
   const goBack = () => {
-    if (typeof window !== "undefined" && window.history.length > 1) {
-      router.history.back();
-      return;
-    }
-    void router.navigate({ to: "/" });
+    const idx =
+      typeof window !== "undefined"
+        ? (((window.history.state as Record<string, unknown>)?.idx as number) ?? 0)
+        : 0;
+    if (idx > 0) { router.history.back(); return; }
+    void router.navigate({ to: "/home" });
   };
 
   return (
@@ -46,20 +47,14 @@ export function BibleHeader({ onSearchClick }: { onSearchClick?: () => void }) {
 
       <div className="relative mx-auto max-w-[440px] px-4 pb-2 pt-[max(env(safe-area-inset-top),10px)]">
         <div className="flex items-center justify-between gap-2" dir="rtl">
-          <button type="button" aria-label="رجوع" onClick={goBack} className={HEADER_BTN}>
-            <svg
-              viewBox="0 0 20 20"
-              className="h-[18px] w-[18px]"
-              fill="none"
-              stroke={bibleHomeColors.textPrimary}
-              strokeWidth={2.2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden
+          <button
+              type="button"
+              onClick={goBack}
+              aria-label="رجوع"
+              className={HEADER_BTN}
             >
-              <path d="M7 4l6 6-6 6" />
-            </svg>
-          </button>
+              <ChevronLeft className="h-[18px] w-[18px] -scale-x-100" style={{ color: bibleHomeColors.textPrimary }} />
+            </button>
 
           <div className="flex min-w-0 flex-1 flex-col items-center text-center" dir="rtl">
             <img

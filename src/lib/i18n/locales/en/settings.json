@@ -3,7 +3,11 @@
   "pageFooter": "ⲁⲗⲫⲁ · Alpha Coptic · Control Center",
   "hero": {
     "title": "Personal control center",
-    "subtitle": "Privacy, security, and your spiritual experience settings"
+    "subtitle": "Privacy, security, and your spiritual experience settings",
+    "statsDevices": "Devices",
+    "statsProtection": "Protection",
+    "statsPrivacy": "Privacy",
+    "statsPrivacyValue": "Active"
   },
   "searchPlaceholder": "Search settings...",
   "trustCard": {
@@ -22,45 +26,65 @@
     "activeDevices": "{{count}} active devices"
   },
   "sections": {
-    "privacy": {
-      "title": "Privacy & security",
-      "description": "Full control over privacy, protection, and your account",
-      "keywords": ["خصوصية", "أمان", "كلمة", "جهاز", "face", "touch", "تحقق", "حظر", "رسائل", "privacy", "security", "password", "device"]
+    "language": {
+      "title": "Language",
+      "description": "Change app interface language",
+      "keywords": ["لغة", "عربي", "انجليزي", "language", "arabic", "english"]
     },
     "appearance": {
-      "title": "Appearance & reading",
-      "description": "Light and dark mode and display experience",
-      "keywords": ["مظهر", "فاتح", "داكن", "dark", "theme", "language", "لغة", "appearance"]
+      "title": "Appearance",
+      "description": "Light and dark mode",
+      "keywords": ["مظهر", "فاتح", "داكن", "dark", "theme", "appearance"]
     },
     "notifications": {
       "title": "Notifications",
       "description": "Manage all alerts and notifications",
       "keywords": ["إشعار", "آية", "صلاة", "قديس", "قطمارس", "اجتماع", "رحلة", "تعليق", "notification"]
     },
-    "bible": {
-      "title": "Holy Bible & Agpeya",
-      "description": "Spiritual content settings",
-      "keywords": ["كتاب", "قراءة", "ترجمة", "آيات", "تمرير", "أجبية", "كنيسة", "bible"]
+    "security": {
+      "title": "Security Center",
+      "description": "Protect your account, devices, and sessions",
+      "keywords": ["أمان", "كلمة", "جهاز", "face", "touch", "تحقق", "security", "password", "device"]
     },
-    "prayer": {
-      "title": "Prayer & reminders",
-      "description": "Daily prayer and Agpeya reminders",
-      "keywords": ["صلاة", "تذكير", "صمت", "نوم", "باكر", "أجبية", "prayer"]
+    "privacy": {
+      "title": "Privacy",
+      "description": "Visibility, data, messages, and blocking",
+      "keywords": ["خصوصية", "حظر", "رسائل", "بيانات", "privacy", "block"]
+    },
+    "reading": {
+      "title": "Reading Preferences",
+      "description": "Holy Bible and spiritual content",
+      "keywords": ["كتاب", "قراءة", "ترجمة", "آيات", "تمرير", "أجبية", "bible", "read"]
+    },
+    "myChurch": {
+      "title": "My Church",
+      "description": "Manage membership, roles, and services",
+      "keywords": ["كنيسة", "عضوية", "خدمة", "انضمام", "church"]
     },
     "storage": {
-      "title": "Storage & data",
-      "description": "Manage storage and sync",
-      "keywords": ["تخزين", "كاش", "مزامنة", "بيانات", "إنترنت", "محفوظ", "مجتمع", "storage", "sync"]
+      "title": "Storage & Data",
+      "description": "Data size and download management",
+      "keywords": ["تخزين", "كاش", "مزامنة", "بيانات", "إنترنت", "storage", "sync"]
     },
-    "a11y": {
-      "title": "Accessibility",
-      "description": "Customize reading and interaction",
-      "keywords": ["وصول", "تباين", "صوت", "اهتزاز", "حركة", "خط", "accessibility"]
+    "legal": {
+      "title": "Legal Center",
+      "description": "Policies, terms, and guarantees",
+      "keywords": ["قانون", "سياسة", "شروط", "ضمان", "legal", "privacy", "terms"]
+    },
+    "support": {
+      "title": "Support & Contact",
+      "description": "Get help and report issues",
+      "keywords": ["دعم", "مساعدة", "تواصل", "مشكلة", "support", "contact"]
     },
     "about": {
       "title": "About Alpha",
-      "description": "App info and support",
-      "keywords": ["alpha", "إصدار", "خصوصية", "شروط", "دعم", "تقييم", "حول", "about"]
+      "description": "App info and updates",
+      "keywords": ["alpha", "إصدار", "حول", "about"]
+    },
+    "logout": {
+      "title": "Sign Out",
+      "description": "Manage your current sessions",
+      "keywords": ["خروج", "تسجيل", "logout"]
     },
     "heroKeywords": ["مركز", "تحكم", "أمان", "خصوصية", "hero", "score", "control"],
     "trustKeywords": ["ثقة", "أمان", "خصوصية", "حقوق", "شفافية", "trust", "safety"]
@@ -68,65 +92,106 @@
   "labels": {
     "security": "Security",
     "privacy": "Privacy",
-    "privateMessages": "Private messages",
+    "privateMessages": "Messages",
     "spiritual": "Spiritual",
     "church": "Church",
     "community": "Community",
-    "spiritualPrefs": "Spiritual preferences",
-    "savedContent": "Saved content"
+    "spiritualPrefs": "Spiritual Content",
+    "savedContent": "Saved Content",
+    "accountProtection": "Account Protection",
+    "accountRecovery": "Account Recovery",
+    "devicesAndSessions": "Devices & Sessions",
+    "securityGuarantees": "Security Guarantees",
+    "visibilityAndData": "Visibility & Data",
+    "dataManagement": "Data Management",
+    "blocking": "Blocking",
+    "bible": "Holy Bible"
   },
   "rows": {
-    "biometric": { "label": "Face ID / Touch ID", "subtitle": "Unlock the app with biometrics" },
-    "twoFactor": { "label": "Two-factor authentication", "subtitle": "Extra protection when signing in" },
-    "registeredDevices": { "label": "Registered devices" },
-    "logoutAllDevices": { "label": "Sign out from all devices", "subtitle": "End all active sessions" },
-    "activeSessions": "Active sign-in sessions",
-    "blockedUsers": { "label": "Blocked users", "subtitle": "Manage your block list" },
-    "profileVisibility": "Who can see my profile",
-    "whoCanMessage": "Who can message me",
-    "hidePhone": "Hide phone number",
-    "hideEmail": "Hide email",
-    "hideChurch": "Hide church",
-    "hideBirthdate": "Hide birth date",
-    "messageDeleteDuration": "Default message delete duration",
-    "blockStrangers": "Block messages from strangers",
-    "notifyVerse": "Verse of the day",
-    "notifyPrayer": "Prayer of the day",
-    "notifySaint": "Saint of the day",
-    "notifyKatameros": "Katameros",
-    "notifyMeetings": "Meetings",
-    "notifyTrips": "Trips",
-    "notifyPrayerRequests": "Prayer requests",
-    "notifyComments": "Comments",
-    "notifyReplies": "Replies",
-    "notifyMentions": "Mentions",
-    "bibleFontSize": "Reading font size",
-    "bibleFontFamily": "Reading font family",
-    "bibleSaveLastRead": "Save last reading position",
-    "bibleAutoscrollSpeed": "Auto-scroll speed",
-    "biblePreferredTranslation": "Preferred translation",
-    "bibleShowVerseNumbers": "Show verse numbers",
-    "savedChurches": { "title": "Saved churches", "subtitle": "Your favorite churches" },
-    "favoritePriests": { "label": "Favorite priests", "subtitle": "Priests you follow" },
-    "favoriteServants": { "label": "Favorite servants", "subtitle": "Notable servants and deacons" },
-    "savedMeetings": { "label": "Saved meetings", "subtitle": "Your upcoming meetings" },
-    "prayerReminder": "Prayer reminder",
-    "prayerHours": { "label": "Preferred prayer hours", "subtitle": "Coming soon" },
-    "prayerSilentMode": "Silent mode during prayer",
-    "prayerBedtimeReminder": "Bedtime prayer reminder",
-    "prayerMorningReminder": "Morning prayer reminder",
-    "localDataSize": { "label": "Local data size", "subtitle": "~24 MB" },
-    "clearCache": { "label": "Clear cache", "subtitle": "Free up storage space" },
-    "syncNow": { "label": "Sync now", "subtitle": "Sync with the cloud" },
-    "lastSync": "Last sync",
-    "offlineDownload": { "label": "Download for offline use", "subtitle": "Holy Bible and Agpeya" },
-    "savedPosts": { "label": "Saved content", "subtitle": "Saved posts and materials" },
-    "likedPosts": { "label": "Liked posts", "subtitle": "Your community interactions" },
-    "friendRequests": { "label": "Friend requests", "subtitle": "Manage connection requests" },
-    "largeText": "Larger text",
-    "highContrast": "High contrast",
-    "screenReader": "Screen reader",
-    "haptics": "Haptics"
+    "languageArabic": { "label": "العربية", "subtitle": "App interface language" },
+    "languageEnglish": { "label": "English", "subtitle": "App interface language" },
+    "themeLight": { "label": "Light Mode", "subtitle": "Alpha Cream" },
+    "themeDark": { "label": "Dark Mode", "subtitle": "Alpha Dark" },
+    
+    "notifyVerse": { "label": "Verse of the Day", "subtitle": "Daily selected verse notification" },
+    "notifyPrayer": { "label": "Prayer of the Day", "subtitle": "Daily prayer reminder" },
+    "notifySaint": { "label": "Saint of the Day", "subtitle": "Learn about today's saint" },
+    "notifyKatameros": { "label": "Katameros", "subtitle": "Today's readings" },
+    "notifyMeetings": { "label": "Church Announcements", "subtitle": "Important news and announcements" },
+    "notifyEvents": { "label": "Events & Feasts", "subtitle": "Church events reminder" },
+    "notifyServices": { "label": "Meetings & Services", "subtitle": "Your meeting schedules" },
+    "notifyDonations": { "label": "Donations", "subtitle": "Donation campaigns" },
+    "notifyMessages": { "label": "Messages", "subtitle": "New private messages" },
+    "notifyPrayerRequests": { "label": "Prayer Requests", "subtitle": "Community prayer requests" },
+    "notifyCommunity": { "label": "General Community", "subtitle": "Community news" },
+    "notifyInteractions": { "label": "Likes & Comments", "subtitle": "Interactions on your posts" },
+
+    "biometric": { "label": "Face ID / Touch ID", "subtitle": "Unlock app with biometrics" },
+    "passkeys": { "label": "Passkeys", "subtitle": "Passwordless sign in" },
+    "changePassword": { "label": "Change Password", "subtitle": "Update current password" },
+    "twoFactor": { "label": "Two-Factor Authentication", "subtitle": "Extra account protection" },
+    "recoveryCodes": { "label": "Recovery Codes", "subtitle": "Account recovery codes" },
+    "trustedContact": { "label": "Trusted Contact", "subtitle": "Trusted contact person" },
+    "churchVerification": { "label": "Church Verification Recovery", "subtitle": "Recovery via church" },
+    "recoveryEmail": { "label": "Email Address", "subtitle": "Recovery email" },
+    "recoveryPhone": { "label": "Phone Number", "subtitle": "Recovery phone number" },
+    "registeredDevices": { "label": "Registered Devices", "subtitle": "Manage your devices" },
+    "lastLogin": { "label": "Last Login", "subtitle": "Login activity log" },
+    "logoutAllDevices": { "label": "Sign Out of All Devices", "subtitle": "End all active sessions" },
+    "howWeProtect": { "label": "How We Protect Your Data", "subtitle": "Learn about our protection" },
+    "securityPolicy": { "label": "Security Policy", "subtitle": "Our security rules" },
+    "currentSecurityLevel": { "label": "Current Security Level", "subtitle": "Your account security rating" },
+
+    "hidePhone": { "label": "Show/Hide Phone Number", "subtitle": "Control phone visibility" },
+    "hideEmail": { "label": "Show/Hide Email", "subtitle": "Control email visibility" },
+    "hideChurch": { "label": "Show/Hide Church", "subtitle": "Control church visibility" },
+    "hideBirthdate": { "label": "Show/Hide Birthdate", "subtitle": "Control birthdate visibility" },
+    "whoCanMessage": { "label": "Who Can Message Me", "subtitle": "Choose who can send messages" },
+    "receivePrivateMessages": { "label": "Receive Private Messages", "subtitle": "Enable or disable messages" },
+    "autoDeleteMessages": { "label": "Auto-Delete Messages", "subtitle": "Delete messages after duration" },
+    "downloadData": { "label": "Download My Data", "subtitle": "Get a copy of your data" },
+    "requestDataDeletion": { "label": "Request Data Deletion", "subtitle": "Wipe all your data" },
+    "deleteAccount": { "label": "Delete Account", "subtitle": "Permanently close account" },
+    "blockedUsers": { "label": "Blocked Users", "subtitle": "Manage block list" },
+    "sentReports": { "label": "Sent Reports", "subtitle": "Track your reports" },
+
+    "bibleFontSize": { "label": "Font Size", "subtitle": "Increase or decrease text size" },
+    "bibleFontFamily": { "label": "Font Family", "subtitle": "Change font style" },
+    "bibleAutoscrollSpeed": { "label": "Auto-Scroll", "subtitle": "Scrolling speed" },
+    "smartReadingMode": { "label": "Smart Reading Mode", "subtitle": "Adjust lighting and contrast" },
+    "reduceMotion": { "label": "Reduce Motion", "subtitle": "Disable animations" },
+    "biblePreferredTranslation": { "label": "Preferred Translation", "subtitle": "Change Bible translation" },
+    "showDiacritics": { "label": "Show Diacritics", "subtitle": "Display text diacritics" },
+    "bibleSaveLastRead": { "label": "Save Last Read Position", "subtitle": "Return to same place later" },
+
+    "currentChurch": { "label": "Current Church", "subtitle": "View your registered church" },
+    "membershipStatus": { "label": "Membership Status", "subtitle": "Your church membership status" },
+    "joinRequests": { "label": "Join Requests", "subtitle": "Track join requests" },
+    "transferRequests": { "label": "Transfer Requests", "subtitle": "Transfer to another church" },
+    "rolesAndServices": { "label": "Roles & Services", "subtitle": "Your church services" },
+
+    "dataUsage": { "label": "Data Usage", "subtitle": "Storage space consumed" },
+    "manageDownloads": { "label": "Manage Downloads", "subtitle": "Locally downloaded content" },
+    "clearTempFiles": { "label": "Clear Temp Files", "subtitle": "Empty cache memory" },
+    "cleanStorage": { "label": "Clean Storage", "subtitle": "Free up extra space" },
+
+    "privacyPolicy": { "label": "Privacy Policy", "subtitle": "How we handle your data" },
+    "termsConditions": { "label": "Terms & Conditions", "subtitle": "App usage terms" },
+    "communityGuidelines": { "label": "Community Guidelines", "subtitle": "Interaction rules" },
+    "securityGuaranteesLegal": { "label": "Security Guarantees", "subtitle": "Our commitment to your security" },
+
+    "reportProblem": { "label": "Report a Problem", "subtitle": "Tell us about any issues" },
+    "suggestFeature": { "label": "Suggest a Feature", "subtitle": "Share your ideas" },
+    "contactUs": { "label": "Contact Us", "subtitle": "Technical support team" },
+    "faq": { "label": "FAQ", "subtitle": "Answers to your questions" },
+
+    "appVersion": { "label": "App Version", "subtitle": "Current version number" },
+    "changelog": { "label": "Changelog", "subtitle": "What's new in this version" },
+    "appInfo": { "label": "App Info", "subtitle": "Details about Alpha" },
+    "openSourceLicenses": { "label": "Open Source Licenses", "subtitle": "Used libraries" },
+
+    "logoutThisDevice": { "label": "Sign Out of This Device", "subtitle": "End current session" },
+    "logoutAllDevicesAction": { "label": "Sign Out of All Devices", "subtitle": "Fully protect your account" }
   },
   "options": {
     "everyone": "Everyone",

@@ -1,4 +1,5 @@
-import { Bell, Menu } from "lucide-react";
+import { Bell, ChevronLeft } from "lucide-react";
+import { useRouter } from "@tanstack/react-router";
 import { alphaOmegaLogo } from "@/assets/bible-home";
 import { bibleV2Tokens } from "../tokens";
 
@@ -6,16 +7,26 @@ const HEADER_BTN =
   "grid h-11 w-11 place-items-center rounded-2xl border border-white/80 bg-white/75 shadow-[0_6px_18px_-8px_rgba(120,90,40,0.28)] backdrop-blur-md transition active:scale-95";
 
 interface BibleV2HeaderProps {
-  onMenu?: () => void;
   onNotifications?: () => void;
 }
 
-export function BibleV2Header({ onMenu, onNotifications }: BibleV2HeaderProps) {
+export function BibleV2Header({ onNotifications }: BibleV2HeaderProps) {
+  const router = useRouter();
+
+  const goBack = () => {
+    const idx =
+      typeof window !== "undefined"
+        ? (((window.history.state as Record<string, unknown>)?.idx as number) ?? 0)
+        : 0;
+    if (idx > 0) { router.history.back(); return; }
+    void router.navigate({ to: "/home" });
+  };
+
   return (
     <header dir="rtl" className="relative px-4 pb-3 pt-[max(env(safe-area-inset-top),10px)]">
       <div className="flex items-start justify-between gap-2">
-        <button type="button" aria-label="القائمة" onClick={onMenu} className={HEADER_BTN}>
-          <Menu className="h-5 w-5" style={{ color: bibleV2Tokens.textPrimary }} />
+        <button type="button" aria-label="رجوع" onClick={goBack} className={HEADER_BTN}>
+          <ChevronLeft className="h-5 w-5 -scale-x-100" style={{ color: bibleV2Tokens.textPrimary }} />
         </button>
 
         <div className="flex min-w-0 flex-1 flex-col items-center text-center">

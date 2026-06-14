@@ -1,5 +1,5 @@
-import { createFileRoute, ErrorComponentProps, Link, notFound, useNavigate, useRouter } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { createFileRoute, ErrorComponentProps, Link, notFound, useNavigate, useRouter, useRouterState } from "@tanstack/react-router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -24,6 +24,7 @@ import {
   AgpeyaSkeleton,
   getAgpeyaPrayer,
   readPrayerPosition,
+  readLastOpenedPrayer,
   savePrayerPosition,
   useAgpeyaAudio,
   useAgpeyaTheme,
@@ -436,10 +437,62 @@ function buildReaderSections(
   return rawSections.map(supabaseSectionToPrayerSection);
 }
 
+const SECTION_SCROLL_OFFSET = 12;
+
+function querySectionEl(root: HTMLElement, sectionId: string): HTMLElement | null {
+  return root.querySelector(`[data-section-id="${CSS.escape(sectionId)}"]`) as HTMLElement | null;
+}
+
+/** Shared scroll math for progress rail + section tabs */
+function computeAgpeyaScrollState(
+  root: HTMLElement,
+  sectionIds: string[],
+): { progress: number; fills: number[]; activeId: string } | null {
+  const els = sectionIds
+    .map((id) => ({ id, el: querySectionEl(root, id) }))
+    .filter((x): x is { id: string; el: HTMLElement } => !!x.el);
+  if (!els.length) return null;
+
+  const rootRect = root.getBoundingClientRect();
+  const scrollTop = root.scrollTop;
+  const maxScroll = Math.max(1, root.scrollHeight - root.clientHeight);
+  const progress = Math.min(1, Math.max(0, scrollTop / maxScroll));
+
+  const positions = els.map(({ el }) =>
+    scrollTop + el.getBoundingClientRect().top - rootRect.top,
+  );
+
+  const fills = positions.map((start, i) => {
+    const adjStart = Math.max(0, start - SECTION_SCROLL_OFFSET);
+    const adjEnd =
+      i < positions.length - 1
+        ? Math.max(adjStart + 1, positions[i + 1]! - SECTION_SCROLL_OFFSET)
+        : Math.max(adjStart + 1, maxScroll + SECTION_SCROLL_OFFSET);
+    if (scrollTop >= adjEnd) return 1;
+    if (scrollTop <= adjStart) return 0;
+    return (scrollTop - adjStart) / (adjEnd - adjStart);
+  });
+
+  let activeIndex = 0;
+  for (let i = 0; i < positions.length; i++) {
+    const adjStart = Math.max(0, positions[i]! - SECTION_SCROLL_OFFSET);
+    if (scrollTop + 1 >= adjStart) activeIndex = i;
+  }
+  if (maxScroll > 8 && scrollTop >= maxScroll - 4) {
+    activeIndex = positions.length - 1;
+  }
+
+  return { progress, fills, activeId: els[activeIndex]!.id };
+}
+
 function PrayerReader() {
   const { prayer } = Route.useLoaderData() as { prayer: AgpeyaPrayer };
   const { prayerId } = Route.useParams();
   const navigate = useNavigate();
+  const adjacentFreshStartId = useRouterState({
+    select: (s) =>
+      (s.location.state as { agpeyaFreshStart?: string } | undefined)?.agpeyaFreshStart ?? null,
+  });
 
   const { prev, next } = useMemo(() => adjacentAgpeyaPrayers(prayerId), [prayerId]);
 
@@ -457,19 +510,16 @@ function PrayerReader() {
   const setLineHeight = (n: number) => setPrefs({ ...prefs, lineHeight: n });
   const [theme, setTheme] = useAgpeyaTheme();
   const [progress, setProgress] = useState(0);
+  const [sectionFills, setSectionFills] = useState<number[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string>("");
   const { isSaved, toggle } = useSavedAgpeya();
 
   useEffect(() => {
     setActiveId("");
+    setSectionFills([]);
+    setProgress(0);
   }, [prayerId]);
-
-  useEffect(() => {
-    if (sections.length > 0 && activeId === "") {
-      setActiveId(sections[0].id);
-    }
-  }, [sections, activeId]);
 
   const [shareOpen, setShareOpen] = useState(false);
   const [presentOpen, setPresentOpen] = useState(false);
@@ -511,96 +561,139 @@ function PrayerReader() {
 
   const scrollerRef = useRef<HTMLDivElement>(null);
   const chipsRef = useRef<HTMLDivElement>(null);
+  // Lock active chip during programmatic smooth scroll (prevents flicker on iPhone)
+  const lockUntilRef = useRef<number>(0);
+  /** Prev/next + swipe: prayer id that must open from the top */
+  const freshStartPrayerRef = useRef<string | null>(null);
   const dark = theme === "dark";
 
-  // Restore scroll position on first mount per prayer
+  const openAdjacentPrayer = useCallback((targetPrayerId: string) => {
+    freshStartPrayerRef.current = targetPrayerId;
+    if (scrollerRef.current) scrollerRef.current.scrollTop = 0;
+    void navigate({
+      to: "/agpeya/$prayerId",
+      params: { prayerId: targetPrayerId },
+      state: { agpeyaFreshStart: targetPrayerId },
+    });
+  }, [navigate]);
+
+  const handleAdjacentPrayerPress = useCallback((
+    targetPrayerId: string,
+    e: React.MouseEvent | React.TouchEvent,
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+    openAdjacentPrayer(targetPrayerId);
+  }, [openAdjacentPrayer]);
+
+  // Restore scroll only for the open (last-read) prayer; adjacent nav always starts at top
   useEffect(() => {
+    if (sectionsState.status !== "success" || sections.length === 0) return;
     const el = scrollerRef.current;
     if (!el) return;
-    const pos = readPrayerPosition(prayerId);
-    if (pos) {
+
+    lockUntilRef.current = 0;
+    const forceFreshStart =
+      freshStartPrayerRef.current === prayerId || adjacentFreshStartId === prayerId;
+
+    const last = readLastOpenedPrayer();
+    const isOpenSession = last?.prayerId === prayerId;
+    const pos = isOpenSession ? readPrayerPosition(prayerId) : null;
+    const shouldRestore = !forceFreshStart && Boolean(pos && (pos.scrollPercent ?? 0) > 0.001);
+
+    requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        el.scrollTop = pos.scrollPercent * Math.max(0, el.scrollHeight - el.clientHeight);
-      });
-    } else {
-      el.scrollTop = 0;
-    }
-  }, [prayerId]);
-
-  // Track scroll progress and persist (throttled)
-  useEffect(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    let raf = 0;
-    let lastSave = 0;
-    const onScroll = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        const max = Math.max(1, el.scrollHeight - el.clientHeight);
-        const pct = Math.min(1, Math.max(0, el.scrollTop / max));
-        setProgress(pct);
-        const now = Date.now();
-        if (now - lastSave > 400) {
-          lastSave = now;
-          savePrayerPosition(prayerId, { tab: "text", scrollPercent: pct, updatedAt: now });
+        if (shouldRestore && pos) {
+          el.scrollTop = pos.scrollPercent * Math.max(0, el.scrollHeight - el.clientHeight);
+        } else {
+          el.scrollTop = 0;
+          setActiveId(sections[0]!.id);
+          setSectionFills(sections.map(() => 0));
+          setProgress(0);
+          if (forceFreshStart) {
+            savePrayerPosition(prayerId, { tab: "text", scrollPercent: 0, updatedAt: Date.now() });
+          }
         }
+
+        if (forceFreshStart) {
+          freshStartPrayerRef.current = null;
+          if (adjacentFreshStartId === prayerId) {
+            void navigate({
+              to: "/agpeya/$prayerId",
+              params: { prayerId },
+              replace: true,
+              state: {},
+            });
+          }
+        }
+
+        el.dispatchEvent(new Event("scroll"));
       });
-    };
-    el.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      el.removeEventListener("scroll", onScroll);
-      cancelAnimationFrame(raf);
-    };
-  }, [prayerId]);
+    });
+  }, [prayerId, sections, sectionsState.status, adjacentFreshStartId, navigate]);
 
-  // Lock active section during programmatic smooth scroll so the tapped chip
-  // stays highlighted until the scroll settles (prevents flicker on iPhone).
-  const lockUntilRef = useRef<number>(0);
-
-  // Scroll-driven active section tracking (more reliable than IO across browsers)
+  // Scroll: progress rail + section tabs (shared logic)
   useEffect(() => {
     const root = scrollerRef.current;
     if (!root || sections.length === 0) return;
     let raf = 0;
+    let lastSave = 0;
+    const sectionIds = sections.map((s) => s.id);
+
     const recompute = () => {
-      try {
-        if (Date.now() < lockUntilRef.current) return;
-        const els = sections
-          .map((s) => ({ id: s.id, el: root.querySelector(`#section-${s.id}`) as HTMLElement | null }))
-          .filter((x): x is { id: string; el: HTMLElement } => !!x.el);
-        if (!els.length) return;
-        const rootTop = root.getBoundingClientRect().top;
-        const trigger = rootTop + Math.min(180, root.clientHeight * 0.28);
-        // pick last section whose top is above trigger; fallback to first
-        let currentId = els[0].id;
-        for (const { id, el } of els) {
-          if (el.getBoundingClientRect().top - trigger <= 0) currentId = id;
-          else break;
+      const state = computeAgpeyaScrollState(root, sectionIds);
+      if (!state) return;
+
+      setProgress(state.progress);
+      setSectionFills((prev) => {
+        if (
+          prev.length !== state.fills.length
+          || prev.some((v, i) => Math.abs(v - state.fills[i]!) > 0.008)
+        ) {
+          return state.fills;
         }
-        // near-bottom guard: snap to last section (only when content actually scrolls)
-        const scrollable = root.scrollHeight - root.clientHeight;
-        if (scrollable > 8 && root.scrollTop + root.clientHeight >= root.scrollHeight - 4) {
-          currentId = els[els.length - 1].id;
-        }
-        setActiveId((prev) => (prev === currentId ? prev : currentId));
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        console.warn("[agpeya] section tracking failed", err);
+        return prev;
+      });
+
+      if (Date.now() >= lockUntilRef.current) {
+        setActiveId((prev) => (prev === state.activeId ? prev : state.activeId));
+      }
+
+      const now = Date.now();
+      if (now - lastSave > 400) {
+        lastSave = now;
+        savePrayerPosition(prayerId, {
+          tab: "text",
+          scrollPercent: state.progress,
+          updatedAt: now,
+        });
       }
     };
+
     const onScroll = () => {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(recompute);
     };
+
     recompute();
     root.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
+    const ro = new ResizeObserver(onScroll);
+    ro.observe(root);
+    const article = root.querySelector("article");
+    if (article) ro.observe(article);
+    for (const id of sectionIds) {
+      const el = querySectionEl(root, id);
+      if (el) ro.observe(el);
+    }
+
     return () => {
       cancelAnimationFrame(raf);
       root.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
+      ro.disconnect();
     };
-  }, [sections]);
+  }, [sections, prayerId]);
 
   // Auto-center active chip in the rail
   useEffect(() => {
@@ -630,15 +723,15 @@ function PrayerReader() {
     const dy = t.clientY - s.y;
     if (Math.abs(dy) < 40 && Math.abs(dx) > 70) {
       // RTL: swipe left (dx < 0) → next prayer; swipe right (dx > 0) → previous prayer
-      if (dx < 0 && next) navigate({ to: "/agpeya/$prayerId", params: { prayerId: next.id } });
-      else if (dx > 0 && prev) navigate({ to: "/agpeya/$prayerId", params: { prayerId: prev.id } });
+      if (dx < 0 && next) openAdjacentPrayer(next.id);
+      else if (dx > 0 && prev) openAdjacentPrayer(prev.id);
     }
   };
 
   const jumpTo = (id: string) => {
     const root = scrollerRef.current;
     if (!root) return;
-    const el = root.querySelector(`#section-${id}`) as HTMLElement | null;
+    const el = root.querySelector(`[data-section-id="${CSS.escape(id)}"]`) as HTMLElement | null;
     if (!el) return;
     // Immediate visual feedback + lock against scroll-tracking flicker
     setActiveId(id);
@@ -691,7 +784,7 @@ function PrayerReader() {
     <div
       dir="rtl"
       className={cn(
-        "relative min-h-dvh flex flex-col transition-colors",
+        "relative flex h-dvh flex-col overflow-hidden transition-colors",
         dark
           ? "bg-[#08131f] text-[#e8e2cf]"
           : "bg-[radial-gradient(120%_60%_at_50%_-10%,#fff5dd_0%,#fbeac6_45%,#f3d9a5_100%)] text-[#3a2410]",
@@ -767,8 +860,11 @@ function PrayerReader() {
               "mx-auto flex max-w-[640px] gap-1.5 overflow-x-auto px-3 pb-2 no-scrollbar",
             )}
           >
-            {sections.map((s) => {
+            {sections.map((s, i) => {
+              const fill = sectionFills[i] ?? 0;
               const active = s.id === activeId;
+              const completed = !active && fill >= 0.999;
+              const entering = !active && fill > 0.02 && fill < 0.999;
               return (
                 <button
                   key={s.id}
@@ -779,10 +875,18 @@ function PrayerReader() {
                   className={cn(
                     "shrink-0 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-[12px] font-bold transition-all duration-300 active:scale-95",
                     active
-                      ? "border-[#8a6bbf] bg-gradient-to-br from-[#7a5cb0] to-[#5a3d92] text-white shadow-[0_6px_18px_-8px_rgba(122,92,176,0.7)] ring-1 ring-[#b89dd9]/40"
-                      : dark
-                        ? "border-white/10 bg-white/5 text-white/75"
-                        : "border-[#c79356]/30 bg-white/55 text-[#5b3a18]",
+                      ? "border-[#8a6bbf] bg-gradient-to-br from-[#7a5cb0] to-[#5a3d92] text-white shadow-[0_6px_18px_-8px_rgba(122,92,176,0.7),0_0_14px_rgba(122,92,176,0.45)] ring-1 ring-[#b89dd9]/40"
+                      : completed
+                        ? dark
+                          ? "border-[#8a6bbf]/45 bg-[#7a5cb0]/28 text-white/85 shadow-[0_0_10px_rgba(122,92,176,0.25)]"
+                          : "border-[#8a6bbf]/40 bg-[#7a5cb0]/18 text-[#5a3d92] shadow-[0_0_8px_rgba(122,92,176,0.2)]"
+                        : entering
+                          ? dark
+                            ? "border-[#8a6bbf]/35 bg-[#7a5cb0]/15 text-white/80"
+                            : "border-[#8a6bbf]/30 bg-[#7a5cb0]/12 text-[#5a3d92]"
+                          : dark
+                            ? "border-white/10 bg-white/5 text-white/75"
+                            : "border-[#c79356]/30 bg-white/55 text-[#5b3a18]",
                   )}
                 >
                   {s.label}
@@ -792,13 +896,38 @@ function PrayerReader() {
           </div>
         )}
 
-        {/* Progress bar */}
-        <div className={cn("h-[3px] w-full", dark ? "bg-white/5" : "bg-[#c79356]/15")}>
+        {/* Section-synced progress rail */}
+        {sections.length > 0 && (
           <div
-            className="h-full bg-gradient-to-r from-[#7a5cb0] via-[#9b7fd4] to-[#5a3d92] transition-[width] duration-150"
-            style={{ width: `${Math.round(progress * 100)}%` }}
-          />
-        </div>
+            className={cn("flex h-[3px] w-full gap-px", dark ? "bg-white/5" : "bg-[#c79356]/15")}
+            role="progressbar"
+            aria-valuenow={Math.round(progress * 100)}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label="تقدم القراءة"
+          >
+            {sections.map((s, i) => {
+              const fill = sectionFills[i] ?? 0;
+              const active = s.id === activeId;
+              return (
+                <div key={s.id} className="relative min-w-0 flex-1 overflow-hidden" title={s.label}>
+                  <div className={cn("absolute inset-0", dark ? "bg-white/8" : "bg-[#c79356]/14")} />
+                  <div
+                    className={cn(
+                      "absolute inset-y-0 right-0 transition-[width,box-shadow,opacity] duration-200 ease-out",
+                      active
+                        ? "bg-gradient-to-l from-[#7a5cb0] via-[#9b7fd4] to-[#5a3d92] shadow-[0_0_12px_rgba(122,92,176,0.85)]"
+                        : fill >= 0.999
+                          ? "bg-[#7a5cb0]/70"
+                          : "bg-gradient-to-l from-[#7a5cb0]/85 via-[#9b7fd4]/85 to-[#5a3d92]/85",
+                    )}
+                    style={{ width: `${Math.round(fill * 100)}%` }}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        )}
       </header>
 
       {/* Reader body */}
@@ -806,7 +935,7 @@ function PrayerReader() {
         ref={scrollerRef}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
-        className="relative flex-1 overflow-y-auto"
+        className="relative min-h-0 flex-1 overflow-y-auto"
         style={{ scrollBehavior: "smooth" }}
       >
         <article
@@ -866,7 +995,8 @@ function PrayerReader() {
             {prev ? (
               <button
                 type="button"
-                onClick={() => navigate({ to: "/agpeya/$prayerId", params: { prayerId: prev.id } })}
+                onTouchStart={(e) => e.stopPropagation()}
+                onClick={(e) => handleAdjacentPrayerPress(prev.id, e)}
                 className={cn(
                   "flex flex-1 items-center gap-2 rounded-2xl border px-4 py-3 text-right transition-transform active:scale-[0.98]",
                   dark ? "border-white/10 bg-white/5 text-[#f0d78c]" : "border-[#c79356]/35 bg-white/70 text-[#5b3a18]",
@@ -882,7 +1012,8 @@ function PrayerReader() {
             {next ? (
               <button
                 type="button"
-                onClick={() => navigate({ to: "/agpeya/$prayerId", params: { prayerId: next.id } })}
+                onTouchStart={(e) => e.stopPropagation()}
+                onClick={(e) => handleAdjacentPrayerPress(next.id, e)}
                 className={cn(
                   "flex flex-1 items-center gap-2 rounded-2xl border px-4 py-3 text-left transition-transform active:scale-[0.98]",
                   dark ? "border-white/10 bg-white/5 text-[#f0d78c]" : "border-[#c79356]/35 bg-white/70 text-[#5b3a18]",

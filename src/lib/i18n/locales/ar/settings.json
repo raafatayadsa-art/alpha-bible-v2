@@ -3,7 +3,11 @@
   "pageFooter": "ⲁⲗⲫⲁ · Alpha Coptic · مركز التحكم",
   "hero": {
     "title": "مركز التحكم الشخصي",
-    "subtitle": "إعدادات الخصوصية والأمان وتجربتك الروحية"
+    "subtitle": "إعدادات الخصوصية والأمان وتجربتك الروحية",
+    "statsDevices": "الأجهزة",
+    "statsProtection": "الحماية",
+    "statsPrivacy": "الخصوصية",
+    "statsPrivacyValue": "مُفعّلة"
   },
   "searchPlaceholder": "ابحث في الإعدادات...",
   "trustCard": {
@@ -22,45 +26,65 @@
     "activeDevices": "{{count}} أجهزة نشطة"
   },
   "sections": {
-    "privacy": {
-      "title": "الخصوصية والأمان",
-      "description": "تحكم كامل في الخصوصية والحماية والحساب",
-      "keywords": ["خصوصية", "أمان", "كلمة", "جهاز", "face", "touch", "تحقق", "حظر", "رسائل", "privacy", "security", "password", "device"]
+    "language": {
+      "title": "اللغة",
+      "description": "تغيير لغة واجهة التطبيق",
+      "keywords": ["لغة", "عربي", "انجليزي", "language", "arabic", "english"]
     },
     "appearance": {
-      "title": "المظهر والقراءة",
-      "description": "الوضع الفاتح والداكن وتجربة العرض",
-      "keywords": ["مظهر", "فاتح", "داكن", "dark", "theme", "language", "لغة", "appearance"]
+      "title": "المظهر",
+      "description": "الوضع الفاتح والداكن",
+      "keywords": ["مظهر", "فاتح", "داكن", "dark", "theme", "appearance"]
     },
     "notifications": {
       "title": "الإشعارات",
       "description": "إدارة جميع التنبيهات والإشعارات",
       "keywords": ["إشعار", "آية", "صلاة", "قديس", "قطمارس", "اجتماع", "رحلة", "تعليق", "notification"]
     },
-    "bible": {
-      "title": "الكتاب المقدس والأجبية",
-      "description": "إعدادات المحتوى الروحي",
-      "keywords": ["كتاب", "قراءة", "ترجمة", "آيات", "تمرير", "أجبية", "كنيسة", "bible"]
+    "security": {
+      "title": "مركز الأمان",
+      "description": "حماية الحساب والأجهزة والجلسات",
+      "keywords": ["أمان", "كلمة", "جهاز", "face", "touch", "تحقق", "security", "password", "device"]
     },
-    "prayer": {
-      "title": "الصلاة والتذكيرات",
-      "description": "تذكيرات الصلاة والأجبية اليومية",
-      "keywords": ["صلاة", "تذكير", "صمت", "نوم", "باكر", "أجبية", "prayer"]
+    "privacy": {
+      "title": "الخصوصية",
+      "description": "الظهور والبيانات والرسائل والحظر",
+      "keywords": ["خصوصية", "حظر", "رسائل", "بيانات", "privacy", "block"]
+    },
+    "reading": {
+      "title": "تفضيلات القراءة",
+      "description": "الكتاب المقدس والمحتوى الروحي",
+      "keywords": ["كتاب", "قراءة", "ترجمة", "آيات", "تمرير", "أجبية", "bible", "read"]
+    },
+    "myChurch": {
+      "title": "كنيستي",
+      "description": "إدارة العضوية والأدوار والخدمات",
+      "keywords": ["كنيسة", "عضوية", "خدمة", "انضمام", "church"]
     },
     "storage": {
       "title": "التخزين والبيانات",
-      "description": "إدارة التخزين والمزامنة",
-      "keywords": ["تخزين", "كاش", "مزامنة", "بيانات", "إنترنت", "محفوظ", "مجتمع", "storage", "sync"]
+      "description": "حجم البيانات وإدارة التنزيلات",
+      "keywords": ["تخزين", "كاش", "مزامنة", "بيانات", "إنترنت", "storage", "sync"]
     },
-    "a11y": {
-      "title": "إمكانية الوصول",
-      "description": "تخصيص تجربة القراءة والتفاعل",
-      "keywords": ["وصول", "تباين", "صوت", "اهتزاز", "حركة", "خط", "accessibility"]
+    "legal": {
+      "title": "المركز القانوني",
+      "description": "السياسات والشروط والضمانات",
+      "keywords": ["قانون", "سياسة", "شروط", "ضمان", "legal", "privacy", "terms"]
+    },
+    "support": {
+      "title": "الدعم والتواصل",
+      "description": "المساعدة والإبلاغ عن مشكلة",
+      "keywords": ["دعم", "مساعدة", "تواصل", "مشكلة", "support", "contact"]
     },
     "about": {
       "title": "حول Alpha",
-      "description": "معلومات التطبيق والدعم الفني",
-      "keywords": ["alpha", "إصدار", "خصوصية", "شروط", "دعم", "تقييم", "حول", "about"]
+      "description": "معلومات التطبيق والتحديثات",
+      "keywords": ["alpha", "إصدار", "حول", "about"]
+    },
+    "logout": {
+      "title": "تسجيل الخروج",
+      "description": "إدارة جلساتك الحالية",
+      "keywords": ["خروج", "تسجيل", "logout"]
     },
     "heroKeywords": ["مركز", "تحكم", "أمان", "خصوصية", "hero", "score", "control"],
     "trustKeywords": ["ثقة", "أمان", "خصوصية", "حقوق", "شفافية", "trust", "safety"]
@@ -68,65 +92,106 @@
   "labels": {
     "security": "الأمان",
     "privacy": "الخصوصية",
-    "privateMessages": "رسائل خاصة",
-    "spiritual": "روحيات",
+    "privateMessages": "الرسائل",
+    "spiritual": "الروحيات",
     "church": "الكنيسة",
     "community": "المجتمع",
-    "spiritualPrefs": "تفضيلات روحية",
-    "savedContent": "المحتوى المحفوظ"
+    "spiritualPrefs": "المحتوى الروحي",
+    "savedContent": "المحتوى المحفوظ",
+    "accountProtection": "حماية الحساب",
+    "accountRecovery": "استرداد الحساب",
+    "devicesAndSessions": "الأجهزة والجلسات",
+    "securityGuarantees": "ضمانات الأمان",
+    "visibilityAndData": "الظهور والبيانات",
+    "dataManagement": "إدارة البيانات",
+    "blocking": "الحظر",
+    "bible": "الكتاب المقدس"
   },
   "rows": {
+    "languageArabic": { "label": "العربية", "subtitle": "لغة واجهة التطبيق" },
+    "languageEnglish": { "label": "English", "subtitle": "App interface language" },
+    "themeLight": { "label": "الوضع الفاتح", "subtitle": "Alpha Cream" },
+    "themeDark": { "label": "الوضع الداكن", "subtitle": "Alpha Dark" },
+    
+    "notifyVerse": { "label": "آية اليوم", "subtitle": "إشعار يومي بآية مختارة" },
+    "notifyPrayer": { "label": "صلاة اليوم", "subtitle": "تذكير يومي بالصلاة" },
+    "notifySaint": { "label": "قديس اليوم", "subtitle": "تعرف على قديس اليوم" },
+    "notifyKatameros": { "label": "القطمارس", "subtitle": "قراءات اليوم" },
+    "notifyMeetings": { "label": "إعلانات الكنيسة", "subtitle": "أخبار وإعلانات هامة" },
+    "notifyEvents": { "label": "المناسبات والأعياد", "subtitle": "تذكير بالمناسبات الكنسية" },
+    "notifyServices": { "label": "الاجتماعات والخدمات", "subtitle": "مواعيد اجتماعاتك" },
+    "notifyDonations": { "label": "التبرعات", "subtitle": "حملات التبرع والعطاء" },
+    "notifyMessages": { "label": "الرسائل", "subtitle": "رسائل خاصة جديدة" },
+    "notifyPrayerRequests": { "label": "طلبات الصلاة", "subtitle": "طلبات صلاة من المجتمع" },
+    "notifyCommunity": { "label": "المجتمع العام", "subtitle": "أخبار المجتمع" },
+    "notifyInteractions": { "label": "الإعجابات والتعليقات", "subtitle": "تفاعلات على منشوراتك" },
+
     "biometric": { "label": "Face ID / Touch ID", "subtitle": "فتح التطبيق بالبصمة" },
-    "twoFactor": { "label": "التحقق بخطوتين", "subtitle": "حماية إضافية عند تسجيل الدخول" },
-    "registeredDevices": { "label": "الأجهزة المسجلة" },
+    "passkeys": { "label": "Passkeys", "subtitle": "تسجيل الدخول بدون كلمة مرور" },
+    "changePassword": { "label": "تغيير كلمة المرور", "subtitle": "تحديث كلمة المرور الحالية" },
+    "twoFactor": { "label": "التحقق بخطوتين", "subtitle": "حماية إضافية لحسابك" },
+    "recoveryCodes": { "label": "Recovery Codes", "subtitle": "رموز استرداد الحساب" },
+    "trustedContact": { "label": "Trusted Contact", "subtitle": "جهة اتصال موثوقة" },
+    "churchVerification": { "label": "Church Verification Recovery", "subtitle": "استرداد عبر الكنيسة" },
+    "recoveryEmail": { "label": "البريد الإلكتروني", "subtitle": "البريد المستخدم للاسترداد" },
+    "recoveryPhone": { "label": "رقم الهاتف", "subtitle": "رقم الهاتف للاسترداد" },
+    "registeredDevices": { "label": "الأجهزة المسجلة", "subtitle": "إدارة أجهزتك" },
+    "lastLogin": { "label": "آخر تسجيل دخول", "subtitle": "سجل نشاط الدخول" },
     "logoutAllDevices": { "label": "تسجيل الخروج من جميع الأجهزة", "subtitle": "إنهاء كل الجلسات النشطة" },
-    "activeSessions": "جلسات تسجيل الدخول النشطة",
+    "howWeProtect": { "label": "كيف نحمي بياناتك", "subtitle": "تعرف على طرق الحماية" },
+    "securityPolicy": { "label": "سياسة الأمان", "subtitle": "قواعد الأمان المتبعة" },
+    "currentSecurityLevel": { "label": "مستوى الأمان الحالي", "subtitle": "تقييم أمان حسابك" },
+
+    "hidePhone": { "label": "إظهار أو إخفاء رقم الهاتف", "subtitle": "التحكم في ظهور رقمك" },
+    "hideEmail": { "label": "إظهار أو إخفاء البريد الإلكتروني", "subtitle": "التحكم في ظهور بريدك" },
+    "hideChurch": { "label": "إظهار أو إخفاء الكنيسة", "subtitle": "التحكم في ظهور كنيستك" },
+    "hideBirthdate": { "label": "إظهار أو إخفاء تاريخ الميلاد", "subtitle": "التحكم في ظهور تاريخ ميلادك" },
+    "whoCanMessage": { "label": "من يمكنه مراسلتي", "subtitle": "تحديد من يرسل لك رسائل" },
+    "receivePrivateMessages": { "label": "استقبال الرسائل الخاصة", "subtitle": "تفعيل أو تعطيل الرسائل" },
+    "autoDeleteMessages": { "label": "الحذف التلقائي للرسائل", "subtitle": "حذف الرسائل بعد مدة" },
+    "downloadData": { "label": "تنزيل بياناتي", "subtitle": "الحصول على نسخة من بياناتك" },
+    "requestDataDeletion": { "label": "طلب حذف بياناتي", "subtitle": "مسح جميع بياناتك" },
+    "deleteAccount": { "label": "حذف الحساب", "subtitle": "إغلاق حسابك نهائياً" },
     "blockedUsers": { "label": "المستخدمون المحظورون", "subtitle": "إدارة قائمة الحظر" },
-    "profileVisibility": "من يرى ملفي الشخصي",
-    "whoCanMessage": "من يستطيع مراسلتي",
-    "hidePhone": "إخفاء رقم الهاتف",
-    "hideEmail": "إخفاء البريد الإلكتروني",
-    "hideChurch": "إخفاء الكنيسة",
-    "hideBirthdate": "إخفاء تاريخ الميلاد",
-    "messageDeleteDuration": "مدة حذف الرسائل الافتراضية",
-    "blockStrangers": "منع استقبال رسائل الغرباء",
-    "notifyVerse": "آية اليوم",
-    "notifyPrayer": "صلاة اليوم",
-    "notifySaint": "قديس اليوم",
-    "notifyKatameros": "القطمارس",
-    "notifyMeetings": "الاجتماعات",
-    "notifyTrips": "الرحلات",
-    "notifyPrayerRequests": "طلبات الصلاة",
-    "notifyComments": "التعليقات",
-    "notifyReplies": "الردود",
-    "notifyMentions": "الإشارات",
-    "bibleFontSize": "حجم خط القراءة",
-    "bibleFontFamily": "نوع خط القراءة",
-    "bibleSaveLastRead": "حفظ آخر قراءة",
-    "bibleAutoscrollSpeed": "سرعة التمرير التلقائي",
-    "biblePreferredTranslation": "الترجمة المفضلة",
-    "bibleShowVerseNumbers": "إظهار أرقام الآيات",
-    "savedChurches": { "title": "الكنائس المحفوظة", "subtitle": "كنائسك المفضلة" },
-    "favoritePriests": { "label": "الكهنة المفضلون", "subtitle": "قائمة الكهنة المتابَعين" },
-    "favoriteServants": { "label": "الخدام المفضلون", "subtitle": "خدم وخدّام مميزون" },
-    "savedMeetings": { "label": "الاجتماعات المحفوظة", "subtitle": "اجتماعاتك القادمة" },
-    "prayerReminder": "تذكير الصلاة",
-    "prayerHours": { "label": "ساعات الصلاة المفضلة", "subtitle": "الإعداد قريباً" },
-    "prayerSilentMode": "وضع الصمت أثناء الصلاة",
-    "prayerBedtimeReminder": "تذكير صلاة النوم",
-    "prayerMorningReminder": "تذكير صلاة باكر",
-    "localDataSize": { "label": "حجم البيانات المحلية", "subtitle": "~24 ميجابايت" },
-    "clearCache": { "label": "مسح الكاش", "subtitle": "تحرير مساحة التخزين" },
-    "syncNow": { "label": "مزامنة الآن", "subtitle": "مزامنة مع السحابة" },
-    "lastSync": "آخر مزامنة",
-    "offlineDownload": { "label": "تحميل المحتوى للاستخدام بدون إنترنت", "subtitle": "الكتاب المقدس والأجبية" },
-    "savedPosts": { "label": "المحتوى المحفوظ", "subtitle": "منشورات ومواد محفوظة" },
-    "likedPosts": { "label": "المنشورات المعجب بها", "subtitle": "تفاعلاتك في المجتمع" },
-    "friendRequests": { "label": "طلبات الصداقة", "subtitle": "إدارة طلبات التواصل" },
-    "largeText": "تكبير الخط",
-    "highContrast": "التباين العالي",
-    "screenReader": "القراءة الصوتية",
-    "haptics": "الاهتزازات"
+    "sentReports": { "label": "البلاغات المرسلة", "subtitle": "متابعة بلاغاتك" },
+
+    "bibleFontSize": { "label": "حجم الخط", "subtitle": "تكبير أو تصغير النص" },
+    "bibleFontFamily": { "label": "نوع الخط", "subtitle": "تغيير شكل الخط" },
+    "bibleAutoscrollSpeed": { "label": "التمرير التلقائي", "subtitle": "سرعة التمرير" },
+    "smartReadingMode": { "label": "وضع القراءة الذكي", "subtitle": "تعديل الإضاءة والتباين" },
+    "reduceMotion": { "label": "تقليل الحركة", "subtitle": "إيقاف التأثيرات الحركية" },
+    "biblePreferredTranslation": { "label": "الترجمة المفضلة", "subtitle": "تغيير ترجمة الكتاب المقدس" },
+    "showDiacritics": { "label": "إظهار التشكيل", "subtitle": "عرض التشكيل في النصوص" },
+    "bibleSaveLastRead": { "label": "حفظ آخر موضع قراءة", "subtitle": "العودة لنفس المكان لاحقاً" },
+
+    "currentChurch": { "label": "الكنيسة الحالية", "subtitle": "عرض كنيستك المسجلة" },
+    "membershipStatus": { "label": "حالة العضوية", "subtitle": "حالة انضمامك للكنيسة" },
+    "joinRequests": { "label": "طلبات الانضمام", "subtitle": "متابعة طلبات الانضمام" },
+    "transferRequests": { "label": "طلبات النقل", "subtitle": "نقل العضوية لكنيسة أخرى" },
+    "rolesAndServices": { "label": "الأدوار والخدمات", "subtitle": "خدماتك في الكنيسة" },
+
+    "dataUsage": { "label": "حجم البيانات المستخدمة", "subtitle": "مساحة التخزين المستهلكة" },
+    "manageDownloads": { "label": "إدارة التنزيلات", "subtitle": "المحتوى المحمل محلياً" },
+    "clearTempFiles": { "label": "حذف الملفات المؤقتة", "subtitle": "تفريغ ذاكرة التخزين المؤقت" },
+    "cleanStorage": { "label": "تنظيف التخزين", "subtitle": "تحرير مساحة إضافية" },
+
+    "privacyPolicy": { "label": "سياسة الخصوصية", "subtitle": "كيف نتعامل مع بياناتك" },
+    "termsConditions": { "label": "الشروط والأحكام", "subtitle": "شروط استخدام التطبيق" },
+    "communityGuidelines": { "label": "إرشادات المجتمع", "subtitle": "قواعد التفاعل والمشاركة" },
+    "securityGuaranteesLegal": { "label": "ضمانات الأمان", "subtitle": "التزاماتنا تجاه أمانك" },
+
+    "reportProblem": { "label": "الإبلاغ عن مشكلة", "subtitle": "أخبرنا عن أي خلل" },
+    "suggestFeature": { "label": "اقتراح ميزة جديدة", "subtitle": "شاركنا أفكارك" },
+    "contactUs": { "label": "تواصل معنا", "subtitle": "فريق الدعم الفني" },
+    "faq": { "label": "الأسئلة الشائعة", "subtitle": "إجابات لاستفساراتك" },
+
+    "appVersion": { "label": "إصدار التطبيق", "subtitle": "رقم الإصدار الحالي" },
+    "changelog": { "label": "سجل التحديثات", "subtitle": "ما الجديد في هذا الإصدار" },
+    "appInfo": { "label": "معلومات التطبيق", "subtitle": "تفاصيل حول Alpha" },
+    "openSourceLicenses": { "label": "التراخيص مفتوحة المصدر", "subtitle": "المكتبات المستخدمة" },
+
+    "logoutThisDevice": { "label": "تسجيل الخروج من هذا الجهاز", "subtitle": "إنهاء الجلسة الحالية" },
+    "logoutAllDevicesAction": { "label": "تسجيل الخروج من جميع الأجهزة", "subtitle": "حماية حسابك بالكامل" }
   },
   "options": {
     "everyone": "الجميع",

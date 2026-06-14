@@ -1,19 +1,7 @@
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import splashPhase1 from "@/assets/splash-phase1.png";
-
-// =====================================================================
-// TEMPORARY TEST MODE
-// ---------------------------------------------------------------------
-// Splash, Onboarding and Interests screens are temporarily bypassed so
-// the app launches directly into the Home screen for fast testing and
-// external link navigation.
-//
-// Nothing is deleted — to restore the original flow, set
-// TEMPORARY_TEST_MODE to `false` below. The original SplashScreen
-// component is preserved untouched underneath.
-// =====================================================================
-const TEMPORARY_TEST_MODE = true;
+import { hasSeenOnboarding } from "@/components/onboarding/AlphaOnboarding";
 
 export const Route = createFileRoute("/")({
   ssr: false,
@@ -27,11 +15,12 @@ export const Route = createFileRoute("/")({
 });
 
 function RouteEntry() {
-  // TEMPORARY TEST MODE — go straight to Home.
-  if (TEMPORARY_TEST_MODE) {
-    return <Navigate to="/home" replace />;
-  }
-  return <SplashScreen />;
+  // TODO: Re-enable onboarding completion persistence after final approval.
+  // Temporarily always show onboarding during development.
+  // Restore the hasSeenOnboarding() guard once design is fully approved:
+  //   if (!hasSeenOnboarding()) return <Navigate to="/intro" replace />;
+  //   return <Navigate to="/home" replace />;
+  return <Navigate to="/intro" replace />;
 }
 
 function SplashScreen() {

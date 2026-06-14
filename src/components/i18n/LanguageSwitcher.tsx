@@ -18,10 +18,9 @@ export function LanguageSwitcher({ className }: { className?: string }) {
     <div className={cn("rounded-[18px] border border-[#efe2c4]/90 bg-white/55 px-4 py-3.5", className)}>
       <div className="mb-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 text-[#1a6b50]">
-          <Languages className="h-4 w-4" strokeWidth={2.4} />
-          <span className="text-[12px] font-extrabold">{t("language.label")}</span>
+          <span className="text-[13px] font-bold text-[#3a2a18]">{t("language.label")}</span>
         </div>
-        <span className="text-[10px] font-medium text-[#6a543a]">{t("language.switchHint")}</span>
+        <span className="text-[11px] font-medium text-[#6a543a]">{t("language.switchHint")}</span>
       </div>
 
       <div className="grid grid-cols-2 gap-2">

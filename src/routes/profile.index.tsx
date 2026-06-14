@@ -860,12 +860,12 @@ function ProfileScreen() {
       />
       <CopticWatermark />
 
-      <div className="relative mx-auto w-full max-w-[440px] px-4 pb-36 pt-[max(env(safe-area-inset-top),10px)]">
+      <div className="relative mx-auto w-full max-w-[440px] px-4 pb-36">
         <ChurchFrame />
 
         <div className="relative z-10">
-          <AlphaHeaderShell className="pb-0 pt-[max(env(safe-area-inset-top),10px)]">
-            <AlphaHeader variant="internal" backTo="/home" title="الملف الشخصي" />
+          <AlphaHeaderShell className="pb-0">
+            <AlphaHeader variant="main" title="الملف الشخصي" />
           </AlphaHeaderShell>
 
           <div className="mt-3 mb-2 flex justify-center">

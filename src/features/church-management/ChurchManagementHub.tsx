@@ -166,9 +166,7 @@ export function ChurchManagementHub() {
       if (!session?.user?.id) {
         setSessionUserId(null);
         setMembership(null);
-        if (import.meta.env.DEV) {
-          navigate({ to: "/dev/auth", replace: true });
-        }
+        navigate({ to: "/login", replace: true });
         return;
       }
 

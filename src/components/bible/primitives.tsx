@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useRouter } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 
 /**
@@ -237,6 +237,25 @@ export function BackButton({
   compact?: boolean;
   tone?: "light" | "dark";
 }) {
+  const router = useRouter();
+
+  const handleBack = React.useCallback(() => {
+    const idx =
+      typeof window !== "undefined"
+        ? (((window.history.state as Record<string, unknown>)?.idx as number) ?? 0)
+        : 0;
+    if (idx > 0) {
+      router.history.back();
+      return;
+    }
+    if (onBack) { onBack(); return; }
+    if (to) {
+      void router.navigate({ to: to as any, params: params as any });
+      return;
+    }
+    router.history.back();
+  }, [router, to, params, onBack]);
+
   const inner = compact ? (
     <span
       aria-label={label}
@@ -257,18 +276,12 @@ export function BackButton({
       {label}
     </span>
   );
-  if (to) {
-    return (
-      <Link to={to as any} params={params as any} aria-label={label} className="inline-block active:scale-95 transition-transform">
-        {inner}
-      </Link>
-    );
-  }
+
   return (
     <button
       type="button"
       aria-label={label}
-      onClick={onBack ?? (() => history.back())}
+      onClick={handleBack}
       className="inline-block active:scale-95 transition-transform"
     >
       {inner}

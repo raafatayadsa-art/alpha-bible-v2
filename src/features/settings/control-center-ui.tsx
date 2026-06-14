@@ -6,9 +6,11 @@ import {
   Check,
   ChevronDown,
   ChevronLeft,
+  Lock,
   Monitor,
   Moon,
   Search,
+  Shield,
   Smartphone,
   Sun,
 } from "lucide-react";
@@ -16,6 +18,8 @@ import { AlphaIcon3D } from "@/components/controls/AlphaIcon3D";
 import { AlphaPremiumIcon } from "@/components/controls/AlphaPremiumIcon";
 import { cn } from "@/lib/utils";
 import type { SecurityLabelKey } from "./settings-store";
+import { getCurrentUser } from "@/features/church/current-user";
+import alphaShieldImg from "@/assets/alpha-shield.png";
 
 export function GlassCard({
   children,
@@ -116,7 +120,7 @@ export function PremiumSectionCard({
           )}
         >
           <div className="overflow-hidden">
-            <div className="border-t border-[#efe2c4]/55 bg-white/10 px-1.5 pb-2 pt-1 backdrop-blur-sm">
+            <div className="border-t border-[#efe2c4]/55 bg-white/10 px-4 pb-4 pt-3 backdrop-blur-sm [&>*:last-child]:mb-0">
               {children}
             </div>
           </div>
@@ -136,21 +140,10 @@ export function DarkModeToggle({
   const { t } = useTranslation("settings");
 
   return (
-    <div className="flex items-center gap-3.5 rounded-[18px] px-4 py-3.5 transition hover:bg-white/25">
-      <div
-        className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]"
-        style={{
-          background: checked
-            ? "linear-gradient(145deg, #3a2a1844, #3a2a1818)"
-            : "linear-gradient(145deg, #d8a83a44, #d8a83a18)",
-          borderColor: checked ? "#3a2a1855" : "#d8a83a55",
-        }}
-      >
-        <Moon className={cn("h-5 w-5 transition-colors", checked ? "text-[#e7c97a]" : "text-[#8a5a14]")} />
-      </div>
-      <div className="min-w-0 flex-1 text-start">
-        <p className="text-[13px] font-extrabold text-[#2a1f12]">{t("darkMode.title")}</p>
-        <p className="mt-0.5 text-[10.5px] text-[#6a543a]">
+    <div className="mb-3.5 flex items-center justify-between gap-4 rounded-[18px] border border-[#efe2c4]/40 bg-white/40 px-4 py-4 shadow-[0_2px_10px_-4px_rgba(120,80,30,0.08)] backdrop-blur-sm transition-all hover:bg-white/50">
+      <div className="min-w-0 flex-1 text-right">
+        <p className="text-[13px] font-bold text-[#3a2a18]">{t("darkMode.title")}</p>
+        <p className="mt-0.5 text-[11px] text-[#6a543a] leading-snug">
           {checked ? t("darkMode.enabled") : t("darkMode.disabled")}
         </p>
       </div>
@@ -161,16 +154,14 @@ export function DarkModeToggle({
         aria-label={t("darkMode.ariaLabel")}
         onClick={() => onChange(!checked)}
         className={cn(
-          "relative h-[30px] w-[52px] shrink-0 rounded-full transition-colors duration-300",
-          checked
-            ? "bg-gradient-to-l from-[#3a2a18] to-[#5a4630]"
-            : "bg-[#d8cdb8]",
+          "relative h-7 w-12 shrink-0 rounded-full transition-colors duration-300",
+          checked ? "bg-gradient-to-l from-[#1f6e54] to-[#3eb482]" : "bg-[#d8cdb8]",
         )}
       >
         <span
           className={cn(
-            "absolute top-[3px] h-[24px] w-[24px] rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.18)] transition-all duration-300 ease-out",
-            checked ? "right-[25px]" : "right-[3px]",
+            "absolute top-0.5 h-6 w-6 rounded-full bg-white shadow-md transition-all duration-300",
+            checked ? "right-[22px]" : "right-0.5",
           )}
         />
       </button>
@@ -226,10 +217,10 @@ export function ToggleRow({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-[16px] px-3 py-2.5">
+    <div className="mb-3.5 flex items-center justify-between gap-4 rounded-[18px] border border-[#efe2c4]/40 bg-white/40 px-4 py-4 shadow-[0_2px_10px_-4px_rgba(120,80,30,0.08)] backdrop-blur-sm transition-all hover:bg-white/50">
       <div className="min-w-0 flex-1 text-right">
-        <p className="text-[12.5px] font-bold text-[#3a2a18]">{label}</p>
-        {subtitle && <p className="text-[10px] text-[#6a543a]">{subtitle}</p>}
+        <p className="text-[13px] font-bold text-[#3a2a18]">{label}</p>
+        {subtitle && <p className="mt-0.5 text-[11px] text-[#6a543a] leading-snug">{subtitle}</p>}
       </div>
       <button
         type="button"
@@ -264,16 +255,16 @@ export function SelectRow({
   onChange: (v: string) => void;
 }) {
   return (
-    <div className="px-3 py-2.5">
-      <p className="mb-2 text-right text-[12px] font-bold text-[#3a2a18]">{label}</p>
-      <div className="flex flex-wrap justify-end gap-1.5">
+    <div className="mb-3.5 rounded-[18px] border border-[#efe2c4]/40 bg-white/40 px-4 py-4 shadow-[0_2px_10px_-4px_rgba(120,80,30,0.08)] backdrop-blur-sm transition-all hover:bg-white/50">
+      <p className="mb-3 text-right text-[13px] font-bold text-[#3a2a18]">{label}</p>
+      <div className="flex flex-wrap justify-end gap-2">
         {options.map((o) => (
           <button
             key={o.value}
             type="button"
             onClick={() => onChange(o.value)}
             className={cn(
-              "rounded-xl px-2.5 py-1.5 text-[10.5px] font-bold transition active:scale-95",
+              "rounded-xl px-3 py-2 text-[11px] font-bold transition active:scale-95",
               value === o.value
                 ? "bg-gradient-to-l from-[#1f6e54] to-[#3eb482] text-white shadow-sm"
                 : "border border-[#efe2c4] bg-white/60 text-[#6a543a]",
@@ -297,13 +288,13 @@ export function ActionRow({ label, subtitle, onClick, danger }: {
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center justify-between gap-3 rounded-[16px] px-3 py-2.5 text-right transition hover:bg-white/35 active:scale-[0.99]"
+      className="mb-3.5 flex w-full items-center justify-between gap-4 rounded-[18px] border border-[#efe2c4]/40 bg-white/40 px-4 py-4 text-right shadow-[0_2px_10px_-4px_rgba(120,80,30,0.08)] backdrop-blur-sm transition-all hover:bg-white/50 active:scale-[0.99]"
     >
-      <ChevronLeft className="h-4 w-4 shrink-0 text-[#b8893a]/60" />
       <div className="flex-1">
-        <p className={cn("text-[12.5px] font-bold", danger ? "text-[#EF4444]" : "text-[#3a2a18]")}>{label}</p>
-        {subtitle && <p className="text-[10px] text-[#6a543a]">{subtitle}</p>}
+        <p className={cn("text-[13px] font-bold", danger ? "text-[#EF4444]" : "text-[#3a2a18]")}>{label}</p>
+        {subtitle && <p className="mt-0.5 text-[11px] text-[#6a543a] leading-snug">{subtitle}</p>}
       </div>
+      <ChevronLeft className="h-5 w-5 shrink-0 text-[#b8893a]/60" />
     </button>
   );
 }
@@ -336,20 +327,143 @@ export function Divider() {
 
 export function SectionLabel({ children }: { children: ReactNode }) {
   return (
-    <p className="px-3 pt-1 text-[10px] font-extrabold tracking-wide text-[#c9a05a]">{children}</p>
+    <div className="mb-3.5 mt-2 flex items-center gap-3">
+      <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[#efe2c4]/70" />
+      <p className="text-[11.5px] font-extrabold tracking-wide text-[#b8893a]">{children}</p>
+      <div className="h-px flex-1 bg-gradient-to-l from-transparent to-[#efe2c4]/70" />
+    </div>
+  );
+}
+
+function PremiumShieldArc({ score, color = "#3f9d6e" }: { score: number; color?: string }) {
+  const R = 34; // Smaller radius
+  const C = 2 * Math.PI * R;
+  const dash = (score / 100) * C;
+
+  return (
+    <div className="relative mx-auto shrink-0" style={{ width: 76, height: 76 }}>
+      {/* Ambient glow */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background: `radial-gradient(circle, ${color}35, transparent 60%)`,
+          filter: "blur(12px)",
+          transform: "scale(1.3)",
+        }}
+      />
+      {/* Progress arc SVG */}
+      <svg viewBox="0 0 76 76" className="absolute inset-0 h-full w-full" fill="none">
+        <defs>
+          <linearGradient id="arcFill" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor={color} stopOpacity="0.4" />
+            <stop offset="100%" stopColor={color} stopOpacity="1" />
+          </linearGradient>
+        </defs>
+        {/* Track */}
+        <circle cx="38" cy="38" r={R} stroke={`${color}18`} strokeWidth="3.5" strokeLinecap="round" />
+        {/* Progress */}
+        <circle
+          cx="38"
+          cy="38"
+          r={R}
+          stroke="url(#arcFill)"
+          strokeWidth="3.5"
+          strokeDasharray={`${dash} ${C}`}
+          strokeLinecap="round"
+          transform="rotate(-90 38 38)"
+        />
+      </svg>
+
+      {/* Shield container — Image */}
+      <div
+        className="absolute grid place-items-center overflow-hidden rounded-full"
+        style={{
+          inset: 7,
+          background: "#fff",
+          border: `1.5px solid ${color}50`,
+          boxShadow: `inset 0 2px 4px rgba(0,0,0,0.08), 0 6px 16px -4px ${color}80`,
+        }}
+      >
+        <img 
+          src={alphaShieldImg} 
+          alt="Shield" 
+          className="h-[140%] w-[140%] object-cover"
+          style={{ objectPosition: "center 15%" }} 
+        />
+        {/* Inner glass overlay */}
+        <div
+          aria-hidden
+          className="absolute inset-0 rounded-full"
+          style={{
+            background: "linear-gradient(180deg, rgba(255,255,255,0.25) 0%, transparent 50%, rgba(0,0,0,0.05) 100%)",
+            boxShadow: "inset 0 1px 1px rgba(255,255,255,0.6)",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function HeroStatChip({
+  icon: Icon,
+  label,
+  value,
+  accent,
+}: {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+  accent: string;
+}) {
+  return (
+    <div
+      className="flex flex-col items-center gap-1.5 rounded-[18px] px-1.5 py-2.5 backdrop-blur-md transition-transform hover:scale-[1.02]"
+      style={{
+        background: "linear-gradient(165deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.4) 100%)",
+        border: "1px solid rgba(255,255,255,0.9)",
+        boxShadow: "inset 0 1px 1px rgba(255,255,255,1), 0 6px 16px -4px rgba(120,80,30,0.12)",
+      }}
+    >
+      {/* 3D icon */}
+      <div
+        className="relative grid h-[32px] w-[32px] shrink-0 place-items-center overflow-hidden"
+        style={{
+          borderRadius: 11,
+          background: `radial-gradient(130% 100% at 30% 20%, ${accent}88, ${accent}22 75%)`,
+          border: `1px solid ${accent}55`,
+          boxShadow: `inset 0 2px 2px rgba(255,255,255,0.8), inset 0 -4px 8px ${accent}40, 0 6px 12px -4px ${accent}90`,
+        }}
+      >
+        <div
+          aria-hidden
+          className="absolute inset-x-0 top-0 h-1/2"
+          style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.65), transparent)" }}
+        />
+        <Icon className="relative h-4 w-4" style={{ color: accent, filter: "drop-shadow(0 2px 2px rgba(0,0,0,0.2))" }} strokeWidth={2.5} />
+      </div>
+      <div className="flex flex-col items-center w-full">
+        <span className="w-full truncate text-center font-arabic-serif text-[11px] font-extrabold leading-tight text-[#2a1f12]">
+          {value}
+        </span>
+        <span className="font-arabic-serif text-center text-[9px] font-bold text-[#8a6a3a]">{label}</span>
+      </div>
+    </div>
   );
 }
 
 export function ControlCenterHero({
   score,
   scoreLabelKey,
+  devicesCount = 1,
 }: {
   score: number;
   scoreLabelKey: SecurityLabelKey;
-  devices?: number;
-  verified?: boolean;
+  devicesCount?: number;
 }) {
   const { t } = useTranslation("settings");
+  const user = getCurrentUser();
+
   const protectionKeyMap: Record<SecurityLabelKey, string> = {
     excellent: "security.protectionExcellent",
     veryGood: "security.protectionVeryGood",
@@ -357,48 +471,141 @@ export function ControlCenterHero({
     needsImprovement: "security.protectionNeedsImprovement",
   };
   const badgeText = t(protectionKeyMap[scoreLabelKey]);
+  const scoreColor = score >= 80 ? "#1f6e54" : score >= 55 ? "#c98a3c" : "#c14545";
 
   return (
-    <GlassCard
-      accent="#d8a83a"
-      className="relative mb-4 overflow-hidden p-0 animate-in fade-in slide-in-from-bottom-2 duration-400"
+    <div
+      className="relative mb-3 overflow-hidden rounded-[22px] animate-in fade-in slide-in-from-bottom-2 duration-400"
+      style={{
+        background: "linear-gradient(160deg, #fcf6ea 0%, #f6edd9 50%, #ede2cb 100%)",
+        border: "1px solid rgba(239,226,196,0.95)",
+        boxShadow:
+          "0 18px 40px -16px rgba(100,60,20,0.45), 0 0 30px -15px rgba(63,157,110,0.15), inset 0 1px 0 rgba(255,255,255,0.94)",
+      }}
     >
+      {/* Layered ambient glows */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(75% 55% at 50% -8%, rgba(231,201,122,0.28), transparent 62%)," +
-            "radial-gradient(50% 45% at 100% 100%, rgba(216,168,58,0.12), transparent 65%)," +
-            "linear-gradient(165deg, #fffdf8 0%, #faf3e6 48%, #f3e8d4 100%)",
+            "radial-gradient(60% 45% at 50% -5%, rgba(216,168,58,0.18), transparent 58%)," +
+            "radial-gradient(50% 55% at 50% 108%, rgba(63,157,110,0.12), transparent 62%)," +
+            "radial-gradient(35% 38% at 96% 4%, rgba(216,168,58,0.1), transparent 55%)",
         }}
       />
-      <div className="relative px-4 py-4 text-center">
-        <h1
-          className="font-arabic-serif text-[32px] font-extrabold leading-[1.1]"
-          style={{
-            backgroundImage: "linear-gradient(90deg, #8a5a14 0%, #c9a05a 48%, #e7c97a 100%)",
-            WebkitBackgroundClip: "text",
-            backgroundClip: "text",
-            color: "transparent",
-          }}
-        >
-          {t("hero.title")}
-        </h1>
-        <p className="mt-1 text-[11px] font-extrabold tracking-[0.14em] text-[#a67c32]">
-          Alpha Control Center
-        </p>
-        <p className="mx-auto mt-2 max-w-[300px] text-[13.5px] font-semibold leading-relaxed text-[#3f3224]">
-          {t("hero.subtitle")}
-        </p>
+      {/* Top inner shine */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-[48%] rounded-t-[22px]"
+        style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.5), transparent)" }}
+      />
 
-        <div className="mt-3 inline-flex items-center gap-2.5 rounded-full border border-[#efe2c4]/90 bg-[#fffdf8]/80 px-3 py-1.5 shadow-[0_6px_18px_-14px_rgba(120,80,30,0.35)]">
-          <AlphaPremiumIcon kind="security" size="md" color="#3f9d6e" />
-          <span className="text-[12.5px] font-bold text-[#2a1f12]">{badgeText}</span>
-          <span className="text-[13px] font-extrabold tabular-nums text-[#1f6e54]">{score}%</span>
+      <div className="relative px-3 pt-3 pb-3.5">
+
+        {/* ── Identity bar ── */}
+        <div className="mb-2 flex items-center gap-2.5">
+          <div className="relative shrink-0">
+            <img
+              src={user.avatarUrl}
+              alt=""
+              className="h-9 w-9 rounded-full object-cover"
+              style={{
+                border: "1.5px solid rgba(216,168,58,0.55)",
+                boxShadow: "0 3px 8px rgba(120,80,30,0.2), inset 0 1px 0 rgba(255,255,255,0.5)",
+              }}
+            />
+            <div
+              className="absolute -bottom-0.5 -right-0.5 h-[10px] w-[10px] rounded-full bg-[#3eb482]"
+              style={{ border: "1.5px solid #f6edd9", boxShadow: "0 2px 5px rgba(63,180,130,0.4)" }}
+            />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[9px] font-extrabold uppercase tracking-[0.15em] text-[#a67c32]">
+              Alpha · Control Center
+            </p>
+            <p className="mt-0.5 truncate font-arabic-serif text-[13.5px] font-extrabold leading-tight text-[#2a1f12]">
+              {user.name || "مستخدم Alpha"}
+            </p>
+          </div>
+          <div
+            className="shrink-0 rounded-full px-2.5 py-1 flex items-center gap-1"
+            style={{
+              background: "linear-gradient(160deg, #d8a83a 0%, #b8893a 100%)",
+              border: "1px solid #e7c97a",
+              boxShadow: "inset 0 1px 1px rgba(255,255,255,0.6), 0 4px 10px -2px rgba(184,137,58,0.5)",
+            }}
+          >
+            <span className="text-[9.5px] font-extrabold text-white drop-shadow-sm">عضو Alpha</span>
+          </div>
+        </div>
+
+        {/* Gold divider */}
+        <div
+          className="mb-2.5 h-px"
+          style={{ background: "linear-gradient(90deg, transparent, rgba(216,168,58,0.3), transparent)" }}
+        />
+
+        {/* ── Premium Shield + Title ── */}
+        <div className="mb-2.5 flex items-center gap-3">
+          <PremiumShieldArc score={score} color="#3f9d6e" />
+
+          <div className="min-w-0 flex-1">
+            <h1
+              className="font-arabic-serif text-[19px] font-extrabold leading-[1.2]"
+              style={{
+                backgroundImage: "linear-gradient(135deg, #6b21a8 0%, #9333ea 50%, #c084fc 100%)",
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                color: "transparent",
+              }}
+            >
+              {t("hero.title")}
+            </h1>
+
+            {/* Badge inline under title */}
+            <div
+              className="mt-1.5 inline-flex items-center gap-1.5 rounded-full px-2 py-1 backdrop-blur-sm"
+              style={{
+                background: "linear-gradient(160deg, rgba(255,255,255,0.8), rgba(255,255,255,0.5))",
+                border: "1px solid rgba(255,255,255,0.9)",
+                boxShadow: `inset 0 1px 0 rgba(255,255,255,1), 0 3px 8px -4px rgba(63,157,110,0.25)`,
+              }}
+            >
+              <span className="font-arabic-serif text-[10.5px] font-bold text-[#2a1f12]">{badgeText}</span>
+              <span
+                className="font-arabic-serif text-[11px] font-extrabold tabular-nums"
+                style={{ color: scoreColor }}
+              >
+                {score}%
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Glassy stat chips ── */}
+        <div className="grid grid-cols-3 gap-1.5">
+          <HeroStatChip
+            icon={Smartphone}
+            label={t("hero.statsDevices")}
+            value={String(devicesCount)}
+            accent="#5b8fd1"
+          />
+          <HeroStatChip
+            icon={Shield}
+            label={t("hero.statsProtection")}
+            value={t(`security.${scoreLabelKey}`)}
+            accent="#3f9d6e"
+          />
+          <HeroStatChip
+            icon={Lock}
+            label={t("hero.statsPrivacy")}
+            value={t("hero.statsPrivacyValue")}
+            accent="#8a6ec1"
+          />
         </div>
       </div>
-    </GlassCard>
+    </div>
   );
 }
 

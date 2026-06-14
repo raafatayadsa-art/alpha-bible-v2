@@ -70,7 +70,7 @@ function ChaptersPage() {
 
       <div className="relative mx-auto w-full max-w-[440px] px-4 pt-[max(env(safe-area-inset-top),12px)] pb-36">
         <header className="flex items-center justify-between gap-2 pt-2">
-          <BackButton to="/books" compact tone="light" />
+          <BackButton to="/bible" compact tone="light" />
           <div className="text-center min-w-0 flex-1">
             <h1 className="font-arabic-serif text-[17px] font-bold text-[#3a2a18] truncate">
               {displayName(book)}

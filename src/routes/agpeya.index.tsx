@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { ChevronLeft, Bookmark, Clock, BookOpen, ChevronRight, Sun, Sunset, Moon, MoonStar, Sparkles, Music2, Shield, X } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import {
@@ -174,11 +174,21 @@ function SectionTitle({ title }: { title: string }) {
 /* ---------- Screen ---------- */
 
 function AgpeyaHome() {
+  const router = useRouter();
   const current = useMemo(() => getCurrentAgpeyaPrayer(), []);
   const [last, setLast] = useState(() => readLastOpenedPrayer());
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => { setLast(readLastOpenedPrayer()); setHydrated(true); }, []);
   const { saved } = useSavedAgpeya();
+
+  const goBack = () => {
+    const idx =
+      typeof window !== "undefined"
+        ? (((window.history.state as Record<string, unknown>)?.idx as number) ?? 0)
+        : 0;
+    if (idx > 0) { router.history.back(); return; }
+    void router.navigate({ to: "/home" });
+  };
   const day = getAgpeyaBySection("day");
   const night = getAgpeyaBySection("night");
   const extra = getAgpeyaBySection("extra");
@@ -212,13 +222,14 @@ function AgpeyaHome() {
           />
           {/* top controls */}
           <div className="relative z-10 mx-auto flex max-w-[480px] items-start justify-between px-4 pt-[max(env(safe-area-inset-top),12px)]">
-            <Link
-              to="/home"
+            <button
+              type="button"
+              onClick={goBack}
               aria-label="رجوع"
-              className="grid h-10 w-10 place-items-center rounded-full bg-white/85 backdrop-blur-md border border-white/70 text-[#5b3a18] shadow-[0_6px_14px_-8px_rgba(120,80,30,0.35)] active:scale-95"
+              className="grid h-10 w-10 place-items-center rounded-full bg-white/85 backdrop-blur-md border border-white/70 text-[#5b3a18] shadow-[0_6px_14px_-8px_rgba(120,80,30,0.35)] active:scale-95 transition-transform"
             >
               <ChevronLeft className="h-[18px] w-[18px] -scale-x-100" />
-            </Link>
+            </button>
             <div className="pt-1 text-center">
               <h1 className="font-arabic-serif text-[26px] font-extrabold leading-tight text-[#5b3a18] drop-shadow-[0_1px_0_rgba(255,255,255,0.7)]">
                 الأجبية

@@ -353,7 +353,7 @@ function HomeScreen() {
     { key: "katameros", title: "القطمارس", sub: "قراءات اليوم", image: cardKatameros, to: "/katameros", accent: "#4a9e6e", glyph: "Ⲁ" },
     { key: "synaxarium", title: "السنكسار", sub: "سير القديسين", image: cardSynaxarium, to: "/synaxarium", accent: "#a85450", glyph: "Ⲱ" },
     { key: "church", title: "كنيستك معاك", sub: "خدمات وفعاليات", image: cardChurch, to: "/profile/church", accent: "#5b8fd1", glyph: "Ⲁ" },
-    { key: "audio", title: "الصوتيات", sub: "ترانيم وقراءات", image: cardAudio, to: "/home", accent: "#c44569", glyph: "Ⲱ" },
+    { key: "audio", title: "الصوتيات", sub: "ترانيم وقراءات", image: cardAudio, to: "/audio", accent: "#c44569", glyph: "Ⲱ" },
     { key: "kids", title: "الأطفال", sub: "قصص وأنشطة", image: cardChildren, to: "/home", accent: "#e8b84a", glyph: "Ⲁ" },
     { key: "meditation", title: "التأملات", sub: "رحلات روحية", image: cardMeditation, to: "/home", accent: "#5b8fd1", glyph: "Ⲱ" },
   ];
@@ -362,7 +362,7 @@ function HomeScreen() {
   const daily: Daily[] = [
     { key: "prayer", title: "صلاة اليوم", sub: "ابدأ يومك بالصلاة", image: dailyPrayer, to: "/agpeya", accent: "#c98a3c" },
     { key: "med", title: "تأمل اليوم", sub: "رحلة السلام", image: dailyMeditation, to: "/home", accent: "#4a9e6e" },
-    { key: "hymn", title: "ترنيمة اليوم", sub: "ترنيمة مختارة", image: dailyHymn, to: "/home", accent: "#c44569" },
+    { key: "hymn", title: "ترنيمة اليوم", sub: "ترنيمة مختارة", image: dailyHymn, to: "/audio", accent: "#c44569" },
     { key: "cont", title: "أكمل القراءة", sub: "إنجيل يوحنا 3 · 35%", image: artReadings, to: "/books", accent: "#8a6ec1" },
   ];
 
