@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ChevronLeft, Search, MapPin, Navigation, Church,
-  X, Info, Sparkles, Clock,
+  X, Info, Clock, UserPlus,
 } from "lucide-react";
 import {
   fetchApprovedChurches,
@@ -12,6 +12,8 @@ import {
   mapsUrlForChurch,
   type DirectoryChurch,
 } from "@/features/church/churches-directory-api";
+import { getActiveMembershipChurchId } from "@/features/church/church-membership-api";
+import { JoinChurchButton } from "@/features/church/JoinChurchButton";
 import heroChurch from "@/assets/home/hero-church-premium.jpg";
 import { AlphaNotificationButton } from "@/components/navigation/AlphaNotificationButton";
 
@@ -47,6 +49,7 @@ export function DirectoryScreen() {
   const [churches, setChurches] = useState<DirectoryChurch[]>([]);
   const [loading, setLoading] = useState(true);
   const [recentIds, setRecentIds] = useState<string[]>([]);
+  const [memberChurchId, setMemberChurchId] = useState<string | null>(null);
 
   const loadChurches = useCallback(async () => {
     setLoading(true);
@@ -58,6 +61,14 @@ export function DirectoryScreen() {
   useEffect(() => {
     void loadChurches();
     setRecentIds(getRecentChurchIds());
+    void getActiveMembershipChurchId().then(setMemberChurchId);
+    const onHub = () => void getActiveMembershipChurchId().then(setMemberChurchId);
+    window.addEventListener("ab:church-hub", onHub);
+    window.addEventListener("storage", onHub);
+    return () => {
+      window.removeEventListener("ab:church-hub", onHub);
+      window.removeEventListener("storage", onHub);
+    };
   }, [loadChurches]);
 
   const filtered = useMemo(() => {
@@ -95,9 +106,26 @@ export function DirectoryScreen() {
       <Header query={query} hasQuery={!!query} />
 
       <main className="relative mx-auto w-full max-w-[440px] px-4 pt-3 space-y-5">
-        <HeroCard count={churches.length} />
+        <HeroCard count={churches.length} hasMembership={memberChurchId != null} />
 
         <SearchBar value={query} onChange={setQuery} />
+
+        {!memberChurchId ? (
+          <div
+            className="rounded-2xl border px-4 py-3 text-right backdrop-blur-xl"
+            style={{
+              background: "linear-gradient(160deg, rgba(255,255,255,0.9), rgba(232,248,240,0.85))",
+              borderColor: "rgba(31,138,90,0.25)",
+            }}
+          >
+            <div className="flex items-start gap-2">
+              <UserPlus className="mt-0.5 h-4 w-4 shrink-0 text-[#1f8a5a]" strokeWidth={2.4} />
+              <p className="text-[12.5px] font-bold leading-relaxed text-[#3a3258]">
+                اختر كنيستك واضغط «انضم للكنيسة» لربط حسابك وفتح لوحة كنيستك.
+              </p>
+            </div>
+          </div>
+        ) : null}
 
         {recent.length > 0 && !query ? (
           <SectionCarousel title="الكنائس التي زرتها مؤخراً" icon={Clock} churches={recent} />
@@ -169,7 +197,7 @@ function Header({ query, hasQuery }: { query: string; hasQuery: boolean }) {
 }
 
 /* ============================================================ */
-function HeroCard({ count }: { count: number }) {
+function HeroCard({ count, hasMembership }: { count: number; hasMembership?: boolean }) {
   return (
     <section
       className="relative overflow-hidden rounded-[28px] border backdrop-blur-xl shadow-[0_24px_50px_-24px_rgba(120,110,180,0.45),inset_0_1px_0_rgba(255,255,255,0.9)]"
@@ -191,7 +219,7 @@ function HeroCard({ count }: { count: number }) {
           ابحث عن كنيسة معتمدة
         </h2>
         <p className="mt-1 text-[12px] leading-relaxed" style={{ color: SUB }}>
-          الكنائس المعتمدة على منصة ألفا
+          {hasMembership ? "يمكنك تصفّح باقي الكنائس أو فتح كنيستك." : "الكنائس المعتمدة على منصة ألفا — انضم لكنيستك من البطاقة."}
         </p>
 
         <div className="mt-3">
@@ -373,33 +401,36 @@ function PlaceCard({ church }: { church: DirectoryChurch }) {
           </div>
         ) : null}
 
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <a
-            href={mapsUrlForChurch(church)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-1.5 h-10 rounded-full text-[12px] font-extrabold text-white active:scale-[0.98] transition-transform"
-            style={{
-              background: `linear-gradient(160deg, ${SKY}0.95), #2f5a8a)`,
-              boxShadow: `0 12px 24px -14px ${SKY}0.9)`,
-            }}
-          >
-            <Navigation className="h-3.5 w-3.5" strokeWidth={2.4} />
-            الاتجاهات
-          </a>
-          <Link
-            to="/church/directory/$placeId"
-            params={{ placeId: church.id }}
-            className="inline-flex items-center justify-center gap-1.5 h-10 rounded-full text-[12px] font-extrabold active:scale-[0.98] transition-transform border"
-            style={{
-              background: `linear-gradient(160deg, rgba(255,255,255,0.95), ${LAV}0.18))`,
-              borderColor: `${LAV}0.5)`,
-              color: "#5a3e8a",
-            }}
-          >
-            <Info className="h-3.5 w-3.5" strokeWidth={2.4} />
-            التفاصيل
-          </Link>
+        <div className="mt-3 space-y-2">
+          <JoinChurchButton churchId={church.id} churchName={church.name} compact />
+          <div className="grid grid-cols-2 gap-2">
+            <a
+              href={mapsUrlForChurch(church)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 h-10 rounded-full text-[12px] font-extrabold text-white active:scale-[0.98] transition-transform"
+              style={{
+                background: `linear-gradient(160deg, ${SKY}0.95), #2f5a8a)`,
+                boxShadow: `0 12px 24px -14px ${SKY}0.9)`,
+              }}
+            >
+              <Navigation className="h-3.5 w-3.5" strokeWidth={2.4} />
+              الاتجاهات
+            </a>
+            <Link
+              to="/church/directory/$placeId"
+              params={{ placeId: church.id }}
+              className="inline-flex items-center justify-center gap-1.5 h-10 rounded-full text-[12px] font-extrabold active:scale-[0.98] transition-transform border"
+              style={{
+                background: `linear-gradient(160deg, rgba(255,255,255,0.95), ${LAV}0.18))`,
+                borderColor: `${LAV}0.5)`,
+                color: "#5a3e8a",
+              }}
+            >
+              <Info className="h-3.5 w-3.5" strokeWidth={2.4} />
+              التفاصيل
+            </Link>
+          </div>
         </div>
       </div>
     </article>

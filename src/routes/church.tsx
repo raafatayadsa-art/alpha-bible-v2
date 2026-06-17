@@ -1,5 +1,5 @@
-import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { createFileRoute, Link, Outlet, useRouterState, useNavigate } from "@tanstack/react-router";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ArrowRight, Phone, MessageCircle, MapPin, ShieldCheck, Users,
   HandHeart, Newspaper, Radio, CalendarDays, BookOpen, Library, Heart,
@@ -57,6 +57,7 @@ import heavenlyChurch from "@/assets/home/heavenly-church.png";
 import cardAgpeya from "@/assets/home/card-agpeya.jpg";
 import cardKatameros from "@/assets/home/card-katameros.jpg";
 import cardChildren from "@/assets/home/card-children.jpg";
+import cardBible from "@/assets/home/card-bible.jpg";
 
 export const Route = createFileRoute("/church")({
   ssr: false,
@@ -150,9 +151,10 @@ function Header({ searchContext }: { searchContext?: ContextualSearchContext }) 
 /* ============================================================ */
 
 function HeroChurchCard() {
-  const { church, contacts, prayers } = useChurchDashboardData();
+  const { church, prayers, contacts } = useChurchDashboardData();
+  const [leaderPopup, setLeaderPopup] = useState<null | "call" | "message">(null);
+  const leaders = contacts.filter((c) => c.roleType === "priest" || c.roleType === "servant");
   const prayerStats = prayerStatsFromDashboard(prayers);
-  const [popup, setPopup] = useState<null | "contacts" | "messages">(null);
   const locationLine = [church.diocese, church.city].filter(Boolean).join(" · ");
   const mapsUrl =
     church.locationLat != null && church.locationLng != null
@@ -192,8 +194,8 @@ function HeroChurchCard() {
 
           {/* Floating glass actions over image */}
           <div className="absolute top-3 left-3 flex flex-col gap-2">
-            <FloatAction icon={Phone} label="اتصال" onClick={() => setPopup("contacts")} />
-            <FloatAction icon={MessageCircle} label="رسالة" onClick={() => setPopup("messages")} />
+            <FloatAction icon={Phone} label="اتصال Alpha" onClick={() => setLeaderPopup("call")} />
+            <FloatAction icon={MessageCircle} label="رسائل Alpha" onClick={() => setLeaderPopup("message")} />
             <FloatAction icon={MapPin} label="خريطة" onClick={handleMap} />
           </div>
 
@@ -260,17 +262,18 @@ function HeroChurchCard() {
 
           {/* Row 2: Statistics (dedicated row) */}
           <div className="grid grid-cols-3 gap-2">
-            <StatTile icon={Users} value={church.memberCount.toLocaleString("ar-EG")} label="عضو" tone="#5b8fd1" />
-            <StatTile icon={HandHeart} value={String(church.servantCount)} label="خادم" tone="#1f8a5a" />
-            <StatTile icon={Flame} value={String(prayerStats.active)} label="طلبات صلاة" tone="#c98a3c" />
+            <StatTile icon={Users} value={church.memberCount.toLocaleString("en-US")} label="عضو" tone="#5b8fd1" />
+            <StatTile icon={HandHeart} value={church.servantCount.toLocaleString("en-US")} label="خادم" tone="#1f8a5a" />
+            <StatTile icon={Flame} value={prayerStats.active.toLocaleString("en-US")} label="طلبات صلاة" tone="#c98a3c" />
           </div>
         </div>
       </div>
 
-      {popup === "contacts" ? (
-        <ContactsPopup contacts={contacts} onClose={() => setPopup(null)} />
-      ) : popup === "messages" ? (
-        <MessagesPopup contacts={contacts} onClose={() => setPopup(null)} />
+      {leaderPopup === "call" ? (
+        <ContactsPopup contacts={leaders} onClose={() => setLeaderPopup(null)} />
+      ) : null}
+      {leaderPopup === "message" ? (
+        <MessagesPopup contacts={leaders} onClose={() => setLeaderPopup(null)} />
       ) : null}
     </section>
   );
@@ -326,17 +329,78 @@ function StatTile({ icon: Icon, value, label, tone }: { icon: any; value: string
 /* ============================================================ */
 
 const QUICK = [
-  { key: "prayers", label: "طلبات الصلاة", icon: Heart, tone: "#8a6ec1", img: cardAgpeya, to: "/prayer-requests" },
+  { key: "news", label: "الأخبار", icon: Newspaper, tone: "#8a6ec1", img: newsCandle, to: "/church/archive" },
+  { key: "live", label: "البث المباشر", icon: Radio, tone: "#c44569", img: heavenlyChurch, comingSoon: true },
+  { key: "meetings", label: "الاجتماعات", icon: CalendarDays, tone: "#1f8a5a", img: newsMass, anchor: "church-meetings" },
   { key: "service", label: "الخدمة", icon: HandHeart, tone: "#1f8a5a", img: cardChildren, to: "/church/service" },
-  { key: "directory", label: "دليل الكنائس", icon: Church, tone: "#5b8fd1", img: cardChurch, to: "/church/directory" },
+  { key: "prayers", label: "طلبات الصلاة", icon: Heart, tone: "#8a6ec1", img: cardAgpeya, to: "/prayer-requests" },
+  { key: "library", label: "المكتبة", icon: Library, tone: "#7a4a26", img: cardBible, to: "/books" },
+  { key: "liturgy", label: "جدول القداسات", icon: BookOpen, tone: "#b8893a", img: cardKatameros, to: "/katameros" },
 ] as const;
 
-/* Shared horizontal auto-marquee for premium rails (RTL-aware). */
+type QuickItem = (typeof QUICK)[number];
+
+function QuickAccessCard({ q, onAnchor }: { q: QuickItem; onAnchor?: (id: string) => void }) {
+  const inner = (
+    <>
+      <img src={q.img} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `linear-gradient(180deg, ${q.tone}10 0%, rgba(15,10,4,0.15) 40%, rgba(15,10,4,0.85) 100%)`,
+        }}
+      />
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#e7c97a]/80 to-transparent" />
+      {"comingSoon" in q && q.comingSoon ? (
+        <span className="absolute top-2.5 left-2.5 rounded-full bg-[#3a2a18]/85 px-2 py-0.5 text-[8.5px] font-extrabold text-white">
+          قريباً
+        </span>
+      ) : null}
+      <div
+        className="absolute top-2.5 right-2.5 grid h-10 w-10 place-items-center rounded-2xl border border-white/60 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_10px_18px_-10px_rgba(0,0,0,0.45)]"
+        style={{
+          background: `linear-gradient(160deg, ${q.tone}cc, ${q.tone}88)`,
+          color: "#fff",
+        }}
+      >
+        <q.icon className="h-5 w-5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.35)]" strokeWidth={2.3} />
+      </div>
+      <div className="absolute bottom-2.5 right-2.5 left-2.5">
+        <p className="font-arabic-serif text-[12.5px] font-extrabold text-white leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.65)] [word-break:keep-all]">
+          {q.label}
+        </p>
+      </div>
+    </>
+  );
+  const cls =
+    "group shrink-0 w-[124px] h-[142px] relative rounded-3xl overflow-hidden border border-white/70 text-right active:scale-[0.96] transition-transform shadow-[0_18px_36px_-22px_rgba(120,80,30,0.55),inset_0_1px_0_rgba(255,255,255,0.85)]";
+
+  if ("comingSoon" in q && q.comingSoon) {
+    return <div className={cls + " opacity-90"}>{inner}</div>;
+  }
+  if ("anchor" in q && q.anchor) {
+    return (
+      <button type="button" className={cls} onClick={() => onAnchor?.(q.anchor)}>
+        {inner}
+      </button>
+    );
+  }
+  if ("to" in q && q.to) {
+    return (
+      <Link to={q.to} className={cls}>
+        {inner}
+      </Link>
+    );
+  }
+  return <div className={cls}>{inner}</div>;
+}
+
+/* Shared horizontal auto-marquee for premium rails (RTL-aware, optional infinite loop). */
 function useAutoMarquee(
   ref: React.RefObject<HTMLDivElement | null>,
-  opts: { speed?: number; direction?: 1 | -1; resumeMs?: number } = {}
+  opts: { speed?: number; direction?: 1 | -1; resumeMs?: number; loop?: boolean } = {},
 ) {
-  const { speed = 22, direction = 1, resumeMs = 2200 } = opts;
+  const { speed = 22, direction = 1, resumeMs = 2200, loop = false } = opts;
 
   useEffect(() => {
     const track = ref.current;
@@ -350,11 +414,16 @@ function useAutoMarquee(
       const dt = (now - last) / 1000;
       last = now;
       if (!paused && track.scrollWidth > track.clientWidth + 4) {
-        // RTL: scrollLeft is 0 at start, becomes negative scrolling toward end.
         track.scrollLeft -= direction * speed * dt;
         const max = track.scrollWidth - track.clientWidth;
-        if (track.scrollLeft <= -max + 1) track.scrollLeft = 0;
-        else if (track.scrollLeft >= 1) track.scrollLeft = -max;
+        if (loop && max > 0) {
+          const half = max / 2;
+          if (track.scrollLeft <= -half - 1) track.scrollLeft += half;
+          else if (track.scrollLeft >= 1) track.scrollLeft -= half;
+        } else {
+          if (track.scrollLeft <= -max + 1) track.scrollLeft = 0;
+          else if (track.scrollLeft >= 1) track.scrollLeft = -max;
+        }
       }
       raf = requestAnimationFrame(tick);
     };
@@ -389,64 +458,220 @@ function useAutoMarquee(
       track.removeEventListener("touchend", scheduleResume);
       track.removeEventListener("mouseleave", scheduleResume);
     };
-  }, [ref, speed, direction, resumeMs]);
+  }, [ref, speed, direction, resumeMs, loop]);
+}
+
+/** Premium infinite wheel — same motion DNA as Home Screen. */
+function Coverflow<T>({
+  items,
+  direction,
+  height,
+  cardWidthPct,
+  peekPct,
+  renderCard,
+  getKey,
+}: {
+  items: T[];
+  direction: 1 | -1;
+  height: number;
+  cardWidthPct: number;
+  peekPct: number;
+  renderCard: (item: T, isActive: boolean) => React.ReactNode;
+  getKey: (item: T) => string;
+}) {
+  const total = items.length;
+  const progressRef = useRef(0);
+  const velocityRef = useRef(0);
+  const draggingRef = useRef(false);
+  const pauseUntilRef = useRef(0);
+  const lastTsRef = useRef(0);
+  const [, force] = useState(0);
+  const rerender = useCallback(() => force((n) => (n + 1) % 1_000_000), []);
+  const dragStartXRef = useRef(0);
+  const dragStartProgRef = useRef(0);
+  const lastMoveXRef = useRef(0);
+  const lastMoveTRef = useRef(0);
+  const containerWRef = useRef(1);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  const pxPerSlot = useCallback(() => Math.max(80, (containerWRef.current * peekPct) / 100), [peekPct]);
+
+  useEffect(() => {
+    if (total < 2) return;
+    let raf = 0;
+    const autoSpeed = 0.16;
+    const tick = (ts: number) => {
+      const last = lastTsRef.current || ts;
+      const dt = Math.min(0.05, (ts - last) / 1000);
+      lastTsRef.current = ts;
+      const now = performance.now();
+      const autoActive = !draggingRef.current && now >= pauseUntilRef.current;
+      if (!draggingRef.current && velocityRef.current !== 0) {
+        progressRef.current += velocityRef.current * dt;
+        velocityRef.current *= Math.exp(-dt * 2.6);
+        if (Math.abs(velocityRef.current) < 0.02) velocityRef.current = 0;
+      }
+      if (autoActive) {
+        progressRef.current += direction * autoSpeed * dt;
+      }
+      rerender();
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [total, direction, rerender]);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      containerWRef.current = el.clientWidth || 1;
+    });
+    ro.observe(el);
+    containerWRef.current = el.clientWidth || 1;
+    return () => ro.disconnect();
+  }, []);
+
+  const onStart = (clientX: number) => {
+    draggingRef.current = true;
+    dragStartXRef.current = clientX;
+    dragStartProgRef.current = progressRef.current;
+    lastMoveXRef.current = clientX;
+    lastMoveTRef.current = performance.now();
+    velocityRef.current = 0;
+  };
+  const onMove = (clientX: number) => {
+    if (!draggingRef.current) return;
+    const dx = clientX - dragStartXRef.current;
+    progressRef.current = dragStartProgRef.current - dx / pxPerSlot();
+    const t = performance.now();
+    const dt = Math.max(1, t - lastMoveTRef.current);
+    velocityRef.current = -((clientX - lastMoveXRef.current) / pxPerSlot()) * (1000 / dt);
+    lastMoveXRef.current = clientX;
+    lastMoveTRef.current = t;
+  };
+  const onEnd = () => {
+    if (!draggingRef.current) return;
+    draggingRef.current = false;
+    velocityRef.current = Math.max(-8, Math.min(8, velocityRef.current));
+    pauseUntilRef.current = performance.now() + 220;
+  };
+
+  if (total < 2) {
+    return (
+      <div className="relative w-full" style={{ height }}>
+        {items[0] ? renderCard(items[0], true) : null}
+      </div>
+    );
+  }
+
+  const visible = 5;
+  const half = Math.floor(visible / 2);
+  const progress = progressRef.current;
+  const centerIdx = Math.round(progress);
+  const frac = progress - centerIdx;
+  const currentMod = ((centerIdx % total) + total) % total;
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative w-full select-none overflow-hidden touch-pan-y"
+      style={{ height, perspective: 1400, perspectiveOrigin: "50% 50%" }}
+      onTouchStart={(e) => onStart(e.touches[0].clientX)}
+      onTouchMove={(e) => onMove(e.touches[0].clientX)}
+      onTouchEnd={onEnd}
+      onMouseDown={(e) => onStart(e.clientX)}
+      onMouseMove={(e) => {
+        if (draggingRef.current) onMove(e.clientX);
+      }}
+      onMouseUp={onEnd}
+      onMouseLeave={onEnd}
+    >
+      {Array.from({ length: visible }, (_, i) => i - half).map((s) => {
+        const effective = s - frac;
+        const cardIdx = ((centerIdx + s) % total + total) % total;
+        const item = items[cardIdx];
+        const absEff = Math.abs(effective);
+        const isFront = absEff < 0.5;
+        const baseXPct = effective * peekPct;
+        const rotateY = Math.max(-60, Math.min(60, -effective * 36));
+        const translateZ = -Math.min(absEff, 2.2) * 90;
+        const scale = Math.max(0.66, 1 - absEff * 0.14);
+        const opacity = Math.max(0.1, 1 - absEff * 0.38);
+        const z = 100 - Math.round(absEff * 20);
+        return (
+          <div
+            key={`${getKey(item)}-${s}`}
+            className="absolute top-0 left-1/2"
+            style={{
+              width: `${cardWidthPct}%`,
+              transform: `translate3d(calc(-50% + ${baseXPct}%), 0, ${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`,
+              transformStyle: "preserve-3d",
+              transformOrigin: "50% 50%",
+              zIndex: z,
+              opacity,
+              filter: absEff >= 1.6 ? "blur(1.5px)" : "none",
+              willChange: "transform, opacity",
+              pointerEvents: isFront ? "auto" : "none",
+              borderRadius: 28,
+            }}
+          >
+            <div className="relative" style={{ filter: isFront ? "none" : "brightness(0.82) saturate(0.9)" }}>
+              {renderCard(item, isFront)}
+              {!isFront ? (
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 rounded-[28px]"
+                  style={{
+                    background:
+                      effective > 0
+                        ? "linear-gradient(270deg, rgba(20,12,4,0.35), rgba(20,12,4,0) 65%)"
+                        : "linear-gradient(90deg, rgba(20,12,4,0.35), rgba(20,12,4,0) 65%)",
+                  }}
+                />
+              ) : null}
+            </div>
+          </div>
+        );
+      })}
+      <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1.5 pointer-events-none">
+        {items.map((it, i) => (
+          <span
+            key={getKey(it)}
+            className="h-1.5 rounded-full transition-all duration-500"
+            style={{
+              width: i === currentMod ? 18 : 5,
+              background: i === currentMod ? "#b8893a" : "rgba(120,80,30,0.25)",
+              boxShadow: i === currentMod ? "0 0 6px rgba(184,137,58,0.55)" : "none",
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function QuickGrid() {
   const trackRef = useRef<HTMLDivElement | null>(null);
-  useAutoMarquee(trackRef, { speed: 22, direction: 1 });
+  const items = [...QUICK, ...QUICK];
+  useAutoMarquee(trackRef, { speed: 18, direction: 1, loop: true });
+
+  const scrollToAnchor = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  };
 
   return (
     <section>
       <SectionTitle title="وصول سريع" />
       <div
         ref={trackRef}
-        className="-mx-4 overflow-x-auto no-scrollbar scroll-smooth"
+        className="-mx-4 overflow-x-auto no-scrollbar"
         style={{ WebkitOverflowScrolling: "touch" }}
       >
-        <div className="flex gap-3 px-4 pb-2">
-          {QUICK.map((q) => {
-            const inner = (
-              <>
-                <img
-                  src={q.img}
-                  alt=""
-                  className="absolute inset-0 h-full w-full object-cover"
-                  loading="lazy"
-                />
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    background: `linear-gradient(180deg, ${q.tone}10 0%, rgba(15,10,4,0.15) 40%, rgba(15,10,4,0.85) 100%)`,
-                  }}
-                />
-                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#e7c97a]/80 to-transparent" />
-
-                <div
-                  className="absolute top-2.5 right-2.5 grid h-10 w-10 place-items-center rounded-2xl border border-white/60 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_10px_18px_-10px_rgba(0,0,0,0.45)]"
-                  style={{
-                    background: `linear-gradient(160deg, ${q.tone}cc, ${q.tone}88)`,
-                    color: "#fff",
-                  }}
-                >
-                  <q.icon className="h-5 w-5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.35)]" strokeWidth={2.3} />
-                </div>
-
-                <div className="absolute bottom-2.5 right-2.5 left-2.5">
-                  <p className="font-arabic-serif text-[12.5px] font-extrabold text-white leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.65)] [word-break:keep-all]">
-                    {q.label}
-                  </p>
-                </div>
-              </>
-            );
-            const cls =
-              "group shrink-0 w-[124px] h-[150px] relative rounded-3xl overflow-hidden border border-white/70 text-right active:scale-[0.96] transition-transform shadow-[0_18px_36px_-22px_rgba(120,80,30,0.55),inset_0_1px_0_rgba(255,255,255,0.85)]";
-            return (
-              <Link key={q.key} to={q.to} className={cls}>
-                {inner}
-              </Link>
-            );
-          })}
+        <div className="flex gap-3 px-4 pb-1">
+          {items.map((q, i) => (
+            <QuickAccessCard key={`${q.key}-${i}`} q={q} onAnchor={scrollToAnchor} />
+          ))}
         </div>
       </div>
     </section>
@@ -829,7 +1054,7 @@ function PostHeader({ post, canManage, onManage }: { post: ChurchPost; canManage
   );
 }
 
-function PremiumPostCard({ post }: { post: ChurchPost }) {
+function PremiumPostCard({ post, inCoverflow = false }: { post: ChurchPost; inCoverflow?: boolean }) {
   const canManage = useCanManagePosts();
   const [draft, setDraft] = useState("");
   const [expanded, setExpanded] = useState(false);
@@ -890,7 +1115,12 @@ function PremiumPostCard({ post }: { post: ChurchPost }) {
 
   return (
     <article
-      className="shrink-0 snap-center w-[88vw] max-w-[420px] relative rounded-[28px] border border-white/75 bg-[#fbf3e1]/92 backdrop-blur-xl shadow-[0_24px_50px_-26px_rgba(120,80,30,0.55),inset_0_1px_0_rgba(255,255,255,0.9)] overflow-hidden"
+      className={
+        (inCoverflow
+          ? "w-full relative rounded-[28px]"
+          : "shrink-0 snap-center w-[88vw] max-w-[420px] relative rounded-[28px]") +
+        " border border-white/75 bg-[#fbf3e1]/92 backdrop-blur-xl shadow-[0_24px_50px_-26px_rgba(120,80,30,0.55),inset_0_1px_0_rgba(255,255,255,0.9)] overflow-hidden"
+      }
     >
       <PostHeader post={post} canManage={canManage} onManage={() => setPopup("manage")} />
 
@@ -926,7 +1156,7 @@ function PremiumPostCard({ post }: { post: ChurchPost }) {
           aria-label={r.love.mine ? "إلغاء الإعجاب" : "إعجاب"}
         >
           <Heart className={"h-[20px] w-[20px] " + (r.love.mine ? "text-[#e0464d] fill-current" : "text-[#c44569]")} strokeWidth={2.2} />
-          <span className="tabular-nums">{r.love.count.toLocaleString("ar-EG")}</span>
+          <span className="tabular-nums">{r.love.count.toLocaleString("en-US")}</span>
         </button>
         <Link
           to="/church/post/$id"
@@ -935,11 +1165,11 @@ function PremiumPostCard({ post }: { post: ChurchPost }) {
           aria-label="التعليقات"
         >
           <MessageCircle className="h-[20px] w-[20px] text-[#5b8fd1]" strokeWidth={2.2} />
-          <span className="tabular-nums">{comments.length.toLocaleString("ar-EG")}</span>
+          <span className="tabular-nums">{comments.length.toLocaleString("en-US")}</span>
         </Link>
         <button type="button" onClick={onShare} className="inline-flex items-center gap-2 active:scale-95" aria-label="مشاركة">
           <Share2 className="h-[20px] w-[20px] text-[#7a4a26]" strokeWidth={2.2} />
-          <span className="tabular-nums">{shares.toLocaleString("ar-EG")}</span>
+          <span className="tabular-nums">{shares.toLocaleString("en-US")}</span>
         </button>
       </div>
 
@@ -1069,16 +1299,15 @@ function ChurchPostsFeed() {
           <p className="text-[13px] font-bold text-[#6a543a]">لا توجد منشورات بعد</p>
         </Glass>
       ) : (
-        <div
-          className="-mx-4 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory"
-          style={{ WebkitOverflowScrolling: "touch", scrollPaddingInline: "16px" }}
-        >
-          <div className="flex gap-3 px-4 pb-3">
-            {sorted.map((p) => (
-              <PremiumPostCard key={p.id} post={p} />
-            ))}
-          </div>
-        </div>
+        <Coverflow
+          items={sorted}
+          direction={-1}
+          height={500}
+          cardWidthPct={78}
+          peekPct={52}
+          getKey={(p) => p.id}
+          renderCard={(post) => <PremiumPostCard post={post} inCoverflow />}
+        />
       )}
       {builderOpen ? (
         <PostBuilder
@@ -1135,8 +1364,8 @@ function MeetingCard({ m }: { m: typeof MEETINGS[number] }) {
       </div>
 
       {/* Content */}
-      <div className="relative flex min-w-0 flex-1 flex-col p-3.5 text-right">
-        <h4 className="line-clamp-2 min-h-[2.5rem] text-[14px] font-extrabold leading-tight text-[#3a2a18]">
+      <div className="relative flex min-w-0 flex-1 flex-col p-3 text-right">
+        <h4 className="line-clamp-2 min-h-[2.25rem] text-[13.5px] font-extrabold leading-tight text-[#3a2a18]">
           {m.title}
         </h4>
         <div className="mt-auto flex shrink-0 flex-col gap-1 pt-1.5">
@@ -1161,10 +1390,11 @@ function MeetingCard({ m }: { m: typeof MEETINGS[number] }) {
 
 function UpcomingMeetings() {
   const trackRef = useRef<HTMLDivElement | null>(null);
-  useAutoMarquee(trackRef, { speed: 20, direction: 1 });
+  const items = [...MEETINGS, ...MEETINGS];
+  useAutoMarquee(trackRef, { speed: 16, direction: 1, loop: true });
 
   return (
-    <section>
+    <section id="church-meetings">
       <SectionTitle
         title="الاجتماعات القادمة"
         action={
@@ -1182,9 +1412,9 @@ function UpcomingMeetings() {
         className="-mx-4 overflow-x-auto no-scrollbar scroll-smooth"
         style={{ WebkitOverflowScrolling: "touch" }}
       >
-        <div className="flex gap-3 px-4 pb-2">
-          {MEETINGS.map((m, i) => (
-            <div key={i} className="h-[108px] w-[230px] shrink-0">
+        <div className="flex gap-3 px-4 pb-1">
+          {items.map((m, i) => (
+            <div key={`${m.title}-${i}`} className="h-[96px] w-[216px] shrink-0">
               <MeetingCard m={m} />
             </div>
           ))}
@@ -1202,9 +1432,9 @@ function PrayerCardCompact({ p }: { p: ChurchDashboardPrayer }) {
   return (
     <Link
       to="/prayer-requests"
-      className="block shrink-0 w-[240px] active:scale-[0.98] transition-transform"
+      className="block shrink-0 w-[208px] active:scale-[0.98] transition-transform"
     >
-      <div className="rounded-2xl bg-white/85 border border-white/80 p-3 text-right shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_14px_30px_-20px_rgba(120,80,30,0.45)] h-[150px] flex flex-col">
+      <div className="rounded-2xl bg-white/85 border border-white/80 p-2.5 text-right shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_14px_30px_-20px_rgba(120,80,30,0.45)] h-[124px] flex flex-col">
         <div className="flex items-center gap-1.5 mb-1 flex-wrap">
           <span className="inline-flex items-center gap-1 rounded-full bg-[#8a6ec1]/15 px-2 py-0.5 text-[10px] font-extrabold text-[#6a4ab5] border border-[#8a6ec1]/25">
             <HandHeart className="h-2.5 w-2.5" strokeWidth={2.8} />
@@ -1225,7 +1455,7 @@ function PrayerCardCompact({ p }: { p: ChurchDashboardPrayer }) {
         <p className="font-arabic-serif text-[12.5px] font-extrabold text-[#3a2a18] leading-tight line-clamp-1">
           {p.title}
         </p>
-        <p className="mt-1 text-[11px] text-[#6a543a] leading-snug line-clamp-3 flex-1">
+        <p className="mt-0.5 text-[10.5px] text-[#6a543a] leading-snug line-clamp-2 flex-1">
           {p.request}
         </p>
         <div className="mt-1.5 flex items-center justify-between text-[10px] font-bold text-[#8a6325]">
@@ -1247,7 +1477,8 @@ function PrayerRequestsCard() {
   const { prayers } = useChurchDashboardData();
   const stats = prayerStatsFromDashboard(prayers);
   const trackRef = useRef<HTMLDivElement | null>(null);
-  useAutoMarquee(trackRef, { speed: 20, direction: -1 });
+  const items = prayers.length > 1 ? [...prayers, ...prayers] : prayers;
+  useAutoMarquee(trackRef, { speed: 14, direction: -1, loop: prayers.length > 1 });
 
   return (
     <section>
@@ -1281,9 +1512,9 @@ function PrayerRequestsCard() {
           className="-mx-4 overflow-x-auto no-scrollbar scroll-smooth"
           style={{ WebkitOverflowScrolling: "touch" }}
         >
-          <div className="flex gap-3 px-4 pb-2">
-            {prayers.map((p) => (
-              <PrayerCardCompact key={p.id} p={p} />
+          <div className="flex gap-2.5 px-4 pb-1">
+            {items.map((p, i) => (
+              <PrayerCardCompact key={`${p.id}-${i}`} p={p} />
             ))}
           </div>
         </div>
@@ -1570,11 +1801,23 @@ const ROLE_TONE: Record<ContactRoleType, { bg: string; icon: typeof Crown; tag: 
   admin: { bg: "linear-gradient(160deg, #1f8a5a, #136a44)", icon: UserCog, tag: "#1f8a5a" },
 };
 
-function ContactRow({ contact }: { contact: Contact }) {
+function CallLeaderRow({ contact, onClose }: { contact: Contact; onClose: () => void }) {
+  const navigate = useNavigate();
   const tone = ROLE_TONE[contact.roleType];
   const RoleIcon = tone.icon;
+
   return (
-    <div className="flex items-center gap-3 rounded-2xl bg-white/70 border border-white/80 p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_6px_14px_-12px_rgba(120,80,30,0.4)]">
+    <button
+      type="button"
+      onClick={() => {
+        onClose();
+        void navigate({
+          to: "/personal-call",
+          search: { name: contact.name, contactId: contact.id, from: "/church" },
+        });
+      }}
+      className="w-full flex items-center gap-3 rounded-2xl bg-white/70 border border-white/80 p-2.5 text-right shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_6px_14px_-12px_rgba(120,80,30,0.4)] active:scale-[0.98] transition-transform"
+    >
       <div
         className="relative h-11 w-11 shrink-0 rounded-full grid place-items-center text-[#f3e6c4] font-arabic-serif text-[16px] font-extrabold border-2 border-white shadow-[0_6px_14px_-6px_rgba(60,40,16,0.5)]"
         style={{ background: tone.bg }}
@@ -1587,31 +1830,14 @@ function ContactRow({ contact }: { contact: Contact }) {
           <RoleIcon className="h-2.5 w-2.5" strokeWidth={2.8} />
         </span>
       </div>
-      <div className="flex-1 min-w-0 text-right">
+      <div className="flex-1 min-w-0">
         <p className="font-arabic-serif text-[13.5px] font-extrabold text-[#3a2a18] leading-tight truncate">
           {contact.name}
         </p>
         <p className="mt-0.5 text-[10.5px] text-[#7a5a30] leading-none">{contact.role}</p>
       </div>
-      <div className="flex items-center gap-1.5">
-        <a
-          href={`tel:${contact.phone}`}
-          aria-label={`اتصال بـ ${contact.name}`}
-          className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-[#5b8fd1] to-[#3a6db0] text-white shadow-[0_8px_18px_-10px_rgba(91,143,209,0.7)] active:scale-90 transition-transform"
-        >
-          <Phone className="h-4 w-4" strokeWidth={2.4} />
-        </a>
-        <a
-          href={`https://wa.me/${contact.whatsapp}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={`واتساب ${contact.name}`}
-          className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-[#25d366] to-[#128c44] text-white shadow-[0_8px_18px_-10px_rgba(37,211,102,0.7)] active:scale-90 transition-transform"
-        >
-          <MessageCircle className="h-4 w-4 fill-current" strokeWidth={0} />
-        </a>
-      </div>
-    </div>
+      <Phone className="h-4 w-4 text-[#5b8fd1] shrink-0" strokeWidth={2.4} />
+    </button>
   );
 }
 
@@ -1669,8 +1895,14 @@ function MessageRow({ contact, unread, onClose }: { contact: Contact; unread?: n
 
   return (
     <Link
-      to="/church/chat/$contactId"
-      params={{ contactId: contact.id }}
+      to="/messages"
+      search={{
+        contactId: contact.id,
+        name: contact.name,
+        role: contact.roleType,
+        phone: contact.phone,
+        from: "/church",
+      }}
       onClick={onClose}
       className={className}
     >
@@ -1732,12 +1964,23 @@ function groupedContacts(contacts: ChurchDashboardContact[]) {
 }
 
 function ContactsPopup({ contacts, onClose }: { contacts: ChurchDashboardContact[]; onClose: () => void }) {
-  const { priests, servants, admins } = groupedContacts(contacts);
+  const { priests, servants } = groupedContacts(contacts);
   return (
-    <PopupShell title="تواصل مع الكنيسة" subtitle="اتصال مباشر أو واتساب" onClose={onClose}>
-      {priests.length > 0 && <PopupGroup label="الكاهن">{priests.map((c) => <ContactRow key={c.id} contact={c} />)}</PopupGroup>}
-      {servants.length > 0 && <PopupGroup label="الخدام">{servants.map((c) => <ContactRow key={c.id} contact={c} />)}</PopupGroup>}
-      {admins.length > 0 && <PopupGroup label="المسؤولون">{admins.map((c) => <ContactRow key={c.id} contact={c} />)}</PopupGroup>}
+    <PopupShell title="اختر للاتصال" subtitle="Alpha Connect — اضغط على الاسم للاتصال" onClose={onClose}>
+      {priests.length > 0 && (
+        <PopupGroup label="الكاهن">
+          {priests.map((c) => (
+            <CallLeaderRow key={c.id} contact={c} onClose={onClose} />
+          ))}
+        </PopupGroup>
+      )}
+      {servants.length > 0 && (
+        <PopupGroup label="الخدام">
+          {servants.map((c) => (
+            <CallLeaderRow key={c.id} contact={c} onClose={onClose} />
+          ))}
+        </PopupGroup>
+      )}
       {contacts.length === 0 ? (
         <p className="px-1 py-4 text-center text-[12px] font-bold text-[#6a543a]">لا توجد جهات اتصال متاحة</p>
       ) : null}
@@ -1746,12 +1989,23 @@ function ContactsPopup({ contacts, onClose }: { contacts: ChurchDashboardContact
 }
 
 function MessagesPopup({ contacts, onClose }: { contacts: ChurchDashboardContact[]; onClose: () => void }) {
-  const { priests, servants, admins } = groupedContacts(contacts);
+  const { priests, servants } = groupedContacts(contacts);
   return (
-    <PopupShell title="مراسلة قادة الكنيسة" subtitle="بإذن الكاهن" onClose={onClose}>
-      {priests.length > 0 && <PopupGroup label="الكاهن">{priests.map((c) => <MessageRow key={c.id} contact={c} onClose={onClose} />)}</PopupGroup>}
-      {servants.length > 0 && <PopupGroup label="الخدام">{servants.map((c) => <MessageRow key={c.id} contact={c} onClose={onClose} />)}</PopupGroup>}
-      {admins.length > 0 && <PopupGroup label="المسؤولون">{admins.map((c) => <MessageRow key={c.id} contact={c} onClose={onClose} />)}</PopupGroup>}
+    <PopupShell title="مراسلة قادة الكنيسة" subtitle="اضغط على الاسم لبدء محادثة خاصة" onClose={onClose}>
+      {priests.length > 0 && (
+        <PopupGroup label="الكاهن">
+          {priests.map((c) => (
+            <MessageRow key={c.id} contact={c} onClose={onClose} />
+          ))}
+        </PopupGroup>
+      )}
+      {servants.length > 0 && (
+        <PopupGroup label="الخدام">
+          {servants.map((c) => (
+            <MessageRow key={c.id} contact={c} onClose={onClose} />
+          ))}
+        </PopupGroup>
+      )}
       {contacts.length === 0 ? (
         <p className="px-1 py-4 text-center text-[12px] font-bold text-[#6a543a]">لا توجد جهات مراسلة متاحة</p>
       ) : null}
@@ -1771,23 +2025,32 @@ function ChurchEmptyState() {
         <Church className="h-9 w-9 text-[#7a4a26]" strokeWidth={1.8} />
       </div>
       <h2 className="mt-5 font-arabic-serif text-[18px] font-bold text-[#3a2a18]">
-        لا توجد كنيسة معتمدة بعد
+        لا توجد كنيسة مرتبطة بحسابك
       </h2>
       <p className="mt-2 text-[13px] leading-relaxed text-[#6a543a]">
-        بعد اعتماد طلب تأسيس الكنيسة ستظهر هنا بيانات كنيستك وخدماتها.
+        اختر كنيستك من الدليل واضغط «انضم للكنيسة» لفتح لوحة كنيستك وخدماتها.
       </p>
-      <Link
-        to="/profile/church"
-        className="mt-5 inline-flex h-12 items-center justify-center rounded-2xl bg-gradient-to-l from-[#7a4a26] to-[#b8893a] px-6 text-[14px] font-extrabold text-white shadow-[0_10px_20px_-10px_rgba(122,74,38,0.6)] active:scale-[0.98] transition-transform"
-      >
-        طلب تأسيس كنيسة
-      </Link>
+      <div className="mt-5 space-y-2.5">
+        <Link
+          to="/church/directory"
+          className="inline-flex h-12 w-full items-center justify-center rounded-2xl bg-gradient-to-l from-[#1f8a5a] to-[#3f9d6e] px-6 text-[14px] font-extrabold text-white shadow-[0_10px_20px_-10px_rgba(31,138,90,0.55)] active:scale-[0.98] transition-transform"
+        >
+          اختيار كنيسة والانضمام
+        </Link>
+        <Link
+          to="/profile/church"
+          className="inline-flex h-12 w-full items-center justify-center rounded-2xl border border-[#efe2c4] bg-white/75 px-6 text-[14px] font-extrabold text-[#3a2a18] shadow-[0_8px_18px_-14px_rgba(120,80,30,0.35)] active:scale-[0.98] transition-transform"
+        >
+          طلب تأسيس كنيسة
+        </Link>
+      </div>
     </Glass>
   );
 }
 
 function ChurchScreen() {
   const { data, loading, hasChurch } = useChurchDashboard();
+  const showBootLoading = loading && !data;
   const churchId = data?.church.id ?? "";
   const { posts } = useChurchPosts(churchId);
   const searchContext: ContextualSearchContext | undefined = data
@@ -1818,7 +2081,7 @@ function ChurchScreen() {
       <Header searchContext={searchContext} />
 
       <div className="relative mx-auto w-full max-w-[440px] px-4 pt-2 pb-[calc(env(safe-area-inset-bottom,0px)+120px)] space-y-5">
-        {loading ? (
+        {showBootLoading ? (
           <Glass className="text-center py-12">
             <p className="text-[13px] font-bold text-[#6a543a]">جاري تحميل بيانات الكنيسة…</p>
           </Glass>
@@ -1829,6 +2092,7 @@ function ChurchScreen() {
             <HeroChurchCard />
             <QuickGrid />
             <ChurchPostsFeed />
+            <UpcomingMeetings />
             <PrayerRequestsCard />
             <LocationRow />
           </ChurchDashboardProvider>

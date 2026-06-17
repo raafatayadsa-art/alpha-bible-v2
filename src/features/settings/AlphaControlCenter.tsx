@@ -23,7 +23,7 @@ import {
   ActionRow,
   ControlCenterHero,
   DarkModeToggle,
-  LinkCard,
+  PremiumLinkCard,
   PremiumSectionCard,
   SectionLabel,
   SelectRow,
@@ -140,15 +140,13 @@ export function AlphaControlCenter() {
         <SettingsSearch value={search} onChange={setSearch} />
 
         {sectionVisible(search, t("sections.trustKeywords", { returnObjects: true }) as string[]) && (
-          <div className="mb-2.5 overflow-hidden rounded-[22px] border border-[#efe2c4]/90 bg-gradient-to-b from-[#fbf3e1]/96 to-[#f4ead8]/94 shadow-[0_14px_30px_-22px_rgba(120,80,30,0.38)]">
-            <LinkCard
-              to="/settings/trust"
-              icon={Shield}
-              title={t("trustCard.title")}
-              subtitle={t("trustCard.subtitle")}
-              accent="#3f9d6e"
-            />
-          </div>
+          <PremiumLinkCard
+            to="/settings/trust"
+            icon={Shield}
+            title={t("trustCard.title")}
+            subtitle={t("trustCard.subtitle")}
+            accent="#3f9d6e"
+          />
         )}
 
         <div className="space-y-0.5">

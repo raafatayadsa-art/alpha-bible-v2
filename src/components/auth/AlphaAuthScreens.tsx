@@ -99,7 +99,9 @@ export function AlphaLoginScreen() {
       if (!data.user) throw new Error("Missing user");
       window.localStorage.setItem("alpha_remember_me", remember ? "1" : "0");
       await supabase.from("profiles").upsert({ id: data.user.id }, { onConflict: "id", ignoreDuplicates: true });
-      await navigate({ to: "/" });
+      const { completePendingChurchJoin } = await import("@/features/church/church-membership-api");
+      const joinedChurchId = await completePendingChurchJoin();
+      await navigate({ to: joinedChurchId ? "/church" : "/" });
     } catch (caught) {
       setError(arabicAuthError(caught instanceof Error ? caught.message : ""));
     } finally {

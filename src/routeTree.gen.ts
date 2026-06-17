@@ -14,6 +14,7 @@ import { Route as SearchRouteImport } from './routes/search'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as PrayerRequestsRouteImport } from './routes/prayer-requests'
+import { Route as PersonalCallRouteImport } from './routes/personal-call'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as LoginRouteImport } from './routes/login'
@@ -25,12 +26,14 @@ import { Route as DiagnosticsRouteImport } from './routes/diagnostics'
 import { Route as ChurchesDirectoryRouteImport } from './routes/churches-directory'
 import { Route as ChurchFeedLabRouteImport } from './routes/church-feed-lab'
 import { Route as ChurchRouteImport } from './routes/church'
+import { Route as CallRouteImport } from './routes/call'
 import { Route as BooksV2RouteImport } from './routes/books-v2'
 import { Route as BooksRouteImport } from './routes/books'
 import { Route as BibleLovableRouteImport } from './routes/bible-lovable'
 import { Route as Bible2RouteImport } from './routes/bible-2'
 import { Route as BibleRouteImport } from './routes/bible'
 import { Route as AudioRouteImport } from './routes/audio'
+import { Route as AlphaConnectRouteImport } from './routes/alpha-connect'
 import { Route as BookRouteImport } from './routes/$book'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SynaxariumIndexRouteImport } from './routes/synaxarium.index'
@@ -62,6 +65,7 @@ import { Route as PlatformApprovalsRouteImport } from './routes/platform.approva
 import { Route as PlatformAnalyticsRouteImport } from './routes/platform.analytics'
 import { Route as PlatformAiRouteImport } from './routes/platform.ai'
 import { Route as FeastsEventIdRouteImport } from './routes/feasts.$eventId'
+import { Route as DevBackgroundPreviewRouteImport } from './routes/dev.background-preview'
 import { Route as DevAuthRouteImport } from './routes/dev.auth'
 import { Route as ChurchServiceRouteImport } from './routes/church.service'
 import { Route as ChurchNotificationsRouteImport } from './routes/church.notifications'
@@ -109,6 +113,11 @@ const RegisterRoute = RegisterRouteImport.update({
 const PrayerRequestsRoute = PrayerRequestsRouteImport.update({
   id: '/prayer-requests',
   path: '/prayer-requests',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PersonalCallRoute = PersonalCallRouteImport.update({
+  id: '/personal-call',
+  path: '/personal-call',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -166,6 +175,11 @@ const ChurchRoute = ChurchRouteImport.update({
   path: '/church',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CallRoute = CallRouteImport.update({
+  id: '/call',
+  path: '/call',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BooksV2Route = BooksV2RouteImport.update({
   id: '/books-v2',
   path: '/books-v2',
@@ -194,6 +208,11 @@ const BibleRoute = BibleRouteImport.update({
 const AudioRoute = AudioRouteImport.update({
   id: '/audio',
   path: '/audio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AlphaConnectRoute = AlphaConnectRouteImport.update({
+  id: '/alpha-connect',
+  path: '/alpha-connect',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BookRoute = BookRouteImport.update({
@@ -351,6 +370,11 @@ const FeastsEventIdRoute = FeastsEventIdRouteImport.update({
   path: '/feasts/$eventId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DevBackgroundPreviewRoute = DevBackgroundPreviewRouteImport.update({
+  id: '/dev/background-preview',
+  path: '/dev/background-preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DevAuthRoute = DevAuthRouteImport.update({
   id: '/dev/auth',
   path: '/dev/auth',
@@ -471,12 +495,14 @@ const PlatformScanTrustTrustIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$book': typeof BookRouteWithChildren
+  '/alpha-connect': typeof AlphaConnectRoute
   '/audio': typeof AudioRoute
   '/bible': typeof BibleRouteWithChildren
   '/bible-2': typeof Bible2Route
   '/bible-lovable': typeof BibleLovableRoute
   '/books': typeof BooksRoute
   '/books-v2': typeof BooksV2Route
+  '/call': typeof CallRoute
   '/church': typeof ChurchRouteWithChildren
   '/church-feed-lab': typeof ChurchFeedLabRoute
   '/churches-directory': typeof ChurchesDirectoryRoute
@@ -488,6 +514,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/messages': typeof MessagesRoute
   '/onboarding': typeof OnboardingRoute
+  '/personal-call': typeof PersonalCallRoute
   '/prayer-requests': typeof PrayerRequestsRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -510,6 +537,7 @@ export interface FileRoutesByFullPath {
   '/church/notifications': typeof ChurchNotificationsRoute
   '/church/service': typeof ChurchServiceRoute
   '/dev/auth': typeof DevAuthRoute
+  '/dev/background-preview': typeof DevBackgroundPreviewRoute
   '/feasts/$eventId': typeof FeastsEventIdRoute
   '/platform/ai': typeof PlatformAiRoute
   '/platform/analytics': typeof PlatformAnalyticsRoute
@@ -548,12 +576,14 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/alpha-connect': typeof AlphaConnectRoute
   '/audio': typeof AudioRoute
   '/bible': typeof BibleRouteWithChildren
   '/bible-2': typeof Bible2Route
   '/bible-lovable': typeof BibleLovableRoute
   '/books': typeof BooksRoute
   '/books-v2': typeof BooksV2Route
+  '/call': typeof CallRoute
   '/church': typeof ChurchRouteWithChildren
   '/church-feed-lab': typeof ChurchFeedLabRoute
   '/churches-directory': typeof ChurchesDirectoryRoute
@@ -565,6 +595,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/messages': typeof MessagesRoute
   '/onboarding': typeof OnboardingRoute
+  '/personal-call': typeof PersonalCallRoute
   '/prayer-requests': typeof PrayerRequestsRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -587,6 +618,7 @@ export interface FileRoutesByTo {
   '/church/notifications': typeof ChurchNotificationsRoute
   '/church/service': typeof ChurchServiceRoute
   '/dev/auth': typeof DevAuthRoute
+  '/dev/background-preview': typeof DevBackgroundPreviewRoute
   '/feasts/$eventId': typeof FeastsEventIdRoute
   '/platform/ai': typeof PlatformAiRoute
   '/platform/analytics': typeof PlatformAnalyticsRoute
@@ -627,12 +659,14 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$book': typeof BookRouteWithChildren
+  '/alpha-connect': typeof AlphaConnectRoute
   '/audio': typeof AudioRoute
   '/bible': typeof BibleRouteWithChildren
   '/bible-2': typeof Bible2Route
   '/bible-lovable': typeof BibleLovableRoute
   '/books': typeof BooksRoute
   '/books-v2': typeof BooksV2Route
+  '/call': typeof CallRoute
   '/church': typeof ChurchRouteWithChildren
   '/church-feed-lab': typeof ChurchFeedLabRoute
   '/churches-directory': typeof ChurchesDirectoryRoute
@@ -644,6 +678,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/messages': typeof MessagesRoute
   '/onboarding': typeof OnboardingRoute
+  '/personal-call': typeof PersonalCallRoute
   '/prayer-requests': typeof PrayerRequestsRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -666,6 +701,7 @@ export interface FileRoutesById {
   '/church/notifications': typeof ChurchNotificationsRoute
   '/church/service': typeof ChurchServiceRoute
   '/dev/auth': typeof DevAuthRoute
+  '/dev/background-preview': typeof DevBackgroundPreviewRoute
   '/feasts/$eventId': typeof FeastsEventIdRoute
   '/platform/ai': typeof PlatformAiRoute
   '/platform/analytics': typeof PlatformAnalyticsRoute
@@ -707,12 +743,14 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/$book'
+    | '/alpha-connect'
     | '/audio'
     | '/bible'
     | '/bible-2'
     | '/bible-lovable'
     | '/books'
     | '/books-v2'
+    | '/call'
     | '/church'
     | '/church-feed-lab'
     | '/churches-directory'
@@ -724,6 +762,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/messages'
     | '/onboarding'
+    | '/personal-call'
     | '/prayer-requests'
     | '/register'
     | '/reset-password'
@@ -746,6 +785,7 @@ export interface FileRouteTypes {
     | '/church/notifications'
     | '/church/service'
     | '/dev/auth'
+    | '/dev/background-preview'
     | '/feasts/$eventId'
     | '/platform/ai'
     | '/platform/analytics'
@@ -784,12 +824,14 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/alpha-connect'
     | '/audio'
     | '/bible'
     | '/bible-2'
     | '/bible-lovable'
     | '/books'
     | '/books-v2'
+    | '/call'
     | '/church'
     | '/church-feed-lab'
     | '/churches-directory'
@@ -801,6 +843,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/messages'
     | '/onboarding'
+    | '/personal-call'
     | '/prayer-requests'
     | '/register'
     | '/reset-password'
@@ -823,6 +866,7 @@ export interface FileRouteTypes {
     | '/church/notifications'
     | '/church/service'
     | '/dev/auth'
+    | '/dev/background-preview'
     | '/feasts/$eventId'
     | '/platform/ai'
     | '/platform/analytics'
@@ -862,12 +906,14 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/$book'
+    | '/alpha-connect'
     | '/audio'
     | '/bible'
     | '/bible-2'
     | '/bible-lovable'
     | '/books'
     | '/books-v2'
+    | '/call'
     | '/church'
     | '/church-feed-lab'
     | '/churches-directory'
@@ -879,6 +925,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/messages'
     | '/onboarding'
+    | '/personal-call'
     | '/prayer-requests'
     | '/register'
     | '/reset-password'
@@ -901,6 +948,7 @@ export interface FileRouteTypes {
     | '/church/notifications'
     | '/church/service'
     | '/dev/auth'
+    | '/dev/background-preview'
     | '/feasts/$eventId'
     | '/platform/ai'
     | '/platform/analytics'
@@ -941,12 +989,14 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BookRoute: typeof BookRouteWithChildren
+  AlphaConnectRoute: typeof AlphaConnectRoute
   AudioRoute: typeof AudioRoute
   BibleRoute: typeof BibleRouteWithChildren
   Bible2Route: typeof Bible2Route
   BibleLovableRoute: typeof BibleLovableRoute
   BooksRoute: typeof BooksRoute
   BooksV2Route: typeof BooksV2Route
+  CallRoute: typeof CallRoute
   ChurchRoute: typeof ChurchRouteWithChildren
   ChurchFeedLabRoute: typeof ChurchFeedLabRoute
   ChurchesDirectoryRoute: typeof ChurchesDirectoryRoute
@@ -958,6 +1008,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   MessagesRoute: typeof MessagesRoute
   OnboardingRoute: typeof OnboardingRoute
+  PersonalCallRoute: typeof PersonalCallRoute
   PrayerRequestsRoute: typeof PrayerRequestsRoute
   RegisterRoute: typeof RegisterRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -966,6 +1017,7 @@ export interface RootRouteChildren {
   AgpeyaPrayerIdRoute: typeof AgpeyaPrayerIdRoute
   AgpeyaSavedRoute: typeof AgpeyaSavedRoute
   DevAuthRoute: typeof DevAuthRoute
+  DevBackgroundPreviewRoute: typeof DevBackgroundPreviewRoute
   FeastsEventIdRoute: typeof FeastsEventIdRoute
   PlatformAiRoute: typeof PlatformAiRoute
   PlatformAnalyticsRoute: typeof PlatformAnalyticsRoute
@@ -1030,6 +1082,13 @@ declare module '@tanstack/react-router' {
       path: '/prayer-requests'
       fullPath: '/prayer-requests'
       preLoaderRoute: typeof PrayerRequestsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/personal-call': {
+      id: '/personal-call'
+      path: '/personal-call'
+      fullPath: '/personal-call'
+      preLoaderRoute: typeof PersonalCallRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -1109,6 +1168,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChurchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/call': {
+      id: '/call'
+      path: '/call'
+      fullPath: '/call'
+      preLoaderRoute: typeof CallRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/books-v2': {
       id: '/books-v2'
       path: '/books-v2'
@@ -1149,6 +1215,13 @@ declare module '@tanstack/react-router' {
       path: '/audio'
       fullPath: '/audio'
       preLoaderRoute: typeof AudioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/alpha-connect': {
+      id: '/alpha-connect'
+      path: '/alpha-connect'
+      fullPath: '/alpha-connect'
+      preLoaderRoute: typeof AlphaConnectRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/$book': {
@@ -1366,6 +1439,13 @@ declare module '@tanstack/react-router' {
       path: '/feasts/$eventId'
       fullPath: '/feasts/$eventId'
       preLoaderRoute: typeof FeastsEventIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dev/background-preview': {
+      id: '/dev/background-preview'
+      path: '/dev/background-preview'
+      fullPath: '/dev/background-preview'
+      preLoaderRoute: typeof DevBackgroundPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dev/auth': {
@@ -1653,12 +1733,14 @@ const ProfileChurchRouteWithChildren = ProfileChurchRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BookRoute: BookRouteWithChildren,
+  AlphaConnectRoute: AlphaConnectRoute,
   AudioRoute: AudioRoute,
   BibleRoute: BibleRouteWithChildren,
   Bible2Route: Bible2Route,
   BibleLovableRoute: BibleLovableRoute,
   BooksRoute: BooksRoute,
   BooksV2Route: BooksV2Route,
+  CallRoute: CallRoute,
   ChurchRoute: ChurchRouteWithChildren,
   ChurchFeedLabRoute: ChurchFeedLabRoute,
   ChurchesDirectoryRoute: ChurchesDirectoryRoute,
@@ -1670,6 +1752,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   MessagesRoute: MessagesRoute,
   OnboardingRoute: OnboardingRoute,
+  PersonalCallRoute: PersonalCallRoute,
   PrayerRequestsRoute: PrayerRequestsRoute,
   RegisterRoute: RegisterRoute,
   ResetPasswordRoute: ResetPasswordRoute,
@@ -1678,6 +1761,7 @@ const rootRouteChildren: RootRouteChildren = {
   AgpeyaPrayerIdRoute: AgpeyaPrayerIdRoute,
   AgpeyaSavedRoute: AgpeyaSavedRoute,
   DevAuthRoute: DevAuthRoute,
+  DevBackgroundPreviewRoute: DevBackgroundPreviewRoute,
   FeastsEventIdRoute: FeastsEventIdRoute,
   PlatformAiRoute: PlatformAiRoute,
   PlatformAnalyticsRoute: PlatformAnalyticsRoute,

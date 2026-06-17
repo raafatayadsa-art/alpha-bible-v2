@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { ContactRoleType } from "@/data/church-contacts";
-import { getResidentUserId, readSetupRequestIdFromHub } from "./church-user-id";
+import { readSetupRequestIdFromHub } from "./church-user-id";
 import {
   backfillApprovedChurchSetupRequests,
   ensureCurrentUserApprovedChurchMembership,
@@ -154,11 +154,11 @@ function mapContact(row: RoleRow): ChurchDashboardContact {
   };
 }
 
-function mapPrayer(row: PrayerRow): ChurchDashboardPrayer {
+function mapPrayer(row: PrayerRow & { request?: string }): ChurchDashboardPrayer {
   return {
     id: row.id,
     title: row.title,
-    request: row.body,
+    request: row.body || row.request || "",
     category: row.category,
     status: row.status,
     prayers: row.prayer_count,
@@ -185,6 +185,43 @@ async function findSingletonApprovedChurchId(): Promise<string | null> {
     .eq("status", "approved");
   if (!setups || setups.length !== 1) return null;
   return churchIdBySetupRequest(setups[0].id);
+}
+
+async function countChurchLiveStats(
+  churchId: string,
+  fallback: { memberCount: number; servantCount: number },
+): Promise<{ memberCount: number; servantCount: number }> {
+  const [membersRes, rolesRes] = await Promise.all([
+    supabase
+      .from("church_memberships")
+      .select("id", { count: "exact", head: true })
+      .eq("church_id", churchId)
+      .eq("status", "active"),
+    supabase.from("church_roles").select("role_type, role_key").eq("church_id", churchId),
+  ]);
+
+  const memberCount = membersRes.count ?? fallback.memberCount;
+  const servantCount =
+    (rolesRes.data ?? []).filter((row) => {
+      const key = String((row as { role_key?: string }).role_key ?? (row as { role_type?: string }).role_type ?? "");
+      return key === "servant" || key === "admin";
+    }).length || fallback.servantCount;
+
+  return {
+    memberCount: memberCount > 0 ? memberCount : fallback.memberCount,
+    servantCount: servantCount > 0 ? servantCount : fallback.servantCount,
+  };
+}
+
+/** Shared church resolution for dashboard, prayers, and hub. */
+export async function resolveActiveChurchId(): Promise<string | null> {
+  const { waitForAuthUserId } = await import("@/features/auth");
+  const userId = await waitForAuthUserId();
+  if (userId) {
+    await ensureCurrentUserApprovedChurchMembership(userId);
+  }
+  await backfillApprovedChurchSetupRequests(userId);
+  return resolveChurchId(userId);
 }
 
 async function resolveChurchId(userId: string | null): Promise<string | null> {
@@ -229,31 +266,29 @@ export type ChurchHubDashboardAccess = {
   canOpenDashboard: boolean;
 };
 
-/** /profile/church gate — membership + approved church only (no setup_requests). */
+/** /profile/church gate — same provisioning + church resolution as fetchChurchDashboard. */
 export async function resolveChurchHubDashboardAccess(): Promise<ChurchHubDashboardAccess> {
-  const { waitForAuthUserId } = await import("@/features/auth");
-  const userId = await waitForAuthUserId();
-  if (!userId) return { canOpenDashboard: false };
+  try {
+    const { waitForAuthUserId } = await import("@/features/auth");
+    const userId = await waitForAuthUserId();
 
-  const { data: membership } = await supabase
-    .from("church_memberships")
-    .select("church_id")
-    .eq("user_id", userId)
-    .eq("status", "active")
-    .eq("membership_status", "approved")
-    .limit(1)
-    .maybeSingle();
+    if (userId) {
+      await ensureCurrentUserApprovedChurchMembership(userId);
+    }
+    await backfillApprovedChurchSetupRequests(userId);
 
-  if (!membership?.church_id) return { canOpenDashboard: false };
-
-  const { data: church } = await supabase
-    .from("churches")
-    .select("id")
-    .eq("id", membership.church_id)
-    .eq("status", "approved")
-    .maybeSingle();
-
-  return { canOpenDashboard: church?.id != null };
+    const churchId = await resolveChurchId(userId);
+    const canOpenDashboard = churchId != null;
+    console.info("[resolveChurchHubDashboardAccess] resolved", {
+      userId,
+      churchId,
+      canOpenDashboard,
+    });
+    return { canOpenDashboard };
+  } catch (error) {
+    console.error("[resolveChurchHubDashboardAccess] unexpected error", error);
+    return { canOpenDashboard: false };
+  }
 }
 
 async function hasActiveApprovedMembership(userId: string): Promise<boolean> {
@@ -279,7 +314,7 @@ async function hasActiveApprovedMembership(userId: string): Promise<boolean> {
 
 export async function fetchChurchProfileContext(): Promise<ChurchProfileContext> {
   const { waitForAuthUserId } = await import("@/features/auth");
-  const userId = (await waitForAuthUserId()) ?? (await getResidentUserId());
+  const userId = await waitForAuthUserId();
   console.log("[fetchChurchProfileContext:start]", { userId });
 
   if (userId) {
@@ -336,12 +371,17 @@ export async function fetchChurchProfileContext(): Promise<ChurchProfileContext>
     }
   }
 
+  const resolvedChurchId = await resolveChurchId(userId);
+  if (resolvedChurchId) {
+    return { hasApprovedChurch: true, setupStatus: "none" };
+  }
+
   return { hasApprovedChurch: false, setupStatus: "none" };
 }
 
 export async function fetchChurchDashboard(): Promise<ChurchDashboardData | null> {
   const { waitForAuthUserId } = await import("@/features/auth");
-  const userId = (await waitForAuthUserId()) ?? (await getResidentUserId());
+  const userId = await waitForAuthUserId();
   if (userId) {
     await ensureCurrentUserApprovedChurchMembership(userId);
   }
@@ -379,13 +419,24 @@ export async function fetchChurchDashboard(): Promise<ChurchDashboardData | null
   const { getAuthUserSync } = await import("@/features/auth");
   const authUser = getAuthUserSync();
 
+  const liveStats = await countChurchLiveStats(String(churchRes.data.id), {
+    memberCount: (churchRes.data as ChurchRow).member_count ?? 0,
+    servantCount: (churchRes.data as ChurchRow).servant_count ?? 0,
+  });
+
+  const churchRecord = mapChurch(
+    churchRes.data as ChurchRow,
+    primaryPriest,
+    authUser?.id ?? null,
+    authUser?.avatarUrl ?? null,
+  );
+
   return {
-    church: mapChurch(
-      churchRes.data as ChurchRow,
-      primaryPriest,
-      authUser?.id ?? null,
-      authUser?.avatarUrl ?? null,
-    ),
+    church: {
+      ...churchRecord,
+      memberCount: liveStats.memberCount,
+      servantCount: liveStats.servantCount,
+    },
     contacts: roles.map(mapContact),
     prayers: ((prayersRes.data ?? []) as PrayerRow[]).map(mapPrayer),
   };

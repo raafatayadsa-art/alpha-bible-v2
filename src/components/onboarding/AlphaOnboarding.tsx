@@ -7,6 +7,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronRight } from "lucide-react";
+import { AlphaScreenFrame } from "@/components/alpha/AlphaScreenFrame";
 import { cn } from "@/lib/utils";
 
 /* Original HQ images — served from public/ (no Vite build compression) */
@@ -149,28 +150,14 @@ export function AlphaOnboarding() {
   const safeBotContent = isLast ? safeBot : `calc(${safeBot} + 72px)`;
 
   return (
-    <div
-      dir="rtl"
-      className="relative min-h-[100dvh] w-full overflow-x-hidden select-none"
+    <AlphaScreenFrame
+      mode="fixed"
+      frameClassName="bg-black"
+      className="select-none"
       style={{ WebkitUserSelect: "none", touchAction: "pan-y" }}
       onPointerDown={onPtrDown}
       onPointerUp={onPtrUp}
     >
-      {/* App shell background — same as Home on desktop */}
-      <div
-        aria-hidden
-        className="fixed inset-0 -z-10"
-        style={{
-          background:
-            "radial-gradient(120% 55% at 50% 0%, rgba(231,201,122,0.35), transparent 60%)," +
-            "radial-gradient(80% 60% at 100% 30%, rgba(216,138,42,0.16), transparent 65%)," +
-            "radial-gradient(80% 60% at 0% 80%, rgba(190,150,90,0.22), transparent 65%)," +
-            "linear-gradient(180deg,#f7eed6 0%,#f4ead8 50%,#ecdcb6 100%)",
-        }}
-      />
-
-      {/* Phone column — matches Home / Bible / rest of app */}
-      <div className="relative mx-auto h-[100dvh] w-full max-w-[440px] overflow-hidden bg-black">
         {/* ── Background — HQ public images, cover, no zoom/filter ── */}
         {SLIDES.map((s, i) => (
           <div
@@ -322,8 +309,7 @@ export function AlphaOnboarding() {
             pointerEvents: "none",
           }}
         />
-      </div>
-    </div>
+    </AlphaScreenFrame>
   );
 }
 

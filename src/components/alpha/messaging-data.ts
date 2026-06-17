@@ -36,3 +36,32 @@ export const priestProfile = conversations[0];
 export function getConversationPhone(id: string): string | undefined {
   return conversations.find((c) => c.id === id)?.phone;
 }
+
+const roleAvatarBg: Record<ShieldRole, string> = {
+  priest: "7c5cbf",
+  servant: "3a8c6e",
+  member: "4a7ab8",
+  official: "b8893a",
+};
+
+/** Build an Alpha conversation profile from a church leader contact. */
+export function conversationFromContact(input: {
+  id: string;
+  name: string;
+  role: "priest" | "servant" | "admin";
+  phone?: string;
+}): Conversation {
+  const role: ShieldRole =
+    input.role === "priest" ? "priest" : input.role === "servant" ? "servant" : "official";
+  return {
+    id: input.id,
+    name: input.name,
+    role,
+    avatar: avatar(input.name, roleAvatarBg[role]),
+    message: "",
+    time: "الآن",
+    online: true,
+    kind: "private",
+    phone: input.phone,
+  };
+}

@@ -1,6 +1,10 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
+import { MESSAGING_GLASS_INNER, MESSAGING_GLASS_SHELL } from "./messaging-ui";
+import { cn } from "@/lib/utils";
+import type { AlphaPresenceStatus } from "@/features/alpha-connect/presence";
+import { PRESENCE_LABELS } from "@/features/alpha-connect/presence";
 
 // ─────────────────────────────────────────────────────────────
 // Shield Role Hierarchy
@@ -31,6 +35,18 @@ export const FUTURE_BADGES: readonly FutureBadge[] = [
   { id: "daily_reader",   labelAr: "قارئ يومي",    description: "خطة قراءة يومية منتظمة" },
 ] as const;
 
+const FLY_BASE_PX = 152;
+const CARD_SHIELD_PX = 44;
+const CARD_SHIELD_SCALE = CARD_SHIELD_PX / FLY_BASE_PX;
+const SHIELD_EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
+const SHIELD_GROW_MS = 880;
+const SHIELD_SETTLE_MS = 980;
+const CARD_REVEAL_MS = 920;
+/** Above AlphaNavHub drawer (z-9999) when shield opens from menu */
+const SHIELD_OVERLAY_BACKDROP_Z = 10050;
+const SHIELD_OVERLAY_CARD_Z = 10051;
+const SHIELD_OVERLAY_FLY_Z = 10052;
+
 // ─────────────────────────────────────────────────────────────
 // Per-role config
 // ─────────────────────────────────────────────────────────────
@@ -39,13 +55,13 @@ const SHIELD_CONFIG: Record<ShieldRole, {
   label:       string;
   glow:        string;
   scale:       number;
-  status:      string;       // subtitle shown in chat next to name
-  trustLabel:  string;       // human-readable text status shown in the card
-  trustNote:   string;       // one-line description shown under trustLabel
+  status:      string;
+  trustLabel:  string;
+  trustNote:   string;
   radiate: { core: string; ring1: string; ring2: string };
 }> = {
   official: {
-    image:      "/shields/official-shield.png?v=8",
+    image:      "/shields/official-shield.png?v=10",
     label:      "درع Alpha الرسمي",
     glow:       "drop-shadow(0 0 5px rgba(200,149,42,0.65))",
     scale:      1.25,
@@ -59,7 +75,7 @@ const SHIELD_CONFIG: Record<ShieldRole, {
     },
   },
   priest: {
-    image:      "/shields/priest-shield.png?v=5",
+    image:      "/shields/priest-shield.png?v=13",
     label:      "درع الكاهن الملكي",
     glow:       "drop-shadow(0 0 6px rgba(22,101,52,0.6))",
     scale:      1.25,
@@ -73,7 +89,7 @@ const SHIELD_CONFIG: Record<ShieldRole, {
     },
   },
   servant: {
-    image:      "/shields/servant-shield.png?v=5",
+    image:      "/shields/servant-shield.png?v=6",
     label:      "درع الخادم",
     glow:       "drop-shadow(0 0 5px rgba(22,101,52,0.5))",
     scale:      1.25,
@@ -87,7 +103,7 @@ const SHIELD_CONFIG: Record<ShieldRole, {
     },
   },
   member: {
-    image:      "/shields/member-shield.png?v=5",
+    image:      "/shields/member-shield.png?v=10",
     label:      "درع العضو الموثّق",
     glow:       "drop-shadow(0 0 5px rgba(59,89,152,0.55))",
     scale:      1.25,
@@ -109,14 +125,42 @@ const SHIELD_INFO: Record<ShieldRole, { church: string; since: string }> = {
   member:   { church: "كنيسة مارمرقس — مصر الجديدة",        since: "٢٠٢٦" },
 };
 
+type FlyTransform = { x: number; y: number; scale: number };
+
+function heroHoverPoint(): FlyTransform {
+  return {
+    x: window.innerWidth / 2,
+    y: window.innerHeight * 0.34,
+    scale: 1,
+  };
+}
+
+function originTransform(origin: DOMRect | null): FlyTransform {
+  if (!origin) return heroHoverPoint();
+  const size = Math.max(origin.width, origin.height);
+  return {
+    x: origin.left + origin.width / 2,
+    y: origin.top + origin.height / 2,
+    scale: Math.max(0.18, Math.min(0.42, size / FLY_BASE_PX)),
+  };
+}
+
 // ─────────────────────────────────────────────────────────────
-// Shield image with radiate glow — used inline next to names
+// Shield image with radiate glow
 // ─────────────────────────────────────────────────────────────
-function ShieldImage({ role, px }: { role: ShieldRole; px: number }) {
+function ShieldImage({
+  role,
+  px,
+  className = "",
+}: {
+  role: ShieldRole;
+  px: number;
+  className?: string;
+}) {
   const cfg = SHIELD_CONFIG[role];
   return (
     <span
-      className="relative flex shrink-0 items-center justify-center overflow-visible"
+      className={`relative flex shrink-0 items-center justify-center overflow-visible ${className}`}
       style={{ width: px, height: px }}
     >
       <div aria-hidden className={`trust-shield-core-glow pointer-events-none absolute inset-[-40%] rounded-full ${cfg.radiate.core}`} />
@@ -127,104 +171,282 @@ function ShieldImage({ role, px }: { role: ShieldRole; px: number }) {
         alt={cfg.label}
         draggable={false}
         className="absolute pointer-events-none z-10"
-        style={{ width: "100%", height: "100%", maxWidth: "none", objectFit: "contain", filter: cfg.glow, transform: `scale(${cfg.scale})` }}
+        style={{
+          width: "100%",
+          height: "100%",
+          maxWidth: "none",
+          objectFit: "contain",
+          filter: cfg.glow,
+          transform: `scale(${cfg.scale})`,
+        }}
       />
     </span>
   );
 }
 
+function FlyingShield({
+  role,
+  transform,
+  animate,
+  duration,
+  onSettled,
+}: {
+  role: ShieldRole;
+  transform: FlyTransform;
+  animate: boolean;
+  duration: number;
+  onSettled?: () => void;
+}) {
+  return (
+    <div
+      className="pointer-events-none fixed left-0 top-0 will-change-transform"
+      style={{
+        zIndex: SHIELD_OVERLAY_FLY_Z,
+        width: FLY_BASE_PX,
+        height: FLY_BASE_PX,
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0) translate(-50%, -50%) scale(${transform.scale})`,
+        transition: animate ? `transform ${duration}ms ${SHIELD_EASE}` : "none",
+      }}
+      onTransitionEnd={(e) => {
+        if (animate && e.propertyName === "transform") onSettled?.();
+      }}
+    >
+      <ShieldImage role={role} px={FLY_BASE_PX} />
+    </div>
+  );
+}
+
 // ─────────────────────────────────────────────────────────────
-// Compact verification card — dark glass, text-only trust status
+// Compact verification card — dark glass
 // ─────────────────────────────────────────────────────────────
 function VerificationCard({
-  role, onClose, userName, userAvatar, isOnline,
+  role,
+  onClose,
+  userName,
+  userAvatar,
+  isOnline,
+  presenceStatus,
+  originRect,
 }: {
   role: ShieldRole;
   onClose: () => void;
   userName?: string;
   userAvatar?: string;
   isOnline?: boolean;
+  presenceStatus?: AlphaPresenceStatus | null;
+  originRect: DOMRect | null;
 }) {
-  const cfg  = SHIELD_CONFIG[role];
+  const cfg = SHIELD_CONFIG[role];
   const info = SHIELD_INFO[role];
+  const resolvedPresence = presenceStatus ?? (isOnline ? "available" : isOnline === false ? null : undefined);
+  const slotRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  const [backdropVisible, setBackdropVisible] = useState(false);
+  const [cardVisible, setCardVisible] = useState(false);
+  const [flyTransform, setFlyTransform] = useState<FlyTransform>(() => heroHoverPoint());
+  const [flyAnimate, setFlyAnimate] = useState(false);
+  const [flyPhase, setFlyPhase] = useState<"grow" | "settle" | "done">("grow");
+  const [showFlying, setShowFlying] = useState(true);
+  const settleStartedRef = useRef(false);
+
+  const beginSettle = useCallback(() => {
+    if (settleStartedRef.current) return;
+    const slot = slotRef.current?.getBoundingClientRect();
+    if (!slot) {
+      setFlyPhase("done");
+      setShowFlying(false);
+      return;
+    }
+    settleStartedRef.current = true;
+    setFlyPhase("settle");
+    requestAnimationFrame(() => {
+      setFlyTransform({
+        x: slot.left + slot.width / 2,
+        y: slot.top + slot.height / 2,
+        scale: CARD_SHIELD_SCALE,
+      });
+    });
+  }, []);
+
+  useLayoutEffect(() => {
+    settleStartedRef.current = false;
+    setFlyTransform(originTransform(originRect));
+    setFlyAnimate(false);
+    setFlyPhase("grow");
+    setShowFlying(true);
+    setCardVisible(false);
+    setBackdropVisible(false);
+
+    const backdropTimer = window.setTimeout(() => setBackdropVisible(true), 16);
+    const growFrame = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setFlyTransform(heroHoverPoint());
+        setFlyAnimate(true);
+      });
+    });
+    const cardTimer = window.setTimeout(() => setCardVisible(true), 320);
+
+    return () => {
+      window.clearTimeout(backdropTimer);
+      window.clearTimeout(cardTimer);
+      cancelAnimationFrame(growFrame);
+    };
+  }, [originRect]);
+
+  const handleFlySettled = useCallback(() => {
+    if (flyPhase === "grow") return;
+    setFlyPhase("done");
+    setShowFlying(false);
+  }, [flyPhase]);
+
+  const handleCardTransitionEnd = useCallback(
+    (e: React.TransitionEvent<HTMLDivElement>) => {
+      if (e.propertyName !== "transform" || !cardVisible) return;
+      beginSettle();
+    },
+    [beginSettle, cardVisible],
+  );
 
   return createPortal(
     <>
-      {/* Backdrop */}
       <div
-        className="fixed inset-0 z-[90] bg-black/50 backdrop-blur-[2px]"
+        className={cn(
+          "fixed inset-0 bg-black/36 backdrop-blur-[5px] transition-opacity",
+        )}
+        style={{
+          zIndex: SHIELD_OVERLAY_BACKDROP_Z,
+          opacity: backdropVisible ? 1 : 0,
+          transitionDuration: `${CARD_REVEAL_MS}ms`,
+          transitionTimingFunction: SHIELD_EASE,
+        }}
         onClick={onClose}
         aria-hidden="true"
       />
 
-      {/* Card */}
+      {showFlying && flyPhase !== "done" && (
+        <FlyingShield
+          role={role}
+          transform={flyTransform}
+          animate={flyAnimate}
+          duration={flyPhase === "settle" ? SHIELD_SETTLE_MS : SHIELD_GROW_MS}
+          onSettled={handleFlySettled}
+        />
+      )}
+
       <div
-        dir="rtl"
-        role="dialog"
-        aria-label={`بطاقة التوثيق · ${cfg.label}`}
-        className="fixed bottom-0 left-1/2 z-[91] w-full max-w-[420px] -translate-x-1/2 rounded-t-[24px] border-t border-x border-white/8 bg-[#0e1117]/95 pt-2.5 pb-[max(env(safe-area-inset-bottom),16px)] shadow-[0_-8px_40px_-4px_rgba(0,0,0,0.6)] backdrop-blur-3xl"
+        className="fixed inset-x-0 bottom-0 flex justify-center px-4 pb-[max(env(safe-area-inset-bottom),14px)] pointer-events-none"
+        style={{ zIndex: SHIELD_OVERLAY_CARD_Z }}
       >
-        {/* Handle */}
-        <div className="mx-auto mb-3 h-[3px] w-8 rounded-full bg-white/20" />
-
-        {/* Row 1: Avatar · Name · Online · Shield · Close */}
-        <div className="flex items-center gap-2.5 px-4 pb-2.5">
-          {userAvatar && (
-            <div className="relative shrink-0">
-              <img
-                src={userAvatar}
-                alt={userName ?? ""}
-                className="size-10 rounded-full border border-gold/30 object-cover"
-              />
-              {isOnline && (
-                <span className="absolute bottom-0 right-0 size-2.5 rounded-full border-2 border-[#0e1117] bg-[#166534] shadow-[0_0_5px_rgba(22,101,52,0.5)]" />
-              )}
-            </div>
+        <div
+          ref={cardRef}
+          dir="rtl"
+          role="dialog"
+          aria-label={`بطاقة التوثيق · ${cfg.label}`}
+          className={cn(
+            MESSAGING_GLASS_SHELL,
+            "pointer-events-auto relative w-[min(100%,276px)] border-white/30 bg-white/50 shadow-[0_20px_52px_rgba(0,0,0,0.16),inset_0_1px_0_rgba(255,255,255,0.62)] backdrop-blur-3xl will-change-transform",
           )}
-
-          <div className="min-w-0 flex-1">
-            {userName && (
-              <p className="truncate text-[13px] font-bold leading-tight text-white">{userName}</p>
-            )}
-            {isOnline !== undefined && (
-              <p className={`mt-0.5 text-[9px] font-semibold ${isOnline ? "text-[#DCFCE7]" : "text-white/35"}`}>
-                {isOnline ? "متصل الآن" : "غير متصل"}
-              </p>
-            )}
-          </div>
-
-          <ShieldImage role={role} px={44} />
-
+          style={{
+            transform: cardVisible ? "translate3d(0, 0, 0)" : "translate3d(0, calc(100% + 28px), 0)",
+            opacity: cardVisible ? 1 : 0,
+            transition: `transform ${CARD_REVEAL_MS}ms ${SHIELD_EASE}, opacity 560ms ease`,
+          }}
+          onTransitionEnd={handleCardTransitionEnd}
+          onClick={(e) => e.stopPropagation()}
+        >
           <button
             type="button"
             aria-label="إغلاق"
             onClick={onClose}
-            className="flex size-6 items-center justify-center rounded-full bg-white/8 text-white/50 hover:bg-white/15"
+            className="absolute left-2.5 top-2.5 grid size-7 place-items-center rounded-full border border-white/35 bg-white/45 text-[#6B7280] shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] backdrop-blur-sm transition hover:bg-white/65"
           >
-            <X className="size-3" />
+            <X className="size-3.5" strokeWidth={2.2} />
           </button>
-        </div>
 
-        {/* Divider */}
-        <div className="mx-4 mb-2.5 h-px bg-white/6" />
-
-        {/* Info rows */}
-        {[
-          ["الكنيسة",   info.church],
-          ["عضو منذ",  info.since],
-          ["نوع الدرع", cfg.label],
-          ["الحالة",    "الحساب نشط ✓"],
-        ].map(([lbl, val]) => (
-          <div key={lbl} className="flex items-center px-4 pb-2 text-[9.5px]">
-            <span className="flex-1 text-white/40">{lbl}</span>
-            <span className="font-semibold text-white/80">{val}</span>
+          <div
+            ref={slotRef}
+            className="flex justify-center px-4 pt-5 pb-0.5"
+            style={{ minHeight: CARD_SHIELD_PX + 6 }}
+          >
+            {flyPhase === "done" ? (
+              <ShieldImage role={role} px={CARD_SHIELD_PX} />
+            ) : (
+              <span aria-hidden className="block" style={{ width: CARD_SHIELD_PX, height: CARD_SHIELD_PX }} />
+            )}
           </div>
-        ))}
 
-        {/* Trust text block */}
-        <div className="mx-4 mt-1 rounded-2xl border border-white/6 bg-white/4 px-3.5 py-2.5">
-          <p className="text-[11px] font-bold leading-tight text-gold/90">{cfg.trustLabel}</p>
-          <p className="mt-1 text-[9px] leading-relaxed text-white/45">{cfg.trustNote}</p>
+          <div className="px-4 pb-0.5 text-center">
+            <p className="text-[13px] font-bold text-[#1F2937]">{cfg.label}</p>
+            <p className="mt-0.5 text-[9.5px] text-[#6B7280]">{cfg.status}</p>
+          </div>
+
+          {(userAvatar || userName) && (
+            <div className="mx-4 mb-2.5 mt-2.5 flex items-center gap-2.5 rounded-[14px] border border-white/28 bg-white/26 px-2.5 py-2 backdrop-blur-sm">
+              {userAvatar && (
+                <div className="relative shrink-0">
+                  <img
+                    src={userAvatar}
+                    alt={userName ?? ""}
+                    className="size-9 rounded-full border border-gold/25 object-cover"
+                  />
+                  {resolvedPresence ? (
+                    <span
+                      className={cn(
+                        "absolute bottom-0 right-0 size-2 rounded-full border-2 border-white",
+                        resolvedPresence === "busy"
+                          ? "bg-[#f97316]"
+                          : resolvedPresence === "hidden"
+                            ? "bg-[#9CA3AF]"
+                            : "bg-[#166534]",
+                      )}
+                    />
+                  ) : null}
+                </div>
+              )}
+              <div className="min-w-0 flex-1 text-right">
+                {userName && (
+                  <p className="truncate text-[12px] font-bold text-[#1F2937]">{userName}</p>
+                )}
+                {resolvedPresence !== undefined && (
+                  <p
+                    className={`mt-0.5 text-[9px] font-semibold ${
+                      resolvedPresence === "busy"
+                        ? "text-[#ea580c]"
+                        : resolvedPresence === "hidden"
+                          ? "text-[#374151]"
+                          : resolvedPresence
+                            ? "text-[#166534]"
+                            : "text-[#9CA3AF]"
+                    }`}
+                  >
+                    {resolvedPresence ? PRESENCE_LABELS[resolvedPresence] : "غير متصل"}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div className="mx-4 mb-2.5 h-px bg-gradient-to-l from-transparent via-white/42 to-transparent" />
+
+          <div className={`${MESSAGING_GLASS_INNER} mx-4 mb-2.5 space-y-1.5 px-2.5 py-2`}>
+            {[
+              ["الكنيسة", info.church],
+              ["عضو منذ", info.since],
+              ["نوع الدرع", cfg.label],
+              ["الحالة", "الحساب نشط ✓"],
+            ].map(([lbl, val]) => (
+              <div key={lbl} className="flex items-center gap-2 text-[9.5px]">
+                <span className="flex-1 text-[#6B7280]">{lbl}</span>
+                <span className="max-w-[58%] truncate text-left font-semibold text-[#374151]">{val}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className={`${MESSAGING_GLASS_INNER} mx-4 mb-4 px-3 py-2.5`}>
+            <p className="text-[10.5px] font-bold leading-tight text-[#14532D]">{cfg.trustLabel}</p>
+            <p className="mt-0.5 text-[9px] leading-relaxed text-[#6B7280]">{cfg.trustNote}</p>
+          </div>
         </div>
       </div>
     </>,
@@ -233,7 +455,7 @@ function VerificationCard({
 }
 
 // ─────────────────────────────────────────────────────────────
-// Public component — drop-in, API unchanged + optional user props
+// Public component
 // ─────────────────────────────────────────────────────────────
 export function AlphaShield({
   role,
@@ -241,27 +463,38 @@ export function AlphaShield({
   userName,
   userAvatar,
   isOnline,
+  presenceStatus,
 }: {
   role: ShieldRole;
   size?: "sm" | "md" | "lg";
   userName?: string;
   userAvatar?: string;
   isOnline?: boolean;
+  presenceStatus?: AlphaPresenceStatus | null;
 }) {
-  const [open, setOpen]       = useState(false);
+  const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [originRect, setOriginRect] = useState<DOMRect | null>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => setMounted(true), []);
 
   const px = size === "lg" ? 48 : 28;
 
+  const handleOpen = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    setOriginRect(triggerRef.current?.getBoundingClientRect() ?? null);
+    setOpen(true);
+  };
+
   return (
     <>
       <button
+        ref={triggerRef}
         type="button"
         aria-label={`بطاقة توثيق · ${SHIELD_CONFIG[role].label}`}
-        onClick={(e) => { e.stopPropagation(); setOpen(true); }}
-        className="inline-flex shrink-0 items-center justify-center p-0 focus:outline-none"
+        onClick={handleOpen}
+        className="inline-flex shrink-0 items-center justify-center p-0 focus:outline-none active:scale-95 transition-transform"
         style={{ width: px, height: px, background: "transparent", border: "none" }}
       >
         <ShieldImage role={role} px={px} />
@@ -274,6 +507,8 @@ export function AlphaShield({
           userName={userName}
           userAvatar={userAvatar}
           isOnline={isOnline}
+          presenceStatus={presenceStatus}
+          originRect={originRect}
         />
       )}
     </>

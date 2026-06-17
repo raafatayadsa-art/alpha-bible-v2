@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { PrayerCategory, PrayerRequest, PrayerStatus } from "@/data/prayer-requests";
+import { resolveActiveChurchId } from "./church-dashboard-api";
 import { getCurrentUser } from "./current-user";
 
 export const PRAYER_REQUESTS_CHANGED = "ab:prayer-requests";
@@ -16,7 +17,8 @@ type PrayerRow = {
   user_id: string;
   user_name: string;
   title: string;
-  body: string;
+  body?: string;
+  request?: string;
   category: string;
   status: PrayerStatus;
   anonymous: boolean;
@@ -24,6 +26,10 @@ type PrayerRow = {
   prayer_count: number;
   created_at: string;
 };
+
+function prayerText(row: PrayerRow): string {
+  return (row.body ?? row.request ?? "").trim();
+}
 
 function formatRelativeTime(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -47,7 +53,7 @@ function mapRowToPrayerRequest(row: PrayerRow, currentUserId: string): PrayerReq
     id: row.id,
     name: row.anonymous ? "طلب صلاة مجهول" : row.user_name || "عضو الكنيسة",
     title: row.title,
-    request: row.body,
+    request: prayerText(row),
     time: formatRelativeTime(row.created_at),
     ageMinutes: ageMinutes(row.created_at),
     prayers: row.prayer_count,
@@ -59,33 +65,46 @@ function mapRowToPrayerRequest(row: PrayerRow, currentUserId: string): PrayerReq
   };
 }
 
-async function resolveChurchIdForPrayers(): Promise<string | null> {
-  const { waitForAuthUserId } = await import("@/features/auth");
-  const userId = await waitForAuthUserId();
-  if (!userId) return null;
+async function insertPrayerRow(payload: Record<string, unknown>) {
+  const withBody = { ...payload };
 
-  const { data: membership } = await supabase
-    .from("church_memberships")
-    .select("church_id")
-    .eq("user_id", userId)
-    .eq("status", "active")
-    .limit(1)
-    .maybeSingle();
+  // Attempt 1: insert with `body` column
+  let result = await supabase.from("prayer_requests").insert(withBody).select("*").single();
 
-  if (!membership?.church_id) return null;
+  if (!result.error) return result;
 
-  const { data: church } = await supabase
-    .from("churches")
-    .select("id")
-    .eq("id", membership.church_id)
-    .eq("status", "approved")
-    .maybeSingle();
+  const msg1 = result.error.message ?? "";
+  console.warn("insertPrayerRow attempt 1 failed:", msg1);
 
-  return church?.id != null ? String(church.id) : null;
+  // Attempt 2: use `request` column instead of `body`
+  const isBodyColumnMissing =
+    msg1.includes("body") || msg1.includes("schema cache") || msg1.includes("column");
+  if (isBodyColumnMissing) {
+    const { body, ...rest } = withBody;
+    result = await supabase
+      .from("prayer_requests")
+      .insert({ ...rest, request: body })
+      .select("*")
+      .single();
+
+    if (!result.error) return result;
+
+    const msg2 = result.error.message ?? "";
+    console.warn("insertPrayerRow attempt 2 failed:", msg2);
+
+    // Attempt 3: send both body + request to cover any schema variant
+    result = await supabase
+      .from("prayer_requests")
+      .insert({ ...rest, body, request: body })
+      .select("*")
+      .single();
+  }
+
+  return result;
 }
 
 export async function fetchCommunityPrayerRequests(churchId?: string | null): Promise<PrayerRequest[]> {
-  const resolvedId = churchId ?? (await resolveChurchIdForPrayers());
+  const resolvedId = churchId ?? (await resolveActiveChurchId());
   if (!resolvedId) return [];
 
   const user = getCurrentUser();
@@ -116,7 +135,7 @@ export async function createPrayerRequest(input: {
   const userId = await waitForAuthUserId();
   if (!userId) return { ok: false, error: "يجب تسجيل الدخول أولاً" };
 
-  const churchId = await resolveChurchIdForPrayers();
+  const churchId = await resolveActiveChurchId();
   if (!churchId) return { ok: false, error: "لا توجد كنيسة معتمدة مرتبطة بحسابك" };
 
   const user = getCurrentUser();
@@ -124,26 +143,33 @@ export async function createPrayerRequest(input: {
   const body = input.body.trim();
   if (!title || !body) return { ok: false, error: "يرجى ملء جميع الحقول" };
 
-  const { data, error } = await supabase
-    .from("prayer_requests")
-    .insert({
-      church_id: churchId,
-      user_id: userId,
-      user_name: input.anonymous ? "" : user.name || "عضو الكنيسة",
-      title,
-      body,
-      category: input.category ?? "طلبة",
-      status: "active",
-      anonymous: input.anonymous,
-      visibility: "community",
-      prayer_count: 0,
-    })
-    .select("*")
-    .single();
+  const basePayload = {
+    church_id: churchId,
+    user_id: userId,
+    user_name: input.anonymous ? "" : user.name || "عضو الكنيسة",
+    title,
+    body,
+    category: input.category ?? "طلبة",
+    status: "active" as const,
+    anonymous: input.anonymous,
+    visibility: "community" as const,
+    prayer_count: 0,
+  };
+
+  const { data, error } = await insertPrayerRow(basePayload);
 
   if (error || !data) {
-    console.error("createPrayerRequest", error);
-    return { ok: false, error: error?.message ?? "تعذّر حفظ طلب الصلاة" };
+    const msg = error?.message ?? "";
+    const code = error?.code ?? "";
+    console.error("createPrayerRequest error:", { code, msg, details: error?.details, hint: error?.hint });
+
+    if (code === "PGRST204" || msg.includes("schema cache") || msg.includes("column")) {
+      return { ok: false, error: "تعذّر حفظ طلب الصلاة — يرجى إعادة تحميل الصفحة والمحاولة مجدداً." };
+    }
+    if (msg.includes("row-level") || msg.includes("policy") || code === "42501") {
+      return { ok: false, error: "لا توجد صلاحية — تأكد من انتمائك للكنيسة." };
+    }
+    return { ok: false, error: msg || "تعذّر حفظ طلب الصلاة — حاول مرة أخرى." };
   }
 
   const request = mapRowToPrayerRequest(data as PrayerRow, userId);

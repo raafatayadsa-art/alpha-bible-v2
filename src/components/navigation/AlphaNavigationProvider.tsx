@@ -23,6 +23,9 @@ function getSmartFallback(pathname: string): string {
   if (pathname.startsWith("/bible/")) return "/bible";
   if (pathname === "/search" || pathname.startsWith("/search/")) return "/home";
   if (pathname === "/prayer-requests") return "/church";
+  if (pathname === "/messages" || pathname.startsWith("/alpha-connect") || pathname === "/personal-call") {
+    return "/church";
+  }
   return "/home";
 }
 

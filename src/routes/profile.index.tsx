@@ -7,6 +7,8 @@ import { BottomDock } from "@/components/bible/BottomDock";
 import { CopticWatermark, CopticCross } from "@/components/coptic";
 import { AlphaHeader, AlphaHeaderShell } from "@/components/navigation/AlphaHeader";
 import { AlphaOfficialLogo } from "@/components/brand";
+import { AlphaQrCode } from "@/components/identity/AlphaQrCode";
+import { useAlphaIdentity } from "@/features/identity/useAlphaIdentity";
 
 export const Route = createFileRoute("/profile/")({
   ssr: false,
@@ -23,15 +25,10 @@ const MEMBER = {
   name: "مينا عاطف",
   role: "خادم مدارس الأحد",
   church: "كنيسة الشهيد مار جرجس",
-  membershipNo: "AC-2024-00187",
   status: "عضو فعّال",
   joinDate: "12 يناير 2019",
   verified: true,
 };
-
-const QR_URL = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&ecc=H&margin=2&bgcolor=fbf3e1&color=2a1a0d&data=${encodeURIComponent(
-  `alpha://member/${MEMBER.membershipNo}`,
-)}`;
 
 // ===== Reusable premium glass card =====
 function GlassCard({
@@ -348,6 +345,12 @@ function ProfileHero() {
 
 // ===== Premium Orthodox Membership Certificate =====
 function MembershipCard() {
+  const identity = useAlphaIdentity({
+    displayName: MEMBER.name,
+    churchName: MEMBER.church,
+    verified: MEMBER.verified,
+  });
+
   return (
     <Link
       to={"/profile/membership" as any}
@@ -445,7 +448,14 @@ function MembershipCard() {
                     boxShadow: "inset 0 0 0 1px rgba(216,138,42,0.45), inset 0 2px 6px rgba(120,80,30,0.18)",
                   }}
                 >
-                  <img src={QR_URL} alt="QR العضوية" className="block h-[82px] w-[82px]" loading="lazy" />
+                  <AlphaQrCode
+                    value={identity.qrPayload}
+                    size={240}
+                    fgColor="2a1a0d"
+                    bgColor="fbf3e1"
+                    alt="Alpha QR"
+                    className="block h-[82px] w-[82px]"
+                  />
                 </div>
                 <span
                   className="absolute inset-0 m-auto grid h-[24px] w-[24px] place-items-center rounded-md text-[12px] font-extrabold"
@@ -460,7 +470,7 @@ function MembershipCard() {
                 </span>
               </div>
               <p className="mt-1.5 text-center text-[8.5px] font-bold tracking-wider text-[#8a5a1c]/80 uppercase">
-                Scan ID
+                Alpha ID
               </p>
             </div>
 
@@ -491,7 +501,7 @@ function MembershipCard() {
               </div>
 
               <div className="mt-2 grid grid-cols-1 gap-y-0.5 text-[10px]">
-                <Row icon={<Hash className="h-2.5 w-2.5" />} label="رقم العضوية" value={MEMBER.membershipNo} mono />
+                <Row icon={<Hash className="h-2.5 w-2.5" />} label="Alpha ID" value={identity.alphaIdShort} mono />
                 <Row icon={<Church className="h-2.5 w-2.5" />} label="الكنيسة" value={MEMBER.church} />
                 <Row icon={<Calendar className="h-2.5 w-2.5" />} label="الانضمام" value={MEMBER.joinDate} />
               </div>

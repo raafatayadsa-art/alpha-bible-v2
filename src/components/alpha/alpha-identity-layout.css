@@ -1,0 +1,266 @@
+/**
+ * Global RTL identity layout for Alpha.
+ * One attached identity block (avatar + name + shield + role) from the right; controls separated.
+ */
+
+.alpha-identity-row {
+  direction: rtl;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-width: 0;
+}
+
+.alpha-identity-row--stacked {
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ── Identity block: avatar + name + shield + role — never split ── */
+.alpha-identity-block {
+  direction: rtl;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.alpha-identity-block--stacked {
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.alpha-identity-block__avatar {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.alpha-identity-avatar--xs {
+  width: 2rem;
+  height: 2rem;
+}
+
+.alpha-identity-avatar--sm {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.alpha-identity-avatar--md {
+  width: 3rem;
+  height: 3rem;
+}
+
+.alpha-identity-avatar--lg {
+  width: 3.5rem;
+  height: 3.5rem;
+}
+
+.alpha-identity-block__avatar img,
+.alpha-identity-block__avatar .alpha-identity-avatar__img {
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+  object-fit: cover;
+}
+
+.alpha-identity-avatar__ring {
+  border-radius: 9999px;
+  padding: 2px;
+}
+
+.alpha-identity-avatar__ring--green {
+  background: linear-gradient(135deg, var(--neon-green, oklch(0.82 0.22 145)), oklch(0.82 0.22 145 / 0.3));
+}
+
+.alpha-identity-avatar__ring--glass {
+  background: linear-gradient(135deg, rgb(255 255 255 / 0.15), rgb(255 255 255 / 0.05));
+  padding: 1.5px;
+}
+
+.alpha-identity-block__details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.alpha-identity-block--stacked .alpha-identity-block__details {
+  align-items: center;
+}
+
+.alpha-identity-block__role {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+/* Non-identity content (preview line) — outside the identity block */
+.alpha-identity-row__secondary {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.alpha-identity-row__trailing {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-inline-start: auto;
+}
+
+/* Name + shield — attached inside identity block */
+.alpha-identity-name {
+  direction: rtl;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.alpha-identity-name--stacked {
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.alpha-identity-name__text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Presence dot — inner corner of avatar */
+.alpha-identity-block__avatar .connect-presence-dot {
+  bottom: 0;
+  left: 0;
+  right: auto;
+}
+
+.alpha-connect-theme .connect-participant-row.alpha-identity-row {
+  direction: rtl;
+}
+
+/* Participants drawer — fixed columns: avatar | name | shield | status */
+.connect-participant-row--grid {
+  direction: rtl;
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr) 1.75rem 1.625rem;
+  column-gap: 0.625rem;
+  align-items: center;
+  text-align: right;
+}
+
+.connect-participant-row__avatar {
+  position: relative;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+}
+
+.connect-participant-row__avatar .connect-presence-dot {
+  bottom: 0;
+  left: 0;
+  right: auto;
+}
+
+.connect-participant-row__details {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.connect-participant-row__shield {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.connect-participant-row__status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.625rem;
+  height: 1.625rem;
+}
+
+.connect-participant-row__status-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.625rem;
+  height: 1.625rem;
+}
+
+.connect-participant-row__status-empty {
+  display: block;
+  width: 1.625rem;
+  height: 1.625rem;
+}
+
+/* Conversation rows — same grid as participants, trailing column for time/badge */
+.connect-identity-grid-row.connect-participant-row--grid {
+  grid-template-columns: 2.5rem minmax(0, 1fr) 1.75rem auto;
+}
+
+.connect-identity-grid-row__trailing {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+/* Call log — avatar left · name right · shield column · actions right */
+.connect-call-log-row.alpha-identity-row {
+  direction: ltr;
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr) 1.75rem auto;
+  column-gap: 0.625rem;
+  align-items: center;
+}
+
+.connect-call-log-row__avatar {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.connect-call-log-row__details {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.125rem;
+  text-align: right;
+  direction: rtl;
+}
+
+.connect-call-log-row__shield {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.connect-call-log-row__trailing {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.5rem;
+}

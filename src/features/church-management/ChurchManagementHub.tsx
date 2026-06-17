@@ -1,10 +1,12 @@
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
 import { Church } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { CopticCross } from "@/components/coptic";
+import { canManageChurchPosts, useAlphaAuth } from "@/features/auth";
+import { useChurchHubDashboardAccess, useChurchProfile } from "@/features/church/use-church-dashboard";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
 import { setupGreenButton } from "./church-setup-styles";
+
 function HubCard({
   children,
   accent = "#b8893a",
@@ -42,7 +44,7 @@ function HubButton({
   variant = "primary",
 }: {
   children: ReactNode;
-  to: "/profile/church/setup";
+  to: string;
   variant?: "primary" | "secondary";
 }) {
   const navigate = useNavigate();
@@ -52,11 +54,7 @@ function HubButton({
       : "flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-[#efe2c4] bg-white/75 backdrop-blur-sm text-[14px] font-extrabold text-[#3a2a18] shadow-[0_8px_18px_-14px_rgba(120,80,30,0.35)] active:scale-[0.98] transition-transform";
 
   return (
-    <button
-      type="button"
-      className={cls}
-      onClick={() => navigate({ to })}
-    >
+    <button type="button" className={cls} onClick={() => navigate({ to: to as "/" })}>
       {children}
     </button>
   );
@@ -70,20 +68,51 @@ function ChurchIllustration() {
   );
 }
 
-function StateNone() {
+function StateLoading() {
+  return (
+    <HubCard accent="#3f9d6e" className="animate-in fade-in duration-300">
+      <p className="text-center text-[13px] font-bold text-[#6a543a]">جاري فتح لوحة الكنيسة…</p>
+    </HubCard>
+  );
+}
+
+function StateOpeningChurch() {
+  return (
+    <HubCard accent="#3f9d6e" className="animate-in fade-in duration-300">
+      <div className="text-center">
+        <ChurchIllustration />
+        <h2 className="mt-4 font-arabic-serif text-[17px] font-bold text-[#3a2a18]">كنيستك معاك</h2>
+        <p className="mt-2 text-[13px] leading-relaxed text-[#6a543a]">جاري فتح شاشة الكنيسة…</p>
+      </div>
+      <div className="mt-5">
+        <HubButton to="/church">فتح كنيستك معاك</HubButton>
+      </div>
+    </HubCard>
+  );
+}
+
+function StateEmpty({ canManage }: { canManage: boolean }) {
   return (
     <HubCard accent="#c98a3c" className="animate-in fade-in duration-300">
       <div className="text-center">
         <ChurchIllustration />
         <h2 className="mt-4 font-arabic-serif text-[18px] font-bold text-[#3a2a18]">
-          لم يتم تسجيل كنيسة بعد
+          لا توجد كنيسة مرتبطة بحسابك
         </h2>
         <p className="mt-2 text-[13px] leading-relaxed text-[#6a543a]">
-          يمكن للكاهن إرسال طلب تأسيس كنيسة جديدة لإدارة Alpha للمراجعة.
+          يمكنك اختيار كنيسة من الدليل أو إرسال طلب انضمام. {canManage ? "وبصفتك خادماً أو كاهناً يمكنك أيضاً طلب تأسيس كنيسة." : ""}
         </p>
       </div>
-      <div className="mt-5">
-        <HubButton to="/profile/church/setup">طلب تأسيس كنيسة</HubButton>
+      <div className="mt-5 space-y-2.5">
+        <HubButton to="/church/directory">اختيار كنيسة</HubButton>
+        <HubButton to="/church/directory" variant="secondary">
+          طلب الانضمام لكنيسة
+        </HubButton>
+        {canManage ? (
+          <HubButton to="/profile/church/setup" variant="secondary">
+            طلب تأسيس كنيسة
+          </HubButton>
+        ) : null}
       </div>
     </HubCard>
   );
@@ -132,94 +161,95 @@ function StateNeedsInfo({ adminNotes }: { adminNotes?: string }) {
   );
 }
 
+function StateError({ onRetry }: { onRetry: () => void }) {
+  return (
+    <HubCard accent="#c45c5c" className="animate-in fade-in duration-300">
+      <div className="text-center">
+        <h2 className="font-arabic-serif text-[17px] font-bold text-[#3a2a18]">تعذّر تحميل بيانات الكنيسة</h2>
+        <p className="mt-2 text-[13px] leading-relaxed text-[#6a543a]">
+          تحقق من الاتصال وحاول مرة أخرى. لن نبقيك في شاشة التحميل.
+        </p>
+      </div>
+      <div className="mt-5 space-y-2.5">
+        <button type="button" className={setupGreenButton} onClick={onRetry}>
+          إعادة المحاولة
+        </button>
+        <HubButton to="/church/directory" variant="secondary">
+          اختيار كنيسة
+        </HubButton>
+      </div>
+    </HubCard>
+  );
+}
+
 export function ChurchManagementHub() {
   const navigate = useNavigate();
-  const [membershipChecked, setMembershipChecked] = useState(false);
-  const [sessionUserId, setSessionUserId] = useState<string | null>(null);
-  const [membership, setMembership] = useState<{ id: string | number } | null>(null);
+  const redirectedRef = useRef(false);
+  const { user, isAuthenticated, role } = useAlphaAuth();
+  const { profile, loading: profileLoading, error: profileError, refresh: refreshProfile } = useChurchProfile();
+  const {
+    canOpenDashboard,
+    loading: accessLoading,
+    error: accessError,
+    refresh: refreshAccess,
+  } = useChurchHubDashboardAccess();
+
+  const loading = profileLoading || accessLoading;
+  const canManage = canManageChurchPosts(role);
+  const shouldOpenChurch = canOpenDashboard || profile.hasApprovedChurch;
 
   useEffect(() => {
-    let cancelled = false;
+    if (loading) return;
 
-    void (async () => {
-      let session: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"] = null;
-      const deadline = Date.now() + 8000;
+    if (shouldOpenChurch && !redirectedRef.current) {
+      redirectedRef.current = true;
+      console.info("[ChurchManagementHub] approved church found — opening /church", {
+        userId: user?.id ?? null,
+        isAuthenticated,
+        canOpenDashboard,
+        hasApprovedChurch: profile.hasApprovedChurch,
+      });
+      navigate({ to: "/church", replace: true });
+    }
+  }, [loading, shouldOpenChurch, canOpenDashboard, profile.hasApprovedChurch, navigate, user?.id, isAuthenticated]);
 
-      while (Date.now() < deadline && !cancelled) {
-        const { data: { session: nextSession } } = await supabase.auth.getSession();
-        if (nextSession?.user?.id) {
-          session = nextSession;
-          break;
-        }
-        await new Promise((resolve) => setTimeout(resolve, 150));
-      }
+  useEffect(() => {
+    if (loading) return;
+    console.info("[ChurchManagementHub] resolved", {
+      userId: user?.id ?? null,
+      isAuthenticated,
+      canOpenDashboard,
+      setupStatus: profile.setupStatus,
+      hasApprovedChurch: profile.hasApprovedChurch,
+      canManage,
+    });
+  }, [loading, user?.id, isAuthenticated, canOpenDashboard, profile.setupStatus, profile.hasApprovedChurch, canManage]);
 
-      if (cancelled) return;
+  const retry = () => {
+    redirectedRef.current = false;
+    void refreshProfile();
+    void refreshAccess();
+  };
 
-      if (!session?.user?.id) {
-        const { data: { session: finalSession } } = await supabase.auth.getSession();
-        session = finalSession;
-      }
-
-      if (cancelled) return;
-
-      if (!session?.user?.id) {
-        setSessionUserId(null);
-        setMembership(null);
-        navigate({ to: "/login", replace: true });
-        return;
-      }
-
-      const userId = session.user.id;
-      setSessionUserId(userId);
-
-      const { data: membershipRow } = await supabase
-        .from("church_memberships")
-        .select("id")
-        .eq("user_id", userId)
-        .eq("status", "active")
-        .eq("membership_status", "approved")
-        .limit(1)
-        .maybeSingle();
-
-      setMembership(membershipRow ?? null);
-
-      if (cancelled) return;
-
-      if (membershipRow?.id != null) {
-        navigate({ to: "/church", replace: true });
-        return;
-      }
-
-      setMembershipChecked(true);
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [navigate]);
-
-  const loading = !membershipChecked;
-  const canOpenDashboard = undefined;
-  const dashboardUnlocked = undefined;
-  const renderBranch = !membershipChecked ? "loading" : "setup_card_state_none";
-
-  console.log({
-    loading,
-    membership,
-    canOpenDashboard,
-    dashboardUnlocked,
-    sessionUserId,
-    renderBranch,
-  });
-
-  if (!membershipChecked) {
-    return (
-      <HubCard accent="#3f9d6e" className="animate-in fade-in duration-300">
-        <p className="text-center text-[13px] font-bold text-[#6a543a]">جاري فتح لوحة الكنيسة…</p>
-      </HubCard>
-    );
+  if (loading) {
+    return <StateLoading />;
   }
 
-  return <StateNone />;
+  if (profileError || accessError) {
+    return <StateError onRetry={retry} />;
+  }
+
+  if (shouldOpenChurch) {
+    return <StateOpeningChurch />;
+  }
+
+  if (profile.setupStatus === "pending") {
+    return <StatePending />;
+  }
+
+  if (profile.setupStatus === "needs_info") {
+    return <StateNeedsInfo adminNotes={profile.adminNotes} />;
+  }
+
+  return <StateEmpty canManage={canManage} />;
 }

@@ -23,18 +23,9 @@ export function ProfileSubShell({
 
   return (
     <div dir="rtl" className="relative min-h-screen w-full overflow-x-hidden">
-      <div
-        aria-hidden
-        className="fixed inset-0 -z-10"
-        style={{
-          background:
-            "radial-gradient(120% 55% at 50% 0%, rgba(231,201,122,0.35), transparent 60%)," +
-            "linear-gradient(180deg,#f7eed6 0%,#f4ead8 50%,#ecdcb6 100%)",
-        }}
-      />
       <CopticWatermark subtle={subtleWatermark} />
-      <div className="relative mx-auto w-full max-w-[440px] px-4 pb-36 pt-[max(env(safe-area-inset-top),12px)]">
-        <div className="flex items-center justify-between gap-2 pt-2">
+      <div className="relative mx-auto w-full max-w-[440px] px-4 pb-36">
+        <div className="flex items-center justify-between gap-2 pt-[max(env(safe-area-inset-top),12px)] pb-2">
           <button
             type="button"
             onClick={goBack}

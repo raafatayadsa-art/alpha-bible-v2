@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { BellOff, Eye, EyeOff, Search, Settings2, SlidersHorizontal, SquarePen, Trash2 } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import { ArrowLeft, BellOff, Eye, EyeOff, Search, Settings2, SlidersHorizontal, SquarePen, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAlphaNavigation } from "@/components/navigation/AlphaNavigationProvider";
 import { AlphaBottomNavigation } from "./AlphaBottomNavigation";
-import { AlphaShield } from "./AlphaShield";
+import { AlphaIdentityRow } from "./AlphaIdentityRow";
 import { conversations } from "./messaging-data";
 import {
   HIDDEN_CONVS_KEY,
@@ -27,10 +29,27 @@ const BASE_FILTERS = ["الكل", "خاصة", "مجموعات", "كهنة", "خ�
 export function AlphaConversationsScreen({
   onOpenChat,
   onOpenSettings,
+  returnTo,
+  onBack,
 }: {
   onOpenChat: () => void;
   onOpenSettings: () => void;
+  returnTo?: string;
+  onBack?: () => void;
 }) {
+  const navigate = useNavigate();
+  const { goBack } = useAlphaNavigation();
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+      return;
+    }
+    if (returnTo) {
+      void navigate({ to: returnTo as "/" });
+      return;
+    }
+    goBack();
+  };
   const [activeFilter, setActiveFilter] = useState("الكل");
   const [search, setSearch] = useState("");
   const [hiddenConvIds, setHiddenConvIds]   = useState<string[]>([]);
@@ -151,21 +170,32 @@ export function AlphaConversationsScreen({
   }, [onOpenChat, showConvToast]);
 
   return (
-    <main dir="rtl" className="alpha-messaging-bg flex h-[100dvh] flex-col overflow-hidden font-arabic text-foreground">
+    <main dir="rtl" className="flex h-full min-h-0 flex-col overflow-hidden font-arabic text-foreground">
       <div className="shrink-0 px-4 pt-[max(env(safe-area-inset-top),16px)]">
 
         {/* ── Header ── */}
-        <header className="mb-5 flex items-center justify-between pt-2">
-          <div>
-            <div className="mb-1 flex items-center gap-2 text-[10px] font-semibold tracking-[0.18em] text-gold/75">
-              <span>Α</span>
-              <span className="h-px w-5 bg-gold/40" />
-              <span>Ω</span>
+        <header className="mb-5 flex items-center justify-between gap-3 pt-2">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <Button
+              onClick={handleBack}
+              aria-label="رجوع"
+              variant="ghost"
+              size="icon"
+              className="size-9 shrink-0 rounded-[18px] border border-gold/12 bg-[rgba(247,240,224,0.62)] text-gold shadow-[0_2px_12px_-4px_rgba(200,149,42,0.18),0_1px_3px_rgba(0,0,0,0.04)] backdrop-blur-xl hover:border-gold/28 hover:bg-[rgba(247,240,224,0.78)]"
+            >
+              <ArrowLeft className="size-[18px]" />
+            </Button>
+            <div className="min-w-0">
+              <div className="mb-1 flex items-center gap-2 text-[10px] font-semibold tracking-[0.18em] text-gold/75">
+                <span>Α</span>
+                <span className="h-px w-5 bg-gold/40" />
+                <span>Ω</span>
+              </div>
+              <h1 className="text-[26px] font-extrabold tracking-tight">المحادثات</h1>
+              <p className="mt-1 text-[11px] text-muted-foreground">مساحتك الخاصة والموثّقة داخل Alpha</p>
             </div>
-            <h1 className="text-[26px] font-extrabold tracking-tight">المحادثات</h1>
-            <p className="mt-1 text-[11px] text-muted-foreground">مساحتك الخاصة والموثّقة داخل Alpha</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             <button
               type="button"
               onClick={onOpenSettings}
@@ -285,57 +315,41 @@ export function AlphaConversationsScreen({
               tabIndex={conversation.id === "priest" ? 0 : undefined}
               className={MESSAGING_CONV_CARD}
             >
-              {/* Avatar */}
-              <div className="relative shrink-0">
-                <img
-                  src={conversation.avatar}
-                  alt=""
-                  width={48}
-                  height={48}
-                  loading="lazy"
-                  className="size-12 rounded-full border border-white/35 object-cover shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
-                />
-                {conversation.online && (
-                  <span className="absolute bottom-0 right-0 size-3 rounded-full border-[1.5px] border-white/35 bg-[#166534] shadow-[0_0_5px_rgba(22,101,52,0.45)]" />
-                )}
-              </div>
-
-              {/* Name · Shield · Preview */}
-              <div className="min-w-0 flex-1">
-                {/* Avatar + Name + Shield as one visual group */}
-                <div className="mb-0.5 flex items-center gap-1">
-                  <h2 className="truncate text-[12.5px] font-bold leading-tight text-[#1F2937]">{conversation.name}</h2>
-                  <AlphaShield
-                    role={conversation.role}
-                    size="sm"
-                    userName={conversation.name}
-                    userAvatar={conversation.avatar}
-                    isOnline={conversation.online}
-                  />
-                </div>
-                <p className={`truncate text-[11px] leading-4 ${
-                  conversation.unread ? "font-semibold text-foreground/90" : "text-muted-foreground/75"
-                }`}>
-                  {conversation.message}
-                </p>
-              </div>
-
-              {/* Time + Unread + Muted badge */}
-              <div className="flex shrink-0 flex-col items-end justify-between gap-1.5">
-                <div className="flex items-center gap-1">
-                  {mutedConvIds.includes(conversation.id) && (
-                    <BellOff className="size-3 text-[#8A6A3D]" aria-label="مكتوم" />
-                  )}
-                  <time className="text-[8.5px] text-muted-foreground/65">{conversation.time}</time>
-                </div>
-                {conversation.unread ? (
-                  <span className="grid min-w-[18px] place-items-center rounded-full bg-alpha-purple px-1 py-0.5 text-[8px] font-bold text-alpha-purple-foreground shadow-[0_0_8px_var(--alpha-purple)]">
-                    {conversation.unread}
+              <AlphaIdentityRow
+                className="w-full"
+                name={conversation.name}
+                role={conversation.role}
+                avatar={conversation.avatar}
+                avatarSize="md"
+                presenceUserId={conversation.id}
+                nameClassName="text-[12.5px] font-bold leading-tight text-[#1F2937]"
+                subtitle={
+                  <span
+                    className={`text-[11px] leading-4 ${
+                      conversation.unread ? "font-semibold text-foreground/90" : "text-muted-foreground/75"
+                    }`}
+                  >
+                    {conversation.message}
                   </span>
-                ) : (
-                  <span className="text-[8.5px] text-gold/45">✓✓</span>
-                )}
-              </div>
+                }
+                trailing={
+                  <div className="flex shrink-0 flex-col items-end justify-between gap-1.5">
+                    <div className="flex items-center gap-1">
+                      {mutedConvIds.includes(conversation.id) && (
+                        <BellOff className="size-3 text-[#8A6A3D]" aria-label="مكتوم" />
+                      )}
+                      <time className="text-[8.5px] text-muted-foreground/65">{conversation.time}</time>
+                    </div>
+                    {conversation.unread ? (
+                      <span className="grid min-w-[18px] place-items-center rounded-full bg-alpha-purple px-1 py-0.5 text-[8px] font-bold text-alpha-purple-foreground shadow-[0_0_8px_var(--alpha-purple)]">
+                        {conversation.unread}
+                      </span>
+                    ) : (
+                      <span className="text-[8.5px] text-gold/45">✓✓</span>
+                    )}
+                  </div>
+                }
+              />
             </article>
             </SwipeConvCard>
           ))}
@@ -370,28 +384,21 @@ export function AlphaConversationsScreen({
                   key={conversation.id}
                   type="button"
                   onClick={() => handleNewChatSelect(conversation.id)}
-                  className="flex w-full items-center gap-2.5 rounded-[14px] border border-white/32 bg-white/42 px-3 py-2.5 text-right shadow-[0_3px_11px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.55)] transition-all hover:bg-white/58 active:scale-[0.98]"
+                  className="w-full rounded-[14px] border border-white/32 bg-white/42 px-3 py-2.5 text-right shadow-[0_3px_11px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.55)] transition-all hover:bg-white/58 active:scale-[0.98]"
                 >
-                  <img
-                    src={conversation.avatar}
-                    alt=""
-                    className="size-10 shrink-0 rounded-full border border-gold/20 object-cover"
+                  <AlphaIdentityRow
+                    name={conversation.name}
+                    role={conversation.role}
+                    avatar={conversation.avatar}
+                    avatarSize="sm"
+                    presenceUserId={conversation.id}
+                    nameClassName="text-[12px] font-semibold text-[#1F2937]"
+                    subtitle={
+                      <span className="text-[10px] text-[#6B7280]">
+                        {conversation.id === "priest" ? "اضغط لبدء المحادثة" : "رسائل خاصة وموثّقة"}
+                      </span>
+                    }
                   />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1">
-                      <span className="truncate text-[12px] font-semibold text-[#1F2937]">{conversation.name}</span>
-                      <AlphaShield
-                        role={conversation.role}
-                        size="sm"
-                        userName={conversation.name}
-                        userAvatar={conversation.avatar}
-                        isOnline={conversation.online}
-                      />
-                    </div>
-                    <p className="truncate text-[10px] text-[#6B7280]">
-                      {conversation.id === "priest" ? "اضغط لبدء المحادثة" : "رسائل خاصة وموثّقة"}
-                    </p>
-                  </div>
                 </button>
               ))}
             </div>

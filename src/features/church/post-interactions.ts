@@ -8,6 +8,8 @@ export type ReactionKind = "amen" | "love" | "pray";
 export const POST_INTERACTIONS_CHANGED = "ab:church-post-interactions";
 
 const ANON_ID_KEY = "alpha:interaction-anon-id";
+const LOCAL_COMMENTS_KEY = "alpha:church:post-comments-local";
+const LOCAL_REACTIONS_KEY = "alpha:church:post-reactions-local";
 const EMPTY_COMMENTS: Record<string, PostComment[]> = Object.freeze({});
 const EMPTY_REACTS: Record<string, Record<ReactionKind, { count: number; mine: boolean }>> = Object.freeze({});
 
@@ -35,6 +37,25 @@ function subscribe(l: () => void) {
   };
 }
 
+function readLocal<T>(key: string, fallback: T): T {
+  if (typeof window === "undefined") return fallback;
+  try {
+    const raw = window.localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeLocal<T>(key: string, value: T) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    /* ignore */
+  }
+}
+
 function isMissingTableError(error: { code?: string; message?: string; status?: number } | null) {
   if (!error) return false;
   const code = error.code ?? "";
@@ -45,6 +66,7 @@ function isMissingTableError(error: { code?: string; message?: string; status?: 
     code === "PGRST205" ||
     code === "PGRST204" ||
     msg.includes("could not find the table") ||
+    msg.includes("schema cache") ||
     (msg.includes("does not exist") &&
       (msg.includes("church_post_comments") || msg.includes("church_post_reactions")))
   );
@@ -70,7 +92,7 @@ function commentFromRow(row: Record<string, unknown>): PostComment {
   return {
     id: String(row.id),
     name: String(row.user_name ?? ""),
-    text: String(row.body ?? ""),
+    text: String(row.body ?? row.text ?? ""),
     at: row.created_at ? new Date(String(row.created_at)).getTime() : Date.now(),
   };
 }
@@ -93,8 +115,43 @@ function setReactions(postId: string, reactions: Record<ReactionKind, { count: n
   notify();
 }
 
+function persistLocalComments(postId: string, list: PostComment[]) {
+  const map = readLocal<Record<string, PostComment[]>>(LOCAL_COMMENTS_KEY, {});
+  map[postId] = list;
+  writeLocal(LOCAL_COMMENTS_KEY, map);
+}
+
+function persistLocalReactions(
+  postId: string,
+  reactions: Record<ReactionKind, { count: number; mine: boolean }>,
+) {
+  const map = readLocal<Record<string, Record<ReactionKind, { count: number; mine: boolean }>>>(
+    LOCAL_REACTIONS_KEY,
+    {},
+  );
+  map[postId] = reactions;
+  writeLocal(LOCAL_REACTIONS_KEY, map);
+}
+
+function hydrateFromLocal(postId: string) {
+  const localComments = readLocal<Record<string, PostComment[]>>(LOCAL_COMMENTS_KEY, {});
+  const localReactions = readLocal<Record<string, Record<ReactionKind, { count: number; mine: boolean }>>>(
+    LOCAL_REACTIONS_KEY,
+    {},
+  );
+  if (localComments[postId]?.length) {
+    setComments(postId, localComments[postId]);
+  }
+  if (localReactions[postId]) {
+    setReactions(postId, localReactions[postId]);
+  }
+}
+
 export async function syncPostInteractions(postId: string): Promise<void> {
-  if (!postId || remoteAvailable === false) return;
+  if (!postId) return;
+
+  hydrateFromLocal(postId);
+  if (remoteAvailable === false) return;
 
   const uid = interactionUserId();
 
@@ -112,6 +169,7 @@ export async function syncPostInteractions(postId: string): Promise<void> {
 
   if (isMissingTableError(commentsRes.error) || isMissingTableError(reactionsRes.error)) {
     remoteAvailable = false;
+    hydrateFromLocal(postId);
     return;
   }
 
@@ -119,7 +177,14 @@ export async function syncPostInteractions(postId: string): Promise<void> {
   syncedPosts.add(postId);
 
   if (!commentsRes.error) {
-    setComments(postId, (commentsRes.data ?? []).map((r) => commentFromRow(r as Record<string, unknown>)));
+    const remote = (commentsRes.data ?? []).map((r) => commentFromRow(r as Record<string, unknown>));
+    const local = readLocal<Record<string, PostComment[]>>(LOCAL_COMMENTS_KEY, {})[postId] ?? [];
+    const merged = [...remote];
+    for (const c of local) {
+      if (!merged.some((x) => x.id === c.id)) merged.unshift(c);
+    }
+    setComments(postId, merged);
+    persistLocalComments(postId, merged);
   }
 
   if (!reactionsRes.error) {
@@ -130,7 +195,20 @@ export async function syncPostInteractions(postId: string): Promise<void> {
       base[kind].count += 1;
       if (String((row as { user_id?: string }).user_id) === uid) base[kind].mine = true;
     }
+    const local = readLocal<Record<string, Record<ReactionKind, { count: number; mine: boolean }>>>(
+      LOCAL_REACTIONS_KEY,
+      {},
+    )[postId];
+    if (local) {
+      for (const kind of ["love", "amen", "pray"] as ReactionKind[]) {
+        if (local[kind].mine && !base[kind].mine) {
+          base[kind].mine = true;
+          base[kind].count += 1;
+        }
+      }
+    }
     setReactions(postId, base);
+    persistLocalReactions(postId, base);
   }
 }
 
@@ -158,7 +236,11 @@ async function addCommentRemote(postId: string, name: string, text: string) {
     at: Date.now(),
   };
   const prev = commentsByPost[postId] ?? [];
-  setComments(postId, [optimistic, ...prev]);
+  const next = [optimistic, ...prev];
+  setComments(postId, next);
+  persistLocalComments(postId, next);
+
+  if (remoteAvailable === false) return;
 
   const { data, error } = await supabase
     .from("church_post_comments")
@@ -172,13 +254,18 @@ async function addCommentRemote(postId: string, name: string, text: string) {
     .single();
 
   if (error) {
+    if (isMissingTableError(error)) {
+      remoteAvailable = false;
+      return;
+    }
     console.error("addComment", error);
-    setComments(postId, prev);
     return;
   }
 
   const saved = commentFromRow(data as Record<string, unknown>);
-  setComments(postId, [saved, ...prev.filter((c) => c.id !== optimistic.id)]);
+  const merged = [saved, ...prev.filter((c) => c.id !== optimistic.id)];
+  setComments(postId, merged);
+  persistLocalComments(postId, merged);
 }
 
 export function toggleReaction(postId: string, kind: ReactionKind): boolean {
@@ -199,6 +286,9 @@ async function toggleReactionRemote(postId: string, kind: ReactionKind) {
     },
   };
   setReactions(postId, next);
+  persistLocalReactions(postId, next);
+
+  if (remoteAvailable === false) return;
 
   if (cur.mine) {
     const { error } = await supabase
@@ -208,8 +298,13 @@ async function toggleReactionRemote(postId: string, kind: ReactionKind) {
       .eq("user_id", uid)
       .eq("kind", kind);
     if (error) {
+      if (isMissingTableError(error)) {
+        remoteAvailable = false;
+        return;
+      }
       console.error("toggleReaction delete", error);
       setReactions(postId, prev);
+      persistLocalReactions(postId, prev);
     }
     return;
   }
@@ -220,8 +315,13 @@ async function toggleReactionRemote(postId: string, kind: ReactionKind) {
     kind,
   });
   if (error) {
+    if (isMissingTableError(error)) {
+      remoteAvailable = false;
+      return;
+    }
     console.error("toggleReaction insert", error);
     setReactions(postId, prev);
+    persistLocalReactions(postId, prev);
   }
 }
 

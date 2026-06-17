@@ -205,6 +205,51 @@ export function LinkCard({
   );
 }
 
+/** Full-size settings card row — matches collapsed PremiumSectionCard height and DNA. */
+export function PremiumLinkCard({
+  to,
+  icon: Icon,
+  title,
+  subtitle,
+  accent = "#3f9d6e",
+}: {
+  to: string;
+  icon: LucideIcon;
+  title: string;
+  subtitle: string;
+  accent?: string;
+}) {
+  return (
+    <div className="mb-2.5 animate-in fade-in duration-300">
+      <Link
+        to={to}
+        className={cn(
+          "relative flex w-full items-center gap-3.5 overflow-hidden rounded-[22px] border border-[#efe2c4]/85 bg-gradient-to-b from-[#fbf3e1]/94 to-[#f4ead8]/92 px-4 py-[18px] text-right backdrop-blur-xl transition-all duration-300 ease-out",
+          "hover:border-[#efe2c4] active:scale-[0.985]",
+        )}
+        style={{
+          boxShadow: `0 14px 30px -22px rgba(120,80,30,0.38), 0 0 20px -16px ${accent}22, inset 0 1px 0 rgba(255,255,255,0.82)`,
+        }}
+      >
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-[48%] rounded-t-[22px] bg-gradient-to-b from-white/42 to-transparent"
+        />
+        <AlphaIcon3D color={accent} size={52} isOpen={false}>
+          <Icon className="h-[22px] w-[22px]" style={{ color: accent }} strokeWidth={2.4} />
+        </AlphaIcon3D>
+        <div className="relative min-w-0 flex-1">
+          <h2 className="font-arabic-serif text-[15.5px] font-extrabold leading-snug text-[#2a1f12]">
+            {title}
+          </h2>
+          <p className="mt-1 text-[11px] font-medium leading-relaxed text-[#6a543a]">{subtitle}</p>
+        </div>
+        <ChevronLeft className="relative h-5 w-5 shrink-0 text-[#c9a05a]" />
+      </Link>
+    </div>
+  );
+}
+
 export function ToggleRow({
   label,
   subtitle,

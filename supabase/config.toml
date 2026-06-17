@@ -1,0 +1,11 @@
+# Supabase local config — linked to remote project
+project_id = "usflbjlyadihyitnvzya"
+
+[api]
+enabled = true
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+major_version = 15

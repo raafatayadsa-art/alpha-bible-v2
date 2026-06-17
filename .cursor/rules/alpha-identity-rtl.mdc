@@ -1,0 +1,43 @@
+---
+description: Global RTL identity grouping for Alpha user rows (avatar, name, shield, role)
+globs: src/components/alpha/**/*.tsx, src/routes/**/*.tsx
+alwaysApply: false
+---
+
+# Alpha Identity Grouping (RTL)
+
+The problem is **identity grouping**, not text alignment.
+
+## Identity block (one attached group, starts from the right)
+
+**Avatar + Name + Shield + Role** must live in a single `.alpha-identity-block`.
+
+- Avatar must **never** be a separate flex sibling away from name/shield
+- Role / rank / presence label belongs **inside** the identity block (`meta` prop)
+- Use `AlphaIdentityRow` — do not hand-build rows
+
+## Outside the identity block
+
+- **`subtitle`** — non-identity content (message preview)
+- **`trailing`** — actions, counters, controls, time, badges, chevrons
+
+Identity information must **never** split across the row.
+
+## Structure
+
+```
+.alpha-identity-row
+  .alpha-identity-block          ← attached unit (RTL, from the right)
+    .alpha-identity-block__avatar
+    .alpha-identity-block__details
+      .alpha-identity-name      ← name + shield
+      .alpha-identity-block__role
+  .alpha-identity-row__secondary  ← optional preview
+  .alpha-identity-row__trailing    ← controls only
+```
+
+## Forbidden
+
+- `[avatar] [body column]` as top-level row siblings without `.alpha-identity-block` wrapper
+- Putting role/presence in `trailing` or `subtitle`
+- Per-screen `dir`, `justify-end`, or alignment props on identity pieces

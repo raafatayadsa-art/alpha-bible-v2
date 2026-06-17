@@ -12,6 +12,7 @@ import {
   mapsUrlForChurch,
   type DirectoryChurch,
 } from "@/features/church/churches-directory-api";
+import { JoinChurchButton } from "@/features/church/JoinChurchButton";
 
 export const Route = createFileRoute("/church/directory/$placeId")({
   ssr: false,
@@ -114,6 +115,10 @@ function PlaceDetailsScreen() {
               <StatMini icon={BookOpen} label="خدام" value={church.servantCount.toLocaleString("ar-EG")} />
             </div>
           </div>
+        </Card>
+
+        <Card>
+          <JoinChurchButton churchId={church.id} churchName={church.name} />
         </Card>
 
         <Card>

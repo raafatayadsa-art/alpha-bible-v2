@@ -5,6 +5,8 @@ import {
   Church, Cross, MoreVertical, ChevronLeft, X,
 } from "lucide-react";
 import { AlphaOfficialLogo } from "@/components/brand";
+import { AlphaQrCode } from "@/components/identity/AlphaQrCode";
+import { useAlphaIdentity } from "@/features/identity/useAlphaIdentity";
 
 export const Route = createFileRoute("/profile/membership")({
   ssr: false,
@@ -16,21 +18,20 @@ const MEMBER = {
   name: "مينا عاطف",
   role: "خادم مدارس الأحد",
   diocese: "إيبارشية القاهرة",
-  membershipNo: "AC-2024-00187",
   verified: true,
 };
 
-const QR_LARGE = `https://api.qrserver.com/v1/create-qr-code/?size=520x520&ecc=H&margin=2&bgcolor=ffffff&color=1a1208&data=${encodeURIComponent(
-  `alpha://member/${MEMBER.membershipNo}`,
-)}`;
-
 function MembershipScreen() {
+  const identity = useAlphaIdentity({
+    displayName: MEMBER.name,
+    verified: MEMBER.verified,
+  });
   const [copied, setCopied] = useState(false);
   const [scannerOpen, setScannerOpen] = useState(false);
 
   const copyId = async () => {
     try {
-      await navigator.clipboard.writeText(MEMBER.membershipNo);
+      await navigator.clipboard.writeText(identity.alphaIdShort);
       setCopied(true);
       setTimeout(() => setCopied(false), 1600);
     } catch {}
@@ -38,9 +39,9 @@ function MembershipScreen() {
 
   const share = async () => {
     const data = {
-      title: "بطاقة عضوية Alpha Coptic",
-      text: `${MEMBER.name} — ${MEMBER.membershipNo}`,
-      url: `https://alpha-bible.lovable.app/m/${MEMBER.membershipNo}`,
+      title: "بطاقة هوية Alpha",
+      text: `${MEMBER.name} — ${identity.alphaIdShort}`,
+      url: identity.alphaIdShort,
     };
     try {
       if ((navigator as any).share) await (navigator as any).share(data);
@@ -179,12 +180,19 @@ function MembershipScreen() {
                     "inset 0 0 0 1px rgba(216,138,42,0.5), inset 0 2px 10px rgba(120,80,30,0.18)",
                 }}
               >
-                <img src={QR_LARGE} alt="QR العضوية" className="block h-[200px] w-[200px]" />
+                <AlphaQrCode
+                  value={identity.qrPayload}
+                  size={400}
+                  fgColor="1a1208"
+                  bgColor="ffffff"
+                  alt="Alpha QR"
+                  className="block h-[200px] w-[200px]"
+                />
               </div>
-              {/* Center Alpha badge */}
+              {/* Center Alpha badge — small to keep QR scannable */}
               <span
                 aria-hidden
-                className="absolute inset-0 m-auto grid h-[52px] w-[52px] place-items-center rounded-2xl"
+                className="absolute inset-0 m-auto grid h-[36px] w-[36px] place-items-center rounded-xl"
                 style={{
                   background: "#ffffff",
                   boxShadow:
@@ -230,8 +238,8 @@ function MembershipScreen() {
                 <path d="M8.5 17c.8-1.8 2-2.5 3.5-2.5s2.7.7 3.5 2.5" />
               </svg>
             }
-            label="رقم العضوية"
-            value={MEMBER.membershipNo}
+            label="Alpha ID"
+            value={identity.alphaIdShort}
             mono
           />
           <InfoCard
@@ -255,7 +263,7 @@ function MembershipScreen() {
           <ActionCard
             onClick={share}
             icon={<Share2 className="h-6 w-6" strokeWidth={2.2} />}
-            label="مشاركة البطاقة"
+            label="مشاركة QR"
             tint="gold"
           />
           <ActionCard
@@ -267,7 +275,7 @@ function MembershipScreen() {
           <ActionCard
             onClick={copyId}
             icon={copied ? <Check className="h-6 w-6" strokeWidth={2.4} /> : <Copy className="h-6 w-6" strokeWidth={2.2} />}
-            label={copied ? "تم النسخ" : "نسخ رقم العضوية"}
+            label={copied ? "تم النسخ" : "نسخ Alpha ID"}
             tint="green"
           />
         </div>

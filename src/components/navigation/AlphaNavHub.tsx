@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
@@ -19,6 +19,11 @@ import {
   MESSAGING_GLASS_ICON_BOX,
   MESSAGING_GLASS_SHELL,
 } from "@/components/alpha/messaging-ui";
+import { getCurrentUser } from "@/features/church/current-user";
+import { subscribeAuthContext, getAlphaRoleSync } from "@/features/auth";
+import { deriveAlphaIdShort } from "@/features/identity/alpha-identity";
+import { AlphaShield } from "@/components/alpha/AlphaShield";
+import avatarMina from "@/assets/avatar-mina.jpg";
 
 const NAV_ITEMS = [
   { key: "home", label: "الرئيسية", to: "/home", icon: Home, tone: "#b8893a" },
@@ -28,7 +33,7 @@ const NAV_ITEMS = [
   { key: "katameros", label: "القطمارس", to: "/katameros", icon: BookMarked, tone: "#4a9e6e" },
   { key: "synaxarium", label: "السنكسار", to: "/synaxarium", icon: Sparkles, tone: "#c98a3c" },
   { key: "library", label: "المكتبة", to: "/books", icon: Library, tone: "#6a4ab5" },
-  { key: "church", label: "كنيستك معاك", to: "/profile/church", icon: Church, tone: "#5b8fd1" },
+  { key: "church", label: "كنيستك معاك", to: "/church", icon: Church, tone: "#5b8fd1" },
   { key: "profile", label: "الملف الشخصي", to: "/profile", icon: User, tone: "#8a6ec1" },
   { key: "settings", label: "الإعدادات", to: "/settings", icon: Settings, tone: "#3f9d6e" },
 ] as const;
@@ -49,6 +54,11 @@ function NavDivider() {
 
 export function AlphaNavHub({ open, onClose }: AlphaNavHubProps) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const [user, setUser] = useState(() => getCurrentUser());
+
+  useEffect(() => {
+    return subscribeAuthContext(() => setUser(getCurrentUser()));
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -89,14 +99,28 @@ export function AlphaNavHub({ open, onClose }: AlphaNavHubProps) {
           className="relative flex items-center justify-between gap-3 border-b border-white/22 px-4 py-4"
           style={{ paddingTop: "max(env(safe-area-inset-top), 16px)" }}
         >
-          <div>
-            <div dir="ltr" className="mb-1 inline-flex items-center gap-1.5">
-              <span className="text-[10px] font-bold text-[#b8893a]/55 select-none" aria-hidden>Ⲁ</span>
-              <span className="h-px w-3 bg-white/45" aria-hidden />
-              <span className="text-[10px] font-bold text-[#b8893a]/55 select-none" aria-hidden>Ⲱ</span>
+          <div className="flex items-center gap-3">
+            <div className="h-11 w-11 shrink-0 rounded-full border border-white/40 bg-white/20 p-[2px] shadow-sm">
+              <img
+                src={user.avatarUrl || avatarMina}
+                alt={user.name || "مينا جورج"}
+                className="h-full w-full rounded-full object-cover"
+              />
             </div>
-            <p className="text-[15px] font-bold text-[#1F2937]">التنقل</p>
-            <p className="text-[10px] text-[#6B7280]">جميع أقسام ألفا</p>
+            <div className="flex flex-col gap-0.5">
+              <p className="text-[15px] font-bold text-[#1F2937]">{user.name?.trim() || "مينا جورج"}</p>
+              <div className="flex items-center gap-1.5">
+                <AlphaShield
+                  role={getAlphaRoleSync() || "member"}
+                  size="sm"
+                  userName={user.name?.trim() || "مينا جورج"}
+                  userAvatar={user.avatarUrl || avatarMina}
+                />
+                <span className="text-[11px] font-bold tracking-wide text-[#6B7280] font-mono">
+                  {deriveAlphaIdShort(user.id)}
+                </span>
+              </div>
+            </div>
           </div>
           <button
             type="button"

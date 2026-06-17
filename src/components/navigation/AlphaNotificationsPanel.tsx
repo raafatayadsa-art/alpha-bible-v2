@@ -25,11 +25,19 @@ import {
   markNotifRead,
   markAllNotifsRead,
 } from "@/data/notifications-store";
+import {
+  CONNECT_THEME_CHANGED_EVENT,
+  getConnectTheme,
+  normalizeConnectTheme,
+  type AlphaConnectThemeId,
+} from "@/components/alpha/alpha-connect-theme";
 
 type AlphaNotificationsPanelProps = {
   open: boolean;
   onClose: () => void;
 };
+
+type NotifSurface = "church" | "connect";
 
 type NotifTab = "all" | "church" | "community" | "spiritual";
 
@@ -168,11 +176,44 @@ function matchesTab(n: ChurchNotification, tab: NotifTab) {
   return false;
 }
 
+function useNotificationsSurface(): NotifSurface {
+  const router = useRouter();
+  const pathname = router.state.location.pathname;
+  return pathname === "/alpha-connect" || pathname.startsWith("/alpha-connect/")
+    ? "connect"
+    : "church";
+}
+
+function useConnectThemeForNotifications(): AlphaConnectThemeId {
+  const [theme, setTheme] = useState<AlphaConnectThemeId>(() => getConnectTheme());
+
+  useEffect(() => {
+    const onThemeChanged = (event: Event) => {
+      const next = (event as CustomEvent<{ theme: AlphaConnectThemeId }>).detail?.theme;
+      if (next) setTheme(normalizeConnectTheme(next));
+    };
+    window.addEventListener(CONNECT_THEME_CHANGED_EVENT, onThemeChanged);
+    return () => window.removeEventListener(CONNECT_THEME_CHANGED_EVENT, onThemeChanged);
+  }, []);
+
+  return theme;
+}
+
+function connectThemeShellClass(theme: AlphaConnectThemeId): string {
+  return cn(
+    "alpha-connect-theme connect-notifications-panel glass-strong text-foreground",
+    theme === "classic" && "alpha-connect-theme--classic",
+  );
+}
+
 /**
  * Top-down mobile notifications sheet — overlay above current screen.
  */
 export function AlphaNotificationsPanel({ open, onClose }: AlphaNotificationsPanelProps) {
   const router = useRouter();
+  const surface = useNotificationsSurface();
+  const connectTheme = useConnectThemeForNotifications();
+  const isConnect = surface === "connect";
   const items = useNotifItems();
   const unreadCount = useNotifUnreadCount();
   const loading = useNotifLoading();
@@ -270,13 +311,14 @@ export function AlphaNotificationsPanel({ open, onClose }: AlphaNotificationsPan
         aria-label="إغلاق"
         onClick={onClose}
         className={cn(
-          "fixed inset-0 bg-[#1a1408]/18 backdrop-blur-[3px] transition-opacity duration-300",
+          "fixed inset-0 transition-opacity duration-300",
+          isConnect ? "bg-black/55 backdrop-blur-[2px]" : "bg-[#1a1408]/18 backdrop-blur-[3px]",
           open ? "opacity-100" : "opacity-0",
         )}
       />
 
-      {/* Centered mobile shell — same width as AlphaHeader (max-w-[440px]) */}
-      <div className="pointer-events-none fixed inset-0 z-[131] flex justify-center">
+      {/* Phone-sized sheet — inset slightly from viewport (matches Connect frame ~430px) */}
+      <div className="pointer-events-none fixed inset-0 z-[131] flex items-center justify-center px-3 pt-[max(10px,env(safe-area-inset-top))] pb-[max(10px,env(safe-area-inset-bottom))]">
         <div
           role="dialog"
           aria-modal="true"
@@ -285,38 +327,64 @@ export function AlphaNotificationsPanel({ open, onClose }: AlphaNotificationsPan
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
           className={cn(
-            "pointer-events-auto flex h-[100dvh] w-full max-w-[440px] flex-col overflow-hidden bg-[#fbf3e1]",
+            "connect-notifications-sheet pointer-events-auto flex h-[min(calc(100dvh-24px),760px)] w-full max-w-[430px] flex-col overflow-hidden rounded-3xl",
+            isConnect
+              ? cn(
+                  connectThemeShellClass(connectTheme),
+                  "shadow-[0_16px_48px_rgba(0,0,0,0.42)]",
+                )
+              : "bg-[#fbf3e1] shadow-[0_16px_40px_-12px_rgba(58,42,24,0.32)]",
             !dragging && "transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
           )}
           style={{ transform: sheetTransform }}
         >
         <header
-          className="sticky top-0 z-10 shrink-0 border-b border-[#efe2c4]/70 bg-[#fbf3e1]/98 backdrop-blur-xl"
-          style={{ paddingTop: "max(env(safe-area-inset-top), 12px)" }}
+          className={cn(
+            "sticky top-0 z-10 shrink-0 backdrop-blur-xl",
+            isConnect
+              ? "border-b border-white/10 bg-transparent"
+              : "border-b border-[#efe2c4]/70 bg-[#fbf3e1]/98",
+          )}
+          style={{ paddingTop: "12px" }}
         >
           <div className="flex items-center justify-between gap-2 px-4 pb-3">
             <button
               type="button"
               onClick={onClose}
               aria-label="إغلاق"
-              className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-[#efe2c4] bg-white/80 text-[#3a2a18] active:scale-90 transition-transform"
+              className={cn(
+                "shrink-0 place-items-center rounded-full transition-transform",
+                isConnect
+                  ? "glass flex h-9 w-9 items-center justify-center text-foreground/80 active:scale-95"
+                  : "grid h-11 w-11 border border-[#efe2c4] bg-white/80 text-[#3a2a18] active:scale-90",
+              )}
             >
               <ChevronRight className="h-5 w-5" strokeWidth={2.2} />
             </button>
 
             <div className="flex min-w-0 flex-1 flex-col items-center">
               <div className="flex items-center gap-1.5">
-                <p className="font-arabic-serif text-[16px] font-extrabold leading-none text-[#3a2a18]">
+                <p
+                  className={cn(
+                    "text-[16px] font-extrabold leading-none",
+                    isConnect ? "font-bold text-foreground" : "font-arabic-serif text-[#3a2a18]",
+                  )}
+                >
                   الإشعارات
                 </p>
                 {unreadCount > 0 ? (
-                  <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#d88a2a] px-1.5 text-[10px] font-extrabold text-white">
+                  <span
+                    className={cn(
+                      "inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-extrabold text-white",
+                      isConnect ? "bg-destructive" : "bg-[#d88a2a]",
+                    )}
+                  >
                     {unreadCount.toLocaleString("ar-EG")}
                   </span>
                 ) : null}
               </div>
               {unreadCount > 0 ? (
-                <p className="mt-0.5 text-[10.5px] text-[#6a543a]">
+                <p className={cn("mt-0.5 text-[10.5px]", isConnect ? "text-muted-foreground" : "text-[#6a543a]")}>
                   {unreadCount.toLocaleString("ar-EG")} غير مقروء
                 </p>
               ) : null}
@@ -328,7 +396,12 @@ export function AlphaNotificationsPanel({ open, onClose }: AlphaNotificationsPan
                   type="button"
                   onClick={markAllNotifsRead}
                   aria-label="قراءة الكل"
-                  className="grid h-11 w-11 place-items-center rounded-full border border-[#efe2c4] bg-white/80 text-[#3a2a18] active:scale-95 transition-transform"
+                  className={cn(
+                    "shrink-0 place-items-center rounded-full transition-transform",
+                    isConnect
+                      ? "glass flex h-9 w-9 items-center justify-center text-foreground/80 active:scale-95"
+                      : "grid h-11 w-11 border border-[#efe2c4] bg-white/80 text-[#3a2a18] active:scale-95",
+                  )}
                 >
                   <CheckCheck className="h-4 w-4" strokeWidth={2.2} />
                 </button>
@@ -339,7 +412,12 @@ export function AlphaNotificationsPanel({ open, onClose }: AlphaNotificationsPan
           </div>
         </header>
 
-        <div className="shrink-0 border-b border-[#efe2c4]/60 px-4 pb-2 pt-2">
+        <div
+          className={cn(
+            "shrink-0 border-b px-4 pb-2 pt-2",
+            isConnect ? "border-white/10" : "border-[#efe2c4]/60",
+          )}
+        >
           <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
             {TABS.map((t) => {
               const active = tab === t.key;
@@ -351,9 +429,13 @@ export function AlphaNotificationsPanel({ open, onClose }: AlphaNotificationsPan
                   onClick={() => setTab(t.key)}
                   className={cn(
                     "inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-bold transition-all active:scale-95",
-                    active
-                      ? "bg-[#3a2a18] text-white shadow-[0_8px_18px_-10px_rgba(58,42,24,0.55)]"
-                      : "border border-[#efe2c4] bg-white/75 text-[#5a4626]",
+                    isConnect
+                      ? active
+                        ? "connect-notif-tab connect-notif-tab--active"
+                        : "glass border border-white/10 text-muted-foreground"
+                      : active
+                        ? "bg-[#3a2a18] text-white shadow-[0_8px_18px_-10px_rgba(58,42,24,0.55)]"
+                        : "border border-[#efe2c4] bg-white/75 text-[#5a4626]",
                   )}
                 >
                   {t.label}
@@ -361,7 +443,13 @@ export function AlphaNotificationsPanel({ open, onClose }: AlphaNotificationsPan
                     <span
                       className={cn(
                         "grid h-4 min-w-4 place-items-center rounded-full px-1 text-[9px] font-extrabold",
-                        active ? "bg-white/20 text-white" : "bg-[#d88a2a] text-white",
+                        isConnect
+                          ? active
+                            ? "bg-white/20 text-white"
+                            : "bg-destructive text-white"
+                          : active
+                            ? "bg-white/20 text-white"
+                            : "bg-[#d88a2a] text-white",
                       )}
                     >
                       {count > 99 ? "99+" : count}
@@ -378,15 +466,16 @@ export function AlphaNotificationsPanel({ open, onClose }: AlphaNotificationsPan
           style={{ paddingBottom: "max(env(safe-area-inset-bottom), 12px)" }}
         >
           {loading ? (
-            <LoadingState />
+            <LoadingState surface={surface} />
           ) : filtered.length === 0 ? (
-            <EmptyState tab={tab} />
+            <EmptyState tab={tab} surface={surface} />
           ) : (
             <div className="space-y-2">
               {filtered.map((n) => (
                 <NotificationCard
                   key={n.id}
                   n={n}
+                  surface={surface}
                   onOpen={() => {
                     markNotifRead(n.id);
                     onClose();
@@ -404,21 +493,36 @@ export function AlphaNotificationsPanel({ open, onClose }: AlphaNotificationsPan
   );
 }
 
-function LoadingState() {
+function LoadingState({ surface }: { surface: NotifSurface }) {
+  const isConnect = surface === "connect";
   return (
     <div className="space-y-2 py-1">
       {[0, 1, 2, 3].map((i) => (
         <div
           key={i}
-          className="animate-pulse rounded-2xl border border-[#efe2c4]/70 bg-white/70 p-3"
+          className={cn(
+            "animate-pulse rounded-2xl p-3",
+            isConnect ? "glass" : "border border-[#efe2c4]/70 bg-white/70",
+          )}
           style={{ animationDelay: `${i * 80}ms` }}
         >
           <div className="flex gap-3">
-            <div className="h-11 w-11 shrink-0 rounded-2xl bg-[#efe2c4]/60" />
+            <div
+              className={cn(
+                "h-11 w-11 shrink-0 rounded-2xl",
+                isConnect ? "bg-white/10" : "bg-[#efe2c4]/60",
+              )}
+            />
             <div className="flex-1 space-y-2">
-              <div className="h-3 w-1/3 rounded-full bg-[#efe2c4]/70" />
-              <div className="h-3 w-4/5 rounded-full bg-[#efe2c4]/55" />
-              <div className="h-2.5 w-1/4 rounded-full bg-[#efe2c4]/45" />
+              <div
+                className={cn("h-3 w-1/3 rounded-full", isConnect ? "bg-white/10" : "bg-[#efe2c4]/70")}
+              />
+              <div
+                className={cn("h-3 w-4/5 rounded-full", isConnect ? "bg-white/8" : "bg-[#efe2c4]/55")}
+              />
+              <div
+                className={cn("h-2.5 w-1/4 rounded-full", isConnect ? "bg-white/6" : "bg-[#efe2c4]/45")}
+              />
             </div>
           </div>
         </div>
@@ -427,7 +531,8 @@ function LoadingState() {
   );
 }
 
-function EmptyState({ tab }: { tab: NotifTab }) {
+function EmptyState({ tab, surface }: { tab: NotifTab; surface: NotifSurface }) {
+  const isConnect = surface === "connect";
   const label =
     tab === "all"
       ? "لا توجد إشعارات حالياً"
@@ -438,12 +543,24 @@ function EmptyState({ tab }: { tab: NotifTab }) {
           : "لا توجد إشعارات روحية حالياً";
 
   return (
-    <div className="rounded-2xl border border-[#efe2c4]/70 bg-white/75 px-4 py-12 text-center">
-      <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-[#6a4ab5]/10 text-[#6a4ab5]">
+    <div
+      className={cn(
+        "rounded-2xl px-4 py-12 text-center",
+        isConnect ? "glass" : "border border-[#efe2c4]/70 bg-white/75",
+      )}
+    >
+      <div
+        className={cn(
+          "mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl",
+          isConnect ? "glass-strong text-neon-green" : "bg-[#6a4ab5]/10 text-[#6a4ab5]",
+        )}
+      >
         <Bell className="h-5 w-5" strokeWidth={2.2} />
       </div>
-      <p className="text-[13px] font-extrabold text-[#3a2a18]">{label}</p>
-      <p className="mt-1 text-[11.5px] text-[#6a543a]">
+      <p className={cn("text-[13px] font-extrabold", isConnect ? "text-foreground" : "text-[#3a2a18]")}>
+        {label}
+      </p>
+      <p className={cn("mt-1 text-[11.5px]", isConnect ? "text-muted-foreground" : "text-[#6a543a]")}>
         ستظهر هنا التحديثات الجديدة فور وصولها.
       </p>
     </div>
@@ -453,12 +570,57 @@ function EmptyState({ tab }: { tab: NotifTab }) {
 function NotificationCard({
   n,
   onOpen,
+  surface,
 }: {
   n: ChurchNotification;
   onOpen: () => void;
+  surface: NotifSurface;
 }) {
   const tone = TONES[n.category];
   const Icon = tone.icon;
+  const isConnect = surface === "connect";
+
+  if (isConnect) {
+    return (
+      <button
+        type="button"
+        onClick={onOpen}
+        className={cn(
+          "glass relative block w-full overflow-hidden rounded-2xl text-right transition-transform active:scale-[0.99]",
+          !n.read && "border-neon-green/25",
+        )}
+      >
+        {!n.read ? (
+          <span className="absolute bottom-0 right-0 top-0 w-[3px] bg-neon-green" />
+        ) : null}
+
+        <div className="flex gap-3 p-3">
+          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-white/10 bg-white/5 text-neon-green">
+            <Icon className="h-5 w-5" strokeWidth={2.2} />
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <div className="mb-0.5 flex items-center gap-2">
+              <span className="inline-flex h-[18px] items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 text-[9px] font-extrabold text-muted-foreground">
+                {tone.label}
+              </span>
+              {!n.read ? <span className="h-1.5 w-1.5 rounded-full bg-neon-green" /> : null}
+            </div>
+            <h3
+              className={cn(
+                "mb-1 text-[13.5px] leading-tight text-foreground",
+                n.read ? "font-bold" : "font-extrabold",
+              )}
+            >
+              {n.title}
+            </h3>
+            <p className="line-clamp-2 text-[12px] leading-relaxed text-muted-foreground">{n.description}</p>
+            <div className="mt-1.5 text-[10.5px] font-bold text-muted-foreground/80">{n.time}</div>
+          </div>
+        </div>
+      </button>
+    );
+  }
 
   return (
     <button

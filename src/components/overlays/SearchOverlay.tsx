@@ -64,16 +64,13 @@ export function SearchOverlay({
     if (dy > 90) onClose();
   };
 
+  if (!open) return null;
+
   return (
     <div
       dir="rtl"
-      aria-hidden={!open}
-      className={cn(
-        "fixed inset-0 z-[120] transition-opacity duration-200",
-        open
-          ? "opacity-100 pointer-events-auto"
-          : "opacity-0 pointer-events-none [&_*]:pointer-events-none",
-      )}
+      aria-hidden={false}
+      className="fixed inset-0 z-[120] opacity-100 pointer-events-auto transition-opacity duration-200"
     >
       {/* Backdrop */}
       <button

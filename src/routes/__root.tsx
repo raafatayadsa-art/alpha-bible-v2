@@ -11,14 +11,21 @@ import {
 
 import appCss from "../styles.css?url";
 import "@/lib/i18n";
+import "@/components/alpha/styles.css";
+import "@/components/alpha/alpha-viewport.css";
+import "@/components/alpha/alpha-identity-layout.css";
 import { DictionaryDebugBadge } from "@/components/DictionaryDebugBadge";
 import { Toaster } from "@/components/ui/sonner";
 import { GlobalBackButton } from "@/components/GlobalBackButton";
+import { AlphaScreenFrame, shouldUseAlphaScreenFrame } from "@/components/alpha/AlphaScreenFrame";
+import { AlphaViewportSync } from "@/components/alpha/alpha-viewport";
+import { AlphaBackgroundProvider } from "@/components/alpha/AlphaBackgroundProvider";
 import { AlphaNavigationProvider } from "@/components/navigation/AlphaNavigationProvider";
 import { BibleSearchProvider } from "@/features/bible-search";
 import { AuthBootstrap } from "@/features/auth";
 import { I18nBootstrap } from "@/lib/i18n/use-locale";
 import { useTranslation } from "react-i18next";
+
 
 function NotFoundComponent() {
   const { t } = useTranslation("common");
@@ -138,15 +145,26 @@ function RootComponent() {
     );
   }
 
+  const useScreenFrame = shouldUseAlphaScreenFrame(pathname);
+
   return (
     <QueryClientProvider client={queryClient}>
       <I18nBootstrap />
       <AuthBootstrap />
       <AlphaNavigationProvider>
         <BibleSearchProvider>
-          <Outlet />
-          <GlobalBackButton />
-          <Toaster />
+          <AlphaBackgroundProvider>
+            <AlphaViewportSync pathname={pathname} />
+            {useScreenFrame ? (
+              <AlphaScreenFrame mode="flow">
+                <Outlet />
+              </AlphaScreenFrame>
+            ) : (
+              <Outlet />
+            )}
+            <GlobalBackButton />
+            <Toaster />
+          </AlphaBackgroundProvider>
           {/* <DictionaryDebugBadge /> — disabled with smart highlight */}
         </BibleSearchProvider>
       </AlphaNavigationProvider>

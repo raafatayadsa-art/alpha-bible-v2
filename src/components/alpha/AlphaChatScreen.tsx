@@ -1,14 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import {
   ArrowLeft, BellOff, Camera, Check, Clock3, Copy, File,
   Fingerprint, Image as ImageIcon, LockKeyhole, MapPin, MoreHorizontal,
-  Pencil, Phone, Plus, SendHorizontal, ShieldCheck, Smartphone, Trash2, VolumeX,
+  Pencil, Phone, Plus, SendHorizontal, ShieldCheck, Smartphone, Trash2, VolumeX, X, EyeOff,
 } from "lucide-react";
+import { ConnectConfirmDialog } from "./connect-code-ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
-import { AlphaShield } from "./AlphaShield";
-import { priestProfile } from "./messaging-data";
+import { AlphaIdentityRow } from "./AlphaIdentityRow";
+import { PRESENCE_LABELS } from "@/features/alpha-connect/presence";
+import { usePresenceDot, useUserPresenceStatus } from "@/features/alpha-connect/useAlphaPresence";
+import { priestProfile, type Conversation } from "./messaging-data";
 import {
   HIDDEN_CONVS_KEY,
   MUTED_CONVS_KEY,
@@ -20,7 +24,7 @@ import {
   loadLS,
   saveLS,
 } from "./messaging-storage";
-import { PinBoxes, MESSAGING_GLASS_SHELL, MESSAGING_GLASS_ROW, MESSAGING_GLASS_ROW_DANGER, MESSAGING_GLASS_ICON_BOX, MessagingGlassPanelShell } from "./messaging-ui";
+import { PinBoxes, MESSAGING_GLASS_SHELL, MESSAGING_GLASS_ROW, MESSAGING_GLASS_ROW_DANGER, MESSAGING_GLASS_ICON_BOX, MessagingGlassPanelShell, ALPHA_SETTINGS_ICON_BOX } from "./messaging-ui";
 import {
   hapticLightImpact,
   hapticLightTap,
@@ -43,8 +47,6 @@ interface ChatMessage {
 }
 
 // ─── Constants / Helpers ─────────────────────────────────────
-const CONV_ID = "priest";
-
 const timerOptions = ["بعد القراءة", "٣٠ دقيقة", "ساعة", "٢٤ ساعة", "٧ أيام"];
 
 const TIMER_LABELS: Record<string, string> = {
@@ -78,19 +80,47 @@ function formatTimeAr(): string {
 }
 
 // ─── Main screen ─────────────────────────────────────────────
-export function AlphaChatScreen({ onBack }: { onBack: () => void }) {
+export function AlphaChatScreen({
+  onBack,
+  profile: profileProp,
+  returnTo = "/messages",
+  embedded = false,
+  hideHeader = false,
+  onShowToast,
+}: {
+  onBack: () => void;
+  profile?: Conversation;
+  returnTo?: string;
+  embedded?: boolean;
+  hideHeader?: boolean;
+  onShowToast?: (msg: string) => void;
+}) {
+  const navigate = useNavigate();
+  const profile = profileProp ?? priestProfile;
+  const convId = profile.id;
+  const contactPresenceDot = usePresenceDot(convId);
+  const contactPresence = useUserPresenceStatus(convId);
+  const presenceLabel = contactPresenceDot ? PRESENCE_LABELS[contactPresenceDot] : "غير متصل";
+  const presenceTextClass =
+    contactPresence === "busy"
+      ? "text-[#ea580c]"
+      : contactPresence === "hidden"
+        ? "text-[#374151]"
+        : contactPresenceDot
+          ? "text-[#166534]"
+          : "text-[#9CA3AF]";
   const [messages, setMessages]       = useState<ChatMessage[]>(INITIAL_MESSAGES);
   const [input, setInput]             = useState("");
   const [sheet, setSheet]             = useState<Sheet>(null);
   const [timer, setTimerState]        = useState<string>(() => loadLS(TIMER_KEY, "٢٤ ساعة"));
-  const [muted, setMutedState]        = useState<boolean>(() => loadLS<string[]>(MUTED_CONVS_KEY, []).includes(CONV_ID));
-  const [isLocked, setIsLockedState]  = useState<boolean>(() => loadLS(convLockedKey(CONV_ID), false));
-  const [lockMethod, setLockMethod]   = useState<"face-id" | "pin">(() => loadLS(convLockMethodKey(CONV_ID), "face-id"));
-  const [savedPin, setSavedPin]       = useState<string>(() => loadLS(convPinKey(CONV_ID), "123456"));
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => !loadLS(convLockedKey(CONV_ID), false));
+  const [muted, setMutedState]        = useState<boolean>(() => loadLS<string[]>(MUTED_CONVS_KEY, []).includes(convId));
+  const [isLocked, setIsLockedState]  = useState<boolean>(() => loadLS(convLockedKey(convId), false));
+  const [lockMethod, setLockMethod]   = useState<"face-id" | "pin">(() => loadLS(convLockMethodKey(convId), "face-id"));
+  const [savedPin, setSavedPin]       = useState<string>(() => loadLS(convPinKey(convId), "123456"));
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => !loadLS(convLockedKey(convId), false));
   const [lockEntry, setLockEntry]     = useState("");
   const [lockEntryError, setLockEntryError] = useState(false);
-  const [isHidden, setIsHidden]         = useState<boolean>(() => loadLS<string[]>(HIDDEN_CONVS_KEY, []).includes(CONV_ID));
+  const [isHidden, setIsHidden]         = useState<boolean>(() => loadLS<string[]>(HIDDEN_CONVS_KEY, []).includes(convId));
   const [confirmClear, setConfirmClear] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [longPressId, setLongPressId]   = useState<string | null>(null);
@@ -123,18 +153,28 @@ export function AlphaChatScreen({ onBack }: { onBack: () => void }) {
 
   // ── Helpers ─────────────────────────────────────────────────
   const showToast = useCallback((msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 2200);
-  }, []);
-
-  const handleCall = useCallback(() => {
-    const phone = priestProfile.phone?.replace(/[\s-]/g, "");
-    if (!phone) {
-      showToast("لا يوجد رقم مسجل لهذا المستخدم");
+    if (embedded && onShowToast) {
+      onShowToast(msg);
       return;
     }
-    window.location.href = `tel:${phone}`;
-  }, [showToast]);
+    setToast(msg);
+    setTimeout(() => setToast(null), 2200);
+  }, [embedded, onShowToast]);
+
+  const handleCall = useCallback(() => {
+    if (profile.kind === "group") {
+      void navigate({ to: "/alpha-connect" });
+      return;
+    }
+    void navigate({
+      to: "/personal-call",
+      search: {
+        name: profile.name,
+        contactId: profile.id,
+        from: returnTo,
+      },
+    });
+  }, [navigate, profile.id, profile.kind, profile.name, returnTo]);
 
   const progressMessage = useCallback((id: string) => {
     setTimeout(() => {
@@ -199,7 +239,7 @@ export function AlphaChatScreen({ onBack }: { onBack: () => void }) {
     hapticSelection();
     setMutedState(v);
     const list = loadLS<string[]>(MUTED_CONVS_KEY, []);
-    saveLS(MUTED_CONVS_KEY, v ? [...new Set([...list, CONV_ID])] : list.filter((id) => id !== CONV_ID));
+    saveLS(MUTED_CONVS_KEY, v ? [...new Set([...list, convId])] : list.filter((id) => id !== convId));
     setSheet(null);
   }, []);
 
@@ -231,22 +271,22 @@ export function AlphaChatScreen({ onBack }: { onBack: () => void }) {
   const handleConfirmHide = useCallback(() => {
     hapticMediumImpact();
     const list = loadLS<string[]>(HIDDEN_CONVS_KEY, []);
-    saveLS(HIDDEN_CONVS_KEY, [...new Set([...list, CONV_ID])]);
+    saveLS(HIDDEN_CONVS_KEY, [...new Set([...list, convId])]);
     setIsHidden(true);
     setSheet(null);
     showToast("تم إخفاء المحادثة");
     setTimeout(() => onBack(), 900);
-  }, [onBack, showToast]);
+  }, [onBack, showToast, convId]);
 
   // ── Unhide conversation ───────────────────────────────────────
   const handleUnhideConversation = useCallback(() => {
     hapticSelection();
     const list = loadLS<string[]>(HIDDEN_CONVS_KEY, []);
-    saveLS(HIDDEN_CONVS_KEY, list.filter((id) => id !== CONV_ID));
+    saveLS(HIDDEN_CONVS_KEY, list.filter((id) => id !== convId));
     setIsHidden(false);
     setSheet(null);
     showToast("تم إظهار المحادثة");
-  }, [showToast]);
+  }, [showToast, convId]);
 
   // ── Clear chat ───────────────────────────────────────────────
   const handleClearConfirmed = useCallback(() => {
@@ -256,11 +296,27 @@ export function AlphaChatScreen({ onBack }: { onBack: () => void }) {
     setSheet(null);
   }, []);
 
+  const headerBg    = embedded ? "border-white/10 bg-[#060d1f]/80"                   : "border-gold/10 bg-card/70";
+  const backBtnCls  = embedded
+    ? "size-9 justify-self-end rounded-full border border-white/15 bg-white/8 text-foreground shadow-sm backdrop-blur-sm hover:bg-white/15"
+    : "size-9 justify-self-end rounded-full border border-gold/20 bg-card/60 text-gold shadow-sm backdrop-blur-sm hover:bg-gold/10 hover:text-gold";
+  const avatarRingCls = embedded ? "border-neon-green/40 shadow-[0_0_12px_oklch(0.82_0.22_145/0.3)]" : "border-gold/40 shadow-[0_0_12px_rgba(200,149,42,0.22)]";
+  const mutedTagCls   = embedded
+    ? "flex items-center gap-0.5 rounded-full border border-white/15 bg-white/8 px-1.5 py-0.5 text-[7px] font-medium text-muted-foreground"
+    : "flex items-center gap-0.5 rounded-full border border-[#8A6A3D]/20 bg-card/80 px-1.5 py-0.5 text-[7px] font-medium text-[#8A6A3D]";
+  const lockedTagCls  = embedded
+    ? "flex items-center gap-0.5 rounded-full border border-neon-green/20 bg-neon-green/10 px-1.5 py-0.5 text-[7px] font-medium text-neon-green"
+    : "flex items-center gap-0.5 rounded-full border border-gold/20 bg-card/80 px-1.5 py-0.5 text-[7px] font-medium text-gold";
+  const menuBtnCls    = embedded
+    ? "size-8 rounded-full text-muted-foreground hover:bg-white/10 hover:text-foreground"
+    : "size-8 rounded-full text-gold/65 hover:bg-gold/10 hover:text-gold";
+
   return (
-    <main dir="rtl" className="alpha-chat-bg flex h-[100dvh] flex-col overflow-hidden font-arabic text-foreground">
+    <main dir="rtl" className={`flex h-full min-h-0 flex-col overflow-hidden font-arabic text-foreground ${embedded ? "connect-chat-surface" : ""}`}>
 
       {/* ── Header — always visible even when locked ── */}
-      <header className="z-20 border-b border-gold/10 bg-card/70 px-3 pb-2 pt-[max(env(safe-area-inset-top),8px)] backdrop-blur-2xl">
+      {!hideHeader ? (
+      <header className={`z-20 border-b px-3 pb-2 backdrop-blur-2xl ${headerBg} ${embedded ? "pt-2" : "pt-[max(env(safe-area-inset-top),8px)]"}`}>
         <div className="mx-auto grid max-w-[420px] grid-cols-[40px_1fr_76px] items-center gap-1">
 
           <Button
@@ -268,55 +324,51 @@ export function AlphaChatScreen({ onBack }: { onBack: () => void }) {
             aria-label="رجوع"
             variant="ghost"
             size="icon"
-            className="size-9 justify-self-end rounded-full border border-gold/20 bg-card/60 text-gold shadow-sm backdrop-blur-sm hover:bg-gold/10 hover:text-gold"
+            className={backBtnCls}
           >
             <ArrowLeft className="size-[18px]" />
           </Button>
 
-          <div className="flex items-center justify-center gap-2">
-            <div className="relative">
-              <img
-                src={priestProfile.avatar}
-                alt="أبونا داود"
-                width={38}
-                height={38}
-                className="size-[38px] rounded-full border-[1.5px] border-gold/40 object-cover shadow-[0_0_12px_rgba(200,149,42,0.22)]"
-              />
-              <span className="absolute bottom-0 right-0 size-2.5 rounded-full border-[1.5px] border-card bg-[#166534] shadow-[0_0_6px_rgba(22,101,52,0.5)]" />
-            </div>
-            <div className="text-right">
-              <div className="flex items-center gap-1">
-                <p className="text-[14px] font-bold leading-tight">أبونا داود</p>
-                <AlphaShield role="priest" size="sm" userName="أبونا داود" userAvatar={priestProfile.avatar} isOnline={true} />
-              </div>
-              <div className="flex items-center gap-1.5">
-                <p className="text-[8.5px] font-semibold tracking-wide text-[#166534]">متصل الآن</p>
-                {muted && (
-                  <span className="flex items-center gap-0.5 rounded-full border border-[#8A6A3D]/20 bg-card/80 px-1.5 py-0.5 text-[7px] font-medium text-[#8A6A3D]">
-                    <BellOff className="size-2.5" />
-                    مكتوم
-                  </span>
-                )}
-                {isLocked && isAuthenticated && (
-                  <span className="flex items-center gap-0.5 rounded-full border border-gold/20 bg-card/80 px-1.5 py-0.5 text-[7px] font-medium text-gold">
-                    <LockKeyhole className="size-2.5" />
-                    مقفل
-                  </span>
-                )}
-              </div>
-            </div>
+          <div className="flex min-w-0 items-center justify-center">
+            <AlphaIdentityRow
+              className="min-w-0"
+              name={profile.name}
+              role={profile.role}
+              avatar={profile.avatar}
+              avatarSize="sm"
+              presenceUserId={profile.id}
+              nameClassName={`text-[14px] font-bold leading-tight ${embedded ? "text-foreground" : ""}`}
+              meta={
+                <div className="flex items-center gap-1.5">
+                  <p className={`text-[8.5px] font-semibold tracking-wide ${presenceTextClass}`}>{presenceLabel}</p>
+                  {muted && (
+                    <span className={mutedTagCls}>
+                      <BellOff className="size-2.5" />
+                      مكتوم
+                    </span>
+                  )}
+                  {isLocked && isAuthenticated && (
+                    <span className={lockedTagCls}>
+                      <LockKeyhole className="size-2.5" />
+                      مقفل
+                    </span>
+                  )}
+                </div>
+              }
+            />
           </div>
 
           <div className="flex items-center justify-end gap-0.5">
-            <Button onClick={() => setSheet("menu")} aria-label="المزيد" variant="ghost" size="icon" className="size-8 rounded-full text-gold/65 hover:bg-gold/10 hover:text-gold">
+            <Button onClick={() => setSheet("menu")} aria-label="المزيد" variant="ghost" size="icon" className={menuBtnCls}>
               <MoreHorizontal className="size-[18px]" />
             </Button>
-            <Button onClick={handleCall} aria-label="اتصال" variant="ghost" size="icon" className="size-8 rounded-full text-gold/65 hover:bg-gold/10 hover:text-gold">
+            <Button onClick={handleCall} aria-label="اتصال" variant="ghost" size="icon" className={embedded ? "size-8 rounded-full text-[var(--neon-blue)]/75 hover:bg-white/10 hover:text-[var(--neon-blue)]" : "size-8 rounded-full text-gold/65 hover:bg-gold/10 hover:text-gold"}>
               <Phone className="size-[18px]" />
             </Button>
           </div>
         </div>
       </header>
+      ) : null}
 
       {/* ── Lock screen OR Chat content ── */}
       {isLocked && !isAuthenticated ? (
@@ -331,11 +383,23 @@ export function AlphaChatScreen({ onBack }: { onBack: () => void }) {
         />
       ) : (
         <>
+          {/* ── Immersive toolbar (Connect header owns back/contact) ── */}
+          {hideHeader && embedded ? (
+            <div className="z-10 mx-auto flex w-full max-w-[420px] items-center justify-end gap-0.5 px-3 pb-1 pt-0.5">
+              <Button onClick={() => setSheet("menu")} aria-label="المزيد" variant="ghost" size="icon" className={menuBtnCls}>
+                <MoreHorizontal className="size-[18px]" />
+              </Button>
+              <Button onClick={handleCall} aria-label="اتصال" variant="ghost" size="icon" className="size-8 rounded-full text-[var(--neon-blue)]/75 hover:bg-white/10 hover:text-[var(--neon-blue)]">
+                <Phone className="size-[18px]" />
+              </Button>
+            </div>
+          ) : null}
+
           {/* ── Privacy pill ── */}
-          <div className="z-10 mx-auto w-full max-w-[420px] px-4 pt-2">
-            <div className="flex items-center justify-center gap-1.5 rounded-full border border-[#166534]/20 bg-[#DCFCE7]/70 px-3 py-1 backdrop-blur-sm">
-              <LockKeyhole className="size-3 shrink-0 text-[#166534]" />
-              <p className="text-[8.5px] font-medium text-[#14532D]">
+          <div className={`z-10 flex justify-center px-4 ${hideHeader ? "pt-1" : "pt-2"}`}>
+            <div className={`connect-chat-notice connect-chat-notice--privacy ${embedded ? "connect-chat-notice--embedded" : ""}`}>
+              <LockKeyhole className="connect-chat-notice__icon shrink-0" />
+              <p className="connect-chat-notice__text">
                 محادثة خاصة ومشفرة · لا يمكن الاطلاع عليها
               </p>
             </div>
@@ -360,9 +424,9 @@ export function AlphaChatScreen({ onBack }: { onBack: () => void }) {
 
             {/* Date separator */}
             <div className="relative flex items-center gap-3">
-              <div className="h-px flex-1 bg-gold/10" />
-              <span className="rounded-full border border-gold/12 bg-card/50 px-3 py-0.5 text-[8px] text-muted-foreground/60 backdrop-blur-sm">اليوم</span>
-              <div className="h-px flex-1 bg-gold/10" />
+              <div className={`h-px flex-1 ${embedded ? "bg-white/10" : "bg-gold/10"}`} />
+              <span className={`rounded-full border px-3 py-0.5 text-[8px] backdrop-blur-sm ${embedded ? "border-white/12 bg-white/8 text-muted-foreground/70" : "border-gold/12 bg-card/50 text-muted-foreground/60"}`}>اليوم</span>
+              <div className={`h-px flex-1 ${embedded ? "bg-white/10" : "bg-gold/10"}`} />
             </div>
 
             {/* Messages — long-press to open action menu */}
@@ -370,6 +434,7 @@ export function AlphaChatScreen({ onBack }: { onBack: () => void }) {
               <Message
                 key={msg.id}
                 {...msg}
+                embedded={embedded}
                 onLongPress={!msg.isSystem ? () => setLongPressId(msg.id) : undefined}
               />
             ))}
@@ -382,39 +447,51 @@ export function AlphaChatScreen({ onBack }: { onBack: () => void }) {
             )}
 
             {/* Auto-delete notice */}
-            <div className="flex items-center justify-center gap-1.5 self-center rounded-full border border-[#166534]/20 bg-[#DCFCE7]/55 px-3 py-1 text-[8px] font-medium text-[#14532D] backdrop-blur-sm">
-              <Clock3 className="size-2.5 text-[#14532D]" />
-              سيتم حذف الرسائل بعد: {timer}
+            <div className={`connect-chat-notice connect-chat-notice--timer self-center ${embedded ? "connect-chat-notice--embedded" : ""}`}>
+              <Clock3 className="connect-chat-notice__icon shrink-0" />
+              <span className="connect-chat-notice__text">سيتم حذف الرسائل بعد: {timer}</span>
             </div>
 
             <div ref={messagesEndRef} />
           </section>
 
           {/* ── Composer ── */}
-          <footer ref={footerRef} className="z-20 border-t border-gold/10 bg-card/75 px-3 pb-[max(env(safe-area-inset-bottom),12px)] pt-2 backdrop-blur-2xl">
+          <footer ref={footerRef} className={`z-20 border-t px-3 pb-[max(env(safe-area-inset-bottom),12px)] pt-2 backdrop-blur-2xl ${
+            embedded ? "connect-chat-composer border-white/10 bg-[#060d1f]/90" : "border-gold/10 bg-card/75"
+          }`}>
             {/* Edit mode banner */}
             {editingId && (
-              <div className="mx-auto mb-2 flex max-w-[420px] items-center justify-between rounded-xl border border-gold/15 bg-gold/8 px-3 py-1.5">
+              <div className={`mx-auto mb-2 flex max-w-[420px] items-center justify-between rounded-xl border px-3 py-1.5 ${
+                embedded ? "border-neon-green/20 bg-neon-green/10" : "border-gold/15 bg-gold/8"
+              }`}>
                 <div className="flex items-center gap-1.5">
-                  <Pencil className="size-3 text-gold" />
-                  <span className="text-[11px] font-medium text-[#374151]">تعديل الرسالة</span>
+                  <Pencil className={`size-3 ${embedded ? "text-neon-green" : "text-gold"}`} />
+                  <span className={`text-[11px] font-medium ${embedded ? "text-foreground/90" : "text-[#374151]"}`}>تعديل الرسالة</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => { setInput(""); setEditingId(null); }}
-                  className="text-[10px] text-[#6B7280] hover:text-[#374151]"
+                  className={`text-[10px] ${embedded ? "text-muted-foreground hover:text-foreground" : "text-[#6B7280] hover:text-[#374151]"}`}
                 >
                   إلغاء
                 </button>
               </div>
             )}
-            <div className="mx-auto flex max-w-[420px] items-center gap-1.5 rounded-[22px] border border-gold/18 bg-background/65 py-1.5 pl-2 pr-1.5 shadow-sm backdrop-blur-xl">
+            <div className={`mx-auto flex max-w-[420px] items-center gap-1.5 rounded-[22px] border py-1.5 pl-2 pr-1.5 shadow-sm backdrop-blur-xl ${
+              embedded
+                ? "border-white/12 bg-white/6"
+                : "border-gold/18 bg-background/65"
+            }`}>
               <button
                 type="button"
                 aria-label={editingId ? "حفظ التعديل" : "إرسال الرسالة"}
                 disabled={!input.trim()}
                 onClick={handleSend}
-                className="grid size-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-gold to-gold-deep text-navy-deep shadow-[0_2px_10px_-4px_var(--gold)] transition-all hover:scale-105 hover:shadow-[0_4px_16px_-4px_var(--gold)] disabled:opacity-30 disabled:shadow-none disabled:hover:scale-100"
+                className={`connect-chat-send-btn grid h-10 min-w-[48px] shrink-0 place-items-center rounded-full px-3 transition-all hover:scale-105 disabled:opacity-30 disabled:shadow-none disabled:hover:scale-100 me-2 ${
+                  embedded
+                    ? "connect-chat-send-btn--embedded"
+                    : "bg-gradient-to-br from-gold to-gold-deep text-navy-deep shadow-[0_2px_10px_-4px_var(--gold)] hover:shadow-[0_4px_16px_-4px_var(--gold)]"
+                }`}
               >
                 {editingId
                   ? <Check className="size-[17px]" />
@@ -426,9 +503,15 @@ export function AlphaChatScreen({ onBack }: { onBack: () => void }) {
                 onClick={() => setSheet("timer")}
                 aria-label="مؤقت الاختفاء"
                 title={`المؤقت: ${timer}`}
-                className="flex shrink-0 items-center gap-1 rounded-full border border-[#FCA5A5] bg-[#FEE2E2] px-2 py-1 transition-colors hover:bg-[#FCA5A5]/40"
+                className={
+                  embedded
+                    ? "connect-chat-timer-btn flex shrink-0 items-center rounded-[14px] border border-white/12 bg-white/6 p-1 transition-all active:scale-[0.98]"
+                    : "flex shrink-0 items-center gap-1 rounded-full border border-[#FCA5A5] bg-[#FEE2E2] px-2 py-1 transition-colors hover:bg-[#FCA5A5]/40"
+                }
               >
-                <Clock3 className="size-3.5 text-[#DC2626]" />
+                <span className={embedded ? `${ALPHA_SETTINGS_ICON_BOX} !size-7` : "flex items-center"}>
+                  <Clock3 className={`size-3.5 ${embedded ? "text-gold" : "text-[#DC2626]"}`} />
+                </span>
               </button>
 
               <Input
@@ -437,14 +520,20 @@ export function AlphaChatScreen({ onBack }: { onBack: () => void }) {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="h-auto min-w-0 flex-1 border-0 bg-transparent p-0 text-[13px] leading-relaxed shadow-none focus-visible:ring-0 placeholder:text-muted-foreground/40"
+                className={`h-auto min-w-0 flex-1 border-0 bg-transparent p-0 text-[13px] leading-relaxed shadow-none focus-visible:ring-0 ${
+                  embedded ? "text-foreground placeholder:text-muted-foreground/50" : "placeholder:text-muted-foreground/40"
+                }`}
               />
 
               <button
                 type="button"
                 onClick={() => setSheet("attach")}
                 aria-label="إرفاق"
-                className="grid size-8 shrink-0 place-items-center rounded-full border border-[#D6C4A8] bg-[#F5F0E6] text-[#5B4636] transition-colors hover:bg-[#D6C4A8]/70 hover:text-[#3F2F24]"
+                className={`connect-chat-attach-btn grid size-8 shrink-0 place-items-center rounded-full border transition-colors ${
+                  embedded
+                    ? "connect-chat-attach-btn--embedded"
+                    : "border-[#D6C4A8] bg-[#F5F0E6] text-[#5B4636] hover:bg-[#D6C4A8]/70 hover:text-[#3F2F24]"
+                }`}
               >
                 <Plus className="size-[17px]" />
               </button>
@@ -453,8 +542,19 @@ export function AlphaChatScreen({ onBack }: { onBack: () => void }) {
         </>
       )}
 
-      {/* ── Delete message confirmation (center glass popup) ── */}
-      {deleteConfirmId && (
+      {/* ── Delete message confirmation ── */}
+      {embedded ? (
+        <ConnectConfirmDialog
+          open={!!deleteConfirmId}
+          onClose={() => setDeleteConfirmId(null)}
+          onConfirm={() => deleteConfirmId && handleDeleteMessage(deleteConfirmId)}
+          title="حذف هذه الرسالة؟"
+          description="ستُحذف من هذا الجهاز فقط."
+          confirmLabel="حذف"
+          tone="danger"
+          icon={Trash2}
+        />
+      ) : deleteConfirmId ? (
         <div
           className="fixed inset-0 z-[160] flex items-center justify-center bg-black/45 backdrop-blur-[4px]"
           onClick={() => setDeleteConfirmId(null)}
@@ -477,10 +577,21 @@ export function AlphaChatScreen({ onBack }: { onBack: () => void }) {
             </div>
           </div>
         </div>
-      )}
+      ) : null}
 
-      {/* ── Clear chat confirmation (center glass popup) ── */}
-      {confirmClear && (
+      {/* ── Clear chat confirmation ── */}
+      {embedded ? (
+        <ConnectConfirmDialog
+          open={confirmClear}
+          onClose={() => setConfirmClear(false)}
+          onConfirm={handleClearConfirmed}
+          title="مسح المحادثة"
+          description="لا يمكن التراجع عن هذا الإجراء."
+          confirmLabel="مسح"
+          tone="danger"
+          icon={Trash2}
+        />
+      ) : confirmClear ? (
         <div
           className="fixed inset-0 z-[160] flex items-center justify-center bg-black/45 backdrop-blur-[4px]"
           onClick={() => setConfirmClear(false)}
@@ -503,14 +614,14 @@ export function AlphaChatScreen({ onBack }: { onBack: () => void }) {
             </div>
           </div>
         </div>
-      )}
+      ) : null}
 
-      {/* ── Toast ── */}
-      {toast && (
+      {/* ── Toast (standalone only — embedded uses ConnectTopToast) ── */}
+      {!embedded && toast ? (
         <div className="pointer-events-none fixed bottom-28 left-1/2 z-[200] -translate-x-1/2 rounded-full border border-white/12 bg-[#1F2937]/88 px-4 py-2 text-[11px] text-white/90 shadow-lg backdrop-blur-md">
           {toast}
         </div>
-      )}
+      ) : null}
 
       {/* ── Long-press message action menu ── */}
       {longPressId && (() => {
@@ -584,16 +695,21 @@ export function AlphaChatScreen({ onBack }: { onBack: () => void }) {
         onHideConfirm={handleConfirmHide}
         onUnhideChat={handleUnhideConversation}
         composerBottom={composerH}
+        embedded={embedded}
       />
     </main>
   );
 }
 
 // ─── System event notice ──────────────────────────────────────
-function SystemMessage({ text }: { text: string }) {
+function SystemMessage({ text, embedded = false }: { text: string; embedded?: boolean }) {
   return (
     <div className="flex justify-center py-0.5">
-      <span className="max-w-[80%] rounded-full border border-gold/12 bg-card/50 px-3.5 py-1 text-center text-[9px] leading-relaxed text-muted-foreground/65 backdrop-blur-sm">
+      <span className={`max-w-[80%] rounded-full border px-3.5 py-1 text-center text-[9px] leading-relaxed backdrop-blur-sm ${
+        embedded
+          ? "border-white/12 bg-white/8 text-muted-foreground/80"
+          : "border-gold/12 bg-card/50 text-muted-foreground/65"
+      }`}>
         {text}
       </span>
     </div>
@@ -601,9 +717,9 @@ function SystemMessage({ text }: { text: string }) {
 }
 
 // ─── Message bubble ───────────────────────────────────────────
-function Message({ id, text, time, incoming, status, isSystem, edited, onLongPress }: {
+function Message({ id, text, time, incoming, status, isSystem, edited, embedded = false, onLongPress }: {
   id: string; text: string; time: string; incoming?: boolean; status?: MessageStatus;
-  isSystem?: boolean; edited?: boolean; onLongPress?: () => void;
+  isSystem?: boolean; edited?: boolean; embedded?: boolean; onLongPress?: () => void;
 }) {
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -616,27 +732,35 @@ function Message({ id, text, time, incoming, status, isSystem, edited, onLongPre
     if (pressTimer.current) { clearTimeout(pressTimer.current); pressTimer.current = null; }
   }, []);
 
-  if (isSystem) return <SystemMessage text={text} />;
+  if (isSystem) return <SystemMessage text={text} embedded={embedded} />;
   return (
     <div
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchCancel}
       onTouchMove={handleTouchCancel}
       className={`relative max-w-[82%] select-none px-4 py-3 text-[13px] leading-[1.7] backdrop-blur-md ${
-        incoming
-          ? "self-start rounded-[20px] rounded-tl-[5px] border border-white/50 bg-white/68 text-foreground/90 shadow-[0_2px_14px_-4px_rgba(0,0,0,0.08)]"
-          : "self-end rounded-[20px] rounded-tr-[5px] border border-[#c8952a]/28 bg-gradient-to-br from-[#fdf0d0]/90 to-[#f0d898]/75 text-[#3a2800] shadow-[0_4px_20px_-6px_rgba(200,149,42,0.32)]"
+        embedded
+          ? incoming
+            ? "connect-chat-bubble connect-chat-bubble--in self-start rounded-[20px] rounded-tl-[5px] border border-white/14 bg-[oklch(0.24_0.03_260/0.92)] text-foreground shadow-[0_2px_14px_-4px_rgba(0,0,0,0.35)]"
+            : "connect-chat-bubble connect-chat-bubble--out self-end rounded-[20px] rounded-tr-[5px] border border-neon-green/30 bg-gradient-to-br from-[oklch(0.28_0.06_145/0.95)] to-[oklch(0.22_0.04_260/0.95)] text-foreground shadow-[0_4px_20px_-6px_oklch(0.82_0.22_145/0.35)]"
+          : incoming
+            ? "self-start rounded-[20px] rounded-tl-[5px] border border-white/50 bg-white/68 text-foreground/90 shadow-[0_2px_14px_-4px_rgba(0,0,0,0.08)]"
+            : "self-end rounded-[20px] rounded-tr-[5px] border border-[#c8952a]/28 bg-gradient-to-br from-[#fdf0d0]/90 to-[#f0d898]/75 text-[#3a2800] shadow-[0_4px_20px_-6px_rgba(200,149,42,0.32)]"
       }`}
     >
       <p>{text}</p>
-      <div className={`mt-1.5 flex items-center justify-end gap-1.5 text-[7.5px] ${incoming ? "text-foreground/40" : "text-[#8a6200]/55"}`}>
+      <div className={`mt-1.5 flex items-center justify-end gap-1.5 text-[7.5px] ${
+        embedded
+          ? incoming ? "text-muted-foreground/75" : "text-neon-green/70"
+          : incoming ? "text-foreground/40" : "text-[#8a6200]/55"
+      }`}>
         <time className="ltr">{time}</time>
-        {edited && <span className={incoming ? "text-foreground/30" : "text-[#8a6200]/40"}>· تم التعديل</span>}
+        {edited && <span className={embedded ? (incoming ? "text-muted-foreground/55" : "text-neon-green/50") : (incoming ? "text-foreground/30" : "text-[#8a6200]/40")}>· تم التعديل</span>}
         {!incoming && status && (
           <span className={`font-bold ${
-            status === "read"      ? "text-[#c8952a]"    :
-            status === "delivered" ? "text-[#8a6200]/60" :
-                                     "text-[#8a6200]/35"
+            embedded
+              ? status === "read" ? "text-neon-green" : status === "delivered" ? "text-neon-green/60" : "text-neon-green/35"
+              : status === "read" ? "text-[#c8952a]" : status === "delivered" ? "text-[#8a6200]/60" : "text-[#8a6200]/35"
           }`}>
             {status === "sent" ? "✓" : "✓✓"}
           </span>
@@ -730,14 +854,49 @@ function ChatGlassPanel({
   desc,
   onClose,
   composerBottom,
+  embedded = false,
   children,
 }: {
   title: string;
   desc?: string;
   onClose: () => void;
   composerBottom: number;
+  embedded?: boolean;
   children: React.ReactNode;
 }) {
+  if (embedded) {
+    return (
+      <div
+        className="fixed inset-0 z-[120] bg-black/45 backdrop-blur-[3px]"
+        onClick={onClose}
+      >
+        <div
+          className="absolute left-1/2 w-[88%] max-w-[300px] -translate-x-1/2"
+          style={{ bottom: composerBottom + 8 }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div dir="rtl" className="glass-strong overflow-hidden rounded-[22px] px-4 py-4">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="إغلاق"
+                className="glass flex size-8 items-center justify-center rounded-full text-muted-foreground active:scale-95"
+              >
+                <X className="size-3.5" />
+              </button>
+              <div className="min-w-0 flex-1 text-right">
+                <p className="text-[13px] font-bold text-neon-green">{title}</p>
+                {desc ? <p className="mt-0.5 text-[10px] text-muted-foreground">{desc}</p> : null}
+              </div>
+            </div>
+            {children}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="fixed inset-0 z-[120] bg-black/28 backdrop-blur-[3px]"
@@ -775,6 +934,7 @@ interface AlphaSheetProps {
   onHideConfirm:     () => void;
   onUnhideChat:      () => void;
   composerBottom:    number;
+  embedded?:         boolean;
 }
 
 function AlphaSheet({
@@ -783,14 +943,15 @@ function AlphaSheet({
   onClearChat, onAttach,
   isHidden, onHideRequest, onHideConfirm, onUnhideChat,
   composerBottom,
+  embedded = false,
 }: AlphaSheetProps) {
   const open = sheet !== null;
 
-  const attachItems: [typeof ImageIcon, string, string][] = [
-    [ImageIcon, "صورة",     "from-[#3d8bef] to-[#1a55cc]"],
-    [Camera,    "الكاميرا", "from-[#9b5fde] to-[#6b3db0]"],
-    [File,      "ملف",      "from-[#2ebb9a] to-[#1a8a72]"],
-    [MapPin,    "الموقع",   "from-[#ef5350] to-[#c62828]"],
+  const attachItems: [typeof ImageIcon, string, "blue" | "purple" | "green" | "red"][] = [
+    [ImageIcon, "صورة",     "blue"],
+    [Camera,    "الكاميرا", "purple"],
+    [File,      "ملف",      "green"],
+    [MapPin,    "الموقع",   "red"],
   ];
 
   const menuItems: [typeof Clock3, string, (() => void) | undefined, string?, string?][] = [
@@ -810,6 +971,7 @@ function AlphaSheet({
           onSelect={(opt) => { hapticSelection(); setTimer(opt); setSheet(null); }}
           onClose={() => setSheet(null)}
           composerBottom={composerBottom}
+          embedded={embedded}
         />
       )}
 
@@ -819,10 +981,23 @@ function AlphaSheet({
           desc="تحكم في خصوصية هذه المحادثة وأمانها"
           onClose={() => setSheet(null)}
           composerBottom={composerBottom}
+          embedded={embedded}
         >
           <div className="space-y-2">
             {menuItems.map(([Icon, label, action, iconClass, labelClass]) => {
               const isDanger = label === "مسح المحادثة";
+              const rowCls = embedded
+                ? isDanger
+                  ? "flex w-full items-center gap-2.5 rounded-[14px] border border-destructive/25 bg-destructive/10 px-3 py-3 text-right backdrop-blur-sm transition-all active:scale-[0.98]"
+                  : "flex w-full items-center gap-2.5 rounded-[14px] border border-white/12 bg-white/6 px-3 py-3 text-right backdrop-blur-sm transition-all active:scale-[0.98]"
+                : isDanger
+                  ? MESSAGING_GLASS_ROW_DANGER
+                  : MESSAGING_GLASS_ROW;
+              const iconBoxCls = embedded
+                ? isDanger
+                  ? "grid size-8 shrink-0 place-items-center rounded-[10px] border border-destructive/30 bg-destructive/15"
+                  : "grid size-8 shrink-0 place-items-center rounded-[10px] border border-white/12 bg-white/8"
+                : `${MESSAGING_GLASS_ICON_BOX} ${isDanger ? "border-[#FECACA]/60 bg-[#FEE2E2]/45" : ""}`;
               return (
                 <button
                   key={label}
@@ -835,14 +1010,16 @@ function AlphaSheet({
                     }
                     action?.();
                   }}
-                  className={`${isDanger ? MESSAGING_GLASS_ROW_DANGER : MESSAGING_GLASS_ROW} hover:bg-white/58 active:scale-[0.98]`}
+                  className={`${rowCls} ${embedded ? "" : "hover:bg-white/58 active:scale-[0.98]"}`}
                 >
-                  <span className={`${MESSAGING_GLASS_ICON_BOX} ${
-                    isDanger ? "border-[#FECACA]/60 bg-[#FEE2E2]/45" : ""
-                  }`}>
-                    <Icon className={`size-4 ${iconClass ?? "text-gold"}`} />
+                  <span className={iconBoxCls}>
+                    <Icon className={`size-4 ${embedded ? (isDanger ? "text-destructive" : iconClass ?? "text-neon-green") : iconClass ?? "text-gold"}`} />
                   </span>
-                  <span className={`flex-1 text-[12px] font-semibold leading-snug ${labelClass ?? "text-[#1F2937]"}`}>
+                  <span className={`flex-1 text-[12px] font-semibold leading-snug ${
+                    embedded
+                      ? isDanger ? "text-destructive" : "text-foreground"
+                      : labelClass ?? "text-[#1F2937]"
+                  }`}>
                     {label}
                   </span>
                 </button>
@@ -852,12 +1029,26 @@ function AlphaSheet({
         </ChatGlassPanel>
       )}
 
-      {sheet === "hide-setup" && (
+      {embedded && sheet === "hide-setup" ? (
+        <ConnectConfirmDialog
+          open
+          onClose={() => setSheet(null)}
+          onConfirm={onHideConfirm}
+          title="إخفاء المحادثة"
+          description="سيتم إضافتها إلى قسم المحادثات المخفية"
+          confirmLabel="إخفاء"
+          tone="hide"
+          icon={EyeOff}
+        />
+      ) : null}
+
+      {sheet === "hide-setup" && !embedded ? (
         <ChatGlassPanel
           title="إخفاء المحادثة"
           desc="سيتم إضافتها إلى قسم المحادثات المخفية"
           onClose={() => setSheet(null)}
           composerBottom={composerBottom}
+          embedded={false}
         >
           <div className="flex gap-2.5 px-0.5">
             <button
@@ -876,7 +1067,7 @@ function AlphaSheet({
             </button>
           </div>
         </ChatGlassPanel>
-      )}
+      ) : null}
 
       {sheet === "security" && (
         <ChatGlassPanel
@@ -884,10 +1075,15 @@ function AlphaSheet({
           desc="محمية بواسطة Alpha Security"
           onClose={() => setSheet(null)}
           composerBottom={composerBottom}
+          embedded={embedded}
         >
           <div className="mb-2.5 flex justify-center">
-            <span className="flex items-center gap-1.5 rounded-full border border-[#166534]/22 bg-[#ECFDF5]/85 px-3 py-1.5 text-[10px] font-semibold text-[#166534]">
-              <ShieldCheck className="size-3.5 text-[#166534]" />
+            <span className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[10px] font-semibold ${
+              embedded
+                ? "border-neon-green/30 bg-neon-green/12 text-neon-green"
+                : "border-[#166534]/22 bg-[#ECFDF5]/85 text-[#166534]"
+            }`}>
+              <ShieldCheck className={`size-3.5 ${embedded ? "text-neon-green" : "text-[#166534]"}`} />
               موثّقة وآمنة
             </span>
           </div>
@@ -899,26 +1095,101 @@ function AlphaSheet({
             ] as const).map(([Icon, label, value]) => (
               <div
                 key={label}
-                className="flex items-center gap-2.5 rounded-[13px] border border-white/32 bg-white/42 px-3 py-2.5 shadow-[0_3px_11px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.55)]"
+                className={`flex items-center gap-2.5 rounded-[13px] border px-3 py-2.5 ${
+                  embedded
+                    ? "border-white/12 bg-white/6 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+                    : "border-white/32 bg-white/42 shadow-[0_3px_11px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.55)]"
+                }`}
               >
-                <span className="grid size-7 shrink-0 place-items-center rounded-[9px] border border-[#166534]/12 bg-[#ECFDF5]/70">
-                  <Icon className="size-3.5 text-[#166534]" />
+                <span className={`grid size-7 shrink-0 place-items-center rounded-[9px] border ${
+                  embedded
+                    ? "border-neon-green/20 bg-neon-green/10"
+                    : "border-[#166534]/12 bg-[#ECFDF5]/70"
+                }`}>
+                  <Icon className={`size-3.5 ${embedded ? "text-neon-green" : "text-[#166534]"}`} />
                 </span>
-                <span className="flex-1 text-[11px] font-medium text-[#6B7280]">{label}</span>
-                <span className="text-[12px] font-bold text-[#1F2937]">{value}</span>
+                <span className={`flex-1 text-[11px] font-medium ${embedded ? "text-muted-foreground" : "text-[#6B7280]"}`}>{label}</span>
+                <span className={`text-[12px] font-bold ${embedded ? "text-foreground" : "text-[#1F2937]"}`}>{value}</span>
               </div>
             ))}
           </div>
         </ChatGlassPanel>
       )}
 
-      <Drawer open={open && sheet === "attach"} onOpenChange={(v) => !v && setSheet(null)}>
+      {embedded && sheet === "attach" ? (
+        <div
+          className="fixed inset-0 z-[120] bg-black/40 backdrop-blur-[2px]"
+          onClick={() => setSheet(null)}
+        >
+          <div
+            className="absolute left-1/2 w-[88%] max-w-[300px] -translate-x-1/2"
+            style={{ bottom: composerBottom + 8 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div dir="rtl" className="glass-strong overflow-hidden rounded-[22px] px-4 py-4">
+              <p className="mb-3 text-center text-[12px] font-bold text-neon-green">إرفاق</p>
+              <div className="flex items-center justify-around gap-2">
+                {attachItems.map(([Icon, label, tone]) => {
+                  const pulseClass =
+                    tone === "green"
+                      ? "connect-pulse-wrap--green"
+                      : tone === "red"
+                        ? "connect-pulse-wrap--red"
+                        : tone === "purple"
+                          ? "connect-pulse-wrap--white"
+                          : "connect-pulse-wrap--blue";
+                  const ringClass =
+                    tone === "green"
+                      ? "connect-attach-icon-ring--green"
+                      : tone === "red"
+                        ? "connect-attach-icon-ring--red"
+                        : tone === "purple"
+                          ? "connect-attach-icon-ring--purple"
+                          : "";
+                  const iconColor =
+                    tone === "green"
+                      ? "text-neon-green"
+                      : tone === "red"
+                        ? "text-destructive"
+                        : tone === "purple"
+                          ? "text-[oklch(0.72_0.18_300)]"
+                          : "text-neon-blue";
+                  return (
+                    <button
+                      key={label}
+                      type="button"
+                      onClick={() => onAttach(label)}
+                      className="connect-attach-icon-btn active:scale-95"
+                    >
+                      <span className={`connect-pulse-wrap ${pulseClass} connect-attach-icon-ring ${ringClass}`}>
+                        <Icon className={`relative z-10 size-5 ${iconColor} drop-shadow-[0_0_8px_currentColor]`} strokeWidth={2.2} />
+                      </span>
+                      <span className="text-[9px] font-medium text-muted-foreground">{label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      <Drawer open={open && sheet === "attach" && !embedded} onOpenChange={(v) => !v && setSheet(null)}>
       <DrawerContent dir="rtl" className="mx-auto max-w-[420px] border-gold/25 bg-card/97 px-5 pb-6 text-foreground backdrop-blur-2xl">
 
-        {/* Attach */}
-        {sheet === "attach" && (
+        {/* Attach — standard (non-embedded) */}
+        {sheet === "attach" && !embedded && (
           <div className="flex items-center justify-around pb-2 pt-4">
-            {attachItems.map(([Icon, label, gradient]) => (
+            {attachItems.map(([Icon, label, tone]) => {
+              const gradient =
+                tone === "blue"
+                  ? "from-[#3d8bef] to-[#1a55cc]"
+                  : tone === "purple"
+                    ? "from-[#9b5fde] to-[#6b3db0]"
+                    : tone === "green"
+                      ? "from-[#2ebb9a] to-[#1a8a72]"
+                      : "from-[#ef5350] to-[#c62828]";
+              return (
               <button key={label} type="button" onClick={() => onAttach(label)} className="flex flex-col items-center gap-1.5">
                 <span
                   className={`grid size-[52px] place-items-center rounded-2xl bg-gradient-to-b ${gradient}`}
@@ -928,7 +1199,8 @@ function AlphaSheet({
                 </span>
                 <span className="text-[10px] font-medium text-[#374151]">{label}</span>
               </button>
-            ))}
+            );
+            })}
           </div>
         )}
       </DrawerContent>
@@ -976,12 +1248,14 @@ function TimerGlassPicker({
   onSelect,
   onClose,
   composerBottom,
+  embedded = false,
 }: {
   value: string;
   options: string[];
   onSelect: (v: string) => void;
   onClose: () => void;
   composerBottom: number;
+  embedded?: boolean;
 }) {
   const listRef = useRef<HTMLUListElement>(null);
   const scrollEndTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1057,6 +1331,122 @@ function TimerGlassPicker({
     commitIndex(idx, true);
   };
 
+  const pickerWheel = (
+    <div className="relative mx-2.5 mb-3 mt-1" style={{ height: PICKER_VISIBLE }}>
+      <div
+        className={`pointer-events-none absolute inset-x-0 top-0 z-10 h-9 bg-gradient-to-b ${
+          embedded ? "from-[#060d1f]/95 to-transparent" : "from-white/80 to-transparent"
+        }`}
+      />
+      <div
+        className={`pointer-events-none absolute inset-x-0 bottom-0 z-10 h-9 bg-gradient-to-t ${
+          embedded ? "from-[#060d1f]/95 to-transparent" : "from-white/80 to-transparent"
+        }`}
+      />
+      <div
+        className={`pointer-events-none absolute inset-x-0.5 top-1/2 z-10 -translate-y-1/2 rounded-[10px] border ${
+          embedded ? "border-neon-green/25 bg-neon-green/10" : "border-gold/20 bg-gold/8"
+        }`}
+        style={{ height: PICKER_ITEM_H }}
+      />
+      <ul
+        ref={listRef}
+        className="h-full overflow-y-auto scroll-smooth overscroll-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        style={{
+          scrollSnapType: "y mandatory",
+          paddingTop: padY,
+          paddingBottom: padY,
+          WebkitOverflowScrolling: "touch",
+        }}
+        onTouchStart={() => void pickerAudioCtx?.resume()}
+        onScroll={handleScroll}
+        onTouchEnd={handleScroll}
+        onMouseUp={handleScroll}
+      >
+        {options.map((option, idx) => {
+          const selected = active === option;
+          const isFocused = idx === focusedIdx;
+          const dist = Math.abs(idx - focusedIdx);
+          return (
+            <li
+              key={option}
+              style={{
+                height: PICKER_ITEM_H,
+                scrollSnapAlign: "center",
+                animation: selected && isFocused && tickKey > 0
+                  ? "alphaTimerWheelTick 0.18s ease-out both"
+                  : undefined,
+              }}
+              className="flex w-full cursor-pointer items-center justify-center"
+              onClick={() => selectOption(idx)}
+            >
+              <span
+                className={`block w-full truncate px-2 text-center text-[13.5px] font-semibold leading-none transition-[opacity,color] duration-150 ${
+                  embedded && isFocused ? "text-neon-green" : ""
+                }`}
+                style={
+                  embedded
+                    ? { opacity: isFocused ? 1 : dist === 1 ? 0.58 : 0.32 }
+                    : {
+                        opacity: isFocused ? 1 : dist === 1 ? 0.58 : 0.32,
+                        color: isFocused ? "#1F2937" : "#6B7280",
+                      }
+                }
+              >
+                {option}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+
+  if (embedded) {
+    return (
+      <div
+        className="fixed inset-0 z-[120] bg-black/45 backdrop-blur-[3px]"
+        onClick={onClose}
+      >
+        <style>{`
+          @keyframes alphaTimerWheelTick {
+            0% { opacity: 1; }
+            50% { opacity: 0.72; }
+            100% { opacity: 1; }
+          }
+        `}</style>
+        <div
+          className="connect-chat-timer-sheet absolute inset-x-0 bottom-0 mx-auto w-full max-w-[430px]"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div dir="rtl" className="glass-strong overflow-hidden rounded-t-3xl shadow-[0_-12px_48px_rgba(0,0,0,0.45)]">
+            <div className="mx-auto mt-3 h-1 w-10 rounded-full bg-white/20" />
+            <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 pb-3 pt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="إغلاق"
+                className="glass flex size-9 items-center justify-center rounded-full text-muted-foreground active:scale-95"
+              >
+                <X className="size-4" />
+              </button>
+              <p className="text-[15px] font-bold text-neon-green">مؤقت الاختفاء</p>
+              <button
+                type="button"
+                onClick={() => onSelect(active)}
+                className="text-[15px] font-bold text-neon-green active:scale-95"
+              >
+                تم
+              </button>
+            </div>
+            {pickerWheel}
+            <div className="pb-[max(env(safe-area-inset-bottom),12px)]" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="fixed inset-0 z-[120] bg-black/28 backdrop-blur-[3px]"
@@ -1090,58 +1480,7 @@ function TimerGlassPicker({
           </button>
         </div>
 
-        <div className="relative mx-2.5 mb-3 mt-1" style={{ height: PICKER_VISIBLE }}>
-          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-9 bg-gradient-to-b from-white/80 to-transparent" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-9 bg-gradient-to-t from-white/80 to-transparent" />
-          <div
-            className="pointer-events-none absolute inset-x-0.5 top-1/2 z-10 -translate-y-1/2 rounded-[10px] border border-gold/20 bg-gold/8"
-            style={{ height: PICKER_ITEM_H }}
-          />
-          <ul
-            ref={listRef}
-            className="h-full overflow-y-auto scroll-smooth overscroll-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-            style={{
-              scrollSnapType: "y mandatory",
-              paddingTop: padY,
-              paddingBottom: padY,
-              WebkitOverflowScrolling: "touch",
-            }}
-            onTouchStart={() => void pickerAudioCtx?.resume()}
-            onScroll={handleScroll}
-            onTouchEnd={handleScroll}
-            onMouseUp={handleScroll}
-          >
-            {options.map((option, idx) => {
-              const selected = active === option;
-              const isFocused = idx === focusedIdx;
-              const dist = Math.abs(idx - focusedIdx);
-              return (
-                <li
-                  key={option}
-                  style={{
-                    height: PICKER_ITEM_H,
-                    scrollSnapAlign: "center",
-                    animation: selected && isFocused && tickKey > 0
-                      ? "alphaTimerWheelTick 0.18s ease-out both"
-                      : undefined,
-                  }}
-                  className="flex w-full cursor-pointer items-center justify-center"
-                  onClick={() => selectOption(idx)}
-                >
-                  <span
-                    className="block w-full truncate px-2 text-center text-[13.5px] font-semibold leading-none transition-[opacity,color] duration-150"
-                    style={{
-                      opacity: isFocused ? 1 : dist === 1 ? 0.58 : 0.32,
-                      color: isFocused ? "#1F2937" : "#6B7280",
-                    }}
-                  >
-                    {option}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+        {pickerWheel}
       </div>
       </div>
     </div>

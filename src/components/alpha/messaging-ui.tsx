@@ -3,6 +3,22 @@ import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { hapticSelection, hapticWarning } from "./messaging-haptics";
 
+/** Alpha Connect dark glass constants (embedded settings inside alpha-connect) */
+export const ALPHA_SETTINGS_CARD =
+  "relative overflow-hidden rounded-[18px] border border-white/10 bg-white/5 shadow-[0_2px_18px_rgba(0,0,0,0.35)] backdrop-blur-xl";
+
+export const ALPHA_SETTINGS_INNER =
+  "rounded-[14px] border border-white/10 bg-white/5 backdrop-blur-sm";
+
+export const ALPHA_SETTINGS_ROW =
+  "flex w-full items-center gap-2.5 rounded-[14px] border border-white/10 bg-white/5 px-3 py-3 text-right backdrop-blur-sm transition-all";
+
+export const ALPHA_SETTINGS_ROW_DANGER =
+  "flex w-full items-center gap-2.5 rounded-[14px] border border-destructive/25 bg-destructive/10 px-3 py-3 text-right backdrop-blur-sm transition-all";
+
+export const ALPHA_SETTINGS_ICON_BOX =
+  "grid size-8 shrink-0 place-items-center rounded-[10px] border border-white/12 bg-white/8";
+
 /** Shared frosted glass shell — chat settings, message settings, pickers */
 export const MESSAGING_GLASS_SHELL =
   "overflow-hidden rounded-[20px] border border-white/28 bg-white/62 shadow-[0_16px_40px_rgba(0,0,0,0.14)] backdrop-blur-3xl";
@@ -79,10 +95,15 @@ export function MessagingCreamSettingsCard({
 function GlassSwitch({
   checked,
   onChange,
+  alpha = false,
 }: {
   checked: boolean;
   onChange: (v: boolean) => void;
+  alpha?: boolean;
 }) {
+  const onColor = alpha ? "bg-[#2d6a4f] border border-[#1b4332]" : "bg-[#166534]";
+  const offColor = alpha ? "bg-[#dce9e0] border border-[#a8bdb0]" : "bg-[#D1D5DB]";
+  const thumbClass = alpha && checked ? "bg-[#edf3ef]" : "bg-white";
   return (
     <button
       type="button"
@@ -93,11 +114,11 @@ function GlassSwitch({
         onChange(!checked);
       }}
       className={`relative h-[26px] w-[46px] shrink-0 rounded-full transition-colors duration-200 ${
-        checked ? "bg-[#166534]" : "bg-[#D1D5DB]"
+        checked ? onColor : offColor
       }`}
     >
       <span
-        className={`absolute top-[3px] size-5 rounded-full bg-white shadow transition-transform duration-200 ${
+        className={`absolute top-[3px] size-5 rounded-full shadow transition-transform duration-200 ${thumbClass} ${
           checked ? "translate-x-[22px]" : "translate-x-[3px]"
         }`}
       />
@@ -120,20 +141,27 @@ export function SettingsGlassToggle({
   onChange: (v: boolean) => void;
   label: string;
   desc?: string;
-  tone?: "glass" | "cream";
+  tone?: "glass" | "cream" | "alpha";
 }) {
-  const row = tone === "cream" ? MESSAGING_CREAM_ROW : MESSAGING_GLASS_ROW;
-  const iconBox = tone === "cream" ? MESSAGING_CREAM_ICON_BOX : MESSAGING_GLASS_ICON_BOX;
+  const row =
+    tone === "cream" ? MESSAGING_CREAM_ROW :
+    tone === "alpha" ? ALPHA_SETTINGS_ROW :
+    MESSAGING_GLASS_ROW;
+  const iconBox =
+    tone === "cream" ? MESSAGING_CREAM_ICON_BOX :
+    tone === "alpha" ? ALPHA_SETTINGS_ICON_BOX :
+    MESSAGING_GLASS_ICON_BOX;
+  const labelCls = tone === "alpha" ? "text-foreground" : "text-[#1F2937]";
   return (
     <div className={row}>
       <span className={iconBox}>
         <Icon className={`size-4 ${iconClass ?? "text-gold"}`} />
       </span>
       <div className="min-w-0 flex-1 text-right">
-        <p className="text-[12px] font-semibold leading-snug text-[#1F2937]">{label}</p>
+        <p className={`text-[12px] font-semibold leading-snug ${labelCls}`}>{label}</p>
         {desc && <p className="mt-0.5 text-[10px] leading-snug text-muted-foreground/75">{desc}</p>}
       </div>
-      <GlassSwitch checked={checked} onChange={onChange} />
+      <GlassSwitch checked={checked} onChange={onChange} alpha={tone === "alpha"} />
     </div>
   );
 }
@@ -157,22 +185,27 @@ export function SettingsGlassActionRow({
   success?: boolean;
   onClick?: () => void;
   trailing?: ReactNode;
-  tone?: "glass" | "cream";
+  tone?: "glass" | "cream" | "alpha";
 }) {
-  const labelColor = danger ? "text-[#B91C1C]" : success ? "text-[#14532D]" : "text-[#1F2937]";
+  const isAlpha = tone === "alpha";
+  const labelColor = danger
+    ? (isAlpha ? "text-destructive" : "text-[#B91C1C]")
+    : success
+      ? (isAlpha ? "text-neon-green" : "text-[#14532D]")
+      : (isAlpha ? "text-foreground" : "text-[#1F2937]");
   const row = danger
-    ? (tone === "cream" ? MESSAGING_CREAM_ROW_DANGER : MESSAGING_GLASS_ROW_DANGER)
-    : (tone === "cream" ? MESSAGING_CREAM_ROW : MESSAGING_GLASS_ROW);
-  const iconBox = tone === "cream" ? MESSAGING_CREAM_ICON_BOX : MESSAGING_GLASS_ICON_BOX;
-  const hover = tone === "cream" ? "hover:bg-[rgba(255,255,255,0.48)]" : "hover:bg-white/58";
+    ? (tone === "cream" ? MESSAGING_CREAM_ROW_DANGER : isAlpha ? ALPHA_SETTINGS_ROW_DANGER : MESSAGING_GLASS_ROW_DANGER)
+    : (tone === "cream" ? MESSAGING_CREAM_ROW : isAlpha ? ALPHA_SETTINGS_ROW : MESSAGING_GLASS_ROW);
+  const iconBox = tone === "cream" ? MESSAGING_CREAM_ICON_BOX : isAlpha ? ALPHA_SETTINGS_ICON_BOX : MESSAGING_GLASS_ICON_BOX;
+  const hover = tone === "cream" ? "hover:bg-[rgba(255,255,255,0.48)]" : isAlpha ? "hover:bg-white/8" : "hover:bg-white/58";
   return (
     <button
       type="button"
       onClick={onClick}
       className={`${row} ${hover} active:scale-[0.98]`}
     >
-      <span className={`${iconBox} ${danger ? "border-[#FECACA]/60 bg-[#FEE2E2]/45" : ""}`}>
-        <Icon className={`size-4 ${iconClass ?? (danger ? "text-[#B91C1C]" : success ? "text-[#14532D]" : "text-gold")}`} />
+      <span className={`${iconBox} ${danger ? (isAlpha ? "border-destructive/30 bg-destructive/10" : "border-[#FECACA]/60 bg-[#FEE2E2]/45") : ""}`}>
+        <Icon className={`size-4 ${iconClass ?? (danger ? (isAlpha ? "text-destructive" : "text-[#B91C1C]") : success ? (isAlpha ? "text-neon-green" : "text-[#14532D]") : "text-gold")}`} />
       </span>
       <div className="min-w-0 flex-1 text-right">
         <p className={`text-[12px] font-semibold leading-snug ${labelColor}`}>{label}</p>

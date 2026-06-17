@@ -151,9 +151,9 @@ function Hero() {
         {/* Transparent stats footer */}
         <div className="relative px-3 py-2 grid grid-cols-3 gap-2 bg-transparent">
           <div className="absolute top-0 inset-x-4 h-px bg-gradient-to-r from-transparent via-[#c79356]/30 to-transparent" />
-          <HeroStat icon={Users} value={totalMembers.toLocaleString("ar-EG")} label="مخدوم" tone="#3a6db0" />
-          <HeroStat icon={HandHeart} value={totalServants.toLocaleString("ar-EG")} label="خادم" tone="#1f8a5a" />
-          <HeroStat icon={Calendar} value={CATEGORIES.length.toLocaleString("ar-EG")} label="فريق" tone="#8a6ec1" />
+          <HeroStat icon={Users} value={totalMembers.toLocaleString("en-US")} label="مخدوم" tone="#3a6db0" />
+          <HeroStat icon={HandHeart} value={totalServants.toLocaleString("en-US")} label="خادم" tone="#1f8a5a" />
+          <HeroStat icon={Calendar} value={CATEGORIES.length.toLocaleString("en-US")} label="فريق" tone="#8a6ec1" />
         </div>
       </div>
     </section>
@@ -185,9 +185,8 @@ function SectionTitle({ title, action }: { title: string; action?: React.ReactNo
 /* ----------------------------- Category card ------------------------------- */
 function CategoryCard({ c }: { c: Category }) {
   return (
-    <Link
-      to="/church/service"
-      className="group relative block overflow-hidden rounded-3xl border border-white/70 active:scale-[0.97] transition-transform shadow-[0_18px_36px_-22px_rgba(120,80,30,0.55),inset_0_1px_0_rgba(255,255,255,0.85)]"
+    <div
+      className="group relative block overflow-hidden rounded-3xl border border-white/70 shadow-[0_18px_36px_-22px_rgba(120,80,30,0.55),inset_0_1px_0_rgba(255,255,255,0.85)]"
     >
       {/* Image background */}
       <div className="relative h-[170px]">
@@ -199,6 +198,12 @@ function CategoryCard({ c }: { c: Category }) {
           }}
         />
         <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#e7c97a]/70 to-transparent" />
+
+        <div
+          className="absolute top-2.5 left-2.5 rounded-full bg-[#3a2a18]/85 px-2 py-0.5 text-[9px] font-extrabold text-white backdrop-blur-sm"
+        >
+          قريباً
+        </div>
 
         {/* 3D-style icon badge */}
         <div
@@ -223,14 +228,14 @@ function CategoryCard({ c }: { c: Category }) {
       <div className="flex items-center justify-between gap-1.5 px-3 py-2.5 bg-transparent">
         <span className="inline-flex items-center gap-1.5 text-[15px] font-extrabold text-[#3a6db0] tabular-nums drop-shadow-sm">
           <Users className="h-5 w-5" strokeWidth={2.5} />
-          {c.members.toLocaleString("ar-EG")}
+          {c.members.toLocaleString("en-US")}
         </span>
         <span className="inline-flex items-center gap-1.5 text-[15px] font-extrabold text-[#1f8a5a] tabular-nums drop-shadow-sm">
           <HandHeart className="h-5 w-5" strokeWidth={2.5} />
-          {c.servants.toLocaleString("ar-EG")}
+          {c.servants.toLocaleString("en-US")}
         </span>
       </div>
-    </Link>
+    </div>
   );
 }
 

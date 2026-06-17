@@ -5,7 +5,7 @@ const items: { icon: LucideIcon; label: string; to: string }[] = [
   { icon: Home, label: "الرئيسية", to: "/home" },
   { icon: BookOpen, label: "الكتاب المقدس", to: "/bible" },
   { icon: Headphones, label: "الصوتيات", to: "/audio" },
-  { icon: Church, label: "كنيستي", to: "/profile/church" },
+  { icon: Church, label: "كنيستي", to: "/church" },
   { icon: User, label: "حسابي", to: "/profile" },
 ];
 

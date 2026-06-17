@@ -1,11 +1,15 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import basicSsl from "@vitejs/plugin-basic-ssl";
 
-export default defineConfig({
-  plugins: [],
+export default defineConfig(({ mode }) => ({
+  // HTTPS only for mobile/LAN mic testing: `npm run dev:https`
+  // Default dev uses HTTP so the browser opens without certificate warnings.
+  plugins: mode === "https" ? [basicSsl()] : [],
   // Always open /home on `npm run dev` — prevents browser from restoring a
   // previous Bible/chapter URL from the last session.
   server: {
     open: "/home",
+    host: true,
   },
   tanstackStart: {
     server: { entry: "server" },
@@ -27,4 +31,4 @@ export default defineConfig({
       deployConfig: true,
     },
   },
-});
+}));

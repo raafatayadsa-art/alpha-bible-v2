@@ -1,7 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 import type { ReactNode } from "react";
-import { bibleV2Tokens } from "../tokens";
 
 export interface BibleV2TestamentData {
   id: string;
@@ -17,82 +16,62 @@ export interface BibleV2TestamentData {
 
 export function BibleV2TestamentCard({ data }: { data: BibleV2TestamentData }) {
   const isGold = data.tone === "gold";
-  const cardGrad = isGold ? "from-[#fbf3dc] to-[#f5e6b8]" : "from-[#eef2fa] to-[#dce6f5]";
-  const badgeGrad = isGold
-    ? "from-[#e8c85a] via-[#d4a93a] to-[#8a6420]"
-    : "from-[#4a6bb5] via-[#3d5a9a] to-[#1e2b54]";
   const btnGrad = isGold
-    ? "from-[#d4a93a] via-[#b8892a] to-[#7a5a18]"
-    : "from-[#3d5a9a] via-[#28406e] to-[#1e2b54]";
-  const outerRing = isGold ? "rgba(212,175,55,0.42)" : "rgba(61,90,154,0.32)";
+    ? "from-[#c49a3a] via-[#a67c2a] to-[#6b4a14]"
+    : "from-[#3d5a9a] via-[#28406e] to-[#1a2448]";
+  const outerRing = isGold ? "rgba(212,175,55,0.38)" : "rgba(61,90,154,0.32)";
   const liftShadow = isGold
-    ? "0 28px 52px -18px rgba(120,80,30,0.38), 0 12px 24px -12px rgba(184,137,58,0.28)"
-    : "0 28px 52px -18px rgba(30,43,84,0.32), 0 12px 24px -12px rgba(61,90,154,0.22)";
-
+    ? "0 24px 48px -16px rgba(90,60,20,0.42), 0 10px 22px -10px rgba(184,137,58,0.28)"
+    : "0 24px 48px -16px rgba(20,30,60,0.38), 0 10px 22px -10px rgba(61,90,154,0.24)";
   return (
     <Link
       to={data.to}
       search={data.search}
       dir="rtl"
       aria-label={data.title}
-      className={`group relative flex flex-1 flex-col overflow-hidden rounded-[28px] bg-gradient-to-b ${cardGrad} text-right transition duration-300 hover:-translate-y-1.5 active:translate-y-0 active:scale-[0.98]`}
+      className="group relative flex aspect-[1/1.55] flex-1 flex-col overflow-hidden rounded-[26px] transition duration-300 hover:-translate-y-1 active:scale-[0.98]"
       style={{
-        boxShadow: [
-          "inset 0 2px 0 rgba(255,255,255,0.95)",
-          "inset 0 -3px 8px rgba(0,0,0,0.04)",
-          `0 0 0 1px ${outerRing}`,
-          liftShadow,
-        ].join(", "),
-        transform: "translateY(-4px)",
+        boxShadow: [`0 0 0 1px ${outerRing}`, liftShadow].join(", "),
       }}
     >
-      <div className="relative h-[178px] w-full overflow-hidden">
+      <div className="absolute inset-0 overflow-hidden">
         <img
           src={data.image}
           alt=""
           loading="eager"
-          className="h-full w-full object-cover object-center transition duration-500 group-hover:scale-[1.05]"
+          draggable={false}
+          className="h-full w-full object-cover object-top transition duration-500 group-hover:scale-[1.04]"
         />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background: isGold
-              ? "linear-gradient(180deg, rgba(255,248,230,0.08) 0%, transparent 40%, rgba(90,60,20,0.12) 100%)"
-              : "linear-gradient(180deg, rgba(230,240,255,0.1) 0%, transparent 40%, rgba(20,35,70,0.14) 100%)",
-          }}
-        />
-        {!data.badgeInImage && data.badge ? (
-          <div
-            className={`absolute left-1/2 top-3 flex h-14 w-14 -translate-x-1/2 items-center justify-center rounded-full bg-gradient-to-b ${badgeGrad} text-xl text-white ring-2 ring-white/90`}
-            style={{
-              boxShadow: "0 10px 24px -6px rgba(0,0,0,0.45), inset 0 2px 0 rgba(255,255,255,0.35)",
-            }}
-          >
-            {data.badge}
-          </div>
-        ) : null}
       </div>
 
       <div
-        className="flex flex-1 flex-col items-center px-3 pb-4 pt-3.5 text-center"
-        style={{ boxShadow: "inset 0 8px 12px -10px rgba(255,255,255,0.9)" }}
-      >
-        <h3 className="text-[17px] font-extrabold tracking-tight" style={{ color: bibleV2Tokens.navy }}>
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-[55%]"
+        style={{
+          background: isGold
+            ? "linear-gradient(180deg, transparent 0%, rgba(74,52,24,0.18) 38%, rgba(58,40,18,0.7) 100%)"
+            : "linear-gradient(180deg, transparent 0%, rgba(16,28,58,0.2) 38%, rgba(10,18,40,0.75) 100%)",
+        }}
+      />
+
+      <div className="absolute inset-x-0 bottom-0 z-[2] flex flex-col items-center px-2.5 pb-5 pt-10 text-center">
+        <h3 className="text-[16px] font-extrabold leading-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.45)]">
           {data.title}
         </h3>
-        <p className="mt-1.5 whitespace-pre-line text-[11px] leading-snug text-[#6a5a32]">{data.subtitle}</p>
-        <div className="mt-auto pt-3.5">
+        <p className="mt-1.5 whitespace-pre-line text-[10.5px] leading-snug text-white/90 drop-shadow-[0_1px_4px_rgba(0,0,0,0.4)]">
+          {data.subtitle}
+        </p>
+        <div className="mt-3.5">
           <span
-            className={`inline-flex items-center gap-1 rounded-full bg-gradient-to-l ${btnGrad} px-6 py-2.5 text-white ring-1 ring-white/35`}
+            className={`inline-flex items-center gap-1 rounded-full bg-gradient-to-l ${btnGrad} px-5 py-2 text-white ring-1 ring-white/30`}
             style={{
               boxShadow: isGold
-                ? "0 8px 20px -6px rgba(120,80,30,0.45), inset 0 1px 0 rgba(255,255,255,0.25)"
-                : "0 8px 20px -6px rgba(30,43,84,0.4), inset 0 1px 0 rgba(255,255,255,0.2)",
+                ? "0 8px 18px -6px rgba(60,40,12,0.55), inset 0 1px 0 rgba(255,255,255,0.22)"
+                : "0 8px 18px -6px rgba(12,22,48,0.55), inset 0 1px 0 rgba(255,255,255,0.18)",
             }}
           >
             <ChevronLeft className="h-3.5 w-3.5" />
-            <span className="text-[12px] font-bold">استكشف</span>
+            <span className="text-[11.5px] font-bold">استكشف</span>
           </span>
         </div>
       </div>

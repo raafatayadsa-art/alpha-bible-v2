@@ -1,0 +1,2170 @@
+/**
+ * Alpha Connect / call screens only.
+ * Scoped under `.alpha-connect-theme` — must NOT override app :root.
+ */
+.alpha-connect-theme {
+  --radius: 1rem;
+  --background: oklch(0.16 0.03 260);
+  --foreground: oklch(0.98 0.01 250);
+  --card: oklch(0.21 0.03 260);
+  --card-foreground: oklch(0.98 0.01 250);
+  --popover: oklch(0.21 0.03 260);
+  --popover-foreground: oklch(0.98 0.01 250);
+  --primary: oklch(0.82 0.22 145);
+  --primary-foreground: oklch(0.15 0.03 260);
+  --secondary: oklch(0.26 0.03 260);
+  --secondary-foreground: oklch(0.98 0.01 250);
+  --muted: oklch(0.26 0.03 260);
+  --muted-foreground: oklch(0.65 0.02 255);
+  --accent: oklch(0.26 0.03 260);
+  --accent-foreground: oklch(0.98 0.01 250);
+  --destructive: oklch(0.65 0.22 25);
+  --border: oklch(1 0 0 / 8%);
+  --input: oklch(1 0 0 / 12%);
+  --ring: oklch(0.82 0.22 145);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --neon-green: oklch(0.82 0.22 145);
+  --neon-green-soft: oklch(0.82 0.22 145 / 0.18);
+  --neon-blue: oklch(0.72 0.18 235);
+  --gold: oklch(0.78 0.16 75);
+
+  --gradient-bg: linear-gradient(180deg, #0a1430 0%, #07101f 45%, #050814 100%);
+  --gradient-glass: linear-gradient(145deg, oklch(1 0 0 / 0.06), oklch(1 0 0 / 0.02));
+  --gradient-mic: radial-gradient(circle at 30% 30%, oklch(0.3 0.04 260), oklch(0.18 0.03 260));
+  --gradient-end-call: radial-gradient(circle at 30% 30%, oklch(0.38 0.14 25), oklch(0.16 0.08 25));
+  --shadow-glass: 0 8px 32px -8px rgba(0, 0, 0, 0.5), inset 0 1px 0 0 oklch(1 0 0 / 0.08);
+  --shadow-neon: 0 0 40px oklch(0.82 0.22 145 / 0.35), 0 0 80px oklch(0.82 0.22 145 / 0.15);
+
+  --connect-accent: #1b4332;
+  --connect-accent-mid: #2d6a4f;
+  --connect-accent-bright: #40916c;
+
+  color: var(--color-foreground);
+}
+
+/* ── Connect accent icons (mic, call, dock, channel bar) ── */
+.alpha-connect-theme:not(.alpha-connect-theme--classic) {
+  --connect-accent-mid: #40916c;
+  --connect-accent-bright: #52b788;
+}
+
+.alpha-connect-theme .connect-accent-icon {
+  color: var(--connect-accent-mid);
+}
+
+.alpha-connect-theme .connect-accent-icon--bright {
+  color: var(--connect-accent-bright);
+}
+
+.alpha-connect-theme .connect-dock-icon {
+  color: var(--connect-accent-mid);
+  transition: color 0.2s ease, filter 0.2s ease;
+}
+
+.alpha-connect-theme .connect-dock-icon--active {
+  color: var(--connect-accent-mid);
+  filter: none;
+}
+
+.alpha-connect-theme .connect-action-bar-icon {
+  color: var(--connect-accent-mid);
+}
+
+.alpha-connect-theme .connect-action-bar-icon--active {
+  color: var(--connect-accent-bright);
+}
+
+.alpha-connect-theme .connect-mode-tabs-indicator {
+  background: linear-gradient(135deg, var(--connect-accent-mid), var(--connect-accent)) !important;
+  border: 1px solid rgba(27, 67, 50, 0.55) !important;
+  box-shadow: 0 4px 16px rgba(27, 67, 50, 0.28) !important;
+}
+
+.alpha-connect-theme .connect-mode-tabs-btn--active {
+  color: #ffffff !important;
+  font-weight: 600;
+}
+
+.alpha-connect-theme .connect-mode-tabs-btn--idle {
+  color: var(--connect-accent-mid);
+  font-weight: 500;
+}
+
+.alpha-connect-theme .connect-participant-badge {
+  display: flex;
+  height: 1.625rem;
+  width: 1.625rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+}
+
+.alpha-connect-theme .connect-participant-badge--mute {
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+}
+
+.alpha-connect-theme .connect-participant-badge--speaker {
+  border: 1px solid rgba(45, 106, 79, 0.45);
+  background: rgba(45, 106, 79, 0.14);
+  color: var(--connect-accent-mid);
+}
+
+.alpha-connect-theme .connect-circle-icon.connect-accent-icon {
+  color: var(--connect-accent-mid);
+  filter: drop-shadow(0 0 10px rgba(45, 106, 79, 0.38));
+}
+
+.alpha-connect-theme .connect-circle-label.connect-accent-icon {
+  color: var(--connect-accent-mid);
+}
+
+/* Mic decorative rings — theme-aware accent */
+.alpha-connect-theme .connect-mic-stage {
+  --mic-ring-1: oklch(0.82 0.22 145 / 0.15);
+  --mic-ring-2: oklch(0.82 0.22 145 / 0.2);
+  --mic-ring-3: oklch(0.82 0.22 145 / 0.25);
+  --mic-ring-face: oklch(0.82 0.22 145 / 0.3);
+}
+
+.alpha-connect-theme--classic .connect-mic-stage {
+  --mic-ring-1: rgba(27, 67, 50, 0.18);
+  --mic-ring-2: rgba(45, 106, 79, 0.22);
+  --mic-ring-3: rgba(45, 106, 79, 0.26);
+  --mic-ring-face: rgba(45, 106, 79, 0.32);
+}
+
+.alpha-connect-theme .connect-mic-deco-1 {
+  border-color: var(--mic-ring-1);
+}
+
+.alpha-connect-theme .connect-mic-deco-2 {
+  border-color: var(--mic-ring-2);
+}
+
+.alpha-connect-theme .connect-mic-deco-3 {
+  border-color: var(--mic-ring-3);
+}
+
+.alpha-connect-theme .connect-mic-deco-face {
+  border-color: var(--mic-ring-face);
+}
+
+/* Classic mic — Secure layout; dark forest green accent + light inner face */
+.alpha-connect-theme--classic .connect-mic-face {
+  --neon-green: var(--classic-forest-deep);
+}
+
+.alpha-connect-theme--classic .connect-mic-face.neon-ring {
+  background: var(--gradient-mic-face) !important;
+  box-shadow:
+    0 0 0 1px rgba(27, 67, 50, 0.55),
+    0 0 24px rgba(45, 106, 79, 0.28),
+    inset 0 0 20px rgba(45, 106, 79, 0.1);
+}
+
+.alpha-connect-theme--classic .connect-mic-label {
+  color: var(--classic-forest-deep);
+}
+
+.alpha-connect-theme--classic .connect-mic-face.connect-mic-transmitting {
+  box-shadow:
+    0 0 0 2px rgba(27, 67, 50, 0.72),
+    0 4px 28px rgba(45, 106, 79, 0.38),
+    inset 0 0 32px rgba(27, 67, 50, 0.2);
+  background: linear-gradient(135deg, var(--classic-forest), var(--classic-forest-deep)) !important;
+}
+
+.alpha-connect-theme--classic .connect-mic-face.connect-mic-transmitting .text-neon-green {
+  color: #ffffff !important;
+}
+
+.alpha-connect-theme--classic .connect-dock-icon--active {
+  color: var(--classic-forest-deep);
+  filter: none;
+}
+
+/* Identity layout — see alpha-identity-layout.css for global RTL rules */
+
+/* Classic toggles — same ON/OFF styling everywhere in Connect */
+.alpha-connect-theme--classic .connect-settings-switch {
+  border-color: transparent;
+  background: transparent;
+}
+
+.alpha-connect-theme--classic .connect-settings-switch:hover {
+  background: var(--set-card-hover);
+}
+
+.alpha-connect-theme--classic .connect-settings-switch[aria-pressed="true"] {
+  border-color: var(--set-forest-deep);
+  background: rgba(45, 106, 79, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(27, 67, 50, 0.18);
+}
+
+.alpha-connect-theme--classic .connect-settings-switch-label {
+  color: var(--set-text);
+}
+
+.alpha-connect-theme--classic .connect-settings-switch[aria-pressed="true"] .connect-settings-switch-label {
+  color: var(--set-forest-deep);
+}
+
+.alpha-connect-theme--classic .connect-settings-switch-badge {
+  background: var(--set-sage-deep);
+  color: var(--set-text-muted);
+}
+
+.alpha-connect-theme--classic .connect-settings-switch[aria-pressed="true"] .connect-settings-switch-badge {
+  background: var(--set-forest);
+  color: var(--set-cream);
+}
+
+.alpha-connect-theme--classic .connect-settings-switch-track {
+  border-color: #a8bdb0;
+  background: var(--set-track-off);
+  box-shadow: inset 0 1px 2px rgba(22, 50, 35, 0.07);
+}
+
+.alpha-connect-theme--classic .connect-settings-switch[aria-pressed="true"] .connect-settings-switch-track {
+  border-color: var(--set-forest);
+  background: var(--set-forest);
+}
+
+.alpha-connect-theme--classic .connect-settings-switch-thumb {
+  background: var(--set-cream);
+  box-shadow: 0 1px 3px rgba(44, 62, 50, 0.15);
+}
+
+.alpha-connect-theme .glass {
+  background: var(--gradient-glass);
+  backdrop-filter: blur(24px) saturate(140%);
+  border: 1px solid oklch(1 0 0 / 0.08);
+  box-shadow: var(--shadow-glass);
+}
+
+.alpha-connect-theme .glass-strong {
+  background: linear-gradient(145deg, oklch(1 0 0 / 0.09), oklch(1 0 0 / 0.03));
+  backdrop-filter: blur(28px) saturate(160%);
+  border: 1px solid oklch(1 0 0 / 0.1);
+  box-shadow: var(--shadow-glass);
+}
+
+/* Trust shield — matches in-chat conversation settings row DNA */
+.alpha-connect-theme:not(.alpha-connect-theme--classic) .connect-trust-shield-btn {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  box-shadow: none !important;
+  color: var(--neon-green) !important;
+}
+
+/* ── Connect center popups (confirm / hide / delete) ── */
+.alpha-connect-theme .connect-popup-overlay {
+  background: oklch(0.06 0.025 260 / 0.82);
+  backdrop-filter: blur(10px) saturate(120%);
+}
+
+.alpha-connect-theme .connect-popup-panel {
+  background: linear-gradient(
+    155deg,
+    oklch(0.2 0.035 260 / 0.94) 0%,
+    oklch(0.15 0.03 260 / 0.9) 100%
+  );
+  backdrop-filter: blur(32px) saturate(165%);
+  border: 1px solid oklch(1 0 0 / 0.12);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.48),
+    inset 0 1px 0 oklch(1 0 0 / 0.07);
+}
+
+.alpha-connect-theme .connect-popup-icon-ring {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 9999px;
+  border-width: 1px;
+  border-style: solid;
+}
+
+.alpha-connect-theme .connect-popup-icon-ring--danger {
+  border-color: oklch(0.65 0.22 25 / 0.45);
+  background: oklch(0.65 0.22 25 / 0.14);
+  color: oklch(0.72 0.2 25);
+}
+
+.alpha-connect-theme .connect-popup-icon-ring--hide {
+  border-color: oklch(0.72 0.18 235 / 0.45);
+  background: oklch(0.72 0.18 235 / 0.14);
+  color: oklch(0.78 0.16 235);
+}
+
+.alpha-connect-theme .connect-popup-icon-ring--green {
+  border-color: oklch(0.82 0.22 145 / 0.45);
+  background: oklch(0.82 0.22 145 / 0.14);
+  color: var(--neon-green);
+}
+
+.alpha-connect-theme .connect-popup-btn-cancel {
+  background: oklch(1 0 0 / 0.06);
+  border: 1px solid oklch(1 0 0 / 0.1);
+  color: oklch(0.75 0.02 255);
+}
+
+.alpha-connect-theme .connect-popup-btn-danger {
+  background: oklch(0.65 0.22 25 / 0.18);
+  border: 1px solid oklch(0.65 0.22 25 / 0.42);
+  color: oklch(0.78 0.18 25);
+  box-shadow: 0 0 18px oklch(0.65 0.22 25 / 0.15);
+}
+
+.alpha-connect-theme .connect-popup-btn-hide {
+  background: oklch(0.72 0.18 235 / 0.16);
+  border: 1px solid oklch(0.72 0.18 235 / 0.4);
+  color: oklch(0.82 0.14 235);
+  box-shadow: 0 0 18px oklch(0.72 0.18 235 / 0.12);
+}
+
+.alpha-connect-theme .connect-popup-btn-green {
+  background: oklch(0.82 0.22 145 / 0.16);
+  border: 1px solid oklch(0.82 0.22 145 / 0.4);
+  color: var(--neon-green);
+  box-shadow: 0 0 18px oklch(0.82 0.22 145 / 0.12);
+}
+
+.alpha-connect-theme .neon-ring {
+  box-shadow:
+    0 0 0 1px oklch(0.82 0.22 145 / 0.7),
+    0 0 30px oklch(0.82 0.22 145 / 0.45),
+    inset 0 0 30px oklch(0.82 0.22 145 / 0.15);
+}
+
+.alpha-connect-theme .neon-ring-red {
+  box-shadow:
+    0 0 0 1px oklch(0.65 0.22 25 / 0.7),
+    0 0 30px oklch(0.65 0.22 25 / 0.45),
+    inset 0 0 30px oklch(0.65 0.22 25 / 0.15);
+}
+
+@keyframes connect-pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(1.32);
+    opacity: 0;
+  }
+}
+
+.alpha-connect-theme .connect-pulse-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.alpha-connect-theme .connect-pulse-wrap::before,
+.alpha-connect-theme .connect-pulse-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.alpha-connect-theme .connect-pulse-wrap > * {
+  position: relative;
+  z-index: 1;
+}
+
+.alpha-connect-theme .connect-pulse-wrap--green::before,
+.alpha-connect-theme .connect-pulse-wrap--green::after {
+  border: 1.5px solid oklch(0.82 0.22 145 / 0.45);
+  box-shadow: 0 0 14px oklch(0.82 0.22 145 / 0.22);
+  animation: connect-pulse-ring 2.4s ease-out infinite;
+}
+
+.alpha-connect-theme .connect-pulse-wrap--green::after {
+  animation-delay: 1.2s;
+}
+
+.alpha-connect-theme .connect-pulse-wrap--blue::before,
+.alpha-connect-theme .connect-pulse-wrap--blue::after {
+  border: 1.5px solid oklch(0.72 0.18 235 / 0.45);
+  box-shadow: 0 0 14px oklch(0.72 0.18 235 / 0.22);
+  animation: connect-pulse-ring 2.4s ease-out infinite;
+}
+
+.alpha-connect-theme .connect-pulse-wrap--blue::after {
+  animation-delay: 1.2s;
+}
+
+.alpha-connect-theme .connect-pulse-wrap--red::before,
+.alpha-connect-theme .connect-pulse-wrap--red::after {
+  border: 1.5px solid oklch(0.65 0.22 25 / 0.45);
+  box-shadow: 0 0 14px oklch(0.65 0.22 25 / 0.22);
+  animation: connect-pulse-ring 2.4s ease-out infinite;
+}
+
+.alpha-connect-theme .connect-pulse-wrap--red::after {
+  animation-delay: 1.2s;
+}
+
+.alpha-connect-theme .connect-pulse-wrap--transmitting::before,
+.alpha-connect-theme .connect-pulse-wrap--transmitting::after {
+  animation-duration: 1.1s;
+  border-color: oklch(0.82 0.22 145 / 0.75);
+  box-shadow: 0 0 18px oklch(0.82 0.22 145 / 0.35);
+}
+
+.alpha-connect-theme .connect-mic-transmitting {
+  box-shadow:
+    0 0 0 2px oklch(0.82 0.22 145 / 0.9),
+    0 0 50px oklch(0.82 0.22 145 / 0.65),
+    inset 0 0 40px oklch(0.82 0.22 145 / 0.25);
+  background: radial-gradient(circle at 30% 30%, oklch(0.45 0.12 145), oklch(0.22 0.06 145)) !important;
+}
+
+.alpha-connect-theme .text-neon-green {
+  color: var(--neon-green);
+}
+
+.alpha-connect-theme .text-neon-blue {
+  color: var(--neon-blue);
+}
+
+.alpha-connect-theme .bg-neon-green {
+  background-color: var(--neon-green);
+}
+
+.alpha-connect-theme .bg-neon-blue {
+  background-color: var(--neon-blue);
+}
+
+@keyframes connect-channels-drawer-in {
+  from {
+    transform: translateX(-100%);
+    opacity: 0.6;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.alpha-connect-theme .connect-pulse-wrap--white::before,
+.alpha-connect-theme .connect-pulse-wrap--white::after {
+  border: 1.5px solid oklch(1 0 0 / 0.38);
+  box-shadow: 0 0 12px oklch(1 0 0 / 0.16);
+  animation: connect-pulse-ring 2.4s ease-out infinite;
+  animation-delay: var(--channel-pulse-delay, 0s);
+}
+
+.alpha-connect-theme .connect-pulse-wrap--white::after {
+  animation-delay: calc(var(--channel-pulse-delay, 0s) + 1.2s);
+}
+
+.alpha-connect-theme .connect-channels-drawer {
+  animation: connect-channels-drawer-in 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@keyframes connect-participants-drawer-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0.6;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.alpha-connect-theme .connect-participants-drawer {
+  animation: connect-participants-drawer-in 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@keyframes connect-trust-center-sheet-in {
+  from {
+    transform: translateY(105%);
+    opacity: 0.92;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes connect-trust-center-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.alpha-connect-theme .connect-trust-center-sheet {
+  animation: connect-trust-center-sheet-in 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+  will-change: transform;
+}
+
+.alpha-connect-theme .connect-trust-center-sheet-backdrop {
+  animation: connect-trust-center-backdrop-in 0.28s ease-out;
+}
+
+/* Notifications sheet — same glass-strong surface as participants drawer */
+.alpha-connect-theme:not(.alpha-connect-theme--classic) .connect-notif-tab--active {
+  border: 1px solid oklch(0.82 0.22 145 / 0.35);
+  background: oklch(0.82 0.22 145 / 0.14);
+  color: var(--neon-green);
+}
+
+.alpha-connect-theme--classic .connect-notif-tab--active {
+  border: 1px solid var(--classic-forest);
+  background: var(--connect-tab-active-bg);
+  color: var(--connect-tab-active-text);
+  box-shadow: var(--classic-shadow-active);
+}
+
+.alpha-connect-theme--classic .connect-notifications-panel .glass {
+  background: var(--classic-card);
+  border-color: var(--classic-border);
+  box-shadow: var(--classic-shadow);
+}
+
+.alpha-connect-theme--classic .connect-notifications-panel .glass-strong {
+  background: var(--classic-card-hover);
+  border-color: var(--classic-border-soft);
+}
+
+.alpha-connect-theme .connect-notifications-sheet {
+  border-radius: 1.5rem;
+  overflow: hidden;
+}
+
+.alpha-connect-theme--classic .connect-notifications-sheet {
+  border: 1px solid var(--classic-border);
+}
+
+@keyframes connect-history-panel-in {
+  from {
+    transform: translateY(-8px);
+    opacity: 0.55;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.alpha-connect-theme .connect-history-panel-in {
+  animation: connect-history-panel-in 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@keyframes connect-channel-icon-inner-pulse {
+  0%,
+  100% {
+    box-shadow:
+      inset 0 0 8px oklch(0.82 0.22 145 / 0.05),
+      inset 0 0 0 1px oklch(1 0 0 / 0.05);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 20px oklch(0.82 0.22 145 / 0.24),
+      inset 0 0 0 1px oklch(0.82 0.22 145 / 0.18);
+  }
+}
+
+@keyframes connect-channel-icon-core-glow {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.08);
+  }
+}
+
+.alpha-connect-theme .connect-channel-icon-pulse {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  animation: connect-channel-icon-inner-pulse 2.6s ease-in-out infinite;
+  animation-delay: var(--channel-pulse-delay, 0s);
+}
+
+.alpha-connect-theme .connect-channel-icon-pulse::before {
+  content: "";
+  position: absolute;
+  inset: 22%;
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle,
+    oklch(0.82 0.22 145 / 0.45) 0%,
+    oklch(0.82 0.22 145 / 0.1) 48%,
+    transparent 72%
+  );
+  animation: connect-channel-icon-core-glow 2.6s ease-in-out infinite;
+  animation-delay: var(--channel-pulse-delay, 0s);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.alpha-connect-theme .connect-channel-icon-pulse > * {
+  position: relative;
+  z-index: 1;
+}
+
+.alpha-connect-theme .connect-channel-icon-pulse--selected {
+  animation-duration: 2s;
+}
+
+.alpha-connect-theme .connect-channel-icon-pulse--selected::before {
+  animation-duration: 2s;
+  background: radial-gradient(
+    circle,
+    oklch(0.82 0.22 145 / 0.62) 0%,
+    oklch(0.82 0.22 145 / 0.16) 48%,
+    transparent 72%
+  );
+}
+
+.alpha-connect-theme .connect-channel-qr-premium {
+  background: linear-gradient(145deg, oklch(1 0 0 / 0.08), oklch(1 0 0 / 0.02));
+  border: 1px solid oklch(0.82 0.22 145 / 0.28);
+  box-shadow:
+    0 0 0 1px oklch(0.82 0.22 145 / 0.08),
+    0 0 18px oklch(0.82 0.22 145 / 0.14),
+    inset 0 0 12px oklch(0.82 0.22 145 / 0.06);
+  backdrop-filter: blur(16px) saturate(140%);
+}
+
+.alpha-connect-theme .connect-channel-qr-premium__inner {
+  border: 1px solid oklch(1 0 0 / 0.08);
+  box-shadow: inset 0 0 10px oklch(0.82 0.22 145 / 0.08);
+}
+
+/* Alpha Connect logo v3 animations */
+@keyframes ac-logo-pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(1.46);
+    opacity: 0;
+  }
+}
+
+@keyframes ac-logo-arc-in {
+  0%,
+  100% {
+    stroke-opacity: 0;
+    stroke-dashoffset: 50;
+  }
+  35%,
+  65% {
+    stroke-opacity: 0.9;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes ac-logo-mic-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes ac-logo-dot-travel {
+  0% {
+    stroke-dashoffset: 80;
+    opacity: 0;
+  }
+  10%,
+  90% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: -80;
+    opacity: 0;
+  }
+}
+
+@keyframes ac-logo-node-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.75;
+  }
+  50% {
+    transform: scale(1.25);
+    opacity: 1;
+  }
+}
+
+@keyframes ac-logo-scan {
+  0% {
+    transform: translateY(-42px);
+    opacity: 0;
+  }
+  8%,
+  92% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(46px);
+    opacity: 0;
+  }
+}
+
+@keyframes ac-logo-sparkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.alpha-connect-logo--animated .ac-logo-pulse-1 {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ac-logo-pulse-ring 2.4s ease-out infinite;
+}
+
+.alpha-connect-logo--animated .ac-logo-pulse-2 {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ac-logo-pulse-ring 2.4s ease-out 1.2s infinite;
+}
+
+.alpha-connect-logo--animated .ac-logo-mic {
+  transform-origin: 0 -5px;
+  animation: ac-logo-mic-breathe 2.2s ease-in-out infinite;
+}
+
+.alpha-connect-logo--animated .ac-logo-conn-1 {
+  animation: ac-logo-dot-travel 2.6s ease-in-out infinite;
+  stroke-dasharray: 4 6;
+}
+
+.alpha-connect-logo--animated .ac-logo-conn-2 {
+  animation: ac-logo-dot-travel 2.6s ease-in-out 0.8s infinite;
+  stroke-dasharray: 4 6;
+}
+
+.alpha-connect-logo--animated .ac-logo-conn-3 {
+  animation: ac-logo-dot-travel 2.6s ease-in-out 1.6s infinite;
+  stroke-dasharray: 4 6;
+}
+
+.alpha-connect-logo--animated .ac-logo-arc-l1 {
+  animation: ac-logo-arc-in 2.8s ease-in-out infinite;
+}
+
+.alpha-connect-logo--animated .ac-logo-arc-l2 {
+  animation: ac-logo-arc-in 2.8s ease-in-out 0.4s infinite;
+}
+
+.alpha-connect-logo--animated .ac-logo-arc-l3 {
+  animation: ac-logo-arc-in 2.8s ease-in-out 0.8s infinite;
+}
+
+.alpha-connect-logo--animated .ac-logo-arc-r1 {
+  animation: ac-logo-arc-in 2.8s ease-in-out 0.1s infinite;
+}
+
+.alpha-connect-logo--animated .ac-logo-arc-r2 {
+  animation: ac-logo-arc-in 2.8s ease-in-out 0.5s infinite;
+}
+
+.alpha-connect-logo--animated .ac-logo-arc-r3 {
+  animation: ac-logo-arc-in 2.8s ease-in-out 0.9s infinite;
+}
+
+.alpha-connect-logo--animated .ac-logo-node-a,
+.alpha-connect-logo--animated .ac-logo-node-b,
+.alpha-connect-logo--animated .ac-logo-node-c {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.alpha-connect-logo--animated .ac-logo-node-a {
+  animation: ac-logo-node-pulse 2s ease-in-out infinite;
+}
+
+.alpha-connect-logo--animated .ac-logo-node-b {
+  animation: ac-logo-node-pulse 2s ease-in-out 0.6s infinite;
+}
+
+.alpha-connect-logo--animated .ac-logo-node-c {
+  animation: ac-logo-node-pulse 2s ease-in-out 1.2s infinite;
+}
+
+.alpha-connect-logo--animated .ac-logo-scan {
+  animation: ac-logo-scan 3.5s ease-in-out infinite;
+}
+
+.alpha-connect-logo--animated .ac-logo-spark-1 {
+  transform-origin: 60px -68px;
+  animation: ac-logo-sparkle 2.2s ease-in-out infinite;
+}
+
+.alpha-connect-logo--animated .ac-logo-spark-2 {
+  transform-origin: -57px -65px;
+  animation: ac-logo-sparkle 2.2s ease-in-out 0.75s infinite;
+}
+
+.alpha-connect-logo--animated .ac-logo-spark-3 {
+  transform-origin: 54px 56px;
+  animation: ac-logo-sparkle 2.2s ease-in-out 1.5s infinite;
+}
+
+.alpha-screen-frame {
+  max-width: var(--alpha-frame-max-width, 440px);
+}
+
+/* Scroll + overscroll — see alpha-viewport.css for canonical rules */
+
+html.alpha-connect-secure-screen {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ── Immersive chat expand (Alpha Connect) ── */
+@keyframes connect-chat-expand-in {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes connect-header-logo-out {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    max-height: 80px;
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.86) translateY(-10px);
+    max-height: 0;
+  }
+}
+
+@keyframes connect-header-compact-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes connect-tabs-rise {
+  from {
+    opacity: 0.45;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes connect-screen-rise {
+  from {
+    opacity: 0.7;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.alpha-connect-theme .connect-chat-immersive {
+  animation: connect-screen-rise 0.62s cubic-bezier(0.32, 0.72, 0, 1) both,
+    connect-chat-expand-in 0.62s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+.alpha-connect-theme .connect-header-logo-slot--hide {
+  animation: connect-header-logo-out 0.62s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.alpha-connect-theme .connect-header-compact-contact {
+  animation: connect-header-compact-in 0.52s cubic-bezier(0.32, 0.72, 0, 1) 0.22s both;
+}
+
+.alpha-connect-theme .connect-tabs-rise {
+  animation: connect-tabs-rise 0.52s cubic-bezier(0.32, 0.72, 0, 1) 0.1s both;
+}
+
+@keyframes connect-search-expand {
+  from {
+    opacity: 0.6;
+    max-width: 2.75rem;
+  }
+  to {
+    opacity: 1;
+    max-width: 100%;
+  }
+}
+
+.alpha-connect-theme .connect-search-expand {
+  animation: connect-search-expand 0.32s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+.alpha-connect-theme .connect-attach-icon-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.alpha-connect-theme .connect-attach-icon-ring {
+  position: relative;
+  display: flex;
+  width: 52px;
+  height: 52px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: var(--gradient-mic);
+  box-shadow:
+    0 0 0 1px oklch(0.72 0.18 235 / 0.55),
+    0 0 18px oklch(0.72 0.18 235 / 0.22);
+}
+
+.alpha-connect-theme .connect-attach-icon-ring--green {
+  box-shadow:
+    0 0 0 1px oklch(0.82 0.22 145 / 0.55),
+    0 0 18px oklch(0.82 0.22 145 / 0.22);
+}
+
+.alpha-connect-theme .connect-attach-icon-ring--purple {
+  box-shadow:
+    0 0 0 1px oklch(0.62 0.2 300 / 0.55),
+    0 0 18px oklch(0.62 0.2 300 / 0.22);
+}
+
+.alpha-connect-theme .connect-attach-icon-ring--red {
+  box-shadow:
+    0 0 0 1px oklch(0.65 0.22 25 / 0.55),
+    0 0 18px oklch(0.65 0.22 25 / 0.22);
+}
+
+/* ── Alpha Connect logo glow (Secure = neon · Classic = gold via modifier) ── */
+.alpha-connect-theme .alpha-connect-logo {
+  filter: drop-shadow(0 0 12px rgba(0, 255, 80, 0.42));
+}
+
+.alpha-connect-theme .alpha-connect-logo.alpha-connect-logo--hero {
+  filter: drop-shadow(0 0 34px rgba(0, 255, 80, 0.4)) drop-shadow(0 22px 44px rgba(0, 0, 0, 0.55));
+}
+
+.alpha-connect-theme .alpha-connect-logo.alpha-connect-logo--lg {
+  filter: drop-shadow(0 0 24px rgba(0, 255, 80, 0.38)) drop-shadow(0 14px 28px rgba(0, 0, 0, 0.5));
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Alpha Connect Classic — sage-mist light theme (does NOT alter Secure dark)
+   Scoped to `.alpha-connect-theme--classic` only — other app screens unchanged.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.alpha-connect-theme.alpha-connect-theme--classic {
+  --classic-forest: #2d6a4f;
+  --classic-forest-deep: #1b4332;
+  --classic-sage: #e8f2ec;
+  --classic-sage-deep: #dce9e0;
+  --classic-mist-top: #edf3ef;
+  --classic-mist-mid: #e3ece7;
+  --classic-mist-bottom: #dae5de;
+  --classic-card: #ffffff;
+  --classic-card-hover: #f5faf7;
+  --classic-border: #cddad2;
+  --classic-border-soft: #e0eae4;
+  --classic-text: #1e3328;
+  --classic-text-muted: #5c6b62;
+  --classic-shadow: 0 10px 32px rgba(22, 50, 35, 0.11), 0 3px 10px rgba(22, 50, 35, 0.06);
+  --classic-shadow-hover: 0 14px 36px rgba(22, 50, 35, 0.13), 0 4px 12px rgba(22, 50, 35, 0.07);
+  --classic-shadow-active: 0 4px 14px rgba(22, 50, 35, 0.09), 0 1px 5px rgba(22, 50, 35, 0.05);
+
+  --background: var(--classic-mist-top);
+  --foreground: var(--classic-text);
+  --card: var(--classic-card);
+  --card-foreground: var(--classic-text);
+  --popover: var(--classic-card);
+  --popover-foreground: var(--classic-text);
+  --primary: var(--classic-forest);
+  --primary-foreground: #ffffff;
+  --secondary: var(--classic-card-hover);
+  --secondary-foreground: var(--classic-text);
+  --muted: var(--classic-card-hover);
+  --muted-foreground: var(--classic-text-muted);
+  --accent: var(--classic-sage);
+  --accent-foreground: var(--classic-forest);
+  --destructive: #ef4444;
+  --border: var(--classic-border);
+  --input: var(--classic-border);
+  --ring: var(--classic-forest);
+
+  --neon-green: var(--classic-forest);
+  --neon-green-soft: rgba(45, 106, 79, 0.14);
+  --neon-blue: #40916c;
+  --gold: var(--classic-forest);
+
+  --connect-bg-app: linear-gradient(180deg, var(--classic-mist-top) 0%, var(--classic-mist-mid) 45%, var(--classic-mist-bottom) 100%);
+  --connect-bg-surface: var(--classic-card);
+  --connect-bg-card-secondary: var(--classic-card-hover);
+  --connect-text-primary: var(--classic-text);
+  --connect-text-secondary: var(--classic-text-muted);
+  --connect-gold-secondary: #b8c9be;
+  --connect-tab-active-bg: linear-gradient(135deg, #2d6a4f, #1b4332);
+  --connect-tab-active-border: #1b4332;
+  --connect-tab-active-text: #ffffff;
+  --connect-bubble-in: var(--classic-card);
+  --connect-bubble-out: #b5d9c5;
+  --connect-status-available: #22c55e;
+  --connect-status-busy: #f59e0b;
+  --connect-status-unavailable: #ef4444;
+  --connect-status-hidden: #6b7280;
+
+  --gradient-bg: linear-gradient(180deg, var(--classic-mist-top) 0%, var(--classic-mist-bottom) 100%);
+  --gradient-glass: linear-gradient(145deg, #ffffff 0%, var(--classic-card-hover) 100%);
+  --gradient-mic: linear-gradient(145deg, var(--classic-sage), var(--classic-mist-top));
+  --gradient-mic-face: linear-gradient(145deg, #ffffff 0%, var(--classic-card-hover) 46%, var(--classic-sage) 100%);
+  --gradient-end-call: radial-gradient(circle at 30% 30%, #fecaca, #ef4444);
+  --shadow-glass: var(--classic-shadow);
+  --shadow-neon: 0 4px 16px rgba(45, 106, 79, 0.22);
+
+  color: var(--connect-text-primary);
+}
+
+/* Logo — same original green in both themes (no gold / hue shift in Classic) */
+
+/* ── Alpha Connect Settings — Secure (dark) primitives ── */
+.alpha-connect-theme .connect-settings-switch {
+  border-color: transparent;
+  background: transparent;
+}
+
+.alpha-connect-theme .connect-settings-switch[aria-pressed="true"] {
+  border-color: oklch(0.82 0.22 145 / 0.45);
+  background: oklch(0.82 0.22 145 / 0.12);
+  box-shadow: inset 0 0 0 1px oklch(0.82 0.22 145 / 0.15);
+}
+
+.alpha-connect-theme .connect-settings-switch-label {
+  color: oklch(0.98 0.01 250 / 0.92);
+}
+
+.alpha-connect-theme .connect-settings-switch[aria-pressed="true"] .connect-settings-switch-label {
+  color: var(--neon-green);
+}
+
+.alpha-connect-theme .connect-settings-switch-badge {
+  background: oklch(1 0 0 / 0.1);
+  color: var(--muted-foreground);
+}
+
+.alpha-connect-theme .connect-settings-switch[aria-pressed="true"] .connect-settings-switch-badge {
+  background: var(--neon-green);
+  color: #0a1430;
+  box-shadow: 0 0 10px oklch(0.82 0.22 145 / 0.5);
+}
+
+.alpha-connect-theme .connect-settings-switch-track {
+  border-color: oklch(1 0 0 / 0.2);
+  background: oklch(1 0 0 / 0.1);
+}
+
+.alpha-connect-theme .connect-settings-switch[aria-pressed="true"] .connect-settings-switch-track {
+  border-color: oklch(0.82 0.22 145 / 0.7);
+  background: var(--neon-green);
+  box-shadow: 0 0 16px oklch(0.82 0.22 145 / 0.55);
+}
+
+.alpha-connect-theme .connect-settings-switch-thumb {
+  left: 0.125rem;
+  background: #fff;
+}
+
+.alpha-connect-theme .connect-settings-switch[aria-pressed="true"] .connect-settings-switch-thumb {
+  left: auto;
+  right: 0.125rem;
+  background: #0a1430;
+}
+
+.alpha-connect-theme .connect-settings-slider-label {
+  color: oklch(0.98 0.01 250 / 0.92);
+}
+
+.alpha-connect-theme .connect-settings-slider-value {
+  border-color: oklch(0.82 0.22 145 / 0.45);
+  background: oklch(0.82 0.22 145 / 0.15);
+  color: var(--neon-green);
+  box-shadow: 0 0 12px oklch(0.82 0.22 145 / 0.25);
+}
+
+.alpha-connect-theme .connect-settings-slider-track {
+  background: oklch(1 0 0 / 0.12);
+}
+
+.alpha-connect-theme .connect-settings-slider-fill {
+  background: linear-gradient(to left, var(--neon-green), oklch(0.72 0.18 145 / 0.85));
+  box-shadow: 0 0 14px oklch(0.82 0.22 145 / 0.45);
+}
+
+.alpha-connect-theme .connect-settings-slider-input::-webkit-slider-thumb {
+  appearance: none;
+  height: 1.25rem;
+  width: 1.25rem;
+  border-radius: 9999px;
+  border: 2px solid #0a1430;
+  background: var(--neon-green);
+  box-shadow: 0 0 14px var(--neon-green);
+}
+
+.alpha-connect-theme .connect-settings-select {
+  border-color: oklch(0.82 0.22 145 / 0.22);
+  background: oklch(0.82 0.22 145 / 0.06);
+}
+
+.alpha-connect-theme .connect-settings-select-label {
+  color: oklch(0.98 0.01 250 / 0.92);
+}
+
+.alpha-connect-theme .connect-settings-select-value {
+  border-color: oklch(0.82 0.22 145 / 0.5);
+  background: oklch(0.82 0.22 145 / 0.15);
+  color: var(--neon-green);
+  box-shadow: 0 0 10px oklch(0.82 0.22 145 / 0.2);
+}
+
+.alpha-connect-theme .connect-settings-select-dot {
+  background: var(--neon-green);
+  box-shadow: 0 0 6px var(--neon-green);
+}
+
+.alpha-connect-theme .connect-settings-select-chevron {
+  color: var(--neon-green);
+}
+
+.alpha-connect-theme .connect-settings-row-icon {
+  color: var(--neon-green);
+}
+
+.alpha-connect-theme .connect-settings-stat-icon,
+.alpha-connect-theme .connect-settings-stat-value {
+  color: var(--neon-green);
+}
+
+.alpha-connect-theme .connect-settings-section-body {
+  border-top: 1px solid oklch(1 0 0 / 0.1);
+}
+
+.alpha-connect-theme .connect-settings-section-body > * + * {
+  border-top: 1px solid oklch(1 0 0 / 0.05);
+}
+
+.alpha-connect-theme .connect-settings-section-dot {
+  background: oklch(1 0 0 / 0.25);
+}
+
+.alpha-connect-theme .connect-settings-section-dot--open {
+  background: var(--neon-green);
+  box-shadow: 0 0 8px var(--neon-green);
+}
+
+.alpha-connect-theme .connect-settings-section-title {
+  color: oklch(0.98 0.01 250 / 0.95);
+}
+
+.alpha-connect-theme .connect-settings-section-title--open {
+  color: var(--neon-green);
+}
+
+.alpha-connect-theme .connect-settings-section-chevron {
+  color: var(--muted-foreground);
+}
+
+.alpha-connect-theme .connect-settings-section-chevron--open {
+  color: var(--neon-green);
+}
+
+.alpha-connect-theme .connect-settings-save-btn {
+  border: 1px solid oklch(0.82 0.22 145 / 0.55);
+  background: linear-gradient(to left, oklch(0.82 0.22 145 / 0.95), oklch(0.72 0.18 145 / 0.85));
+  color: #0a1430;
+  box-shadow:
+    0 0 0 1px oklch(0.82 0.22 145 / 0.7),
+    0 0 30px oklch(0.82 0.22 145 / 0.45);
+}
+
+/* Settings — Classic sage-mist palette (inherits tokens from frame) */
+.alpha-connect-theme--classic .connect-settings-screen {
+  --set-forest: var(--classic-forest);
+  --set-forest-deep: var(--classic-forest-deep);
+  --set-sage: var(--classic-sage);
+  --set-sage-deep: var(--classic-sage-deep);
+  --set-card: var(--classic-card);
+  --set-card-hover: var(--classic-card-hover);
+  --set-border: var(--classic-border);
+  --set-border-soft: var(--classic-border-soft);
+  --set-track-off: #b8c9be;
+  --set-text: var(--classic-text);
+  --set-text-muted: var(--classic-text-muted);
+  --set-cream: #ffffff;
+  --set-card-shadow: var(--classic-shadow);
+  --set-card-shadow-hover: var(--classic-shadow-hover);
+  --set-card-shadow-active: var(--classic-shadow-active);
+  --neon-green: var(--classic-forest);
+  --neon-green-soft: rgba(45, 106, 79, 0.12);
+}
+
+/* Press / lift micro-interactions */
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-pressable {
+  transition:
+    transform 0.22s cubic-bezier(0.34, 1.25, 0.64, 1),
+    box-shadow 0.22s ease,
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-pressable:active {
+  transform: translateY(2px) scale(0.985);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-card {
+  transition:
+    transform 0.22s cubic-bezier(0.34, 1.25, 0.64, 1),
+    box-shadow 0.22s ease,
+    border-color 0.2s ease;
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-section:has(.connect-settings-section-toggle:active) {
+  transform: translateY(2px) scale(0.992);
+  box-shadow: var(--set-card-shadow-active) !important;
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-section-toggle:active {
+  transform: none;
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-header-btn:active {
+  transform: translateY(1px) scale(0.94);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-save-btn:active {
+  transform: translateY(3px) scale(0.975);
+  box-shadow: 0 2px 10px rgba(27, 67, 50, 0.18) !important;
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .glass,
+.alpha-connect-theme--classic .connect-settings-screen .glass-strong {
+  background: var(--set-card);
+  border-color: var(--set-border);
+  box-shadow: var(--set-card-shadow);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-header-btn {
+  background: var(--set-card);
+  border: 1px solid var(--set-border);
+  box-shadow: var(--set-card-shadow);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-live-panel {
+  background: var(--set-card);
+  border-color: rgba(45, 106, 79, 0.18) !important;
+  box-shadow: var(--set-card-shadow) !important;
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-live-panel:active {
+  box-shadow: var(--set-card-shadow-active) !important;
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-brand-title {
+  color: var(--set-forest);
+  filter: none;
+  text-shadow: none;
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-trust-shield-btn {
+  border-color: var(--set-border-soft) !important;
+  color: var(--set-forest) !important;
+  background: var(--set-sage) !important;
+  box-shadow: var(--set-card-shadow) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-theme-card {
+  background: var(--set-card);
+  border: 1px solid var(--set-border);
+  box-shadow: 0 6px 20px rgba(22, 50, 35, 0.08), 0 2px 6px rgba(22, 50, 35, 0.04);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-theme-card:active {
+  box-shadow: var(--set-card-shadow-active);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-theme-card--active {
+  background: var(--set-sage);
+  border-color: rgba(45, 106, 79, 0.32) !important;
+  box-shadow: 0 8px 24px rgba(45, 106, 79, 0.14), 0 2px 8px rgba(22, 50, 35, 0.06);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-theme-card--active.ring-1 {
+  --tw-ring-color: rgba(45, 106, 79, 0.3);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-card-open {
+  background: var(--set-sage) !important;
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-section--open {
+  border-color: rgba(45, 106, 79, 0.24) !important;
+  box-shadow: var(--set-card-shadow-hover) !important;
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-section-body {
+  border-top-color: var(--set-border-soft);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-section-body > * + * {
+  border-top-color: var(--set-border-soft);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-section-dot {
+  background: var(--set-track-off);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-section-dot--open {
+  background: var(--set-forest);
+  box-shadow: none;
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-section-title {
+  color: var(--set-text);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-section-title--open {
+  color: var(--set-forest);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-section-chevron {
+  color: var(--set-text-muted);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-section-chevron--open {
+  color: var(--set-forest);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-switch {
+  border-color: transparent;
+  background: transparent;
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-switch:hover {
+  background: var(--set-card-hover);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-switch[aria-pressed="true"] {
+  border-color: var(--set-forest-deep);
+  background: rgba(45, 106, 79, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(27, 67, 50, 0.18);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-switch-label {
+  color: var(--set-text);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-switch[aria-pressed="true"] .connect-settings-switch-label {
+  color: var(--set-forest-deep);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-switch-badge {
+  background: var(--set-sage-deep);
+  color: var(--set-text-muted);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-switch[aria-pressed="true"] .connect-settings-switch-badge {
+  background: var(--set-forest);
+  color: var(--set-cream);
+  box-shadow: none;
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-switch-track {
+  border-color: #a8bdb0;
+  background: var(--set-track-off);
+  box-shadow: inset 0 1px 2px rgba(22, 50, 35, 0.07);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-switch[aria-pressed="true"] .connect-settings-switch-track {
+  border-color: var(--set-forest);
+  background: var(--set-forest);
+  box-shadow: none;
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-switch-thumb {
+  background: var(--set-cream);
+  box-shadow: 0 1px 3px rgba(44, 62, 50, 0.15);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-slider-label {
+  color: var(--set-text);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-slider-value {
+  border-color: rgba(45, 106, 79, 0.25);
+  background: var(--set-sage);
+  color: var(--set-forest-deep);
+  box-shadow: none;
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-slider-track {
+  background: var(--set-track-off);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-slider-fill {
+  background: linear-gradient(to left, #52b788, var(--set-forest));
+  box-shadow: none;
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-slider-input::-webkit-slider-thumb {
+  border: 2px solid var(--set-forest-deep);
+  background: var(--set-cream);
+  box-shadow: 0 2px 6px rgba(27, 67, 50, 0.2);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-select {
+  border-color: var(--set-border);
+  background: var(--set-card);
+  box-shadow: 0 4px 14px rgba(22, 50, 35, 0.06);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-select:active {
+  box-shadow: var(--set-card-shadow-active);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-select:hover {
+  border-color: rgba(45, 106, 79, 0.28);
+  background: var(--set-sage);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-select-label {
+  color: var(--set-text);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-select-value {
+  border-color: rgba(45, 106, 79, 0.22);
+  background: var(--set-sage);
+  color: var(--set-forest-deep);
+  box-shadow: none;
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-select-dot {
+  background: var(--set-forest);
+  box-shadow: none;
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-select-chevron {
+  color: var(--set-forest);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-row-icon,
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-stat-icon,
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-stat-value {
+  color: var(--set-forest);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-stat {
+  background: var(--set-card);
+  border: 1px solid var(--set-border-soft);
+  box-shadow: 0 6px 18px rgba(22, 50, 35, 0.08), 0 2px 6px rgba(22, 50, 35, 0.04);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-stat:active {
+  box-shadow: var(--set-card-shadow-active);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-row-btn {
+  transition: transform 0.2s cubic-bezier(0.34, 1.2, 0.64, 1), background 0.15s ease;
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-row-btn:hover {
+  background: var(--set-card-hover);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-row-btn:active {
+  transform: translateY(2px) scale(0.985);
+  background: var(--set-sage);
+}
+
+.alpha-connect-theme--classic .connect-settings-screen .connect-settings-save-btn {
+  border: 1px solid var(--set-forest-deep);
+  background: linear-gradient(to left, var(--set-forest), var(--set-forest-deep));
+  color: var(--set-cream);
+  box-shadow: 0 4px 16px rgba(27, 67, 50, 0.22);
+}
+
+/* Glass surfaces → elevated white cards */
+.alpha-connect-theme--classic .glass {
+  background: var(--classic-card);
+  backdrop-filter: none;
+  border: 1px solid var(--classic-border);
+  box-shadow: var(--classic-shadow);
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.25, 0.64, 1),
+    box-shadow 0.2s ease,
+    border-color 0.15s ease;
+}
+
+.alpha-connect-theme--classic .glass-strong {
+  background: var(--classic-card);
+  backdrop-filter: none;
+  border: 1px solid var(--classic-border);
+  box-shadow: var(--classic-shadow);
+  border-radius: 24px;
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.25, 0.64, 1),
+    box-shadow 0.2s ease,
+    border-color 0.15s ease;
+}
+
+.alpha-connect-theme--classic button.glass:active:not(:disabled),
+.alpha-connect-theme--classic button.glass-strong:active:not(:disabled) {
+  transform: translateY(2px) scale(0.96);
+  box-shadow: var(--classic-shadow-active);
+}
+
+/* Mode tabs — Connection / Messages / Channels */
+.alpha-connect-theme--classic .connect-mode-tabs {
+  background: var(--classic-card);
+  border: 1px solid var(--classic-border);
+  box-shadow: var(--classic-shadow);
+}
+
+.alpha-connect-theme--classic .connect-mode-tabs-indicator {
+  background: var(--connect-tab-active-bg) !important;
+  border: 1px solid var(--connect-tab-active-border) !important;
+  box-shadow: 0 4px 12px rgba(45, 106, 79, 0.12) !important;
+}
+
+.alpha-connect-theme--classic .connect-mode-tabs-btn {
+  transition: transform 0.18s ease, color 0.15s ease;
+}
+
+.alpha-connect-theme--classic .connect-mode-tabs-btn:active {
+  transform: scale(0.96);
+}
+
+.alpha-connect-theme--classic .connect-mode-tabs-btn--active {
+  color: var(--connect-tab-active-text) !important;
+}
+
+.alpha-connect-theme--classic .connect-mode-tabs-btn--idle {
+  color: var(--classic-forest-deep);
+}
+
+.alpha-connect-theme--classic .connect-dock-icon {
+  color: var(--classic-forest-deep);
+}
+
+.alpha-connect-theme--classic .connect-dock-icon--active {
+  color: var(--classic-forest);
+  filter: drop-shadow(0 0 6px rgba(45, 106, 79, 0.35));
+}
+
+.alpha-connect-theme--classic .connect-accent-icon,
+.alpha-connect-theme--classic .connect-action-bar-icon {
+  color: var(--classic-forest-deep);
+}
+
+.alpha-connect-theme--classic .connect-action-bar-icon--active {
+  color: var(--classic-forest);
+}
+
+/* Popups */
+.alpha-connect-theme--classic .connect-popup-overlay {
+  background: rgba(30, 51, 40, 0.32);
+  backdrop-filter: blur(6px);
+}
+
+.alpha-connect-theme--classic .connect-popup-panel {
+  background: var(--classic-card);
+  border: 1px solid var(--classic-border);
+  box-shadow: var(--classic-shadow-hover);
+}
+
+.alpha-connect-theme--classic .connect-popup-icon-ring--green {
+  border-color: rgba(45, 106, 79, 0.35);
+  background: var(--classic-sage);
+  color: var(--classic-forest);
+}
+
+.alpha-connect-theme--classic .connect-popup-btn-cancel {
+  background: var(--classic-card-hover);
+  border: 1px solid var(--classic-border);
+  color: var(--classic-text-muted);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.alpha-connect-theme--classic .connect-popup-btn-green {
+  background: var(--classic-sage);
+  border: 1px solid rgba(45, 106, 79, 0.32);
+  color: var(--classic-forest);
+  box-shadow: 0 2px 8px rgba(45, 106, 79, 0.12);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.alpha-connect-theme--classic .connect-popup-btn-hide {
+  background: rgba(45, 106, 79, 0.08);
+  border: 1px solid rgba(45, 106, 79, 0.28);
+  color: var(--classic-forest);
+  box-shadow: none;
+}
+
+.alpha-connect-theme--classic .connect-popup-btn-cancel:active,
+.alpha-connect-theme--classic .connect-popup-btn-green:active,
+.alpha-connect-theme--classic .connect-popup-btn-hide:active {
+  transform: translateY(2px) scale(0.97);
+  box-shadow: var(--classic-shadow-active);
+}
+
+.alpha-connect-theme--classic .connect-popup-btn-danger {
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.12);
+}
+
+/* Accent ring → forest sage ring (non-mic controls) */
+.alpha-connect-theme--classic .neon-ring:not(.connect-mic-face) {
+  box-shadow:
+    0 0 0 1px rgba(45, 106, 79, 0.45),
+    0 4px 16px rgba(45, 106, 79, 0.18);
+}
+
+/* Mic pulse in Classic — dark forest green */
+.alpha-connect-theme--classic .connect-pulse-wrap.connect-pulse-wrap--green:has(.connect-mic-face) {
+  --neon-green: var(--classic-forest-deep);
+}
+
+.alpha-connect-theme--classic .connect-pulse-wrap--green:has(.connect-mic-face)::before,
+.alpha-connect-theme--classic .connect-pulse-wrap--green:has(.connect-mic-face)::after {
+  border: 1.5px solid rgba(27, 67, 50, 0.42);
+  box-shadow: 0 0 14px rgba(45, 106, 79, 0.2);
+  animation: connect-pulse-ring 2.4s ease-out infinite;
+}
+
+.alpha-connect-theme--classic .connect-pulse-wrap--green:has(.connect-mic-face)::after {
+  animation-delay: 1.2s;
+}
+
+.alpha-connect-theme--classic .connect-pulse-wrap--transmitting:has(.connect-mic-face)::before,
+.alpha-connect-theme--classic .connect-pulse-wrap--transmitting:has(.connect-mic-face)::after {
+  animation-duration: 1.1s;
+  border-color: rgba(27, 67, 50, 0.65);
+  box-shadow: 0 0 18px rgba(45, 106, 79, 0.28);
+}
+
+.alpha-connect-theme--classic .connect-dock-tab-active {
+  --neon-green: oklch(0.82 0.22 145);
+  color: oklch(0.82 0.22 145);
+}
+
+.alpha-connect-theme--classic .connect-dock-tab-active.text-neon-green {
+  color: oklch(0.82 0.22 145) !important;
+}
+
+.alpha-connect-theme--classic .connect-dock-tab-active.bg-neon-green {
+  background-color: oklch(0.82 0.22 145) !important;
+}
+
+.alpha-connect-theme--classic .connect-pulse-wrap--blue::before,
+.alpha-connect-theme--classic .connect-pulse-wrap--blue::after {
+  border-color: rgba(64, 145, 108, 0.38);
+  box-shadow: 0 2px 8px rgba(64, 145, 108, 0.12);
+}
+
+.alpha-connect-theme--classic .connect-channel-icon-pulse {
+  animation: none;
+  box-shadow: var(--classic-shadow-active);
+}
+
+.alpha-connect-theme--classic .connect-channel-icon-pulse::before {
+  display: none;
+}
+
+.alpha-connect-theme--classic .connect-channel-qr-premium {
+  background: var(--classic-card);
+  border: 1px solid var(--classic-border);
+  box-shadow: var(--classic-shadow);
+}
+
+.alpha-connect-theme--classic .connect-channel-qr-premium__inner {
+  background: var(--classic-card-hover) !important;
+}
+
+/* Drawers */
+.alpha-connect-theme--classic [data-alpha-connect-drawer] {
+  background: var(--classic-card) !important;
+  border-color: var(--classic-border) !important;
+  box-shadow: var(--classic-shadow-hover) !important;
+}
+
+/* Chat surface — Secure dark default */
+.alpha-connect-theme:not(.alpha-connect-theme--classic) .connect-chat-surface {
+  background: #060d1f !important;
+}
+
+.alpha-connect-theme:not(.alpha-connect-theme--classic) .connect-new-chat-sheet {
+  background: rgba(6, 13, 31, 0.95) !important;
+}
+
+/* Chat surface + bubbles */
+.alpha-connect-theme--classic .connect-chat-surface {
+  background: var(--connect-bg-app) !important;
+}
+
+.alpha-connect-theme--classic .connect-chat-surface > header {
+  border-bottom-color: var(--classic-border) !important;
+}
+
+.alpha-connect-theme--classic .connect-chat-bubble--in {
+  background: var(--connect-bubble-in) !important;
+  border: 1px solid var(--classic-border) !important;
+  color: var(--connect-text-primary) !important;
+  box-shadow: var(--classic-shadow-active) !important;
+  backdrop-filter: none !important;
+}
+
+.alpha-connect-theme--classic .connect-chat-bubble--out {
+  background: var(--connect-bubble-out) !important;
+  border: 1px solid rgba(45, 106, 79, 0.32) !important;
+  color: var(--connect-text-primary) !important;
+  box-shadow: 0 4px 14px rgba(45, 106, 79, 0.12), 0 2px 6px rgba(22, 50, 35, 0.06) !important;
+  backdrop-filter: none !important;
+}
+
+.alpha-connect-theme--classic .connect-chat-composer {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-color: var(--classic-border) !important;
+}
+
+.alpha-connect-theme--classic .connect-trust-shield-btn {
+  border-color: var(--classic-border-soft) !important;
+  color: var(--classic-forest) !important;
+  background: var(--classic-sage) !important;
+  box-shadow: var(--classic-shadow) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.alpha-connect-theme--classic .connect-trust-shield-btn:active {
+  transform: translateY(2px) scale(0.94);
+  box-shadow: var(--classic-shadow-active) !important;
+}
+
+/* Chat settings menu rows — classic light (same surface as security button) */
+.alpha-connect-theme--classic .glass-strong button[class*="border-white/12"][class*="bg-white/6"] {
+  background: var(--classic-sage) !important;
+  border-color: var(--classic-border-soft) !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+.alpha-connect-theme--classic .connect-top-anchor-sheet-panel {
+  background: var(--classic-card) !important;
+  border: 1px solid var(--classic-border) !important;
+  box-shadow: var(--classic-shadow-lg) !important;
+}
+
+.alpha-connect-theme--classic .connect-top-anchor-sheet-panel h2 {
+  color: var(--classic-forest) !important;
+}
+
+/* Attach sheet icons */
+.alpha-connect-theme--classic .connect-attach-icon-ring {
+  background: var(--classic-sage);
+  box-shadow: var(--classic-shadow-active);
+}
+
+.alpha-connect-theme--classic .connect-attach-icon-ring--green {
+  box-shadow: 0 2px 8px rgba(45, 106, 79, 0.14);
+}
+
+/* Settings theme picker cards (outside settings-screen scope) */
+.alpha-connect-theme--classic .connect-theme-card {
+  border: 1px solid var(--classic-border);
+  background: var(--classic-card);
+  box-shadow: var(--classic-shadow-active);
+}
+
+.alpha-connect-theme--classic .connect-theme-card--active {
+  border-color: rgba(45, 106, 79, 0.32);
+  background: var(--classic-sage);
+  box-shadow: 0 8px 24px rgba(45, 106, 79, 0.14);
+}
+
+.alpha-connect-theme .connect-theme-card--secure-preview {
+  background: linear-gradient(145deg, #0a1430, #050814);
+}
+
+.alpha-connect-theme .connect-theme-card--classic-preview {
+  background: linear-gradient(145deg, #ffffff, #e3ece7);
+  border: 1px solid #cddad2;
+}
+
+/* Presence dots — flat in classic */
+.alpha-connect-theme--classic .connect-presence-dot--available {
+  background-color: var(--connect-status-available) !important;
+  box-shadow: none !important;
+}
+
+.alpha-connect-theme--classic .connect-presence-dot--busy {
+  background-color: var(--connect-status-busy) !important;
+  box-shadow: none !important;
+}
+
+.alpha-connect-theme--classic .connect-presence-dot--hidden {
+  background-color: var(--connect-status-hidden) !important;
+  box-shadow: none !important;
+}
+
+.alpha-connect-theme--classic .connect-presence-dot {
+  border-color: var(--classic-card) !important;
+}
+
+/* Hardcoded dark surfaces → classic overrides */
+.alpha-connect-theme--classic .connect-surface-dark {
+  background: var(--connect-bg-surface) !important;
+  border-color: var(--classic-border) !important;
+}
+
+.alpha-connect-theme--classic .connect-new-chat-sheet {
+  background: rgba(237, 243, 239, 0.98) !important;
+  border-color: var(--classic-border) !important;
+}
+
+.alpha-connect-theme--classic .text-\[\#0a1430\] {
+  color: var(--classic-text) !important;
+}
+
+.alpha-connect-theme--classic .bg-neon-green.text-\[\#0a1430\],
+.alpha-connect-theme--classic .bg-neon-green .text-\[\#0a1430\] {
+  color: #ffffff !important;
+}
+
+.alpha-connect-theme--classic .connect-header-title {
+  filter: none;
+  text-shadow: none;
+  color: var(--classic-forest);
+}
+
+.alpha-connect-theme--classic .connect-header-dot {
+  background: var(--classic-forest) !important;
+  box-shadow: none !important;
+}
+
+/* Remap Secure-era white/dark utility classes inside Classic Connect only */
+.alpha-connect-theme--classic .border-white\/5 {
+  border-color: var(--classic-border-soft) !important;
+}
+
+.alpha-connect-theme--classic .border-white\/10 {
+  border-color: var(--classic-border-soft) !important;
+}
+
+.alpha-connect-theme--classic .border-white\/12 {
+  border-color: var(--classic-border-soft) !important;
+}
+
+.alpha-connect-theme--classic .border-white\/15,
+.alpha-connect-theme--classic .border-white\/20,
+.alpha-connect-theme--classic .border-white\/25,
+.alpha-connect-theme--classic .border-white\/28 {
+  border-color: var(--classic-border) !important;
+}
+
+.alpha-connect-theme--classic .bg-\[\#060d1f\]\/80,
+.alpha-connect-theme--classic .bg-\[\#060d1f\]\/90,
+.alpha-connect-theme--classic .bg-\[\#060d1f\]\/95 {
+  background: rgba(255, 255, 255, 0.92) !important;
+}
+
+.alpha-connect-theme--classic .bg-\[\#0a1430\],
+.alpha-connect-theme--classic .bg-\[\#0a1430\]\/95 {
+  background: var(--classic-card) !important;
+  border-color: var(--classic-border) !important;
+  box-shadow: var(--classic-shadow) !important;
+}
+
+.alpha-connect-theme--classic .bg-\[\#050814\]\/90 {
+  background: var(--classic-card-hover) !important;
+}
+
+.alpha-connect-theme--classic .bg-white\/5 {
+  background: var(--classic-sage) !important;
+}
+
+.alpha-connect-theme--classic .bg-white\/8 {
+  background: var(--classic-sage) !important;
+}
+
+.alpha-connect-theme--classic .bg-white\/10,
+.alpha-connect-theme--classic .bg-white\/15 {
+  background: var(--classic-card-hover) !important;
+}
+
+.alpha-connect-theme--classic .bg-white\/15.text-white {
+  background: var(--classic-sage) !important;
+  color: var(--classic-text) !important;
+  border-color: var(--classic-border) !important;
+  box-shadow: var(--classic-shadow-active) !important;
+}
+
+.alpha-connect-theme--classic .connect-embedded-panel {
+  color: var(--classic-text);
+}
+
+.alpha-connect-theme--classic .connect-embedded-panel .border-white\/10.bg-white\/5,
+.alpha-connect-theme--classic .connect-embedded-panel [class*="border-white/10"][class*="bg-white/5"] {
+  background: var(--classic-card) !important;
+  border-color: var(--classic-border) !important;
+  box-shadow: var(--classic-shadow) !important;
+  backdrop-filter: none !important;
+}
+
+.alpha-connect-theme--classic .connect-embedded-panel .border-white\/10.bg-white\/8,
+.alpha-connect-theme--classic .connect-embedded-panel [class*="border-white/12"][class*="bg-white/8"] {
+  background: var(--classic-sage) !important;
+  border-color: var(--classic-border-soft) !important;
+  backdrop-filter: none !important;
+}
+
+.alpha-connect-theme--classic .connect-channels-drawer,
+.alpha-connect-theme--classic .connect-participants-drawer,
+.alpha-connect-theme--classic .connect-trust-center-sheet,
+.alpha-connect-theme--classic .connect-notifications-panel {
+  background: var(--classic-card) !important;
+  border-color: var(--classic-border) !important;
+  box-shadow: var(--classic-shadow-hover) !important;
+}
+
+.alpha-connect-theme--classic .connect-history-panel-in {
+  background: var(--classic-card) !important;
+  border-color: var(--classic-border) !important;
+}
+
+/* ── Global Connect typography +2px ── */
+.alpha-connect-theme .text-\[7px\] { font-size: 9px !important; }
+.alpha-connect-theme .text-\[8px\] { font-size: 10px !important; }
+.alpha-connect-theme .text-\[8\.5px\] { font-size: 10.5px !important; }
+.alpha-connect-theme .text-\[9px\] { font-size: 11px !important; }
+.alpha-connect-theme .text-\[10px\] { font-size: 12px !important; }
+.alpha-connect-theme .text-\[11px\] { font-size: 13px !important; }
+.alpha-connect-theme .text-\[12px\] { font-size: 14px !important; }
+.alpha-connect-theme .text-\[13px\] { font-size: 15px !important; }
+.alpha-connect-theme .text-\[14px\] { font-size: 16px !important; }
+.alpha-connect-theme .text-\[15px\] { font-size: 17px !important; }
+.alpha-connect-theme .text-\[16px\] { font-size: 18px !important; }
+.alpha-connect-theme .text-\[17px\] { font-size: 19px !important; }
+.alpha-connect-theme .text-\[20px\] { font-size: 22px !important; }
+.alpha-connect-theme .text-sm { font-size: 0.9375rem !important; line-height: 1.35 !important; }
+
+/* ── Chat privacy / timer notices ── */
+.alpha-connect-theme .connect-chat-notice {
+  display: inline-flex;
+  max-width: min(100%, 22rem);
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 9999px;
+  padding: 0.25rem 0.625rem;
+  backdrop-filter: blur(8px);
+}
+
+.alpha-connect-theme .connect-chat-notice--privacy {
+  width: fit-content;
+}
+
+.alpha-connect-theme .connect-chat-notice__icon {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.alpha-connect-theme .connect-chat-notice__text {
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.alpha-connect-theme:not(.alpha-connect-theme--classic) .connect-chat-notice--privacy {
+  border: 1px solid oklch(0.82 0.22 145 / 0.28);
+  background: oklch(0.82 0.22 145 / 0.12);
+  color: oklch(0.88 0.18 145);
+}
+
+.alpha-connect-theme:not(.alpha-connect-theme--classic) .connect-chat-notice--privacy .connect-chat-notice__icon {
+  color: oklch(0.82 0.22 145);
+}
+
+.alpha-connect-theme:not(.alpha-connect-theme--classic) .connect-chat-notice--timer {
+  border: 1px solid oklch(0.78 0.16 75 / 0.35);
+  background: oklch(0.78 0.16 75 / 0.12);
+  color: oklch(0.82 0.14 85);
+}
+
+.alpha-connect-theme:not(.alpha-connect-theme--classic) .connect-chat-notice--timer .connect-chat-notice__icon {
+  color: oklch(0.78 0.16 75);
+}
+
+.alpha-connect-theme--classic .connect-chat-notice--privacy {
+  border: 1px solid rgba(27, 67, 50, 0.28);
+  background: rgba(255, 255, 255, 0.94);
+  color: #1b4332;
+  box-shadow: 0 2px 8px rgba(22, 50, 35, 0.06);
+}
+
+.alpha-connect-theme--classic .connect-chat-notice--privacy .connect-chat-notice__icon {
+  color: #2d6a4f;
+}
+
+.alpha-connect-theme--classic .connect-chat-notice--timer {
+  border: 1px solid rgba(180, 83, 9, 0.28);
+  background: rgba(255, 251, 235, 0.96);
+  color: #92400e;
+  box-shadow: 0 2px 8px rgba(180, 83, 9, 0.08);
+}
+
+.alpha-connect-theme--classic .connect-chat-notice--timer .connect-chat-notice__icon {
+  color: #b45309;
+}
+
+.alpha-connect-theme .connect-chat-timer-btn {
+  backdrop-filter: blur(8px);
+}
+
+.alpha-connect-theme--classic .connect-chat-timer-btn {
+  border-color: var(--classic-border) !important;
+  background: var(--classic-sage) !important;
+}
+
+.alpha-connect-theme--classic .connect-chat-timer-sheet .glass-strong {
+  background: var(--classic-card) !important;
+  border-color: var(--classic-border) !important;
+}
+
+/* ── Chat composer — dark green actions ── */
+.alpha-connect-theme .connect-chat-send-btn--embedded {
+  background: linear-gradient(to bottom right, #1b4332, #2d6a4f) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(27, 67, 50, 0.28) !important;
+}
+
+.alpha-connect-theme .connect-chat-attach-btn--embedded {
+  border-color: rgba(45, 106, 79, 0.35) !important;
+  background: rgba(45, 106, 79, 0.1) !important;
+  color: #1b4332 !important;
+}
+
+.alpha-connect-theme .connect-chat-attach-btn--embedded:hover {
+  background: rgba(45, 106, 79, 0.18) !important;
+  color: #2d6a4f !important;
+}
+
+.alpha-connect-theme--classic .connect-chat-send-btn--embedded {
+  background: linear-gradient(to bottom right, #1b4332, #2d6a4f) !important;
+  color: #ffffff !important;
+}
+
+/* ── Flat QR on card (no black box / no frame) ── */
+.alpha-connect-theme .connect-channel-qr-flat {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0;
+}
+
+.alpha-connect-theme .connect-channel-qr-flat__canvas {
+  position: relative;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  filter: drop-shadow(0 0 5px rgba(45, 106, 79, 0.22)) drop-shadow(0 0 12px rgba(45, 106, 79, 0.1));
+}
+
+.alpha-connect-theme .connect-channel-qr-flat__canvas::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  z-index: -1;
+  border-radius: 8px;
+  background: radial-gradient(circle at center, rgba(45, 106, 79, 0.14) 0%, transparent 72%);
+  pointer-events: none;
+}
+
+.alpha-connect-theme .connect-channel-qr-flat__img {
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* ── Create channel sheet ── */
+.alpha-connect-theme .connect-create-channel-submit {
+  border-color: rgba(45, 106, 79, 0.35) !important;
+  background: linear-gradient(to left, #2d6a4f, #1b4332) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(27, 67, 50, 0.22);
+}
+
+.alpha-connect-theme--classic .connect-create-channel-icon-ring {
+  border: 1px solid var(--classic-border-soft);
+  background: var(--classic-sage) !important;
+}
+
+.alpha-connect-theme--classic .connect-create-channel-submit {
+  border-color: #1b4332 !important;
+}

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Clock, ChevronDown } from "lucide-react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
+import { MESSAGING_GLASS_SHELL } from "@/components/alpha/messaging-ui";
 
 const ITEM_H = 26;
 const WHEEL_H = 96;
@@ -261,38 +262,31 @@ function AlphaTimePickerSheet({
           type="button"
           aria-label="إغلاق"
           onClick={onClose}
-          className="absolute inset-0 bg-[#1a1408]/22 backdrop-blur-[4px] animate-in fade-in duration-200"
+          className="absolute inset-0 bg-black/28 backdrop-blur-[3px] animate-in fade-in duration-200"
         />
         <div
-          className="relative z-[1] w-full max-w-[360px] overflow-hidden rounded-[26px] border border-white/88 bg-white/68 shadow-[0_28px_64px_-22px_rgba(30,24,12,0.28),0_0_48px_-16px_rgba(212,168,87,0.18),inset_0_1px_0_rgba(255,255,255,0.95)] backdrop-blur-2xl"
+          className={cn("relative z-[1] w-full max-w-[320px] overflow-hidden", MESSAGING_GLASS_SHELL)}
           style={{ animation: "alphaDateSheetIn 0.34s cubic-bezier(0.22, 1, 0.36, 1) both" }}
         >
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d4a857]/45 to-transparent"
-          />
-
-          <div className="flex items-center justify-between px-5 py-3" dir="ltr">
-            <button
-              type="button"
-              onClick={onClose}
-              className="min-w-[52px] text-left text-[13px] font-semibold text-[#EF4444] transition-colors hover:text-[#DC2626] active:text-[#B91C1C] active:scale-[0.97]"
-            >
-              إلغاء
-            </button>
-            <p className="font-arabic-serif text-center text-[14px] font-extrabold tracking-tight text-[#3a2a18]">
-              {title}
-            </p>
+          <div className="relative flex h-12 items-center justify-center px-4 pt-1" dir="rtl">
+            <p className="text-[14px] font-bold text-[#1F2937]">{title}</p>
             <button
               type="button"
               onClick={onConfirm}
-              className="min-w-[52px] text-right text-[13px] font-extrabold text-[#10B981] transition-colors hover:text-[#059669] active:text-[#047857] active:scale-[0.97]"
+              className="absolute inset-y-0 start-4 flex items-center pt-0.5 text-[16px] font-bold text-[#166534] transition-colors hover:text-[#14532D] active:text-[#0F3D22]"
             >
               تم
             </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="absolute inset-y-0 end-4 flex items-center pt-0.5 text-[14px] font-semibold text-[#EF4444]"
+            >
+              إلغاء
+            </button>
           </div>
 
-          <div className="relative mx-3 mb-3 overflow-hidden rounded-[18px] border border-white/80 bg-white/52 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)] backdrop-blur-md">
+          <div className="relative mx-2.5 mb-3 mt-1 overflow-hidden rounded-[14px] border border-white/32 bg-white/42 backdrop-blur-sm">
             <div className="flex px-1 pt-2">
               {(["الساعة", "الدقيقة", "ص/م"] as const).map((label) => (
                 <p

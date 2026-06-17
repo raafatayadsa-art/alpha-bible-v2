@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef } from "react";
+import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { X, ImagePlus, Send, ShieldCheck, ChevronDown } from "lucide-react";
 import { CopticWatermark } from "@/components/coptic";
@@ -122,19 +122,15 @@ function CategoryPickerMenu({
     <div className="fixed inset-0 z-[95] flex items-center justify-center overflow-hidden px-4 py-[max(env(safe-area-inset-top,0px),12px)] pb-[max(env(safe-area-inset-bottom,0px),12px)]">
       <button type="button" aria-label="إغلاق" onClick={onClose} className={LIGHT_OVERLAY} />
       <div
-        className={
-          "relative z-[1] flex w-[calc(100%-32px)] max-w-[380px] max-h-[60vh] flex-col rounded-[20px] " +
-          FLOAT_PANEL
-        }
+        className="relative z-[1] w-[calc(100%-32px)] max-w-[380px] max-h-[min(72vh,520px)] flex flex-col overflow-hidden rounded-[20px] border border-white/28 bg-white/62 shadow-[0_16px_40px_rgba(0,0,0,0.14)] backdrop-blur-3xl"
         role="listbox"
         aria-label="نوع المنشور"
       >
-        <div className="shrink-0 px-3 py-2 border-b border-[#efe2c4]/60 text-center">
-          <p className="text-[12px] font-extrabold text-[#3a2a18]">نوع المنشور</p>
+        <div className="shrink-0 px-4 py-3 border-b border-white/25 text-center">
+          <p className="text-[14px] font-extrabold text-[#3a2a18]">نوع المنشور</p>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2 grid grid-cols-2 gap-1.5 content-start">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 grid grid-cols-2 gap-2 content-start">
           {CATEGORIES.map((c) => {
-            const m = POST_TYPE_META[c.type];
             const active = c.key === activeKey;
             return (
               <button
@@ -147,10 +143,11 @@ function CategoryPickerMenu({
                   onClose();
                 }}
                 className={
-                  "rounded-xl border px-2.5 py-2 text-[11.5px] font-extrabold text-right transition-all active:scale-95 " +
-                  (active ? "bg-[#9b87c4]/20 border-[#9b87c4]/50 text-[#3a2a18]" : "bg-white/75 border-[#efe2c4] text-[#3a2a18]")
+                  "rounded-2xl border px-3 py-3 text-[13px] font-extrabold text-center transition-all active:scale-95 " +
+                  (active
+                    ? "border-[#8a6ec1]/45 bg-[#8a6ec1]/18 text-[#4a3a78] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]"
+                    : "border-white/70 bg-white/55 text-[#3a2a18] hover:bg-white/75")
                 }
-                style={active ? undefined : { borderColor: `${m.tone}44` }}
               >
                 {c.label}
               </button>
@@ -641,7 +638,6 @@ export function PostBuilder({
   const [activeKey, setActiveKey] = useState<CategoryKey>("news");
   const [form, setForm] = useState<FormState>(EMPTY);
   const [catOpen, setCatOpen] = useState(false);
-  const catBtnRef = useRef<HTMLButtonElement>(null);
   const cat = useMemo(() => CATEGORIES.find((c) => c.key === activeKey)!, [activeKey]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -698,20 +694,8 @@ export function PostBuilder({
           <button type="button" aria-label="إغلاق" onClick={onClose} className="inline-grid h-10 w-10 place-items-center rounded-full bg-white/80 border border-[#efe2c4] text-[#3a2a18] active:scale-90 shadow-sm">
             <X className="h-5 w-5" />
           </button>
-          <div className="flex-1 min-w-0 flex items-center justify-center gap-2">
-            <h1 className="text-[15px] font-extrabold text-[#3a2a18] leading-none shrink-0">إنشاء منشور</h1>
-            <button
-              ref={catBtnRef}
-              type="button"
-              onClick={() => setCatOpen((v) => !v)}
-              aria-expanded={catOpen}
-              aria-haspopup="listbox"
-              className="inline-flex items-center gap-1 rounded-full bg-white/80 border border-[#efe2c4] px-2.5 py-1 text-[11px] font-extrabold text-[#7a5a9a] active:scale-95 shadow-sm max-w-[45%] truncate"
-              style={{ color: meta.tone }}
-            >
-              {cat.label}
-              <ChevronDown className={"h-3.5 w-3.5 shrink-0 opacity-70 transition-transform " + (catOpen ? "rotate-180" : "")} />
-            </button>
+          <div className="flex-1 min-w-0 flex items-center justify-center">
+            <h1 className="text-[15px] font-extrabold text-[#3a2a18] leading-none">إنشاء منشور</h1>
           </div>
           <span className="w-10 shrink-0" aria-hidden />
         </div>
@@ -722,6 +706,19 @@ export function PostBuilder({
 
       <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-3 pb-2">
         <div className="mx-auto w-full max-w-[400px] min-w-0 space-y-3">
+          <button
+            type="button"
+            onClick={() => setCatOpen(true)}
+            className="w-full rounded-2xl border border-white/70 bg-white/55 px-4 py-3 text-right shadow-[inset_0_1px_0_rgba(255,255,255,0.85)] active:scale-[0.99] transition-transform"
+          >
+            <p className="text-[10px] font-bold text-[#8a6a3a]">نوع المنشور</p>
+            <div className="mt-1 flex items-center justify-between gap-2">
+              <ChevronDown className="h-4 w-4 shrink-0 text-[#8a6a3a]" />
+              <span className="text-[14px] font-extrabold" style={{ color: meta.tone }}>
+                {cat.label}
+              </span>
+            </div>
+          </button>
           <div className={GLASS_CARD + " p-3.5 min-w-0"}>
             <CategoryForm cat={cat} f={form} set={set} autoPreview={autoPreview} />
           </div>

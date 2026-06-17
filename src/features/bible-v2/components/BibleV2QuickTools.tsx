@@ -8,15 +8,16 @@ import { BibleV2QuickToolIcon } from "./BibleV2QuickToolIcon";
 
 type ToolTone = "gold" | "navy";
 
-const TILE_CLASS =
-  "group flex flex-col items-center gap-2.5 rounded-[22px] border border-[#efe4c6]/90 bg-gradient-to-b from-[#fffdf8] to-[#f3e8d4] px-2 py-3.5 transition duration-300 hover:-translate-y-1 active:scale-[0.96]";
-
-const tileShadow = [
-  "inset 0 2px 0 rgba(255,255,255,0.95)",
-  "inset 0 -4px 10px rgba(120,90,40,0.06)",
-  `0 14px 30px -12px ${bibleV2Tokens.shadowCard}`,
-  `0 6px 14px -8px ${bibleV2Tokens.shadowWarm}`,
+const panelShadow = [
+  "inset 0 1px 0 rgba(255,255,255,0.95)",
+  "inset 0 -1px 0 rgba(255,255,255,0.35)",
+  `0 16px 36px -16px ${bibleV2Tokens.shadowCard}`,
+  `0 6px 18px -10px ${bibleV2Tokens.shadowWarm}`,
+  "0 0 0 1px rgba(212,175,55,0.1)",
 ].join(", ");
+
+const tileClass =
+  "group flex flex-col items-center gap-2 rounded-[18px] px-1 py-2.5 transition duration-200 hover:bg-white/50 active:scale-[0.97]";
 
 function QuickToolTile({
   label,
@@ -36,7 +37,12 @@ function QuickToolTile({
   const inner = (
     <>
       <BibleV2QuickToolIcon icon={icon} tone={tone} />
-      <span className="text-center text-[11px] font-bold leading-tight text-[#3a2c10]">{label}</span>
+      <span
+        className="text-center text-[10.5px] font-semibold leading-tight transition-colors group-hover:text-[#2a1f12]"
+        style={{ color: bibleV2Tokens.textSecondary }}
+      >
+        {label}
+      </span>
     </>
   );
 
@@ -45,8 +51,7 @@ function QuickToolTile({
       <Link
         to={to as "/"}
         {...(params ? { params: params as never } : {})}
-        className={TILE_CLASS}
-        style={{ boxShadow: tileShadow, transform: "translateY(-2px)" }}
+        className={tileClass}
         aria-label={label}
       >
         {inner}
@@ -55,13 +60,7 @@ function QuickToolTile({
   }
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={TILE_CLASS}
-      style={{ boxShadow: tileShadow, transform: "translateY(-2px)" }}
-      aria-label={label}
-    >
+    <button type="button" onClick={onClick} className={tileClass} aria-label={label}>
       {inner}
     </button>
   );
@@ -77,23 +76,36 @@ export function BibleV2QuickTools() {
 
   return (
     <section dir="rtl" className="mx-4 mt-6">
-      <div className="mb-3.5 flex items-center gap-2">
-        <span className="text-[13px] text-[#d4af37]">✦</span>
+      <div className="mb-3 flex items-center gap-2">
+        <span className="text-[12px]" style={{ color: bibleV2Tokens.gold }}>
+          ✦
+        </span>
         <h2 className="text-[15px] font-extrabold" style={{ color: bibleV2Tokens.navy }}>
           أدوات سريعة
         </h2>
       </div>
-      <div className="grid grid-cols-4 gap-2.5">
-        <QuickToolTile label="المفضلة" icon={Bookmark} tone="gold" to="/bible/saved" />
-        <QuickToolTile
-          label="آخر قراءة"
-          icon={Clock}
-          tone="gold"
-          to={lastReadTo.to}
-          params={"params" in lastReadTo ? lastReadTo.params : undefined}
-        />
-        <QuickToolTile label="ملاحظاتي" icon={FilePen} tone="navy" to="/bible/notes" />
-        <QuickToolTile label="بحث متقدم" icon={SearchCheck} tone="navy" onClick={openSearch} />
+
+      <div
+        className="rounded-[24px] border border-white/75 p-2 backdrop-blur-xl"
+        style={{
+          background:
+            "linear-gradient(135deg, rgba(255,255,255,0.78) 0%, rgba(250,247,242,0.52) 48%, rgba(255,255,255,0.68) 100%)",
+          boxShadow: panelShadow,
+          WebkitBackdropFilter: "blur(20px) saturate(160%)",
+        }}
+      >
+        <div className="grid grid-cols-4 gap-1">
+          <QuickToolTile label="المفضلة" icon={Bookmark} tone="gold" to="/bible/saved" />
+          <QuickToolTile
+            label="آخر قراءة"
+            icon={Clock}
+            tone="gold"
+            to={lastReadTo.to}
+            params={"params" in lastReadTo ? lastReadTo.params : undefined}
+          />
+          <QuickToolTile label="ملاحظاتي" icon={FilePen} tone="navy" to="/bible/notes" />
+          <QuickToolTile label="بحث متقدم" icon={SearchCheck} tone="navy" onClick={openSearch} />
+        </div>
       </div>
     </section>
   );

@@ -1,0 +1,28 @@
+---
+description: Auto-save audit and technical reports to reports/ directory
+alwaysApply: true
+---
+
+# Alpha Bible Report Files
+
+After every audit, verification, migration result, schema check, RLS check, storage check, or status report:
+
+1. Save a downloadable report file to `reports/` at the repo root.
+2. Format: `.md` (preferred) or `.txt`.
+3. Filename: `YYYY-MM-DD_HH-MM-SS_REPORT_NAME.md`
+   - Examples: `2026-06-16_03-45-00_ALPHA_CONNECT_AUDIT.md`, `2026-06-16_04-10-00_MIGRATION_RESULT.md`
+4. Required sections in every report file:
+   - Executive Summary
+   - Findings
+   - Warnings
+   - Errors
+   - Recommendations
+   - Overall Status (PASS / PARTIAL / FAIL)
+5. Also include a COPYABLE REPORT plain-text block at the end of the chat response (per user reporting rule).
+6. Keep the chat response summary short; put full details in the report file.
+7. At the end of every qualifying chat response, state:
+   - Full file path
+   - Clickable link to the file
+   - File size
+
+Do not skip report file creation for Alpha Connect, Alpha Bible, database, migration, or bug audit responses.
