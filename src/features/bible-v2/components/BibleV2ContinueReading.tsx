@@ -2,29 +2,9 @@ import { Link } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 import { CopticCross, CopticMiniCross } from "@/components/coptic";
 import continueBook from "@/features/bible-lavoble/assets/continue-book.jpg";
-import { defaultContinueReading } from "@/features/bible-home/data/continueReading";
 import { useCurrentSession } from "@/lib/reading-state";
+import { continueReadingDestination, resolveContinueReadingView } from "@/lib/continue-reading-nav";
 import { bibleV2Tokens } from "../tokens";
-
-function resolveContinueData(session: ReturnType<typeof useCurrentSession>) {
-  if (!session) {
-    return {
-      ...defaultContinueReading,
-      reference: "يوحنا 3:16",
-      progressPercent: 45,
-      bookParam: "John",
-      chapter: 3,
-    };
-  }
-
-  return {
-    ...defaultContinueReading,
-    reference: `${session.bookName || session.book} ${session.chapter}${session.verse ? `:${session.verse}` : ""}`,
-    progressPercent: Math.min(100, Math.max(0, session.progressPercent)),
-    bookParam: session.book,
-    chapter: session.chapter,
-  };
-}
 
 function ReadingProgressBar({ value }: { value: number }) {
   const clamped = Math.min(100, Math.max(0, value));
@@ -76,13 +56,8 @@ function ReadingProgressBar({ value }: { value: number }) {
 
 export function BibleV2ContinueReading() {
   const session = useCurrentSession();
-  const data = resolveContinueData(session);
-  const progress = data.progressPercent;
-
-  const destination = {
-    to: "/$book/$chapter" as const,
-    params: { book: data.bookParam!, chapter: String(data.chapter) },
-  };
+  const data = resolveContinueReadingView(session);
+  const destination = continueReadingDestination(data, { booksRoute: "/books-v2" });
 
   return (
     <section className="relative mx-4 mt-7 mb-1">
@@ -168,7 +143,7 @@ export function BibleV2ContinueReading() {
             </div>
           </div>
 
-          <ReadingProgressBar value={progress} />
+          <ReadingProgressBar value={data.progressPercent} />
 
           <Link
             {...destination}

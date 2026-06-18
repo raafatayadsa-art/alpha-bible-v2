@@ -214,3 +214,73 @@ export function ConnectConfirmDialog({
     </ConnectCenterPopup>
   );
 }
+
+export function ConnectConversationDeleteDialog({
+  open,
+  onClose,
+  onDeleteLocal,
+  onDeleteBoth,
+  title = "مسح هذه المحادثة؟",
+  description = "اختر طريقة المسح.",
+  localLabel = "من قائمتي فقط",
+  bothLabel = "مسح للطرفين",
+  cancelLabel = "إلغاء",
+  busy = false,
+  scoped = false,
+  zIndex = 160,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onDeleteLocal: () => void;
+  onDeleteBoth: () => void;
+  title?: string;
+  description?: string;
+  localLabel?: string;
+  bothLabel?: string;
+  cancelLabel?: string;
+  busy?: boolean;
+  scoped?: boolean;
+  zIndex?: number;
+}) {
+  if (!open) return null;
+
+  return (
+    <ConnectCenterPopup onClose={busy ? undefined : onClose} scoped={scoped} zIndex={zIndex}>
+      <div className="pt-1 text-center">
+        <div className="mb-2.5 flex justify-center">
+          <div className="connect-popup-icon-ring connect-popup-icon-ring--danger">
+            <Trash2 className="size-[18px]" strokeWidth={2.2} />
+          </div>
+        </div>
+        <p className="mb-1 text-[13px] font-bold text-foreground">{title}</p>
+        <p className="mb-3 text-[10px] leading-relaxed text-muted-foreground/85">{description}</p>
+        <div className="flex flex-col gap-2">
+          <button
+            type="button"
+            disabled={busy}
+            onClick={onDeleteBoth}
+            className="connect-popup-btn-danger h-10 w-full rounded-2xl text-[12px] font-bold disabled:opacity-35 active:scale-[0.98]"
+          >
+            {bothLabel}
+          </button>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={onDeleteLocal}
+            className="connect-popup-btn-hide h-10 w-full rounded-2xl text-[12px] font-semibold disabled:opacity-35 active:scale-[0.98]"
+          >
+            {localLabel}
+          </button>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={onClose}
+            className="connect-popup-btn-cancel h-10 w-full rounded-2xl text-[12px] font-semibold disabled:opacity-35 active:scale-[0.98]"
+          >
+            {cancelLabel}
+          </button>
+        </div>
+      </div>
+    </ConnectCenterPopup>
+  );
+}

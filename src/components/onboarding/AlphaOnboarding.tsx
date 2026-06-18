@@ -6,6 +6,7 @@
  * mobile browsers regardless of parent layout constraints.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import { ChevronRight } from "lucide-react";
 import { AlphaScreenFrame } from "@/components/alpha/AlphaScreenFrame";
 import { cn } from "@/lib/utils";
@@ -44,54 +45,237 @@ if (typeof window !== "undefined") {
 /* Slide data                                                                   */
 /* ─────────────────────────────────────────────────────────────────────────── */
 
+type GradientMode = "bottom" | "top" | "both" | "none";
+
+type SlideLayout = {
+  justifyContent: CSSProperties["justifyContent"];
+  alignItems?: CSSProperties["alignItems"];
+  paddingTop?: string;
+  paddingBottom?: string;
+  paddingInline?: string;
+  textAlign?: CSSProperties["textAlign"];
+  gradient?: GradientMode;
+};
+
+type SlideAnimation = {
+  title: string;
+  titleDelay: string;
+  titleDuration?: string;
+  desc: string;
+  descDelay: string;
+  descDuration?: string;
+  descStyle?: "white" | "gold" | "muted";
+};
+
 type SlideConfig = {
   bg: string;
   title: string;
   description: string;
   objectPosition: string;
+  layout: SlideLayout;
+  animation: SlideAnimation;
+  isWelcome?: boolean;
   isFinal?: boolean;
 };
+
+const GOLD_GRADIENT =
+  "linear-gradient(135deg, #f5e6b8 0%, #e8c96a 28%, #d4af37 55%, #b8893a 100%)";
 
 const SLIDES: SlideConfig[] = [
   {
     bg: ONBOARDING_IMAGES.slide01,
     title: "مرحباً بك في Alpha",
     description: "بيتك القبطي الرقمي للكتاب المقدس والكنيسة والحياة الروحية.",
-    objectPosition: "center center",
+    objectPosition: "center 42%",
+    isWelcome: true,
+    layout: {
+      justifyContent: "flex-start",
+      alignItems: "center",
+      paddingTop: "clamp(42%, 46vh, 52%)",
+      paddingInline: "24px",
+      textAlign: "center",
+      gradient: "bottom",
+    },
+    animation: {
+      title: "alphaFadeUp",
+      titleDelay: "160ms",
+      desc: "alphaWelcomeGoldIn",
+      descDelay: "1080ms",
+      descStyle: "gold",
+    },
   },
   {
     bg: ONBOARDING_IMAGES.slide02,
     title: "كلمة الله بين يديك",
     description: "الكتاب المقدس، الأجبية، القطمارس، السنكسار والخولاجي في مكان واحد.",
-    objectPosition: "center center",
+    objectPosition: "center 38%",
+    layout: {
+      justifyContent: "flex-end",
+      alignItems: "center",
+      paddingBottom: "28px",
+      paddingInline: "24px",
+      textAlign: "center",
+      gradient: "bottom",
+    },
+    animation: {
+      title: "alphaRevealBlur",
+      titleDelay: "120ms",
+      titleDuration: "680ms",
+      desc: "alphaSlideInRTL",
+      descDelay: "420ms",
+      descDuration: "620ms",
+      descStyle: "muted",
+    },
   },
   {
     bg: ONBOARDING_IMAGES.slide03,
     title: "كنيستك معاك أينما كنت",
     description: "تواصل مع الكاهن والخدام وشارك حياة كنيستك اليومية.",
-    objectPosition: "center center",
+    objectPosition: "center 32%",
+    layout: {
+      justifyContent: "flex-start",
+      alignItems: "center",
+      paddingTop: "clamp(10%, 12vh, 16%)",
+      paddingInline: "24px",
+      textAlign: "center",
+      gradient: "top",
+    },
+    animation: {
+      title: "alphaDriftDown",
+      titleDelay: "100ms",
+      titleDuration: "640ms",
+      desc: "alphaFadeScale",
+      descDelay: "380ms",
+      descDuration: "560ms",
+      descStyle: "white",
+    },
   },
   {
     bg: ONBOARDING_IMAGES.slide04,
     title: "رحلتك الروحية تنمو معك",
     description: "تابع قراءاتك وصلواتك وتقدمك الروحي يوماً بعد يوم.",
-    objectPosition: "center center",
+    objectPosition: "center 36%",
+    layout: {
+      justifyContent: "flex-start",
+      alignItems: "flex-end",
+      paddingTop: "clamp(9%, 11vh, 14%)",
+      paddingInline: "28px",
+      textAlign: "right",
+      gradient: "top",
+    },
+    animation: {
+      title: "alphaLightSweep",
+      titleDelay: "140ms",
+      titleDuration: "720ms",
+      desc: "alphaFadeUp",
+      descDelay: "460ms",
+      descDuration: "580ms",
+      descStyle: "muted",
+    },
   },
   {
     bg: ONBOARDING_IMAGES.slide05,
     title: "Ⲁ أهلاً بك في Alpha Ⲱ",
     description: "بيتك القبطي الرقمي",
-    objectPosition: "center center",
+    objectPosition: "center 40%",
     isFinal: true,
+    layout: {
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingTop: "clamp(14%, 18vh, 22%)",
+      paddingBottom: "16px",
+      paddingInline: "24px",
+      textAlign: "center",
+      gradient: "both",
+    },
+    animation: {
+      title: "alphaCrownReveal",
+      titleDelay: "180ms",
+      titleDuration: "820ms",
+      desc: "alphaSoftGlow",
+      descDelay: "560ms",
+      descDuration: "640ms",
+      descStyle: "gold",
+    },
   },
 ];
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Shared text styles                                                           */
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+function descColor(style: SlideAnimation["descStyle"]): CSSProperties {
+  if (style === "gold") {
+    return {
+      background: GOLD_GRADIENT,
+      WebkitBackgroundClip: "text",
+      WebkitTextFillColor: "transparent",
+      backgroundClip: "text",
+      filter: "drop-shadow(0 2px 10px rgba(212,175,55,0.5))",
+    };
+  }
+  if (style === "muted") {
+    return { color: "rgba(255,255,255,0.82)" };
+  }
+  return { color: "rgba(255,255,255,0.9)" };
+}
+
+function animStyle(
+  name: string,
+  delay: string,
+  duration = "560ms",
+): CSSProperties {
+  return { animation: `${name} ${duration} ${delay} cubic-bezier(0.22, 1, 0.36, 1) both` };
+}
+
+function SlideGradient({ mode }: { mode: GradientMode }) {
+  if (mode === "none") return null;
+
+  return (
+    <>
+      {(mode === "top" || mode === "both") && (
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            top: 0,
+            height: "42%",
+            background:
+              "linear-gradient(to bottom, rgba(3,1,0,0.88) 0%, rgba(3,1,0,0.45) 55%, transparent 100%)",
+            zIndex: 10,
+            pointerEvents: "none",
+          }}
+        />
+      )}
+      {(mode === "bottom" || mode === "both") && (
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: mode === "both" ? "48%" : "58%",
+            background:
+              mode === "both"
+                ? "linear-gradient(to top, rgba(3,1,0,0.92) 0%, rgba(3,1,0,0.5) 45%, transparent 100%)"
+                : "linear-gradient(to top, rgba(3,1,0,0.94) 0%, rgba(3,1,0,0.62) 40%, rgba(3,1,0,0.12) 72%, transparent 100%)",
+            zIndex: 10,
+            pointerEvents: "none",
+          }}
+        />
+      )}
+    </>
+  );
+}
 
 /* ─────────────────────────────────────────────────────────────────────────── */
 /* Component                                                                    */
 /* ─────────────────────────────────────────────────────────────────────────── */
 
 export function AlphaOnboarding() {
-  // const navigate = useNavigate(); // DEV: unused until persistence re-enabled
   const [current, setCurrent] = useState(0);
   const [animKey, setAnimKey] = useState(0);
   const [exiting, setExiting] = useState(false);
@@ -108,16 +292,10 @@ export function AlphaOnboarding() {
   const goNext = useCallback(() => goTo(current + 1), [current, goTo]);
   const goPrev = useCallback(() => goTo(current - 1), [current, goTo]);
 
-  /* ── DEV: loop back instead of navigating away ── */
   const finish = useCallback((_dest: "/register" | "/login" | "/home") => {
-    // TODO: Re-enable onboarding completion persistence after final approval.
-    //   markOnboardingDone();
-    //   setExiting(true);
-    //   setTimeout(() => navigate({ to: _dest }), 400);
     goTo(0);
   }, [goTo]);
 
-  /* ── Pointer swipe ── */
   const onPtrDown = (e: React.PointerEvent) => {
     ptrX.current = e.clientX;
     ptrY.current = e.clientY;
@@ -132,7 +310,6 @@ export function AlphaOnboarding() {
     ptrX.current = null;
   };
 
-  /* ── Keyboard ── */
   useEffect(() => {
     const fn = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") goNext();
@@ -145,9 +322,9 @@ export function AlphaOnboarding() {
   const slide  = SLIDES[current]!;
   const isLast = !!slide.isFinal;
 
-  /* Safe area inset bottom, used for content padding above bottom controls */
   const safeBot = "max(24px, env(safe-area-inset-bottom))";
   const safeBotContent = isLast ? safeBot : `calc(${safeBot} + 72px)`;
+  const gradientMode = slide.layout.gradient ?? "bottom";
 
   return (
     <AlphaScreenFrame
@@ -158,7 +335,6 @@ export function AlphaOnboarding() {
       onPointerDown={onPtrDown}
       onPointerUp={onPtrUp}
     >
-        {/* ── Background — HQ public images, cover, no zoom/filter ── */}
         {SLIDES.map((s, i) => (
           <div
             key={s.bg}
@@ -190,21 +366,8 @@ export function AlphaOnboarding() {
           </div>
         ))}
 
-        {/* ── Bottom gradient for text readability ── */}
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            left: 0, right: 0, bottom: 0,
-            height: "58%",
-            background:
-              "linear-gradient(to top, rgba(3,1,0,0.94) 0%, rgba(3,1,0,0.62) 40%, rgba(3,1,0,0.12) 72%, transparent 100%)",
-            zIndex: 10,
-            pointerEvents: "none",
-          }}
-        />
+        <SlideGradient mode={gradientMode} />
 
-        {/* ── Slide text content ── */}
         <div
           style={{
             position: "absolute",
@@ -216,13 +379,14 @@ export function AlphaOnboarding() {
             paddingBottom: safeBotContent,
           }}
         >
-          {isLast
-            ? <FinalSlide key={`f-${animKey}`} slide={slide} onFinish={finish} />
-            : <ContentSlide key={`c-${animKey}`} slide={slide} />
+          {slide.isWelcome
+            ? <WelcomeSlide key={`w-${animKey}`} slide={slide} />
+            : isLast
+              ? <FinalSlide key={`f-${animKey}`} slide={slide} onFinish={finish} />
+              : <ContentSlide key={`c-${animKey}`} slide={slide} />
           }
         </div>
 
-        {/* ── Bottom bar (slides 1–4) ── */}
         {!isLast && (
           <div
             style={{
@@ -296,7 +460,6 @@ export function AlphaOnboarding() {
           </div>
         )}
 
-        {/* ── Exit fade overlay ── */}
         <div
           aria-hidden
           style={{
@@ -314,42 +477,68 @@ export function AlphaOnboarding() {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
-/* Slides 1–4 — text floating in lower third, no container                    */
+/* Slide 1 — Welcome: original text, staged grow under the church             */
 /* ─────────────────────────────────────────────────────────────────────────── */
 
-function ContentSlide({ slide }: { slide: SlideConfig }) {
+function WelcomeSlide({ slide }: { slide: SlideConfig }) {
+  const { layout, animation } = slide;
+  const welcomePrefix = slide.title.replace(/\s*Alpha\s*$/, "").trim();
+
   return (
     <div
       style={{
         flex: 1,
         display: "flex",
         flexDirection: "column",
-        justifyContent: "flex-end",
-        padding: "0 24px 20px",
-        textAlign: "center",
+        justifyContent: layout.justifyContent,
+        alignItems: layout.alignItems ?? "center",
+        paddingTop: layout.paddingTop,
+        paddingBottom: layout.paddingBottom,
+        paddingLeft: layout.paddingInline,
+        paddingRight: layout.paddingInline,
+        textAlign: layout.textAlign ?? "center",
       }}
     >
-      <h2
+      <p
         style={{
-          fontSize: 27,
-          fontWeight: 800,
-          lineHeight: 1.35,
-          color: "#fff",
-          margin: "0 0 12px",
-          textShadow: "0 2px 14px rgba(0,0,0,0.9)",
-          animation: "alphaFadeUp 480ms 80ms ease-out both",
+          fontSize: 17,
+          fontWeight: 600,
+          lineHeight: 1.4,
+          color: "rgba(255,255,255,0.94)",
+          margin: 0,
+          letterSpacing: "0.03em",
+          textShadow: "0 2px 14px rgba(0,0,0,0.88)",
+          ...animStyle(animation.title, animation.titleDelay, "520ms"),
         }}
       >
-        {slide.title}
+        {welcomePrefix}
+      </p>
+
+      <h2
+        style={{
+          fontSize: "clamp(44px, 12vw, 58px)",
+          fontWeight: 800,
+          lineHeight: 1.05,
+          color: "#fff",
+          margin: "8px 0 0",
+          letterSpacing: "0.06em",
+          textShadow: "0 4px 22px rgba(0,0,0,0.92), 0 0 40px rgba(255,255,255,0.12)",
+          animation: "alphaWelcomeGrow 820ms 520ms cubic-bezier(0.22, 1, 0.36, 1) both",
+          transformOrigin: "center center",
+        }}
+      >
+        Alpha
       </h2>
+
       <p
         style={{
           fontSize: 15,
-          fontWeight: 500,
-          lineHeight: 1.7,
-          color: "rgba(255,255,255,0.85)",
-          margin: 0,
-          animation: "alphaFadeUp 480ms 180ms ease-out both",
+          fontWeight: 600,
+          lineHeight: 1.65,
+          margin: "14px 0 0",
+          maxWidth: 320,
+          ...descColor(animation.descStyle ?? "gold"),
+          ...animStyle(animation.desc, animation.descDelay, animation.descDuration ?? "760ms"),
         }}
       >
         {slide.description}
@@ -359,112 +548,186 @@ function ContentSlide({ slide }: { slide: SlideConfig }) {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
-/* Slide 5 — Final, no next arrow, CTAs near bottom                           */
+/* Slides 2–4 — per-slide layout + unique animation                             */
 /* ─────────────────────────────────────────────────────────────────────────── */
 
-function FinalSlide({ slide, onFinish }: {
-  slide: SlideConfig;
-  onFinish: (dest: "/register" | "/login" | "/home") => void;
-}) {
+function ContentSlide({ slide }: { slide: SlideConfig }) {
+  const { layout, animation } = slide;
+
   return (
     <div
       style={{
         flex: 1,
         display: "flex",
         flexDirection: "column",
-        justifyContent: "flex-end",
-        padding: "0 24px 16px",
+        justifyContent: layout.justifyContent,
+        alignItems: layout.alignItems ?? "center",
+        paddingTop: layout.paddingTop,
+        paddingBottom: layout.paddingBottom,
+        paddingLeft: layout.paddingInline,
+        paddingRight: layout.paddingInline,
+        textAlign: layout.textAlign ?? "center",
       }}
     >
-      {/* Title + description */}
-      <div style={{ textAlign: "center", marginBottom: 20 }}>
+      <h2
+        style={{
+          fontSize: layout.textAlign === "right" ? 26 : 27,
+          fontWeight: 800,
+          lineHeight: 1.35,
+          color: "#fff",
+          margin: "0 0 12px",
+          maxWidth: layout.textAlign === "right" ? 300 : undefined,
+          textShadow: "0 2px 14px rgba(0,0,0,0.9)",
+          ...animStyle(
+            animation.title,
+            animation.titleDelay,
+            animation.titleDuration,
+          ),
+        }}
+      >
+        {slide.title}
+      </h2>
+      <p
+        style={{
+          fontSize: 15,
+          fontWeight: 500,
+          lineHeight: 1.7,
+          margin: 0,
+          maxWidth: layout.textAlign === "right" ? 280 : 340,
+          ...descColor(animation.descStyle ?? "muted"),
+          ...animStyle(
+            animation.desc,
+            animation.descDelay,
+            animation.descDuration,
+          ),
+        }}
+      >
+        {slide.description}
+      </p>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Slide 5 — Final: text in sky, CTAs at bottom                                 */
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+function FinalSlide({ slide, onFinish }: {
+  slide: SlideConfig;
+  onFinish: (dest: "/register" | "/login" | "/home") => void;
+}) {
+  const { layout, animation } = slide;
+
+  return (
+    <div
+      style={{
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: layout.justifyContent,
+        alignItems: layout.alignItems ?? "center",
+        paddingTop: layout.paddingTop,
+        paddingBottom: layout.paddingBottom,
+        paddingLeft: layout.paddingInline,
+        paddingRight: layout.paddingInline,
+      }}
+    >
+      <div style={{ textAlign: layout.textAlign ?? "center", width: "100%" }}>
         <h2
           style={{
             fontSize: 26,
             fontWeight: 800,
             color: "#fff",
-            margin: "0 0 8px",
-            textShadow: "0 2px 12px rgba(0,0,0,0.9)",
-            animation: "alphaFadeUp 480ms 80ms ease-out both",
+            margin: "0 0 10px",
+            textShadow: "0 2px 16px rgba(0,0,0,0.9)",
+            ...animStyle(
+              animation.title,
+              animation.titleDelay,
+              animation.titleDuration,
+            ),
           }}
         >
           {slide.title}
         </h2>
         <p
           style={{
-            fontSize: 14,
-            fontWeight: 500,
-            color: "rgba(255,255,255,0.75)",
+            fontSize: 16,
+            fontWeight: 600,
             margin: 0,
-            animation: "alphaFadeUp 480ms 160ms ease-out both",
+            ...descColor(animation.descStyle ?? "gold"),
+            ...animStyle(
+              animation.desc,
+              animation.descDelay,
+              animation.descDuration,
+            ),
           }}
         >
           {slide.description}
         </p>
       </div>
 
-      {/* Primary CTA */}
-      <button
-        type="button"
-        onClick={() => onFinish("/register")}
-        style={{
-          width: "100%",
-          height: 52,
-          borderRadius: 16,
-          border: "none",
-          background: "linear-gradient(135deg, #d4a843 0%, #b8893a 100%)",
-          color: "#2a1a08",
-          fontSize: 15,
-          fontWeight: 700,
-          cursor: "pointer",
-          marginBottom: 10,
-          boxShadow: "0 10px 32px -10px rgba(212,168,67,0.75)",
-          animation: "alphaFadeUp 480ms 260ms ease-out both",
-        }}
-      >
-        إنشاء حساب
-      </button>
+      <div style={{ width: "100%", marginTop: "auto" }}>
+        <button
+          type="button"
+          onClick={() => onFinish("/register")}
+          style={{
+            width: "100%",
+            height: 52,
+            borderRadius: 16,
+            border: "none",
+            background: "linear-gradient(135deg, #d4a843 0%, #b8893a 100%)",
+            color: "#2a1a08",
+            fontSize: 15,
+            fontWeight: 700,
+            cursor: "pointer",
+            marginBottom: 10,
+            boxShadow: "0 10px 32px -10px rgba(212,168,67,0.75)",
+            animation: "alphaFadeUp 520ms 780ms ease-out both",
+          }}
+        >
+          إنشاء حساب
+        </button>
 
-      {/* Secondary CTA */}
-      <button
-        type="button"
-        onClick={() => onFinish("/login")}
-        style={{
-          width: "100%",
-          height: 52,
-          borderRadius: 16,
-          border: "1px solid rgba(255,255,255,0.3)",
-          background: "rgba(255,255,255,0.12)",
-          backdropFilter: "blur(8px)",
-          WebkitBackdropFilter: "blur(8px)",
-          color: "#fff",
-          fontSize: 15,
-          fontWeight: 700,
-          cursor: "pointer",
-          marginBottom: 10,
-          animation: "alphaFadeUp 480ms 340ms ease-out both",
-        }}
-      >
-        تسجيل الدخول
-      </button>
+        <button
+          type="button"
+          onClick={() => onFinish("/login")}
+          style={{
+            width: "100%",
+            height: 52,
+            borderRadius: 16,
+            border: "1px solid rgba(255,255,255,0.3)",
+            background: "rgba(255,255,255,0.12)",
+            backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)",
+            color: "#fff",
+            fontSize: 15,
+            fontWeight: 700,
+            cursor: "pointer",
+            marginBottom: 10,
+            animation: "alphaSlideInRTL 560ms 920ms cubic-bezier(0.22, 1, 0.36, 1) both",
+          }}
+        >
+          تسجيل الدخول
+        </button>
 
-      {/* Guest */}
-      <button
-        type="button"
-        onClick={() => onFinish("/home")}
-        style={{
-          background: "none",
-          border: "none",
-          color: "rgba(255,255,255,0.55)",
-          fontSize: 13,
-          fontWeight: 500,
-          cursor: "pointer",
-          padding: "6px 0",
-          animation: "alphaFadeUp 480ms 420ms ease-out both",
-        }}
-      >
-        الدخول كضيف
-      </button>
+        <button
+          type="button"
+          onClick={() => onFinish("/home")}
+          style={{
+            width: "100%",
+            background: "none",
+            border: "none",
+            color: "rgba(255,255,255,0.55)",
+            fontSize: 13,
+            fontWeight: 500,
+            cursor: "pointer",
+            padding: "6px 0",
+            animation: "alphaFadeScale 480ms 1060ms ease-out both",
+          }}
+        >
+          الدخول كضيف
+        </button>
+      </div>
     </div>
   );
 }

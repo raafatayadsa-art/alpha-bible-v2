@@ -156,12 +156,12 @@ function SaintDetails() {
     return (
       <div dir="rtl" className="relative min-h-dvh bg-[#faf8f3]">
         <CopticWatermark />
-        <header className="relative z-10 mx-auto w-full max-w-[430px] px-4 flex items-center justify-between" style={{ paddingTop: "max(env(safe-area-inset-top), 14px)", paddingBottom: 8 }}>
+        <header className="relative z-10 mx-auto w-full max-w-[var(--alpha-content-narrow-width)] px-4 flex items-center justify-between" style={{ paddingTop: "max(env(safe-area-inset-top), 14px)", paddingBottom: 8 }}>
           <BackButton compact to="/synaxarium" />
           <h1 className="font-arabic-serif text-[15px] font-extrabold text-[#3a2a18]">سيرة قديس</h1>
           <span className="w-11" />
         </header>
-        <main className="mx-auto w-full max-w-[430px] px-4 py-16 text-center text-[13px] text-[#6a543a]">
+        <main className="mx-auto w-full max-w-[var(--alpha-content-narrow-width)] px-4 py-16 text-center text-[13px] text-[#6a543a]">
           جاري تحميل السيرة...
         </main>
         <BottomDock />
@@ -173,12 +173,12 @@ function SaintDetails() {
     return (
       <div dir="rtl" className="relative min-h-dvh bg-[#faf8f3]">
         <CopticWatermark />
-        <header className="relative z-10 mx-auto w-full max-w-[430px] px-4 flex items-center justify-between" style={{ paddingTop: "max(env(safe-area-inset-top), 14px)", paddingBottom: 8 }}>
+        <header className="relative z-10 mx-auto w-full max-w-[var(--alpha-content-narrow-width)] px-4 flex items-center justify-between" style={{ paddingTop: "max(env(safe-area-inset-top), 14px)", paddingBottom: 8 }}>
           <BackButton compact to="/synaxarium" />
           <h1 className="font-arabic-serif text-[15px] font-extrabold text-[#3a2a18]">سيرة قديس</h1>
           <span className="w-11" />
         </header>
-        <main className="mx-auto w-full max-w-[430px] px-4 py-10">
+        <main className="mx-auto w-full max-w-[var(--alpha-content-narrow-width)] px-4 py-10">
           <GlassSurface className="p-8 bg-white border-[#ead9b1] text-center">
             <CopticCross className="mx-auto text-[#b8893a]" size={28} />
             <h2 className="font-arabic-serif text-[18px] font-extrabold text-[#3a2a18] mt-4">
@@ -345,7 +345,7 @@ function SaintDetails() {
 
       {/* Header */}
       <header
-        className="relative z-10 mx-auto w-full max-w-[430px] px-4 flex items-center justify-between"
+        className="relative z-10 mx-auto w-full max-w-[var(--alpha-content-narrow-width)] px-4 flex items-center justify-between"
         style={{ paddingTop: "max(env(safe-area-inset-top), 14px)", paddingBottom: 8 }}
       >
         <BackButton compact to="/synaxarium" />
@@ -381,7 +381,7 @@ function SaintDetails() {
       </header>
 
       <main
-        className="relative z-10 mx-auto w-full max-w-[430px] px-4"
+        className="relative z-10 mx-auto w-full max-w-[var(--alpha-content-narrow-width)] px-4"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 120px)" }}
       >
         {/* HERO */}

@@ -787,7 +787,7 @@ function PrayerReader() {
         "relative flex h-dvh flex-col overflow-hidden transition-colors",
         dark
           ? "bg-[#08131f] text-[#e8e2cf]"
-          : "bg-[radial-gradient(120%_60%_at_50%_-10%,#fff5dd_0%,#fbeac6_45%,#f3d9a5_100%)] text-[#3a2410]",
+          : "bg-[#f4ead8] text-[#3a2410]",
       )}
     >
       <CopticWatermark tone={dark ? "dark" : "light"} />
@@ -799,7 +799,7 @@ function PrayerReader() {
         )}
         style={{ paddingTop: "max(env(safe-area-inset-top), 0px)" }}
       >
-        <div className="relative mx-auto flex max-w-[640px] items-center justify-between px-3 py-3">
+        <div className="relative mx-auto flex max-w-[var(--alpha-reader-max-width)] items-center justify-between px-3 py-3">
           <Link
             to="/agpeya"
             aria-label="رجوع للأجبية"
@@ -857,7 +857,7 @@ function PrayerReader() {
           <div
             ref={chipsRef}
             className={cn(
-              "mx-auto flex max-w-[640px] gap-1.5 overflow-x-auto px-3 pb-2 no-scrollbar",
+              "mx-auto flex max-w-[var(--alpha-reader-max-width)] gap-1.5 overflow-x-auto px-3 pb-2 no-scrollbar",
             )}
           >
             {sections.map((s, i) => {
@@ -939,7 +939,7 @@ function PrayerReader() {
         style={{ scrollBehavior: "smooth" }}
       >
         <article
-          className="relative mx-auto max-w-[640px] px-3 pb-44 pt-5 sm:px-5 font-arabic-serif"
+          className="relative mx-auto max-w-[var(--alpha-reader-max-width)] px-3 pb-44 pt-5 sm:px-5 font-arabic-serif"
           style={{ fontSize, lineHeight }}
         >
           {/* Draft notice */}
@@ -1058,7 +1058,7 @@ function PrayerReader() {
             dir="rtl"
             onClick={(e) => e.stopPropagation()}
             className={cn(
-              "w-full max-w-[420px] rounded-3xl border p-5 shadow-2xl",
+              "w-full max-w-[var(--alpha-dock-max-width)] rounded-3xl border p-5 shadow-2xl",
               dark ? "border-white/10 bg-[#0b1a2c] text-[#e8e2cf]" : "border-[#c79356]/35 bg-white text-[#3a2410]",
             )}
           >

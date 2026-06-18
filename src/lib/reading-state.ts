@@ -32,6 +32,7 @@ const KEYS = {
   current: "ab:reading:current",
   recent: "ab:reading:recent",
   saved: "ab:saved:verses",
+  savedChapters: "ab:saved:chapters",
   typo: "ab:reader:typography",
 };
 
@@ -100,6 +101,42 @@ export function useTypographyPrefs() {
 
 export function verseKey(book: string, chapter: number, verse: number) {
   return `${book}-${chapter}-${verse}`;
+}
+
+export function chapterKey(book: string, chapter: number) {
+  return `${book}-${chapter}`;
+}
+
+export type SavedChapter = {
+  id: string;
+  book: string;
+  bookName: string;
+  chapter: number;
+  savedAt: number;
+};
+
+export function useSavedChapters() {
+  const [list, setList] = useLSValue<SavedChapter[]>(KEYS.savedChapters, []);
+
+  const isChapterSaved = useCallback(
+    (id: string) => list.some((c) => c.id === id),
+    [list],
+  );
+
+  const toggleChapter = useCallback(
+    (c: Omit<SavedChapter, "savedAt" | "id"> & { id?: string }) => {
+      const id = c.id ?? chapterKey(c.book, c.chapter);
+      const exists = list.some((x) => x.id === id);
+      const next = exists
+        ? list.filter((x) => x.id !== id)
+        : [{ ...c, id, savedAt: Date.now() } as SavedChapter, ...list];
+      setList(next);
+      return !exists;
+    },
+    [list, setList],
+  );
+
+  return { savedChapters: list, isChapterSaved, toggleChapter };
 }
 
 export function useSavedVerses() {

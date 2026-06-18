@@ -4,7 +4,7 @@ import { LAB_DEMO_POSTS } from "./mock-posts";
 export function ChurchFeedLabPage() {
   return (
     <div dir="rtl" className="min-h-screen bg-[#f4ead8] pb-12">
-      <div className="mx-auto max-w-[440px] px-3 pt-4">
+      <div className="mx-auto max-w-[var(--alpha-content-max-width)] px-3 pt-4">
         <p className="rounded-2xl border border-dashed border-[#7a5fc9]/40 bg-[#7a5fc9]/10 px-3 py-2 text-center text-[11px] font-semibold text-[#5a3d8a]">
           Experimental Page
           <br />

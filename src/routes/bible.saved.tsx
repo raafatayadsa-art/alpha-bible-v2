@@ -5,6 +5,9 @@ import { displayName } from "@/lib/bible-books";
 
 export const Route = createFileRoute("/bible/saved")({
   ssr: false,
+  validateSearch: (search: Record<string, unknown>) => ({
+    from: typeof search.from === "string" ? search.from : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "الآيات المحفوظة — Alpha Bible" },
@@ -16,22 +19,14 @@ export const Route = createFileRoute("/bible/saved")({
 
 function SavedVersesPage() {
   const { saved } = useSavedVerses();
+  const { from } = Route.useSearch();
+  const backTo = from === "bible-2" ? "/bible-2" : "/bible";
 
   return (
     <main dir="rtl" className="relative min-h-screen w-full overflow-x-hidden bg-[#faf8f3]">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-0"
-        style={{
-          background:
-            "radial-gradient(120% 50% at 50% 0%, rgba(255,231,184,0.55), transparent 60%)," +
-            "radial-gradient(70% 60% at 0% 80%, rgba(214,168,98,0.18), transparent 65%)",
-        }}
-      />
-
-      <div className="relative mx-auto w-full max-w-[440px] px-4 pt-[max(env(safe-area-inset-top),12px)] pb-36">
+      <div className="relative mx-auto w-full max-w-[var(--alpha-content-max-width)] px-4 pt-[max(env(safe-area-inset-top),12px)] pb-36">
         <header className="flex items-center justify-between gap-2 pt-2">
-          <BackButton to="/bible" compact tone="light" />
+          <BackButton to={backTo} compact tone="light" />
           <h1 className="font-arabic-serif text-[18px] font-bold text-[#3a2a18]">الآيات المحفوظة</h1>
           <span className="w-9" aria-hidden />
         </header>

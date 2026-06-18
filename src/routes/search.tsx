@@ -4,6 +4,15 @@ import { useQuery } from "@tanstack/react-query";
 import { Search, X, BookOpen, HandHeart, ScrollText, Cross, CalendarHeart, Sparkles, ArrowLeft } from "lucide-react";
 import { BookIcon } from "@/components/bible/BookIcon";
 import { resolveBookId } from "@/lib/bible-icons";
+import { booksQueryOptions } from "@/lib/bible";
+import { displayName } from "@/lib/bible-books";
+import {
+  BIBLE_SEARCH_HINTS,
+  hasBibleBookResult,
+  includesBookQuery,
+  resolveCatalogBook,
+  bibleBookResultId,
+} from "@/features/search/bible-book-search";
 import { FEASTS } from "@/features/feasts/data";
 import { AGPEYA_PRAYERS } from "@/features/agpeya/data";
 import { katamerosDayQueryOptions } from "@/features/katameros";
@@ -13,6 +22,9 @@ import type { Saint } from "@/features/synaxarium/types";
 
 export const Route = createFileRoute("/search")({
   ssr: false,
+  validateSearch: (search: Record<string, unknown>) => ({
+    q: typeof search.q === "string" ? search.q : "",
+  }),
   head: () => ({
     meta: [
       { title: "ابحث في Alpha Coptic" },
@@ -61,21 +73,6 @@ const SCOPES: { id: Scope; label: string; placeholder: string }[] = [
 
 const POPULAR = ["يوحنا", "القيامة", "صلاة الشكر", "الأنبا أنطونيوس", "القديسة العذراء", "المزمور"];
 
-const BIBLE_HINTS = [
-  { title: "إنجيل يوحنا",   to: "/يوحنا" },
-  { title: "إنجيل متى",     to: "/متى" },
-  { title: "إنجيل مرقس",    to: "/مرقس" },
-  { title: "إنجيل لوقا",    to: "/لوقا" },
-  { title: "سفر المزامير",  to: "/المزامير" },
-  { title: "سفر التكوين",   to: "/التكوين" },
-  { title: "سفر الخروج",    to: "/الخروج" },
-  { title: "سفر إشعياء",    to: "/إشعياء" },
-  { title: "سفر الأمثال",   to: "/الأمثال" },
-  { title: "سفر أعمال الرسل", to: "/أعمال" },
-  { title: "رسالة رومية",   to: "/رومية" },
-  { title: "سفر الرؤيا",    to: "/الرؤيا" },
-];
-
 const RECENT_KEY = "alpha:search:recent";
 
 type Result = {
@@ -84,22 +81,43 @@ type Result = {
   title: string;
   subtitle?: string;
   to: string;
+  params?: Record<string, string>;
 };
 
 function searchAll(
   q: string,
   katamerosReadings: DailyReading[] = [],
   synaxariumSaints: Saint[] = [],
+  books: string[] = [],
 ): Result[] {
   const nq = norm(q);
   if (!nq) return [];
   const out: Result[] = [];
 
-  // Bible (book hints only — actual verse search lives inside /bible)
-  for (const b of BIBLE_HINTS) {
-    if (norm(b.title).includes(nq)) {
-      out.push({ id: `b:${b.title}`, category: "bible", title: b.title, subtitle: "اقرأ الأصحاحات", to: b.to });
+  for (const book of books) {
+    if (includesBookQuery(book, q)) {
+      out.push({
+        id: bibleBookResultId(book),
+        category: "bible",
+        title: displayName(book),
+        subtitle: "اقرأ الإصحاحات",
+        to: "/$book",
+        params: { book },
+      });
     }
+  }
+  for (const hint of BIBLE_SEARCH_HINTS) {
+    if (!norm(`${hint.title} ${hint.book}`).includes(nq)) continue;
+    const book = resolveCatalogBook(hint.book, books);
+    if (hasBibleBookResult(out, book)) continue;
+    out.push({
+      id: `hint:${book}`,
+      category: "bible",
+      title: displayName(book),
+      subtitle: "اقرأ الإصحاحات",
+      to: "/$book",
+      params: { book },
+    });
   }
 
   // Agpeya
@@ -195,12 +213,18 @@ const CATEGORY_META: Record<Category, { label: string; icon: typeof BookOpen; ic
 
 function SearchHub() {
   const navigate = useNavigate();
+  const { q: initialQ } = Route.useSearch();
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQ);
   const [scope, setScope] = useState<Scope>("all");
   const [recent, setRecent] = useState<string[]>([]);
   const { data: katamerosDay } = useQuery(katamerosDayQueryOptions("today"));
   const { data: synaxariumSaints = [] } = useQuery(synaxariumSaintsQueryOptions());
+  const { data: books = [] } = useQuery(booksQueryOptions());
+
+  useEffect(() => {
+    if (initialQ) setQuery(initialQ);
+  }, [initialQ]);
 
   useEffect(() => {
     setRecent(loadRecent());
@@ -209,9 +233,9 @@ function SearchHub() {
   }, []);
 
   const results = useMemo(() => {
-    const all = searchAll(query, katamerosDay?.readings ?? [], synaxariumSaints);
+    const all = searchAll(query, katamerosDay?.readings ?? [], synaxariumSaints, books);
     return scope === "all" ? all : all.filter((r) => r.category === scope);
-  }, [query, scope, katamerosDay, synaxariumSaints]);
+  }, [query, scope, katamerosDay, synaxariumSaints, books]);
 
   const grouped = useMemo(() => {
     const map = new Map<Category, Result[]>();
@@ -244,7 +268,7 @@ function SearchHub() {
         className="sticky top-0 z-20 backdrop-blur-xl bg-[#FAF8F3]/85 border-b border-[#ead9b1]/60"
         style={{ paddingTop: "max(env(safe-area-inset-top), 10px)" }}
       >
-        <div className="mx-auto max-w-[520px] px-4 pb-3">
+        <div className="mx-auto w-full max-w-[var(--alpha-content-max-width)] px-4 pb-3">
           <div className="flex items-center justify-between mb-3">
             <button
               type="button"
@@ -322,7 +346,7 @@ function SearchHub() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-[520px] px-4 pt-5">
+      <main className="mx-auto w-full max-w-[var(--alpha-content-max-width)] px-4 pt-5">
         {!query.trim() ? (
           <BeforeSearch
             recent={recent}
@@ -433,6 +457,7 @@ function ResultsView({
                   <li key={r.id}>
                     <Link
                       to={r.to as any}
+                      params={r.params as any}
                       onClick={onCommit}
                       className="block rounded-2xl bg-white/90 border border-[#ead9b1] px-4 py-3 shadow-[0_8px_18px_-14px_rgba(120,80,30,0.4),inset_0_1px_0_rgba(255,255,255,0.85)] active:scale-[0.99] transition-transform"
                     >
@@ -440,7 +465,7 @@ function ResultsView({
                         {c === "bible" && (
                           <div className="h-11 w-11 shrink-0 rounded-xl bg-[#fbf3e1] border border-[#ead9b1] p-1">
                             <BookIcon
-                              bookId={resolveBookId(r.title) ?? resolveBookId(r.to.replace(/^\//, ""))}
+                              bookId={resolveBookId(r.title) ?? resolveBookId(r.params?.book ?? "")}
                               book={r.title}
                               className="h-full w-full"
                             />

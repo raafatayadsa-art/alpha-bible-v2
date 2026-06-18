@@ -1,7 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState, useCallback } from "react";
 import {
-  Menu, Search, Sparkles, Share2, Bookmark, ChevronLeft,
+  Menu, Sparkles, Share2, Bookmark, ChevronLeft,
   Home as HomeIcon, HandHeart, Users, User as UserIcon,
   Play, Pause, X, Link2, Calendar,
 } from "lucide-react";
@@ -9,12 +9,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { useAlphaNavigation } from "@/components/navigation/AlphaNavigationProvider";
 import { AlphaNotificationButton } from "@/components/navigation/AlphaNotificationButton";
+import { AlphaConnectHomeCard } from "@/components/alpha/AlphaConnectHomeCard";
+import { AlphaExpandableSearchBar } from "@/components/navigation/AlphaExpandableSearchBar";
+import { HomeVerseHeroStack } from "@/components/home/HomeVerseHeroStack";
+import { HomeJourneyDiscover, type JourneyDiscoverItem } from "@/components/home/HomeJourneyDiscover";
+import {
+  ALPHA_WEBSITE_URL,
+  alphaShareText,
+  buildAlphaShareImage,
+  type AlphaShareRequest,
+} from "@/lib/alpha-share-brand";
 
-// Hero stack art
-import artVerse from "@/assets/home/art-verse.jpg";
+// Hero stack art (daily section)
 import artReadings from "@/assets/home/art-readings.jpg";
-import artSaint from "@/assets/home/art-saint.jpg";
-import artFeast from "@/assets/home/art-feast.jpg";
 
 // Primary cards
 import cardBible from "@/assets/home/card-bible.jpg";
@@ -101,89 +108,12 @@ function useSavedSet(key: string) {
   return { set, toggle };
 }
 
-// ===== Premium share with auto-generated branded image =====
 // Cache generated share images by content key so repeat shares are instant.
 const shareImageCache = new Map<string, Blob>();
 const shareImageInflight = new Map<string, Promise<Blob | null>>();
 
-async function buildShareImage(opts: {
-  title: string;
-  body: string;
-  meta?: string;
-  imageSrc: string;
-  accent: string;
-}): Promise<Blob | null> {
-  const { title, body, meta, imageSrc, accent } = opts;
-  const img = await loadImage(imageSrc);
-  const W = 1080, H = 1350;
-  const canvas = document.createElement("canvas");
-  canvas.width = W; canvas.height = H;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("no ctx");
-  // cover-fit background
-  const ratio = Math.max(W / img.width, H / img.height);
-  const dw = img.width * ratio, dh = img.height * ratio;
-  ctx.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
-  // dark gradient overlay
-  const grad = ctx.createLinearGradient(0, 0, 0, H);
-  grad.addColorStop(0, "rgba(0,0,0,0.15)");
-  grad.addColorStop(0.55, "rgba(0,0,0,0.45)");
-  grad.addColorStop(1, "rgba(0,0,0,0.92)");
-  ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
-  // accent glow
-  const halo = ctx.createRadialGradient(W / 2, H * 0.4, 50, W / 2, H * 0.4, W * 0.7);
-  halo.addColorStop(0, `${accent}55`);
-  halo.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = halo; ctx.fillRect(0, 0, W, H);
-  // RTL text
-  ctx.direction = "rtl";
-  ctx.textAlign = "right";
-  ctx.fillStyle = "#f0d78c";
-  ctx.font = "bold 38px system-ui, -apple-system, 'SF Arabic'";
-  ctx.fillText(title, W - 70, H - 480);
-  // body
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "bold 54px system-ui, -apple-system, 'SF Arabic'";
-  const lines = wrapText(ctx, body, W - 140);
-  let y = H - 400;
-  for (const line of lines.slice(0, 5)) {
-    ctx.fillText(line, W - 70, y);
-    y += 78;
-  }
-  if (meta) {
-    ctx.fillStyle = "#e7c97a";
-    ctx.font = "bold 32px system-ui, -apple-system, 'SF Arabic'";
-    ctx.fillText(meta, W - 70, y + 20);
-  }
-  // brand strip
-  ctx.fillStyle = "rgba(255,255,255,0.08)";
-  ctx.fillRect(0, H - 130, W, 130);
-  ctx.fillStyle = "#f0d78c";
-  ctx.font = "bold 36px system-ui";
-  ctx.textAlign = "right";
-  ctx.fillText("ألفا — التطبيق القبطي", W - 70, H - 75);
-  ctx.fillStyle = "rgba(255,255,255,0.7)";
-  ctx.font = "26px system-ui";
-  ctx.fillText("حمّل من App Store و Google Play", W - 70, H - 35);
-  // Ⲁ Ⲱ
-  ctx.fillStyle = `${accent}33`;
-  ctx.font = "bold 220px serif";
-  ctx.textAlign = "left";
-  ctx.fillText("Ⲁ", 40, 220);
-  ctx.textAlign = "right";
-  ctx.fillText("Ⲱ", W - 40, H - 200);
-  return await new Promise<Blob | null>((res) => canvas.toBlob(res, "image/jpeg", 0.92));
-}
+type ShareRequest = AlphaShareRequest;
 
-type ShareRequest = {
-  title: string;
-  body: string;
-  meta?: string;
-  imageSrc: string;
-  accent: string;
-};
-
-// Open a global share sheet; rendered by HomeScreen.
 function openShareSheet(req: ShareRequest) {
   window.dispatchEvent(new CustomEvent<ShareRequest>("alpha-share-open", { detail: req }));
 }
@@ -194,7 +124,7 @@ async function getShareBlob(req: ShareRequest): Promise<Blob | null> {
   if (cached) return cached;
   let pending = shareImageInflight.get(cacheKey);
   if (!pending) {
-    pending = buildShareImage(req).then((b) => {
+    pending = buildAlphaShareImage(req).then((b) => {
       if (b) shareImageCache.set(cacheKey, b);
       shareImageInflight.delete(cacheKey);
       return b;
@@ -205,33 +135,7 @@ async function getShareBlob(req: ShareRequest): Promise<Blob | null> {
 }
 
 function shareText(req: ShareRequest) {
-  return `${req.title}\n\n${req.body}${req.meta ? `\n— ${req.meta}` : ""}\n\nحمّل تطبيق ألفا القبطي:\nApp Store: https://apps.apple.com/app/alpha-coptic\nGoogle Play: https://play.google.com/store/apps/details?id=app.alpha.coptic`;
-}
-
-const APP_URL = "https://alpha-bible.lovable.app";
-
-function loadImage(src: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = src;
-  });
-}
-
-function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number) {
-  const words = text.split(/\s+/);
-  const lines: string[] = [];
-  let line = "";
-  for (const w of words) {
-    const t = line ? `${line} ${w}` : w;
-    if (ctx.measureText(t).width > maxWidth && line) {
-      lines.push(line); line = w;
-    } else { line = t; }
-  }
-  if (line) lines.push(line);
-  return lines;
+  return alphaShareText(req);
 }
 
 // ===== Types =====
@@ -248,114 +152,42 @@ type HeroCard = {
 };
 
 // ===== Screen =====
+const HOME_ON_BG = "#5a1f2a";
+const HOME_ON_BG_MUTED = "#7a3944";
+
 function HomeScreen() {
   const greeting = useGreeting();
   const userName = "رافت";
+  const navigate = useNavigate();
+  const [searchExpanded, setSearchExpanded] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [notifCount] = useState(1); // kept for potential future Supabase real-time
   const { openNavHub } = useAlphaNavigation();
   const dockVisible = useHideOnScroll();
-  const [verse, setVerse] = useState<{ text: string; reference: string } | null>(null);
-  const { set: savedSet, toggle: toggleSaved } = useSavedSet("alpha.saved");
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const { data: dc } = await supabase.from("daily_content").select("*").limit(1).maybeSingle();
-        if (!cancelled && dc) {
-          const text = (dc as any).verse_text ?? (dc as any).text ?? (dc as any).content ?? (dc as any).body;
-          const reference = (dc as any).verse_reference ?? (dc as any).reference ?? (dc as any).title ?? "";
-          if (text) { setVerse({ text: String(text), reference: String(reference || "") }); return; }
-        }
-      } catch {}
-      try {
-        const { data: bv } = await supabase
-          .from("bible_verses")
-          .select("book_name,chapter_number,verse_number,verse_text")
-          .limit(1).maybeSingle();
-        if (!cancelled && bv) {
-          setVerse({
-            text: (bv as any).verse_text,
-            reference: `${(bv as any).book_name} ${(bv as any).chapter_number}:${(bv as any).verse_number}`,
-          });
-        }
-      } catch {}
-    })();
-    return () => { cancelled = true; };
+  const collapseHomeSearch = useCallback(() => {
+    setSearchExpanded(false);
+    setSearchQuery("");
   }, []);
 
-  const heroCards: HeroCard[] = [
-    {
-      id: "verse",
-      kind: "verse",
-      badge: "آية اليوم",
-      title: "آية اليوم",
-      body: verse?.text ?? "رَبَّنَا هُوَ مَلْجَأنَا وَقُوَّتَنَا، عَوْنًا فِي الضِّيقَاتِ جِدًّا.",
-      meta: verse?.reference || "مزامير 46:1",
-      image: artVerse,
-      accent: "#e7c97a",
-      to: "/books",
-    },
-    {
-      id: "readings",
-      kind: "readings",
-      badge: "قراءات اليوم",
-      title: "قطمارس اليوم",
-      body: "قراءات اليوم من القطمارس القبطي — رسائل البولس والكاثوليكون والإنجيل.",
-      meta: "اضغط للقراءة",
-      image: artReadings,
-      accent: "#d8a64f",
-      to: "/katameros",
-    },
-    {
-      id: "saint",
-      kind: "saint",
-      badge: "قديس اليوم",
-      title: "قديس اليوم",
-      body: "تعرّف على سيرة قديس اليوم من السنكسار القبطي وتأمّل في حياته.",
-      meta: "السنكسار",
-      image: artSaint,
-      accent: "#c98a3c",
-      to: "/synaxarium",
-    },
-    {
-      id: "feast",
-      kind: "feast",
-      badge: "مناسبة اليوم",
-      title: "مناسبة اليوم",
-      body: "اكتشف الأعياد والمناسبات القبطية لهذا اليوم، طقوسها وقراءاتها.",
-      meta: "المناسبات",
-      image: artFeast,
-      accent: "#d4a574",
-      to: "/feasts",
-    },
-    {
-      id: "prayer-requests",
-      kind: "saint",
-      badge: "طلبات الصلاة",
-      title: "طلبات الصلاة",
-      body: "شارك إخوتك في الصلاة، وأرسل طلبتك ليصلي عنك المؤمنون.",
-      meta: "اضغط للمشاركة",
-      image: dailyPrayer,
-      accent: "#a82747",
-      to: "/prayer-requests",
-    },
-  ];
+  const submitHomeSearch = useCallback(() => {
+    const q = searchQuery.trim();
+    void navigate({ to: "/search", search: q ? { q } : {} });
+    collapseHomeSearch();
+  }, [searchQuery, navigate, collapseHomeSearch]);
 
-
-
-
-  type PrimaryCard = { key: string; title: string; sub: string; image: string; to: string; accent: string; glyph: "Ⲁ" | "Ⲱ" };
+  type PrimaryCard = JourneyDiscoverItem;
   const primary: PrimaryCard[] = [
-    { key: "bible", title: "الكتاب المقدس", sub: "اقرأ كلمة الله", image: cardBible, to: "/bible", accent: "#8a6ec1", glyph: "Ⲁ" },
-    { key: "bible2", title: "الكتاب المقدس 2", sub: "تجربة القراءة الفاخرة", image: cardBible, to: "/bible-2", accent: "#d4af37", glyph: "Ⲁ" },
-    { key: "agpeya", title: "الأجبية", sub: "صلوات السبع ساعات", image: cardAgpeya, to: "/agpeya", accent: "#c98a3c", glyph: "Ⲱ" },
-    { key: "katameros", title: "القطمارس", sub: "قراءات اليوم", image: cardKatameros, to: "/katameros", accent: "#4a9e6e", glyph: "Ⲁ" },
-    { key: "synaxarium", title: "السنكسار", sub: "سير القديسين", image: cardSynaxarium, to: "/synaxarium", accent: "#a85450", glyph: "Ⲱ" },
-    { key: "church", title: "كنيستك معاك", sub: "خدمات وفعاليات", image: cardChurch, to: "/church", accent: "#5b8fd1", glyph: "Ⲁ" },
-    { key: "audio", title: "الصوتيات", sub: "ترانيم وقراءات", image: cardAudio, to: "/audio", accent: "#c44569", glyph: "Ⲱ" },
-    { key: "kids", title: "الأطفال", sub: "قصص وأنشطة", image: cardChildren, to: "/home", accent: "#e8b84a", glyph: "Ⲁ" },
-    { key: "meditation", title: "التأملات", sub: "رحلات روحية", image: cardMeditation, to: "/home", accent: "#5b8fd1", glyph: "Ⲱ" },
+    { key: "bible", title: "الكتاب المقدس", sub: "اقرأ كلمة الله", image: cardBible, to: "/bible", accent: "#8a6ec1" },
+    { key: "bible2", title: "الكتاب المقدس 2", sub: "تجربة القراءة الفاخرة", image: cardBible, to: "/bible-2", accent: "#d4af37" },
+    { key: "agpeya", title: "الأجبية", sub: "صلوات السبع ساعات", image: cardAgpeya, to: "/agpeya", accent: "#c98a3c" },
+    { key: "katameros", title: "القطمارس", sub: "قراءات اليوم", image: cardKatameros, to: "/katameros", accent: "#4a9e6e" },
+    { key: "synaxarium", title: "السنكسار", sub: "سير القديسين", image: cardSynaxarium, to: "/synaxarium", accent: "#a85450" },
+    { key: "church", title: "كنيستك معاك", sub: "خدمات وفعاليات", image: cardChurch, to: "/church", accent: "#5b8fd1" },
+    { key: "audio", title: "الصوتيات", sub: "ترانيم وقراءات", image: cardAudio, to: "/audio", accent: "#c44569" },
+    { key: "kids", title: "الأطفال", sub: "قصص وأنشطة", image: cardChildren, to: "/home", accent: "#e8b84a" },
+    { key: "meditation", title: "التأملات", sub: "رحلات روحية", image: cardMeditation, to: "/home", accent: "#5b8fd1" },
   ];
 
   type Daily = { key: string; title: string; sub: string; image: string; to: string; accent: string };
@@ -371,86 +203,69 @@ function HomeScreen() {
     <div dir="rtl" className="relative min-h-screen w-full overflow-x-hidden">
       <CopticWatermark />
 
-      <div className="relative mx-auto w-full max-w-[440px] px-4 pb-36">
+      <div className="relative mx-auto w-full max-w-[var(--alpha-content-max-width)] px-4 pb-36">
         {/* Top bar */}
-        <header className="flex items-center justify-between gap-2 pt-[max(env(safe-area-inset-top),12px)] pb-2">
+        <header className="flex items-center gap-2 pt-[max(env(safe-area-inset-top),12px)] pb-2">
           <button
             type="button"
             aria-label="القائمة"
             onClick={openNavHub}
-            className="grid h-11 w-11 place-items-center rounded-full border border-[#efe2c4] bg-white/70 backdrop-blur-xl shadow-[0_6px_14px_-10px_rgba(120,80,30,0.4)] active:scale-95 transition"
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-[#efe2c4] bg-white/70 backdrop-blur-xl shadow-[0_6px_14px_-10px_rgba(120,80,30,0.4)] active:scale-95 transition"
           >
             <Menu className="h-5 w-5 text-[#3a2a18]" />
           </button>
-          <div className="flex flex-col items-center min-w-0 flex-1">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <Sparkles className="h-3.5 w-3.5 text-[#b8893a] shrink-0" />
-              <h1 className="font-extrabold text-[15px] text-[#3a2a18] whitespace-nowrap [word-break:keep-all]">
+          <div
+            className={`flex min-w-0 flex-1 flex-col items-center overflow-hidden transition-[opacity,max-width] duration-200 ${
+              searchExpanded ? "pointer-events-none max-w-0 flex-none opacity-0" : ""
+            }`}
+          >
+            <div className="flex min-w-0 items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5 shrink-0" style={{ color: HOME_ON_BG }} />
+              <h1 className="whitespace-nowrap text-[15px] font-extrabold [word-break:keep-all]" style={{ color: HOME_ON_BG }}>
                 {greeting} يا {userName}
               </h1>
               <span className="text-[14px]">☀️</span>
             </div>
-            <p className="text-[11px] text-[#6a543a] mt-0.5">نعمة الرب معك اليوم</p>
+            <p className="mt-0.5 text-[11px]" style={{ color: HOME_ON_BG_MUTED }}>نعمة الرب معك اليوم</p>
           </div>
-          <div className="flex items-center gap-1.5">
-            <AlphaNotificationButton />
-            <Link to="/search" aria-label="بحث" className="grid h-11 w-11 place-items-center rounded-full border border-[#efe2c4] bg-white/70 backdrop-blur-xl shadow-[0_6px_14px_-10px_rgba(120,80,30,0.4)] active:scale-95 transition">
-              <Search className="h-5 w-5 text-[#3a2a18]" />
-            </Link>
+          <div
+            className={`flex items-center gap-1.5 ${searchExpanded ? "min-w-0 flex-1 justify-end" : "shrink-0"}`}
+          >
+            {!searchExpanded ? <AlphaNotificationButton /> : null}
+            <div className={`flex min-w-0 justify-end ${searchExpanded ? "w-full flex-1" : ""}`}>
+              <AlphaExpandableSearchBar
+                expanded={searchExpanded}
+                query={searchQuery}
+                inputRef={searchInputRef}
+                onExpand={() => setSearchExpanded(true)}
+                onCollapse={collapseHomeSearch}
+                onQueryChange={setSearchQuery}
+                onSubmit={submitHomeSearch}
+              />
+            </div>
           </div>
         </header>
 
-        {/* HERO CAROUSEL — same shared-progress infinite wheel as below */}
+        {/* HERO — fixed verse card + peeking cards behind */}
         <section className="mt-5">
-          <Coverflow
-            items={heroCards}
-            direction={1}
-            height={268}
-            cardWidthPct={86}
-            peekPct={62}
-            getKey={(c) => c.id}
-            renderCard={(c, isActive) => (
-              <HeroCardView
-                card={c}
-                index={0}
-                total={heroCards.length}
-                saved={savedSet.has(c.id)}
-                onToggleSaved={() => toggleSaved(c.id)}
-              />
-            )}
-          />
+          <HomeVerseHeroStack linkTo="/bible" onBrandedShare={openShareSheet} />
         </section>
 
-        {/* PRIMARY JOURNEY ALBUM — horizontal swipe, 2 cards + peek */}
-        <section className="mt-7">
-          <div className="mb-3 flex items-center justify-between px-1">
-            <h2 className="text-[14px] font-extrabold text-[#3a2a18] tracking-tight flex items-center gap-1.5">
-              <CopticCross className="text-[#b8893a]" size={14} />
-              اكتشف رحلتك اليوم
-            </h2>
-          </div>
-          <div
-            className="-mx-4 flex gap-2.5 overflow-x-auto overscroll-x-contain snap-x snap-mandatory scroll-smooth px-4 pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-            style={{ scrollPaddingInline: 16, WebkitOverflowScrolling: "touch" }}
-          >
-            {primary.map((c) => (
-              <Link
-                key={c.key}
-                to={c.to as any}
-                aria-label={c.title}
-                className="snap-start shrink-0 w-[calc((min(100vw,440px)-2rem-0.625rem)/2.35)] active:scale-[0.98] transition-transform"
-              >
-                <PrimaryArtCardCompact {...c} />
-              </Link>
-            ))}
-          </div>
+        {/* PRIMARY JOURNEY — premium discover cards */}
+        <HomeJourneyDiscover items={primary} />
+
+        {/* Alpha Connect gateway */}
+        <section className="mt-5 px-1">
+          <AlphaConnectHomeCard />
         </section>
 
         {/* DAILY — opposite-direction auto cover flow */}
         <section className="mt-5">
           <div className="mb-2.5 flex items-center justify-between px-1">
-            <h2 className="text-[14px] font-extrabold text-[#3a2a18] tracking-tight flex items-center gap-1.5">
-              <CopticCross className="text-[#b8893a]" size={14} />
+            <h2 className="text-[14px] font-extrabold tracking-tight flex items-center gap-1.5" style={{ color: HOME_ON_BG }}>
+              <span style={{ color: HOME_ON_BG }}>
+                <CopticCross size={14} />
+              </span>
               تابع رحلتك الروحية
             </h2>
           </div>
@@ -473,11 +288,13 @@ function HomeScreen() {
         {/* CHURCH NEWS — featured */}
         <section className="mt-4">
           <div className="mb-3 flex items-center justify-between px-1">
-            <h2 className="text-[14px] font-extrabold text-[#3a2a18] tracking-tight flex items-center gap-1.5">
-              <CopticCross className="text-[#b8893a]" size={14} />
+            <h2 className="text-[14px] font-extrabold tracking-tight flex items-center gap-1.5" style={{ color: HOME_ON_BG }}>
+              <span style={{ color: HOME_ON_BG }}>
+                <CopticCross size={14} />
+              </span>
               أخبار كنيستك
             </h2>
-            <span className="text-[11px] font-bold text-[#7a4a26]">عرض الكل</span>
+            <span className="text-[11px] font-bold" style={{ color: HOME_ON_BG_MUTED }}>عرض الكل</span>
           </div>
           <div className="flex flex-col gap-3.5">
             <FeaturedNewsCard
@@ -1075,68 +892,6 @@ function FeaturedNewsCard({
 }
 
 
-function PrimaryArtCardCompact({ title, sub, image, accent, glyph }: { title: string; sub: string; image: string; accent: string; glyph: "Ⲁ" | "Ⲱ" }) {
-  return (
-    <div
-      className="relative h-[148px] w-full overflow-hidden rounded-[20px] border border-white/20"
-      style={{
-        boxShadow: `0 16px 36px -18px rgba(60,40,16,0.45), 0 0 0 1px ${accent}28, inset 0 1px 0 rgba(255,255,255,0.16)`,
-        background: "#0a0612",
-      }}
-    >
-      <img src={image} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
-      <div
-        aria-hidden
-        className="absolute inset-0"
-        style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.04) 38%, rgba(0,0,0,0.62) 78%, rgba(0,0,0,0.92) 100%)" }}
-      />
-      <span aria-hidden className="pointer-events-none absolute top-2 left-3 select-none font-black leading-none" style={{ fontSize: 52, color: "rgba(255,255,255,0.09)" }}>{glyph}</span>
-      <div className="absolute inset-x-3.5 bottom-3 text-right">
-        <h3 className="text-[13.5px] font-extrabold leading-tight text-white line-clamp-1" style={{ textShadow: "0 2px 6px rgba(0,0,0,0.85)" }}>{title}</h3>
-        <p className="mt-0.5 text-[10.5px] font-medium text-white/85 line-clamp-1" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.7)" }}>{sub}</p>
-        <div
-          className="mt-1.5 inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[9.5px] font-bold text-white border"
-          style={{ background: `${accent}33`, borderColor: `${accent}70`, backdropFilter: "blur(6px)" }}
-        >
-          افتح
-          <ChevronLeft className="h-2.5 w-2.5" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function PrimaryArtCardFull({ title, sub, image, accent, glyph }: { title: string; sub: string; image: string; accent: string; glyph: "Ⲁ" | "Ⲱ" }) {
-  return (
-    <div
-      className="relative h-[212px] w-full overflow-hidden rounded-[26px] border border-white/15"
-      style={{
-        boxShadow: `0 28px 56px -22px rgba(0,0,0,0.85), 0 0 0 1px ${accent}33, inset 0 0 36px ${accent}26, inset 0 1px 0 rgba(255,255,255,0.18)`,
-        background: "#0a0612",
-      }}
-    >
-      <img src={image} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
-      <div
-        aria-hidden
-        className="absolute inset-0"
-        style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.05) 35%, rgba(0,0,0,0.65) 80%, rgba(0,0,0,0.95) 100%)" }}
-      />
-      <span aria-hidden className="pointer-events-none absolute top-3 left-4 select-none font-black leading-none" style={{ fontSize: 80, color: "rgba(255,255,255,0.10)" }}>{glyph}</span>
-      <div className="absolute inset-x-5 bottom-4 text-right">
-        <h3 className="text-[20px] font-extrabold leading-tight text-white" style={{ textShadow: "0 2px 8px rgba(0,0,0,0.85)" }}>{title}</h3>
-        <p className="mt-1 text-[12.5px] font-medium text-white/85" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.7)" }}>{sub}</p>
-        <div
-          className="mt-2.5 inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold text-white border"
-          style={{ background: `${accent}33`, borderColor: `${accent}80`, backdropFilter: "blur(6px)" }}
-        >
-          افتح
-          <ChevronLeft className="h-3 w-3" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ===== Floating Mini Player =====
 function MiniPlayer({ dockVisible }: { dockVisible: boolean }) {
   const [playing, setPlaying] = useState(false);
@@ -1161,7 +916,7 @@ function MiniPlayer({ dockVisible }: { dockVisible: boolean }) {
         opacity: 1,
       }}
     >
-      <div className="mx-auto w-full max-w-[440px] px-4">
+      <div className="mx-auto w-full max-w-[var(--alpha-content-max-width)] px-4">
         <div
           className="relative flex items-center gap-3 overflow-hidden rounded-[20px] border border-[#efe2c4] bg-gradient-to-r from-[#fbf3e1]/95 to-[#f4ead8]/95 px-2.5 py-2 backdrop-blur-2xl"
           style={{ boxShadow: "0 18px 36px -16px rgba(120,80,30,0.35), inset 0 1px 0 rgba(255,255,255,0.8)" }}
@@ -1230,7 +985,7 @@ function ShareSheetHost() {
 
   const text = shareText(req);
   const encoded = encodeURIComponent(text);
-  const url = encodeURIComponent(APP_URL);
+  const url = encodeURIComponent(ALPHA_WEBSITE_URL);
 
   const doNative = async () => {
     setBusy(true);
@@ -1313,7 +1068,7 @@ function ShareSheetHost() {
       <div className="absolute inset-0 bg-[#3a2a18]/45 backdrop-blur-sm animate-in fade-in" />
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-[440px] rounded-t-[24px] border-t border-x border-[#efe2c4] bg-gradient-to-b from-[#fbf3e1] to-[#f4ead8] px-4 pt-2.5 pb-[max(env(safe-area-inset-bottom),14px)]"
+        className="relative w-full max-w-[var(--alpha-content-max-width)] rounded-t-[24px] border-t border-x border-[#efe2c4] bg-gradient-to-b from-[#fbf3e1] to-[#f4ead8] px-4 pt-2.5 pb-[max(env(safe-area-inset-bottom),14px)]"
         style={{ boxShadow: "0 -16px 32px -10px rgba(120,80,30,0.35), inset 0 1px 0 rgba(255,255,255,0.9)" }}
       >
         <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-[#d8c190]" />

@@ -1,9 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, Search, BookOpen, Calendar, Moon, BellRing, ChevronLeft, Star, Cross, Fish, Church } from "lucide-react";
+import { Bell, BookOpen, Calendar, Moon, BellRing, ChevronLeft, Star, Cross, Fish, Church } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { FEASTS, CATEGORIES, getTodayFeast, type FeastCategory } from "@/features/feasts";
 import { todaySynaxariumSaintQueryOptions } from "@/features/synaxarium";
+import { AlphaSearchButton } from "@/components/navigation/AlphaExpandableSearchBar";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { GlassSurface } from "@/components/bible/primitives";
 import { CopticCross, CopticWatermark, CopticSeparator } from "@/components/coptic";
@@ -81,7 +82,7 @@ function FeastsHome() {
 
       {/* Header — RTL: back right · title center · notif+search left */}
       <header
-        className="relative z-10 mx-auto w-full max-w-[430px] px-4 flex items-center justify-between"
+        className="relative z-10 mx-auto w-full max-w-[var(--alpha-content-narrow-width)] px-4 flex items-center justify-between"
         style={{ paddingTop: "max(env(safe-area-inset-top), 14px)", paddingBottom: 8 }}
       >
         <Link
@@ -108,19 +109,12 @@ function FeastsHome() {
             <Bell className="h-4 w-4" />
             <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-[#6a4ab5]" />
           </button>
-          <button
-            type="button"
-            onClick={() => setSearchOpen(true)}
-            aria-label="البحث"
-            className="grid h-10 w-10 place-items-center rounded-full bg-white border border-[#ead9b1] text-[#3a2a18] active:scale-90 transition-transform shadow-[0_4px_10px_-8px_rgba(120,80,30,0.5)]"
-          >
-            <Search className="h-4 w-4" />
-          </button>
+          <AlphaSearchButton onClick={() => setSearchOpen(true)} />
         </div>
       </header>
 
       <main
-        className="relative z-10 mx-auto w-full max-w-[430px] px-4"
+        className="relative z-10 mx-auto w-full max-w-[var(--alpha-content-narrow-width)] px-4"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 110px)" }}
       >
         {/* Filter chips */}

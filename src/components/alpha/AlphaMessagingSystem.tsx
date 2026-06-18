@@ -1,10 +1,10 @@
-import { useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { AlphaScreenFrame } from "@/components/alpha/AlphaScreenFrame";
 import { AlphaChatScreen } from "./AlphaChatScreen";
 import { AlphaConversationsScreen } from "./AlphaConversationsScreen";
 import { AlphaMessageSettings } from "./AlphaMessageSettings";
-import { conversationFromContact } from "./messaging-data";
+import { conversationFromContact, type Conversation } from "./messaging-data";
 
 type Screen = "list" | "chat" | "settings";
 
@@ -14,6 +14,29 @@ export type AlphaMessagingInitialContact = {
   role: "priest" | "servant" | "admin";
   phone?: string;
 };
+
+function chatRoleParam(role: Conversation["role"]): "priest" | "servant" | "admin" {
+  if (role === "priest") return "priest";
+  if (role === "servant") return "servant";
+  return "admin";
+}
+
+export function navigateToAlphaChat(
+  navigate: ReturnType<typeof useNavigate>,
+  profile: Conversation,
+  options?: { from?: string },
+) {
+  void navigate({
+    to: "/messages/chat/$contactId",
+    params: { contactId: profile.id },
+    search: {
+      name: profile.name,
+      role: chatRoleParam(profile.role),
+      phone: profile.phone,
+      from: options?.from,
+    },
+  });
+}
 
 /**
  * `embedded` — renders without AlphaScreenFrame (for use inside Alpha Connect overlay).
@@ -39,9 +62,14 @@ export function AlphaMessagingSystem({
     [initialContact],
   );
   const [screen, setScreen] = useState<Screen>(
-    initialScreen ?? (directProfile ? "chat" : "list"),
+    initialScreen ?? (embedded && directProfile ? "chat" : "list"),
   );
   const [activeProfile, setActiveProfile] = useState(directProfile);
+
+  useEffect(() => {
+    if (embedded || !directProfile) return;
+    navigateToAlphaChat(navigate, directProfile, { from: returnTo });
+  }, [embedded, directProfile, navigate, returnTo]);
 
   const exitToOrigin = () => {
     if (onClose) {
@@ -72,9 +100,10 @@ export function AlphaMessagingSystem({
     return wrap(<AlphaMessageSettings onBack={() => setScreen("list")} />);
   }
 
-  if (screen === "chat") {
+  if (screen === "chat" && embedded) {
     return wrap(
       <AlphaChatScreen
+        key={activeProfile?.id ?? "chat"}
         profile={activeProfile}
         returnTo={returnTo ?? "/messages"}
         onBack={() => {
@@ -93,9 +122,13 @@ export function AlphaMessagingSystem({
     <AlphaConversationsScreen
       returnTo={embedded ? undefined : returnTo}
       onBack={embedded ? exitToOrigin : undefined}
-      onOpenChat={() => {
+      onOpenChat={(profile) => {
+        if (!embedded) {
+          navigateToAlphaChat(navigate, profile, { from: returnTo });
+          return;
+        }
         openedDirectRef.current = false;
-        setActiveProfile(undefined);
+        setActiveProfile(profile);
         setScreen("chat");
       }}
       onOpenSettings={() => setScreen("settings")}

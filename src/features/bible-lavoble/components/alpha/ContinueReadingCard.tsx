@@ -23,19 +23,16 @@ export function ContinueReadingCard({ onClick }: ContinueReadingCardProps) {
       <div className="flex-1">
         <h3
           className="text-[14px] font-bold text-[#1e2b54]"
-          style={{ fontFamily: "'Tajawal', sans-serif" }}
         >
           استمر في القراءة
         </h3>
         <p
           className="mt-0.5 text-[12px] font-bold text-[#b08a2e]"
-          style={{ fontFamily: "'Tajawal', sans-serif" }}
         >
           يوحنا 3:16
         </p>
         <p
           className="mt-1 text-[11px] leading-snug text-[#6a5a32] line-clamp-2"
-          style={{ fontFamily: "'Tajawal', sans-serif" }}
         >
           لأنه هكذا أحبَّ الله العالم، حتى بذل ابنه الوحيد…
         </p>

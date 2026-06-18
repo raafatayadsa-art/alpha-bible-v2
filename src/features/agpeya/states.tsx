@@ -38,7 +38,7 @@ function Shell({ children, dark = false }: { children: React.ReactNode; dark?: b
         "min-h-dvh flex flex-col items-center justify-center px-6 text-center",
         dark
           ? "bg-[#08131f] text-[#e8e2cf]"
-          : "bg-[radial-gradient(120%_60%_at_50%_-10%,#fff5dd_0%,#fbeac6_45%,#f3d9a5_100%)] text-[#3a2410]",
+          : "bg-[#f4ead8] text-[#3a2410]",
       )}
     >
       {children}
@@ -50,8 +50,8 @@ function Shell({ children, dark = false }: { children: React.ReactNode; dark?: b
 
 export function AgpeyaSkeleton() {
   return (
-    <div dir="rtl" className="min-h-dvh bg-[radial-gradient(120%_60%_at_50%_-10%,#fff5dd_0%,#fbeac6_45%,#f3d9a5_100%)]">
-      <div className="mx-auto max-w-[640px] px-4 pt-6">
+    <div dir="rtl" className="min-h-dvh bg-[#f4ead8]">
+      <div className="mx-auto max-w-[var(--alpha-reader-max-width)] px-4 pt-6">
         <div className="flex items-center justify-between">
           <div className="h-9 w-9 rounded-full bg-[#c79356]/15 animate-pulse" />
           <div className="h-5 w-32 rounded bg-[#c79356]/15 animate-pulse" />

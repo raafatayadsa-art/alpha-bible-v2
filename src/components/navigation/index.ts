@@ -5,4 +5,5 @@ export * from "./AlphaNotificationButton";
 export * from "./AlphaNotificationsProvider";
 export * from "./AlphaNotificationsPanel";
 export * from "./AlphaHeader";
+export * from "./AlphaExpandableSearchBar";
 export * from "./AlphaNavHub";

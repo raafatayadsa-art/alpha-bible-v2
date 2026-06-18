@@ -69,7 +69,7 @@ export function GlobalBackButton() {
       style={{ paddingTop: "max(env(safe-area-inset-top), 14px)" }}
       dir="rtl"
     >
-      <div className="pointer-events-none relative mx-auto w-full max-w-[430px] px-4">
+      <div className="pointer-events-none relative mx-auto w-full max-w-[var(--alpha-content-narrow-width)] px-4">
         <button
           type="button"
           aria-label="رجوع"

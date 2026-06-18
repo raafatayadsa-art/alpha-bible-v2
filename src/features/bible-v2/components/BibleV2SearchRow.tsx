@@ -1,42 +1,122 @@
-import { useRef } from "react";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { ChevronLeft } from "lucide-react";
+import { ConnectExpandableSearchBar } from "@/components/alpha/ConnectExpandableSearchBar";
+import { searchContextual, type ContextualSearchResult } from "@/features/search/contextual-search";
+import { booksQueryOptions } from "@/lib/bible";
+import { cn } from "@/lib/utils";
 import { bibleV2Tokens } from "../tokens";
 
-interface BibleV2SearchRowProps {
-  onOptions?: () => void;
-  onSearch?: () => void;
-}
+export function BibleV2SearchRow() {
+  const navigate = useNavigate();
+  const { data: books } = useQuery(booksQueryOptions());
+  const [searchExpanded, setSearchExpanded] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
-export function BibleV2SearchRow({ onOptions, onSearch }: BibleV2SearchRowProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const results = useMemo(
+    () => searchContextual("bible", searchQuery, { books }),
+    [searchQuery, books],
+  );
+
+  const collapseSearch = useCallback(() => {
+    setSearchExpanded(false);
+    setSearchQuery("");
+  }, []);
+
+  const goToResult = useCallback(
+    (result: ContextualSearchResult) => {
+      collapseSearch();
+      if (result.params) {
+        void navigate({ to: result.to as never, params: result.params as never, search: result.search as never });
+        return;
+      }
+      void navigate({ to: result.to as never, search: result.search as never });
+    },
+    [collapseSearch, navigate],
+  );
+
+  const submitSearch = useCallback(() => {
+    const first = results[0];
+    if (first) goToResult(first);
+  }, [results, goToResult]);
+
+  const trimmedQuery = searchQuery.trim();
 
   return (
-    <div dir="rtl" className="mx-4 mt-4 flex items-center gap-2.5">
-      <div
-        role="search"
-        onClick={() => {
-          inputRef.current?.focus();
-          onSearch?.();
-        }}
-        className="flex flex-1 cursor-text items-center gap-2.5 rounded-full border border-[#ece1c6]/90 bg-white/90 px-4 py-3 shadow-[0_6px_18px_-10px_rgba(120,90,40,0.22)] backdrop-blur-md transition active:scale-[0.99]"
-      >
-        <Search className="h-4 w-4 shrink-0 text-[#8a7544]" />
-        <input
-          ref={inputRef}
-          type="search"
-          placeholder="ابحث في الكتاب المقدس"
-          className="flex-1 bg-transparent text-right text-[13px] text-[#3a2c10] outline-none placeholder:text-[#a89370]"
-        />
+    <div dir="rtl" className="mx-4 mt-4">
+      <div className="flex min-w-0 justify-start">
+        <div className={cn("flex min-w-0 justify-end", searchExpanded ? "w-full flex-1" : "shrink-0")}>
+          <ConnectExpandableSearchBar
+            expanded={searchExpanded}
+            query={searchQuery}
+            inputRef={searchInputRef}
+            onExpand={() => setSearchExpanded(true)}
+            onCollapse={collapseSearch}
+            onQueryChange={setSearchQuery}
+            onSubmit={submitSearch}
+            classicTheme
+            placeholder="ابحث في الكتاب المقدس..."
+            collapsedAriaLabel="بحث في الكتاب المقدس"
+            inputAriaLabel="بحث في الكتاب المقدس"
+          />
+        </div>
       </div>
-      <button
-        type="button"
-        onClick={onOptions}
-        className="flex shrink-0 items-center gap-2 rounded-full border border-[#ece1c6]/90 bg-white/90 px-4 py-3 shadow-[0_6px_18px_-10px_rgba(120,90,40,0.22)] backdrop-blur-md transition active:scale-95"
-        style={{ color: bibleV2Tokens.textSecondary }}
-      >
-        <span className="text-[13px] font-semibold">خيارات</span>
-        <SlidersHorizontal className="h-4 w-4" />
-      </button>
+
+      {searchExpanded && trimmedQuery ? (
+        <div className="alpha-connect-theme alpha-connect-theme--classic mt-2.5 space-y-2">
+          {results.length === 0 ? (
+            <p
+              className="py-4 text-center text-[12px] font-medium"
+              style={{ color: bibleV2Tokens.textMuted }}
+            >
+              لا توجد نتائج
+            </p>
+          ) : (
+            results.map((result) => (
+              <button
+                key={result.id}
+                type="button"
+                onClick={() => goToResult(result)}
+                className="flex w-full items-center gap-3 rounded-2xl border p-2.5 text-right transition-transform active:scale-[0.98]"
+                style={{
+                  backgroundColor: "rgba(255,255,255,0.88)",
+                  borderColor: bibleV2Tokens.cardBorder,
+                  boxShadow: `0 8px 20px -12px ${bibleV2Tokens.shadowWarm}`,
+                }}
+              >
+                <span
+                  className="grid h-11 w-11 shrink-0 place-items-center rounded-xl text-[11px] font-bold"
+                  style={{
+                    backgroundColor: bibleV2Tokens.champagne,
+                    color: bibleV2Tokens.goldDeep,
+                  }}
+                >
+                  Ⲁ
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div
+                    className="line-clamp-1 text-[13px] font-extrabold leading-tight"
+                    style={{ color: bibleV2Tokens.textPrimary }}
+                  >
+                    {result.title}
+                  </div>
+                  {result.subtitle ? (
+                    <div
+                      className="mt-0.5 line-clamp-2 text-[11px]"
+                      style={{ color: bibleV2Tokens.textMuted }}
+                    >
+                      {result.subtitle}
+                    </div>
+                  ) : null}
+                </div>
+                <ChevronLeft className="h-4 w-4 shrink-0" style={{ color: bibleV2Tokens.goldDeep }} />
+              </button>
+            ))
+          )}
+        </div>
+      ) : null}
     </div>
   );
 }

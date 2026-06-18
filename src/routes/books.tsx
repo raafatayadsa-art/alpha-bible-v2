@@ -1,11 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useQueries } from "@tanstack/react-query";
-import { Search } from "lucide-react";
 import { booksQueryOptions, chaptersQueryOptions } from "@/lib/bible";
 import { groupBooks, displayName } from "@/lib/bible-books";
 import { matchesNtFilter, matchesOtFilter, type NtCategory, type OtCategory } from "@/lib/book-meta";
 import { BackButton, BookCard, BookGridSkeleton, BottomDock } from "@/components/bible";
+import { AlphaSearchButton } from "@/components/navigation/AlphaExpandableSearchBar";
 import { useBibleSearch } from "@/features/bible-search";
 import { ORTHODOX_BIBLE_BOOK_COUNT, ORTHODOX_NT_BOOK_COUNT, ORTHODOX_OT_BOOK_COUNT } from "@/lib/bible-expected-chapters";
 
@@ -95,31 +95,14 @@ function BooksGrid() {
 
   return (
     <main dir="rtl" className="relative min-h-screen w-full overflow-x-hidden bg-[#faf8f3]">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-0"
-        style={{
-          background:
-            "radial-gradient(120% 50% at 50% 0%, rgba(255,231,184,0.5), transparent 60%)," +
-            "radial-gradient(70% 60% at 0% 80%, rgba(214,168,98,0.18), transparent 65%)",
-        }}
-      />
-
-      <div className="relative mx-auto w-full max-w-[440px] px-4 pt-[max(env(safe-area-inset-top),12px)] pb-32">
+      <div className="relative mx-auto w-full max-w-[var(--alpha-content-max-width)] px-4 pt-[max(env(safe-area-inset-top),12px)] pb-32">
         <header className="flex items-center justify-between gap-2 pt-2">
           <BackButton to="/bible" compact tone="light" />
           <div className="text-center min-w-0 flex-1">
             <h1 className="font-arabic-serif text-[18px] font-bold text-[#3a2a18]">{title}</h1>
             <p className="text-[11px] text-[#6a543a] font-bold">{countLabel}</p>
           </div>
-          <button
-            type="button"
-            aria-label="بحث"
-            onClick={openSearch}
-            className="inline-grid h-9 w-9 place-items-center rounded-full bg-white/70 border border-[#efe2c4] text-[#3a2a18] active:scale-90 transition-transform"
-          >
-            <Search className="h-4 w-4 text-[#b8893a]" />
-          </button>
+          <AlphaSearchButton onClick={openSearch} />
         </header>
 
         {tabs && (

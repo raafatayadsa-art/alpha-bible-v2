@@ -113,22 +113,6 @@ const OTHER_SERVICES: Pick<Service, "id" | "arabicName" | "icon" | "accent" | "m
   { id: "deacons", arabicName: "الشمامسة", icon: "✠", accent: "#3f9d6e", membersCount: 18 },
 ];
 
-/* ---------- Mint backdrop ---------- */
-function ServiceBackdrop() {
-  return (
-    <div
-      aria-hidden
-      className="fixed inset-0 -z-[5] pointer-events-none"
-      style={{
-        background:
-          "radial-gradient(110% 60% at 50% 0%, rgba(232,222,250,0.45), transparent 60%)," +
-          "radial-gradient(90% 70% at 100% 100%, rgba(231,201,122,0.18), transparent 65%)," +
-          "linear-gradient(180deg, rgba(250,246,240,0.85) 0%, rgba(244,238,228,0.78) 50%, rgba(238,232,222,0.82) 100%)",
-      }}
-    />
-  );
-}
-
 /* ---------- Premium Service Card ---------- */
 function ServiceCard({ service, role }: { service: Service; role: UserRole }) {
   const roleMeta = ROLE_META[role];
@@ -360,7 +344,6 @@ function ServiceScreen() {
 
   return (
     <ProfileSubShell title="خدمتي">
-      <ServiceBackdrop />
       <p className="-mt-3 mb-3 text-center text-[11px] text-[#3f6a55]">
         خدمتك في كنيسة ألفا — اجتماعات، أعضاء، صلاحيات
       </p>

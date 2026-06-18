@@ -677,16 +677,6 @@ export function PostBuilder({
     <div role="dialog" aria-modal="true" dir="rtl" className="fixed inset-0 z-[70] flex flex-col bg-[#f4ead8] overflow-hidden">
       <CopticWatermark />
       <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0 -z-0"
-        style={{
-          background:
-            "radial-gradient(120% 50% at 50% 0%, rgba(255,231,184,0.55), transparent 60%)," +
-            "radial-gradient(70% 60% at 100% 30%, rgba(167,139,217,0.15), transparent 65%)",
-        }}
-      />
-
-      <div
         className="sticky top-0 z-10 px-4 pb-2 pt-[max(env(safe-area-inset-top),14px)]"
         style={{ background: "linear-gradient(180deg, rgba(244,234,216,0.97) 0%, rgba(244,234,216,0.82) 100%)", backdropFilter: "blur(14px)" }}
       >

@@ -44,7 +44,6 @@ export function AlphaBottomNavigation({
                 <Icon className="h-5 w-5 text-[#b08a2e]" />
                 <span
                   className="text-[10px] font-bold text-[#1e2b54]"
-                  style={{ fontFamily: "'Tajawal', sans-serif" }}
                 >
                   {item.label}
                 </span>
@@ -60,7 +59,6 @@ export function AlphaBottomNavigation({
               <Icon className="h-5 w-5" />
               <span
                 className="text-[10px]"
-                style={{ fontFamily: "'Tajawal', sans-serif" }}
               >
                 {item.label}
               </span>

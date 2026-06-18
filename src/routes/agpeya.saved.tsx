@@ -43,7 +43,7 @@ function SavedAgpeya() {
         className="sticky top-0 z-30 backdrop-blur-xl border-b border-[#c79356]/25 bg-[#fbf3e1]/85"
         style={{ paddingTop: "max(env(safe-area-inset-top), 0px)" }}
       >
-        <div className="mx-auto flex max-w-[480px] items-center justify-between px-4 py-3">
+        <div className="mx-auto flex max-w-[var(--alpha-content-max-width)] items-center justify-between px-4 py-3">
           <button
             type="button"
             onClick={goBack}
@@ -64,7 +64,7 @@ function SavedAgpeya() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-[480px] px-4 pt-6">
+      <main className="mx-auto max-w-[var(--alpha-content-max-width)] px-4 pt-6">
         {prayers.length === 0 ? (
           <AgpeyaEmpty
             icon={Bookmark}

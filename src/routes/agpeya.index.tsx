@@ -221,7 +221,7 @@ function AgpeyaHome() {
             }}
           />
           {/* top controls */}
-          <div className="relative z-10 mx-auto flex max-w-[480px] items-start justify-between px-4 pt-[max(env(safe-area-inset-top),12px)]">
+          <div className="relative z-10 mx-auto flex max-w-[var(--alpha-content-max-width)] items-start justify-between px-4 pt-[max(env(safe-area-inset-top),12px)]">
             <button
               type="button"
               onClick={goBack}
@@ -252,7 +252,7 @@ function AgpeyaHome() {
         </div>
       </header>
 
-      <main className="relative mx-auto max-w-[480px] px-4 -mt-10">
+      <main className="relative mx-auto max-w-[var(--alpha-content-max-width)] px-4 -mt-10">
         {/* ===== Hero — current prayer ===== */}
         <section className="relative overflow-hidden rounded-[26px] border border-white/70 bg-[#fff7e7] shadow-[0_22px_44px_-22px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.85)]">
           <div className="grid grid-cols-[42%_1fr] items-stretch">

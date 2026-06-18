@@ -45,15 +45,10 @@ export function NotificationsCenter({
 
   const unread = items.filter((i) => !i.read).length;
 
+  if (!open) return null;
+
   return (
-    <div
-      dir="rtl"
-      aria-hidden={!open}
-      className={cn(
-        "fixed inset-0 z-[120] transition-opacity duration-200",
-        open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
-      )}
-    >
+    <div dir="rtl" className="fixed inset-0 z-[120] pointer-events-auto transition-opacity duration-200">
       <button
         type="button"
         aria-label="إغلاق"
@@ -63,11 +58,7 @@ export function NotificationsCenter({
 
       <div
         ref={panelRef}
-        className={cn(
-          "absolute mx-auto w-full max-w-[460px] left-1/2 -translate-x-1/2",
-          "transition-all duration-280 ease-[cubic-bezier(0.22,1,0.36,1)]",
-          open ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2",
-        )}
+        className="absolute mx-auto w-full max-w-[var(--alpha-content-max-width)] left-1/2 -translate-x-1/2 opacity-100 translate-y-0 transition-all duration-280 ease-[cubic-bezier(0.22,1,0.36,1)]"
         style={{ top: "max(env(safe-area-inset-top), 10px)" }}
       >
         <div className="mx-2 mt-12 origin-top-right rounded-3xl bg-white/97 backdrop-blur-xl border border-[#ead9b1] shadow-[0_24px_60px_-20px_rgba(120,80,30,0.5)] overflow-hidden">

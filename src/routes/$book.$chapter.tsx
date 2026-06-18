@@ -1,19 +1,21 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useRouter, useRouterState } from "@tanstack/react-router";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Bookmark,
   BookmarkCheck,
-  Home as HomeIcon,
-  Search,
+  ChevronLeft,
+  Headphones,
+  Share2,
 } from "lucide-react";
+import { ALPHA_HEADER_BTN } from "@/components/navigation/AlphaNotificationButton";
+import { CopticWatermark } from "@/components/coptic";
 import { chaptersQueryOptions, versesQueryOptions } from "@/lib/bible";
 import type { BibleVerse } from "@/integrations/supabase/client";
 import { displayName } from "@/lib/bible-books";
 import { chapterWithNumber } from "@/lib/bible-labels";
 import {
   AutoScrollControls,
-  BackButton,
   BottomDock,
   HighlightedWord,
   MeaningSheet,
@@ -21,10 +23,10 @@ import {
   VerseSkeleton,
   DictionaryLookupSheet,
   DictionaryResultsSheet,
-  DictionarySearchDialog,
   type MeaningSheetData,
 } from "@/components/bible";
-import { updateSession, useSavedVerses, useTypographyPrefs, verseKey } from "@/lib/reading-state";
+import { chapterKey, updateSession, useSavedChapters, useSavedVerses, useTypographyPrefs, verseKey } from "@/lib/reading-state";
+import { articleScrollProgress, bindScroll, resolveScrollRoot, scrollMetrics, scrollToBottom, scrollToTop, scrollToY } from "@/lib/chapter-scroll";
 import { cn } from "@/lib/utils";
 import {
   useDictionary,
@@ -206,23 +208,59 @@ export const Route = createFileRoute("/$book/$chapter")({
   component: ScriptureReader,
 });
 
+type ChapterScrollAnchor = "top" | "bottom";
+
+type ChapterNavState = {
+  chapterNav?: {
+    book: string;
+    chapter: number;
+    anchor: ChapterScrollAnchor;
+  };
+};
+
 /* Highlight matches now come from the dictionary_entries table via useDictionary(). */
 
 /* ---------------- Reader ---------------- */
 
+function chapterHeaderBtnClass(spiritualMode: boolean, active?: boolean) {
+  if (spiritualMode) {
+    return cn(
+      "grid h-11 w-11 place-items-center rounded-full border border-white/10 bg-[#0e1a2e]/55 backdrop-blur-xl text-[#f3e6c4] active:scale-95 transition",
+      active && "border-[#f0d78c]/50 bg-[#f0d78c]/15",
+    );
+  }
+  return cn(
+    ALPHA_HEADER_BTN,
+    "text-[#3a2a18]",
+    active && "border-[#5a3d92]/35 bg-[#7a5cb0]/12 text-[#5a3d92]",
+  );
+}
+
 function ScriptureReader() {
   const { book, chapter } = Route.useParams();
+  const router = useRouter();
+  const navigate = useNavigate();
   const ch = Number(chapter);
   const verses = useQuery(versesQueryOptions(book, ch));
   const chapters = useQuery(chaptersQueryOptions(book));
+  const bookName = displayName(book);
+  const list = chapters.data ?? [];
+  const idx = list.indexOf(ch);
+  const prev = idx > 0 ? list[idx - 1] : null;
+  const next = idx >= 0 && idx < list.length - 1 ? list[idx + 1] : null;
+
+  const chapterNavState = useRouterState({
+    select: (s) => (s.location.state as ChapterNavState | undefined)?.chapterNav ?? null,
+  });
+  const freshNavRef = useRef<{ book: string; chapter: number; anchor: ChapterScrollAnchor } | null>(null);
 
   const [spiritualMode, setSpiritualMode] = useState(false);
   const [sheet, setSheet] = useState<MeaningSheetData | null>(null);
   const [lookupRow, setLookupRow] = useState<LookupDictionaryRow | null>(null);
   const [lookupChoices, setLookupChoices] = useState<LookupDictionaryRow[] | null>(null);
-  const [searchOpen, setSearchOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [activeVerse, setActiveVerse] = useState<string | null>(null);
+  const [readingVerse, setReadingVerse] = useState(1);
 
   // Tap a highlighted/any word: query lookup_dictionary first. If multiple
   // entries match the same surface word, show a picker; otherwise open the
@@ -376,15 +414,20 @@ function ScriptureReader() {
 
   // Persistent typography prefs
   const { prefs, setPrefs } = useTypographyPrefs();
-  const { fontSize, lineHeight, readingWidth } = prefs;
+  const { fontSize, lineHeight } = prefs;
   const setFontSize = (n: number) => setPrefs({ ...prefs, fontSize: n });
   const setLineHeight = (n: number) => setPrefs({ ...prefs, lineHeight: n });
 
-  // Saved verses
+  // Saved verses + chapters
   const { isSaved, toggle: toggleSaved } = useSavedVerses();
+  const { isChapterSaved, toggleChapter } = useSavedChapters();
+  const chapterSaveId = chapterKey(book, ch);
+  const chapterIsSaved = isChapterSaved(chapterSaveId);
 
   const articleRef = useRef<HTMLElement>(null);
-  const targetProgress = useRef(0);
+  const mainRef = useRef<HTMLElement>(null);
+  const contentColumnRef = useRef<HTMLDivElement>(null);
+  const [scrollRoot, setScrollRoot] = useState<HTMLElement | null>(null);
   const verseElementsRef = useRef<Map<number, HTMLElement>>(new Map());
   const visibleVerseRef = useRef<number | undefined>(undefined);
   const lastSavedAt = useRef(0);
@@ -409,16 +452,70 @@ function ScriptureReader() {
     void openWordLookupRef.current(word);
   }, []);
 
+  const goBack = useCallback(() => {
+    void router.navigate({ to: "/bible-2" });
+  }, [router]);
+
+  const openAdjacentChapter = useCallback(
+    (targetChapter: number, anchor: ChapterScrollAnchor) => {
+      const root = scrollRoot ?? resolveScrollRoot(mainRef.current);
+      freshNavRef.current = { book, chapter: targetChapter, anchor };
+      if (anchor === "bottom") scrollToBottom(root);
+      else scrollToTop(root);
+      void navigate({
+        to: "/$book/$chapter",
+        params: { book, chapter: String(targetChapter) },
+        state: { chapterNav: { book, chapter: targetChapter, anchor } },
+      });
+    },
+    [book, navigate, scrollRoot],
+  );
+
+  const handleAdjacentChapterPress = useCallback(
+    (targetChapter: number, anchor: ChapterScrollAnchor, e: React.MouseEvent | React.TouchEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openAdjacentChapter(targetChapter, anchor);
+    },
+    [openAdjacentChapter],
+  );
+
+  const handleShareChapter = useCallback(async () => {
+    const title = `${bookName} — ${chapterWithNumber(book, ch)}`;
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, url });
+        return;
+      } catch {
+        /* cancelled */
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setToast("تم نسخ الرابط");
+      window.setTimeout(() => setToast(null), 1800);
+    } catch {
+      setToast("تعذّر المشاركة");
+      window.setTimeout(() => setToast(null), 1800);
+    }
+  }, [bookName, book, ch]);
+
+  const handleToggleChapterSave = useCallback(() => {
+    const added = toggleChapter({ book, bookName, chapter: ch });
+    setToast(added ? "تم حفظ الإصحاح" : "تمت إزالة الحفظ");
+    window.setTimeout(() => setToast(null), 1800);
+  }, [toggleChapter, book, bookName, ch]);
+
+  const handleListen = useCallback(() => {
+    setToast("الاستماع الصوتي — قريباً");
+    window.setTimeout(() => setToast(null), 1800);
+  }, []);
+
   useEffect(() => {
     verseElementsRef.current.clear();
+    setReadingVerse(1);
   }, [book, ch]);
-
-  const list = chapters.data ?? [];
-  const idx = list.indexOf(ch);
-  const prev = idx > 0 ? list[idx - 1] : null;
-  const next = idx >= 0 && idx < list.length - 1 ? list[idx + 1] : null;
-
-  const bookName = displayName(book);
 
   const onOpenCrossRef = useCallback(
     (num: number) => {
@@ -474,7 +571,9 @@ function ScriptureReader() {
     let rafId: number | null = null;
     const compute = () => {
       rafId = null;
-      const vh = window.innerHeight;
+      const root = scrollRoot ?? resolveScrollRoot(mainRef.current);
+      const vh =
+        root && root !== document.documentElement ? root.clientHeight : window.innerHeight;
       const zoneTop = vh * 0.25;
       const zoneBottom = vh * 0.45;
       let els = Array.from(verseElementsRef.current.values());
@@ -495,6 +594,7 @@ function ScriptureReader() {
       const n = Number(pick.el.dataset.verseNum);
       if (n) {
         visibleVerseRef.current = n;
+        setReadingVerse((cur) => (cur === n ? cur : n));
         const id = verseKey(book, ch, n);
         setActiveVerse((cur) => (cur === id ? cur : id));
       }
@@ -503,40 +603,98 @@ function ScriptureReader() {
       if (rafId == null) rafId = requestAnimationFrame(compute);
     };
     compute();
-    window.addEventListener("scroll", schedule, { passive: true });
+    const unbind = scrollRoot ? bindScroll(scrollRoot, schedule) : undefined;
     window.addEventListener("resize", schedule);
     return () => {
-      window.removeEventListener("scroll", schedule);
+      unbind?.();
       window.removeEventListener("resize", schedule);
       if (rafId != null) cancelAnimationFrame(rafId);
     };
-  }, [verses.data, book, ch]);
+  }, [verses.data, book, ch, scrollRoot]);
 
   const dictRenderKey = `${matchedSet.size}:${HMR_EPOCH}:${book}:${ch}`;
 
   // Persist reading session (throttled) + restore scroll on first load.
   const restoredRef = useRef(false);
   useEffect(() => {
+    restoredRef.current = false;
+  }, [book, ch]);
+
+  useEffect(() => {
     if (!verses.data?.length) return;
     if (restoredRef.current) return;
+    const root = scrollRoot ?? resolveScrollRoot(mainRef.current);
+    if (!root) return;
     restoredRef.current = true;
-    // Restore scroll if the saved session matches this book/chapter — but never while auto-scroll is running.
+
+    const freshFromRef =
+      freshNavRef.current?.book === book && freshNavRef.current?.chapter === ch
+        ? freshNavRef.current.anchor
+        : null;
+    const freshFromState =
+      chapterNavState?.book === book && chapterNavState?.chapter === ch
+        ? chapterNavState.anchor
+        : null;
+    const freshAnchor = freshFromRef ?? freshFromState;
+
+    const applyAnchor = (anchor: ChapterScrollAnchor) => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (anchor === "bottom") {
+            scrollToBottom(root);
+            setReadingVerse(verses.data!.length);
+          } else {
+            scrollToTop(root);
+            setReadingVerse(1);
+          }
+          const metrics = scrollMetrics(root);
+          updateSession({
+            book,
+            bookName,
+            chapter: ch,
+            verse: anchor === "bottom" ? verses.data!.length : 1,
+            progressPercent: anchor === "bottom" ? 100 : 0,
+            scrollY: metrics.y,
+            lastOpenedAt: Date.now(),
+          });
+        });
+      });
+    };
+
     try {
       if (document.documentElement.dataset.autoscroll === "1") return;
+
+      if (freshAnchor) {
+        applyAnchor(freshAnchor);
+        freshNavRef.current = null;
+        if (freshFromState) {
+          void navigate({
+            to: "/$book/$chapter",
+            params: { book, chapter: String(ch) },
+            replace: true,
+            state: {},
+          });
+        }
+        return;
+      }
+
       const raw = localStorage.getItem("ab:reading:current");
       if (raw) {
         const s = JSON.parse(raw) as { book: string; chapter: number; scrollY: number };
         if (s && s.book === book && s.chapter === ch && s.scrollY > 0) {
           requestAnimationFrame(() => {
             if (document.documentElement.dataset.autoscroll === "1") return;
-            window.scrollTo(0, s.scrollY);
+            scrollToY(root, s.scrollY);
           });
+          return;
         }
       }
+
+      applyAnchor("top");
     } catch {
-      /* ignore */
+      applyAnchor("top");
     }
-  }, [verses.data, book, ch]);
+  }, [verses.data, book, bookName, ch, scrollRoot, chapterNavState, navigate]);
 
   useEffect(() => {
     if (!verses.data?.length) return;
@@ -549,30 +707,32 @@ function ScriptureReader() {
         bookName,
         chapter: ch,
         verse: visibleVerseRef.current,
-        progressPercent: targetProgress.current,
-        scrollY: window.scrollY,
+        progressPercent: articleRef.current
+          ? articleScrollProgress(scrollRoot ?? resolveScrollRoot(mainRef.current), articleRef.current)
+          : 0,
+        scrollY: scrollRoot ? scrollMetrics(scrollRoot).y : window.scrollY,
         lastOpenedAt: now,
       });
     };
     save();
     const onScroll = () => save();
+    const unbind = scrollRoot ? bindScroll(scrollRoot, onScroll) : undefined;
     const onHide = () => {
       lastSavedAt.current = 0;
       save();
     };
-    window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("visibilitychange", onHide);
     window.addEventListener("pagehide", onHide);
     return () => {
-      window.removeEventListener("scroll", onScroll);
+      unbind?.();
       window.removeEventListener("visibilitychange", onHide);
       window.removeEventListener("pagehide", onHide);
       onHide();
     };
-  }, [verses.data, book, bookName, ch]);
+  }, [verses.data, book, bookName, ch, scrollRoot]);
 
   // Palette
-  const bgClass = spiritualMode ? "bg-[#08131f] text-[#f3ead0]" : "bg-[#f8efdc] text-[#3a2a18]";
+  const bgClass = spiritualMode ? "bg-[#08131f] text-[#e8e2cf]" : "bg-[#f4ead8] text-[#3a2410]";
   const surfaceClass = spiritualMode
     ? "bg-[#11223a]/60 border-white/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_8px_22px_-16px_rgba(0,0,0,0.7)]"
     : "bg-white/70 border-[#efe2c4]";
@@ -582,8 +742,7 @@ function ScriptureReader() {
 
   const totalVerses = verses.data?.length ?? 0;
 
-  // Synchronized chrome (auto-scroll pill + bottom dock): both appear together on touch
-  // and hide together after 5s of inactivity.
+  // Synchronized chrome (scroll rail + auto-scroll pill + bottom dock)
   const [chromeVisible, setChromeVisible] = useState(true);
   const chromeTimer = useRef<number | null>(null);
   useEffect(() => {
@@ -596,53 +755,49 @@ function ScriptureReader() {
     window.addEventListener("pointerdown", show, { passive: true });
     window.addEventListener("touchstart", show, { passive: true });
     window.addEventListener("keydown", show);
+    window.addEventListener("wheel", show, { passive: true });
     return () => {
       window.removeEventListener("pointerdown", show);
       window.removeEventListener("touchstart", show);
       window.removeEventListener("keydown", show);
+      window.removeEventListener("wheel", show);
       if (chromeTimer.current) window.clearTimeout(chromeTimer.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (!scrollRoot) return;
+    const show = () => {
+      setChromeVisible(true);
+      if (chromeTimer.current) window.clearTimeout(chromeTimer.current);
+      chromeTimer.current = window.setTimeout(() => setChromeVisible(false), 5000);
+    };
+    return bindScroll(scrollRoot, show);
+  }, [scrollRoot]);
   const chromeHidden = !chromeVisible;
+
+  useEffect(() => {
+    const root = resolveScrollRoot(mainRef.current);
+    setScrollRoot(root);
+    root.classList.add("alpha-viewport-scroll--chapter-reader");
+    return () => root.classList.remove("alpha-viewport-scroll--chapter-reader");
+  }, [book, ch]);
 
   return (
     <main
+      ref={mainRef}
       dir="rtl"
+      data-chapter-reader=""
       className={cn(
-        "relative min-h-screen w-full overflow-x-hidden transition-colors duration-500",
+        "chapter-reader relative w-full min-w-0 transition-colors duration-500",
         bgClass,
         spiritualMode && "reader-spiritual",
       )}
     >
-      {/* Soft cloud atmosphere — light mode parchment haze */}
-      {!spiritualMode && (
-        <div
-          aria-hidden
-          className="pointer-events-none fixed inset-0 z-0"
-          style={{
-            background:
-              "radial-gradient(80% 40% at 50% -5%, rgba(255,240,205,0.55), transparent 70%)," +
-              "radial-gradient(60% 35% at 15% 25%, rgba(255,230,180,0.32), transparent 75%)," +
-              "radial-gradient(55% 35% at 85% 60%, rgba(214,168,98,0.16), transparent 75%)," +
-              "radial-gradient(90% 40% at 50% 105%, rgba(168,120,42,0.10), transparent 70%)",
-          }}
-        />
-      )}
-
-      {/* Cinematic dark cloud atmosphere — layered navy haze + soft spiritual bloom */}
+      {/* Cinematic dark cloud atmosphere — soft spiritual bloom (no top bowl) */}
       {spiritualMode && (
         <>
-          <div
-            aria-hidden
-            className="pointer-events-none fixed inset-0 z-0"
-            style={{
-              background:
-                "radial-gradient(75% 45% at 50% -10%, rgba(110,150,200,0.10), transparent 70%)," +
-                "radial-gradient(55% 40% at 88% 22%, rgba(231,201,122,0.06), transparent 75%)," +
-                "radial-gradient(65% 45% at 12% 78%, rgba(62,180,130,0.05), transparent 80%)," +
-                "radial-gradient(120% 70% at 50% 115%, rgba(0,0,0,0.55), transparent 65%)",
-            }}
-          />
+          <div aria-hidden className="pointer-events-none fixed inset-0 z-0 bg-[#08131f]/88" />
           {/* drifting cloud diffusion layer — subtle cinematic navy haze */}
           <div
             aria-hidden
@@ -657,75 +812,102 @@ function ScriptureReader() {
         </>
       )}
 
-      <ReadingProgressChrome
-        book={book}
-        chapter={chapter}
-        spiritualMode={spiritualMode}
-        chapters={list}
-        current={ch}
-        targetProgressRef={targetProgress}
-      />
+      <CopticWatermark tone={spiritualMode ? "dark" : "light"} />
 
       <div
-        className="relative mx-auto w-full px-4 pt-[max(env(safe-area-inset-top),12px)] pb-44 transition-[max-width] duration-300"
-        style={{ maxWidth: `${readingWidth}px` }}
+        ref={contentColumnRef}
+        className="relative flex w-full min-w-0 max-w-full flex-col px-[var(--alpha-content-padding-x)] pb-44"
       >
-        {/* Header / Toolbar */}
-        <header className="flex items-center justify-between gap-2 pt-3">
-          <div className="flex items-center gap-1.5">
-            <BackButton compact tone={spiritualMode ? "dark" : "light"} to="/bible" />
-            <Link
-              to="/bible"
-              aria-label="الرئيسية للكتاب المقدس"
-              className={cn(
-                "grid h-9 w-9 place-items-center rounded-full border active:scale-90 transition-transform",
-                surfaceClass,
-              )}
-            >
-              <HomeIcon className="h-4 w-4" />
-            </Link>
-          </div>
-
-          <div className="text-center min-w-0 flex-1 px-1">
-            <p
-              className={cn(
-                "text-[10px] font-bold tracking-wider",
-                spiritualMode ? "text-[#c79356]" : "text-[#b8893a]",
-              )}
-            >
-              {isNT ? "العهد الجديد" : "العهد القديم"}
-            </p>
-            <h1
-              className={cn(
-                "font-arabic-serif text-[16px] font-bold truncate",
-                spiritualMode ? "text-[#f3e6c4]" : "text-[#3a2a18]",
-              )}
-            >
-              {bookName} <span className="opacity-60">·</span> {chapter}
-            </h1>
-          </div>
-
-          <div className="flex items-center gap-1">
-            <ToolbarBtn label="بحث" surfaceClass={surfaceClass} onClick={() => setSearchOpen(true)}>
-              <Search className="h-4 w-4" />
-            </ToolbarBtn>
-          </div>
-        </header>
-
-        {/* Status pill */}
+        {/* Solid premium header — Agpeya-style, always readable over scroll */}
         <div
           className={cn(
-            "mt-3 flex items-center justify-between rounded-2xl border px-3 py-2",
-            surfaceClass,
+            "sticky top-0 z-40 w-full min-w-0 overflow-hidden rounded-b-[1.35rem] border-x border-b",
+            spiritualMode
+              ? "border-white/10 bg-[#0b1a2c] text-[#e8e2cf] shadow-[0_10px_28px_-16px_rgba(0,0,0,0.5)]"
+              : "border-[#c79356]/25 bg-[#fbf3e1] text-[#3a2410] shadow-[0_10px_24px_-14px_rgba(120,90,40,0.32)]",
           )}
+          style={{ paddingTop: "max(env(safe-area-inset-top), 10px)" }}
         >
-          <p className="text-[11px] font-bold opacity-80">
-            {chapterWithNumber(book, ch)}
-            {list.length ? ` من ${list.length}` : ""}
-          </p>
-          <p className="text-[11px] font-bold tabular-nums opacity-80">
-            {totalVerses ? `${totalVerses} آية` : ""}
-          </p>
+          <div className="alpha-toolbar-row relative min-h-11 justify-between px-3 pb-1 pt-0.5" dir="ltr">
+            <div className="alpha-toolbar-row__leading">
+              <button
+                type="button"
+                aria-label="مشاركة"
+                onClick={() => void handleShareChapter()}
+                className={chapterHeaderBtnClass(spiritualMode)}
+              >
+                <Share2 className="h-5 w-5" strokeWidth={2} />
+              </button>
+              <button
+                type="button"
+                aria-label={chapterIsSaved ? "إلغاء حفظ الإصحاح" : "حفظ الإصحاح"}
+                onClick={handleToggleChapterSave}
+                className={chapterHeaderBtnClass(spiritualMode, chapterIsSaved)}
+              >
+                <Bookmark className={cn("h-5 w-5", chapterIsSaved && "fill-current")} strokeWidth={2} />
+              </button>
+            </div>
+
+            <div className="chapter-reader-header__title-slot" dir="rtl">
+              <p
+                className={cn(
+                  "text-[11px] font-extrabold leading-none tracking-[0.12em]",
+                  spiritualMode ? "text-[#c79356]" : "text-[#b8893a]",
+                )}
+              >
+                {isNT ? "العهد الجديد" : "العهد القديم"}
+              </p>
+              <div className="mt-0.5 flex max-w-full items-center justify-center gap-1.5">
+                <h1
+                  className={cn(
+                    "truncate font-arabic-serif text-[clamp(1rem,4.2vw,1.125rem)] font-extrabold leading-tight",
+                    spiritualMode ? "text-[#f3e6c4]" : "text-[#3a2a18]",
+                  )}
+                >
+                  {bookName}
+                </h1>
+                {chapterIsSaved ? (
+                  <span
+                    className={cn(
+                      "shrink-0 rounded-full px-1.5 py-0.5 text-[8px] font-bold leading-none",
+                      spiritualMode
+                        ? "bg-[#f0d78c]/20 text-[#f0d78c]"
+                        : "bg-[#5a3d92]/10 text-[#5a3d92]",
+                    )}
+                  >
+                    محفوظ
+                  </span>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="alpha-toolbar-row__trailing">
+              <button
+                type="button"
+                aria-label="استماع"
+                onClick={handleListen}
+                className={chapterHeaderBtnClass(spiritualMode)}
+              >
+                <Headphones className="h-5 w-5" strokeWidth={2} />
+              </button>
+              <button
+                type="button"
+                aria-label="رجوع"
+                onClick={goBack}
+                className={chapterHeaderBtnClass(spiritualMode)}
+              >
+                <ChevronLeft className="h-[18px] w-[18px] -scale-x-100" strokeWidth={2} />
+              </button>
+            </div>
+          </div>
+
+          <ChapterVerseProgress
+            spiritualMode={spiritualMode}
+            totalVerses={totalVerses}
+            currentVerse={readingVerse}
+            scrollRoot={scrollRoot}
+            articleRef={articleRef}
+          />
         </div>
 
         {/* Loading / error */}
@@ -740,7 +922,7 @@ function ScriptureReader() {
           <article
             ref={articleRef}
             className={cn(
-              "mt-5 font-arabic-serif tracking-[0.2px] transition-[font-size,line-height] duration-200 space-y-3.5",
+              "mt-3 w-full min-w-0 font-arabic-serif tracking-[0.2px] transition-[font-size,line-height] duration-200 space-y-3.5",
               spiritualMode ? "text-[#f3e6c4]" : "text-[#3a2a18]",
             )}
             style={{ fontSize: `${fontSize}px`, lineHeight, wordSpacing: "0.06em" }}
@@ -769,35 +951,37 @@ function ScriptureReader() {
         {/* Chapter nav */}
         <nav
           className={cn(
-            "mt-8 flex items-center justify-between border-t pt-5 text-[12px]",
+            "mt-8 flex w-full min-w-0 items-center justify-between border-t pt-5 text-[12px]",
             spiritualMode ? "border-white/10" : "border-[#efe2c4]",
           )}
         >
           {prev ? (
-            <Link
-              to="/$book/$chapter"
-              params={{ book, chapter: String(prev) }}
+            <button
+              type="button"
+              onTouchStart={(e) => e.stopPropagation()}
+              onClick={(e) => handleAdjacentChapterPress(prev, "bottom", e)}
               className={cn(
                 "rounded-full border px-4 py-2 font-bold active:scale-95 transition-transform",
                 surfaceClass,
               )}
             >
               → {chapterWithNumber(book, prev)}
-            </Link>
+            </button>
           ) : (
             <span />
           )}
           {next ? (
-            <Link
-              to="/$book/$chapter"
-              params={{ book, chapter: String(next) }}
+            <button
+              type="button"
+              onTouchStart={(e) => e.stopPropagation()}
+              onClick={(e) => handleAdjacentChapterPress(next, "top", e)}
               className={cn(
                 "rounded-full border px-4 py-2 font-bold active:scale-95 transition-transform",
                 surfaceClass,
               )}
             >
               {chapterWithNumber(book, next)} ←
-            </Link>
+            </button>
           ) : (
             <span />
           )}
@@ -807,7 +991,10 @@ function ScriptureReader() {
       <AutoScrollControls
         spiritualMode={spiritualMode}
         onToggleSpiritual={() => setSpiritualMode((s) => !s)}
+        scrollContainer={scrollRoot}
         bottomClass="bottom-[88px]"
+        hidden={chromeHidden}
+        barSize="comfort"
         fontSize={fontSize}
         setFontSize={(n) => setFontSize(Math.max(14, Math.min(34, n)))}
         fontMin={14}
@@ -830,14 +1017,6 @@ function ScriptureReader() {
         }}
         onClose={() => setLookupChoices(null)}
       />
-      <DictionarySearchDialog
-        open={searchOpen}
-        onClose={() => setSearchOpen(false)}
-        onSelect={(row) => {
-          setLookupRow(row);
-          setSearchOpen(false);
-        }}
-      />
       {toast && (
         <div
           role="status"
@@ -851,103 +1030,125 @@ function ScriptureReader() {
   );
 }
 
-/* ---------------- Scroll progress (DOM-only updates, no parent rerender) ---------------- */
+/* ---------------- Chapter verse progress (in-chapter only) ---------------- */
 
-function applyProgressToDom(
-  pct: number,
-  topFill: HTMLDivElement | null,
-  verticalFill: HTMLDivElement | null,
-  verticalDot: HTMLDivElement | null,
-) {
-  const clamped = Math.max(0, Math.min(100, pct));
-  if (topFill) topFill.style.width = `${clamped}%`;
-  if (verticalFill) verticalFill.style.height = `${clamped}%`;
-  if (verticalDot) verticalDot.style.top = `${clamped}%`;
-}
-
-function ReadingProgressChrome({
-  book,
-  chapter,
+function ChapterVerseProgress({
   spiritualMode,
-  chapters,
-  current,
-  targetProgressRef,
+  totalVerses,
+  currentVerse,
+  scrollRoot,
+  articleRef,
 }: {
-  book: string;
-  chapter: string;
   spiritualMode: boolean;
-  chapters: number[];
-  current: number;
-  targetProgressRef: React.MutableRefObject<number>;
+  totalVerses: number;
+  currentVerse: number;
+  scrollRoot: HTMLElement | null;
+  articleRef: React.RefObject<HTMLElement | null>;
 }) {
-  const topFillRef = useRef<HTMLDivElement>(null);
-  const verticalFillRef = useRef<HTMLDivElement>(null);
-  const verticalDotRef = useRef<HTMLDivElement>(null);
+  const fillRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
-  const currentProgress = useRef(0);
+  const displayed = useRef(0);
+  const target = useRef(0);
+  const [labelPct, setLabelPct] = useState(0);
 
   useEffect(() => {
+    displayed.current = 0;
+    target.current = 0;
+    setLabelPct(0);
+    if (fillRef.current) fillRef.current.style.width = "0%";
+  }, [totalVerses]);
+
+  useEffect(() => {
+    const root = scrollRoot ?? document.documentElement;
+    const article = articleRef.current;
+
     const paint = (pct: number) => {
-      applyProgressToDom(pct, topFillRef.current, verticalFillRef.current, verticalDotRef.current);
+      if (fillRef.current) fillRef.current.style.width = `${pct}%`;
+      setLabelPct(Math.round(pct));
     };
 
     const onScroll = () => {
-      const doc = document.documentElement;
-      const max = doc.scrollHeight - window.innerHeight;
-      const pct = max > 0 ? Math.max(0, Math.min(100, (window.scrollY / max) * 100)) : 0;
-      targetProgressRef.current = pct;
+      if (!article) return;
+      target.current = articleScrollProgress(root, article);
       if (rafRef.current == null) {
         const tick = () => {
-          const diff = targetProgressRef.current - currentProgress.current;
-          currentProgress.current += diff * 0.18;
+          const diff = target.current - displayed.current;
+          displayed.current += diff * 0.2;
           const done = Math.abs(diff) < 0.05;
           if (done) {
-            currentProgress.current = targetProgressRef.current;
-            paint(currentProgress.current);
+            displayed.current = target.current;
+            paint(displayed.current);
             rafRef.current = null;
             return;
           }
-          paint(currentProgress.current);
+          paint(displayed.current);
           rafRef.current = requestAnimationFrame(tick);
         };
         rafRef.current = requestAnimationFrame(tick);
       }
     };
+
     onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
+    const unbind = bindScroll(root, onScroll);
+    window.addEventListener("resize", onScroll);
     return () => {
-      window.removeEventListener("scroll", onScroll);
+      unbind();
+      window.removeEventListener("resize", onScroll);
       if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
     };
-  }, [book, chapter, targetProgressRef]);
+  }, [scrollRoot, articleRef, totalVerses]);
+
+  if (totalVerses <= 0) return null;
+
+  const verseNum = Math.min(Math.max(1, currentVerse), totalVerses);
 
   return (
-    <>
+    <div className="mt-1 w-full min-w-0 px-3 pb-1" dir="rtl">
+      <div className="mb-1 flex items-center justify-between gap-3">
+        <p
+          className={cn(
+            "text-[11px] font-bold tabular-nums",
+            spiritualMode ? "text-[#e8d5a0]/90" : "text-[#7a5a32]",
+          )}
+        >
+          الآية {verseNum} من {totalVerses}
+        </p>
+        <p
+          className={cn(
+            "text-[11px] font-extrabold tabular-nums",
+            spiritualMode ? "text-[#f0d78c]" : "text-[#5a3d92]",
+          )}
+        >
+          {labelPct}% مكتمل
+        </p>
+      </div>
       <div
-        className="fixed inset-x-0 top-0 z-40 h-[2px]"
-        style={{ paddingTop: "max(env(safe-area-inset-top), 0px)" }}
+        className={cn(
+          "flex h-[5px] w-full gap-px overflow-hidden rounded-full",
+          spiritualMode ? "bg-white/8" : "bg-[#c79356]/15",
+        )}
+        role="progressbar"
+        aria-valuenow={labelPct}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={`تقدم القراءة ${labelPct}%`}
       >
-        <div className="mx-auto h-full w-full max-w-[640px]">
+        <div className="relative min-w-0 flex-1 overflow-hidden">
+          <div className={cn("absolute inset-0", spiritualMode ? "bg-white/10" : "bg-[#c79356]/14")} />
           <div
-            ref={topFillRef}
+            ref={fillRef}
             className={cn(
-              "h-full rounded-r-full bg-gradient-to-l from-[#3e8a6e] via-[#2f7359] to-[#1f5e4a]",
-              spiritualMode && "shadow-[0_0_10px_rgba(62,138,110,0.55)]",
+              "absolute inset-y-0 right-0 transition-[width,box-shadow] duration-200 ease-out",
+              spiritualMode
+                ? "bg-gradient-to-l from-[#f0d78c] via-[#d4af37] to-[#b8893a] shadow-[0_0_12px_rgba(212,175,55,0.75)]"
+                : "bg-gradient-to-l from-[#7a5cb0] via-[#9b7fd4] to-[#5a3d92] shadow-[0_0_12px_rgba(122,92,176,0.85)]",
             )}
             style={{ width: "0%" }}
           />
         </div>
       </div>
-      <VerticalProgress
-        fillRef={verticalFillRef}
-        dotRef={verticalDotRef}
-        chapters={chapters}
-        current={current}
-        book={book}
-        spiritualMode={spiritualMode}
-      />
-    </>
+    </div>
   );
 }
 
@@ -1105,7 +1306,7 @@ const VerseCard = memo(function VerseCard({
       data-verse-num={verseNum}
       onClick={onTap}
       className={cn(
-        "group relative cursor-pointer rounded-2xl border px-3.5 py-3 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        "group relative w-full min-w-0 cursor-pointer rounded-2xl border px-3.5 py-3 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
         surfaceClass,
         isActive &&
           (spiritualMode
@@ -1192,138 +1393,6 @@ const VerseHighlighted = memo(function VerseHighlighted({
     [text, matchedSet, dictIndex, spiritualMode, HMR_EPOCH, onSelectWord],
   );
 });
-
-/* ---------------- Toolbar button ---------------- */
-
-function ToolbarBtn({
-  children,
-  label,
-  surfaceClass,
-  onClick,
-}: {
-  children: React.ReactNode;
-  label: string;
-  surfaceClass: string;
-  onClick?: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      onClick={onClick}
-      className={cn(
-        "grid h-9 w-9 place-items-center rounded-full border active:scale-90 transition-transform",
-        surfaceClass,
-      )}
-    >
-      {children}
-    </button>
-  );
-}
-
-/* ---------------- Vertical reading progress ---------------- */
-
-function VerticalProgress({
-  fillRef,
-  dotRef,
-  chapters,
-  current,
-  book,
-  spiritualMode,
-}: {
-  fillRef: React.RefObject<HTMLDivElement | null>;
-  dotRef: React.RefObject<HTMLDivElement | null>;
-  chapters: number[];
-  current: number;
-  book: string;
-  spiritualMode: boolean;
-}) {
-  // sparse markers: first, last, current
-  const markers = useMemo(() => {
-    if (!chapters.length) return [] as number[];
-    const set = new Set<number>([chapters[0], chapters[chapters.length - 1], current]);
-    return chapters.filter((c) => set.has(c));
-  }, [chapters, current]);
-
-  return (
-    <div
-      className="fixed left-2 top-1/2 z-30 -translate-y-1/2 select-none"
-      style={{ paddingTop: "env(safe-area-inset-top)" }}
-      aria-hidden
-    >
-      <div
-        className={cn(
-          "relative rounded-full border backdrop-blur-xl px-1 py-3",
-          spiritualMode
-            ? "bg-[#0a1626]/45 border-[#3eb482]/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_0_18px_-6px_rgba(62,180,130,0.35)]"
-            : "bg-white/55 border-white/70 shadow-[0_8px_18px_-14px_rgba(31,94,74,0.30),inset_0_1px_0_rgba(255,255,255,0.85)]",
-        )}
-      >
-        {/* tall ultra-thin rail (~70vh) */}
-        <div
-          className={cn(
-            "relative w-[2px] rounded-full overflow-visible mx-auto",
-            spiritualMode ? "bg-white/10" : "bg-[#1f5e4a]/12",
-          )}
-          style={{ height: "min(70vh, 520px)" }}
-        >
-          {/* neon green filled progress */}
-          <div
-            ref={fillRef}
-            className={cn(
-              "absolute inset-x-0 top-0 rounded-full transition-[height] duration-200 ease-out",
-              spiritualMode
-                ? "bg-gradient-to-b from-[#7af0b8] via-[#3eb482] to-[#1f8a64] shadow-[0_0_8px_rgba(62,180,130,0.7)]"
-                : "bg-gradient-to-b from-[#3eb482] to-[#1f6e54]",
-            )}
-            style={{ height: "0%" }}
-          />
-
-          {/* sparse markers */}
-          {markers.map((c) => {
-            const i = chapters.indexOf(c);
-            const top = chapters.length > 1 ? (i / (chapters.length - 1)) * 100 : 0;
-            const active = c === current;
-            if (active) return null;
-            return (
-              <Link
-                key={c}
-                to="/$book/$chapter"
-                params={{ book, chapter: String(c) }}
-                aria-label={chapterWithNumber(book, c)}
-                className="absolute -translate-x-1/2 left-1/2"
-                style={{ top: `${top}%` }}
-              >
-                <span
-                  className={cn(
-                    "block h-[3px] w-[3px] rounded-full",
-                    spiritualMode ? "bg-white/40" : "bg-[#1f5e4a]/30",
-                  )}
-                />
-              </Link>
-            );
-          })}
-
-          {/* active reading position — neon green dot */}
-          <div
-            ref={dotRef}
-            className="absolute -translate-x-1/2 left-1/2 transition-[top] duration-200 ease-out"
-            style={{ top: "0%" }}
-          >
-            <span
-              className={cn(
-                "block h-2.5 w-2.5 rounded-full bg-gradient-to-br from-[#7af0b8] to-[#1f8a64]",
-                spiritualMode
-                  ? "shadow-[0_0_14px_rgba(122,240,184,0.95),0_0_28px_rgba(62,180,130,0.55)] ring-1 ring-[#7af0b8]/55"
-                  : "shadow-[0_0_8px_rgba(62,138,110,0.55)] ring-2 ring-white/80",
-              )}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 /* ---------------- Verse renderer ---------------- */
 

@@ -22,7 +22,7 @@ type AlphaBackgroundContextValue = {
 
 const AlphaBackgroundContext = createContext<AlphaBackgroundContextValue | null>(null);
 
-const DEFAULT_VARIANT: AlphaBackgroundVariant = "b";
+const DEFAULT_VARIANT: AlphaBackgroundVariant = "a";
 
 function readStoredVariant(): AlphaBackgroundVariant {
   if (typeof window === "undefined") return DEFAULT_VARIANT;
@@ -33,7 +33,7 @@ function readStoredVariant(): AlphaBackgroundVariant {
   }
 }
 
-/** Global Variant B/C/A toggle — `?alphaBg=a|b|c` overrides and persists. */
+/** Global Variant A/B/C toggle — `?alphaBg=a|b|c` overrides and persists. Default A (flat). */
 export function AlphaBackgroundProvider({ children }: { children: ReactNode }) {
   const search = useRouterState({ select: (s) => s.location.searchStr });
   const queryVariant = useMemo(() => {

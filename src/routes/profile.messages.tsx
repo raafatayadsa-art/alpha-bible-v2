@@ -17,6 +17,7 @@ import {
   ArrowRightLeft,
   Bell,
 } from "lucide-react";
+import { AlphaSearchButton } from "@/components/navigation/AlphaExpandableSearchBar";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { CopticWatermark, CopticCross, CopticSeparator } from "@/components/coptic";
 
@@ -140,13 +141,7 @@ function Header({ onSearch, onFilter, unreadCount, onMarkAll }: {
           <h1 className="text-[15px] font-extrabold text-[#3a2a18]">رسائل الكنيسة</h1>
         </div>
         <div className="flex items-center gap-1.5">
-          <button
-            onClick={onSearch}
-            aria-label="بحث"
-            className="grid h-10 w-10 place-items-center rounded-full border border-[#efe2c4] bg-white/70 backdrop-blur-xl active:scale-95 transition"
-          >
-            <Search className="h-4.5 w-4.5 text-[#3a2a18]" />
-          </button>
+          <AlphaSearchButton onClick={onSearch} />
           <button
             onClick={onFilter}
             aria-label="فرز"
@@ -358,7 +353,7 @@ function DetailSheet({ msg, onClose, onToggleSave, onDelete, onMarkRead }: {
       <div className="absolute inset-0 bg-[#2a1d45]/55 backdrop-blur-sm" onClick={onClose} />
       <div
         dir="rtl"
-        className="relative w-full max-w-[440px] rounded-t-[28px] overflow-hidden"
+        className="relative w-full max-w-[var(--alpha-content-max-width)] rounded-t-[28px] overflow-hidden"
         style={{
           background: "linear-gradient(180deg,#fbf3e1 0%, #f4ead8 100%)",
           border: "1px solid #efe2c4",
@@ -548,18 +543,9 @@ function MessagesScreen() {
   const del = (id: number) => setItems((s) => s.filter((m) => m.id !== id));
 
   return (
-    <div dir="rtl" className="relative min-h-screen w-full overflow-x-hidden">
-      <div
-        aria-hidden
-        className="fixed inset-0 -z-10"
-        style={{
-          background:
-            "radial-gradient(120% 55% at 50% 0%, rgba(231,201,122,0.35), transparent 60%)," +
-            "linear-gradient(180deg,#f7eed6 0%,#f4ead8 50%,#ecdcb6 100%)",
-        }}
-      />
+    <div dir="rtl" className="relative min-h-screen w-full overflow-x-hidden bg-[#f4ead8]">
       <CopticWatermark />
-      <div className="relative mx-auto w-full max-w-[440px] px-4 pb-36 pt-[max(env(safe-area-inset-top),12px)]">
+      <div className="relative mx-auto w-full max-w-[var(--alpha-content-max-width)] px-4 pb-36 pt-[max(env(safe-area-inset-top),12px)]">
         <Header
           onSearch={() => setShowSearch((s) => !s)}
           onFilter={() => {

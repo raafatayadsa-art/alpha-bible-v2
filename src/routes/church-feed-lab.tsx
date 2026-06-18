@@ -364,7 +364,7 @@ function LabHeroActionRail() {
 
 function LabHeroCard() {
   return (
-    <section className="relative mx-auto w-full max-w-[430px] px-1">
+    <section className="relative mx-auto w-full max-w-[var(--alpha-content-narrow-width)] px-1">
       <div className="relative h-[205px] overflow-hidden rounded-[30px] border border-white/70 shadow-[0_1px_0_rgba(255,255,255,0.85)_inset,0_20px_44px_-24px_rgba(120,80,30,0.38)]">
         {/* Left-half church image */}
         <div className="absolute inset-y-0 left-0 w-[45%]">
@@ -425,7 +425,7 @@ function LabHeroCard() {
 
 function LabQuickAccessRow() {
   return (
-    <section className="mx-auto mt-3 w-full max-w-[430px] px-1">
+    <section className="mx-auto mt-3 w-full max-w-[var(--alpha-content-narrow-width)] px-1">
       <div className="relative overflow-hidden rounded-[28px] border border-white/50 bg-white/30 px-3 py-3 shadow-[0_14px_36px_rgba(120,90,40,0.1)] backdrop-blur-xl">
         <div
           aria-hidden
@@ -663,7 +663,7 @@ function LabFeedCard({ post }: { post: LabDemoPost }) {
   return (
     <article
       className={
-        "mx-auto w-full max-w-[430px] min-h-[190px] overflow-hidden rounded-[28px] border border-[#ede0c8]/90 " +
+        "mx-auto w-full max-w-[var(--alpha-content-narrow-width)] min-h-[190px] overflow-hidden rounded-[28px] border border-[#ede0c8]/90 " +
         cardBg(post) +
         " shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_14px_36px_-18px_rgba(80,50,20,0.28)]"
       }
@@ -724,7 +724,7 @@ function LabFeedCard({ post }: { post: LabDemoPost }) {
 function ChurchFeedLabPage() {
   return (
     <div dir="rtl" className="min-h-screen bg-[#f4ead8] pb-10">
-      <div className="mx-auto max-w-[440px] px-2 pt-3">
+      <div className="mx-auto max-w-[var(--alpha-content-max-width)] px-2 pt-3">
         <LabHeroCard />
         <LabQuickAccessRow />
 

@@ -74,7 +74,7 @@ export function MessagingCreamSettingsCard({
     <div className={`${MESSAGING_CREAM_CARD} ${className}`}>
       <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center">
         <img
-          src="/shields/official-shield.png?v=8"
+          src="/shields/official-shield.png?v=14"
           alt=""
           className="size-[118px] object-contain opacity-[0.065]"
         />
@@ -261,7 +261,7 @@ export function MessagingGlassPanelShell({
         <button
           type="button"
           onClick={onDone}
-          className="absolute inset-y-0 start-4 flex items-center pt-0.5 text-[15px] font-bold text-[#166534] transition-colors hover:text-[#14532D] active:text-[#0F3D22]"
+          className="absolute inset-y-0 right-4 flex items-center pt-0.5 text-[15px] font-bold text-[#166534] transition-colors hover:text-[#14532D] active:text-[#0F3D22]"
         >
           {doneLabel}
         </button>

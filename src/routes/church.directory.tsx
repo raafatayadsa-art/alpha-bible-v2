@@ -87,25 +87,11 @@ export function DirectoryScreen() {
   return (
     <div
       dir="rtl"
-      className="min-h-screen pb-24"
-      style={{
-        background:
-          `radial-gradient(120% 80% at 50% 0%, #fbf6ec 0%, #f1ecf7 45%, #e8eef8 100%)`,
-      }}
+      className="min-h-screen bg-[#f4ead8] pb-24"
     >
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0 -z-0"
-        style={{
-          background:
-            `radial-gradient(60% 40% at 20% 10%, ${LAV}0.22), transparent 65%),` +
-            `radial-gradient(70% 45% at 90% 30%, ${SKY}0.20), transparent 65%)`,
-        }}
-      />
-
       <Header query={query} hasQuery={!!query} />
 
-      <main className="relative mx-auto w-full max-w-[440px] px-4 pt-3 space-y-5">
+      <main className="relative mx-auto w-full max-w-[var(--alpha-content-max-width)] px-4 pt-3 space-y-5">
         <HeroCard count={churches.length} hasMembership={memberChurchId != null} />
 
         <SearchBar value={query} onChange={setQuery} />

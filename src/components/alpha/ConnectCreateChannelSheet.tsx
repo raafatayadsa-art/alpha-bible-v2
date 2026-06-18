@@ -54,7 +54,7 @@ export function ConnectCreateChannelSheet({
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
       <div
         dir="rtl"
-        className="relative w-full max-w-[430px] glass-strong rounded-t-3xl pb-[max(16px,env(safe-area-inset-bottom))] pt-3 animate-in slide-in-from-bottom duration-200"
+        className="relative w-full max-w-[var(--alpha-content-narrow-width)] glass-strong rounded-t-3xl pb-[max(16px,env(safe-area-inset-bottom))] pt-3 animate-in slide-in-from-bottom duration-200"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-white/20" />

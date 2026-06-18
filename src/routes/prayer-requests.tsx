@@ -136,37 +136,7 @@ function PrayerRequestsScreen() {
 
   return (
     <main dir="rtl" className="relative min-h-screen w-full overflow-x-hidden bg-[#f4ead8]">
-      {/* Warm spiritual background — gold + lavender + soft blue (red minimized) */}
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0 -z-0"
-        style={{
-          background:
-            "radial-gradient(120% 50% at 50% 0%, rgba(214,168,98,0.22), transparent 58%)," +
-            "radial-gradient(70% 60% at 100% 28%, rgba(155,135,196,0.14), transparent 62%)," +
-            "radial-gradient(80% 55% at 0% 88%, rgba(107,159,212,0.11), transparent 62%)",
-        }}
-      />
-      {/* Candle glow + light rays */}
-      <div
-        aria-hidden
-        className="pointer-events-none fixed top-0 left-1/2 -translate-x-1/2 w-[120%] h-[45vh] -z-0 opacity-70"
-        style={{
-          background:
-            "radial-gradient(ellipse 55% 80% at 50% 0%, rgba(255,236,190,0.45), transparent 70%)," +
-            "conic-gradient(from 180deg at 50% 0%, transparent, rgba(255,244,220,0.08) 10deg, transparent 20deg, rgba(255,240,200,0.06) 35deg, transparent 50deg)",
-        }}
-      />
       <CopticWatermark tone="light" />
-      {/* Soft reflection strip */}
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-x-0 top-[18vh] h-32 -z-0 opacity-30"
-        style={{
-          background: "linear-gradient(180deg, rgba(255,255,255,0.35), transparent)",
-        }}
-      />
-
       {/* Header — ivory glass */}
       <AlphaHeaderShell
         sticky
@@ -191,7 +161,7 @@ function PrayerRequestsScreen() {
         />
       </AlphaHeaderShell>
 
-      <div className="relative mx-auto w-full max-w-[440px] pt-2 pb-[calc(env(safe-area-inset-bottom,0px)+120px)] space-y-5">
+      <div className="relative mx-auto w-full max-w-[var(--alpha-content-max-width)] pt-2 pb-[calc(env(safe-area-inset-bottom,0px)+120px)] space-y-5">
         {/* Stats — lavender / gold / soft blue glass */}
         <div className="px-4 grid grid-cols-3 gap-2">
           <StatBox icon={Sparkles} value={stats.active} label="طلب نشط" tone="#8a6ec1" />

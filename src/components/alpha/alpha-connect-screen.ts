@@ -12,7 +12,7 @@ export type AlphaConnectScreenState = {
 
 const DEFAULT_ALPHA_CONNECT_SCREEN: AlphaConnectScreenState = {
   mode: "individual",
-  messagesTab: "voice",
+  messagesTab: "conversations",
 };
 
 const VALID_MODES = new Set<AlphaConnectMode>(["individual", "messages", "groups"]);

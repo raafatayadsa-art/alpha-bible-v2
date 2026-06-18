@@ -317,7 +317,7 @@ export function ConnectChannelSettings({
 
   return (
     <>
-    <div className="connect-settings-screen mx-auto w-full max-w-[430px] px-5 pb-10">
+    <div className="connect-settings-screen mx-auto w-full max-w-[var(--alpha-content-narrow-width)] px-5 pb-10">
       <div className="mb-5 flex items-center justify-between pt-[max(env(safe-area-inset-top),14px)]">
         <button type="button" onClick={onBack} className="glass flex h-11 w-11 items-center justify-center rounded-2xl">
           <ArrowLeft className="h-5 w-5" />
@@ -604,7 +604,7 @@ export function ConnectChannelInviteSheet({
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
       <div
         dir="rtl"
-        className="relative w-full max-w-[430px] glass-strong rounded-t-3xl pb-[max(16px,env(safe-area-inset-bottom))] pt-3"
+        className="relative mb-[var(--alpha-connect-nav-clearance,calc(72px+max(16px,env(safe-area-inset-bottom))))] w-full max-w-[var(--alpha-content-narrow-width)] glass-strong rounded-t-3xl pb-[max(16px,env(safe-area-inset-bottom))] pt-3"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-white/20" />

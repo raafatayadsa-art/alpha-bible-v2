@@ -19,8 +19,7 @@ export function VerseHeroCard({ onClick }: VerseHeroCardProps) {
       <div className="absolute inset-0 bg-gradient-to-b from-[#fdf6e3]/55 via-[#fdf6e3]/35 to-[#fdf6e3]/60" />
       <div className="relative flex flex-col items-center px-6 py-6 text-center">
         <p
-          className="text-[17px] leading-[1.9] font-bold text-[#3a2c10] drop-shadow-sm"
-          style={{ fontFamily: "'Amiri', serif" }}
+          className="text-[17px] leading-[1.9] font-bold text-[#3a2c10] drop-shadow-sm font-quran"
         >
           مِصْباحٌ لِرِجْلَيَّ كَلامُكَ
           <br />
@@ -28,7 +27,6 @@ export function VerseHeroCard({ onClick }: VerseHeroCardProps) {
         </p>
         <p
           className="mt-2 text-[12px] text-[#7a5a18]"
-          style={{ fontFamily: "'Tajawal', sans-serif" }}
         >
           (مزمور 105:119)
         </p>

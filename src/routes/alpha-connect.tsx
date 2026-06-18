@@ -7,13 +7,18 @@ import {
   Volume2,
   Ear,
   Phone,
+  Battery,
+  BatteryCharging,
   BatteryFull,
+  BatteryLow,
+  BatteryMedium,
   ShieldCheck,
+  ShieldAlert,
   SignalHigh,
-  Home,
+  SignalLow,
+  SignalMedium,
+  WifiOff,
   Users,
-  Radio,
-  Bell,
   Settings,
   PhoneMissed,
   PhoneOutgoing,
@@ -29,7 +34,8 @@ import {
   Search,
   Eye,
 } from "lucide-react";
-import { ConnectConfirmDialog, ConnectTopToast } from "@/components/alpha/connect-code-ui";
+import { ConnectExpandableSearchBar } from "@/components/alpha/ConnectExpandableSearchBar";
+import { ConnectConfirmDialog, ConnectConversationDeleteDialog, ConnectTopToast } from "@/components/alpha/connect-code-ui";
 import {
   HIDDEN_CODE_KEY,
   HIDDEN_CONVS_KEY,
@@ -38,8 +44,6 @@ import {
   loadLS,
   saveLS,
 } from "@/components/alpha/messaging-storage";
-import { useNotifUnreadCount } from "@/data/notifications-store";
-import { useAlphaNotifications } from "@/components/navigation/AlphaNotificationsProvider";
 import { AlphaScreenFrame } from "@/components/alpha/AlphaScreenFrame";
 import {
   AlphaConnectSettings,
@@ -63,10 +67,11 @@ import { usePushToTalk } from "@/components/alpha/usePushToTalk";
 import { useVoiceRecorder } from "@/components/alpha/useVoiceRecorder";
 import { useAlphaConnectVoiceChannel } from "@/features/alpha-connect/useAlphaConnectVoiceChannel";
 import { formatVoiceDuration } from "@/features/alpha-connect/retention";
+import { ConnectAudioOutputControl } from "@/components/alpha/ConnectAudioOutputControl";
 import {
-  connectAudioRouteLabel,
   useConnectAudioOutput,
-  type ConnectAudioRoute,
+  type ConnectAudioOutputDevice,
+  type ConnectAudioSelection,
 } from "@/components/alpha/connect-audio-output";
 import { currentUserName, getCurrentUser } from "@/features/church/current-user";
 import { subscribeAuthContext } from "@/features/auth";
@@ -113,6 +118,17 @@ import {
   usePresenceStoreVersion,
 } from "@/features/alpha-connect/useAlphaPresence";
 import {
+  batteryLevelTone,
+  connectionQualityTone,
+  presencePresenceSubtitle,
+  securityStateTone,
+} from "@/features/alpha-connect/alpha-connect-status-engine";
+import {
+  useConnectionStatus,
+  useDeviceStatus,
+  useSecurityStatus,
+} from "@/features/alpha-connect/useAlphaConnectStatus";
+import {
   connectCanCreateChannels,
   connectEffectiveAlphaRole,
   connectListChannelsForViewer,
@@ -140,7 +156,9 @@ import {
   type AlphaConnectMessagesTab,
   type AlphaConnectMode,
 } from "@/components/alpha/alpha-connect-screen";
-import { conversations, type Conversation } from "@/components/alpha/messaging-data";
+import { conversations, conversationFromContact, CONVERSATION_CONTACTS, mergeConversationWithDb, type Conversation } from "@/components/alpha/messaging-data";
+import { useAlphaConnectConversationList } from "@/features/alpha-connect/useAlphaConnectConversationList";
+import { clearConversationForBothParties } from "@/features/alpha-connect/clearConversation";
 import {
   hapticLightImpact,
   hapticMediumImpact,
@@ -154,9 +172,28 @@ import {
 import { getConnectViewportBackdrop } from "@/components/alpha/alpha-viewport";
 import avatarMina from "@/assets/avatar-mina.jpg";
 import avatarPriest from "@/assets/avatar-priest.jpg";
+import { AlphaConnectBottomNavigation } from "@/components/alpha/AlphaConnectBottomNavigation";
+import {
+  alphaConnectModeToNavTab,
+  applyAlphaConnectNavTab,
+  buildAlphaConnectSearch,
+  emptyAlphaConnectSearch,
+  parseAlphaConnectNavTab,
+  type AlphaConnectNavTab,
+  type AlphaConnectRouteSearch,
+} from "@/features/alpha-connect/alpha-connect-nav";
+import { CONNECT_CALL_LOG_ENTRIES as CALL_LOG_ENTRIES } from "@/features/alpha-connect/connect-call-log";
+import {
+  CONNECT_ACTIVITY_PREVIEW_LIMIT,
+  connectContentBottomPaddingClass,
+} from "@/features/alpha-connect/alpha-connect-layout";
 
 export const Route = createFileRoute("/alpha-connect")({
   ssr: false,
+  validateSearch: (search: Record<string, unknown>): AlphaConnectRouteSearch => ({
+    chat: typeof search.chat === "string" ? search.chat : undefined,
+    tab: parseAlphaConnectNavTab(search.tab) ?? undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Alpha Connect — اتصال صوتي" },
@@ -171,62 +208,6 @@ type MessagesTab = AlphaConnectMessagesTab;
 
 const GROUP_VOICE_CHANNEL_ID = "margrgis-conference-2027";
 const GROUP_VOICE_TITLE = "مؤتمر مارجرجس 2027";
-
-const ACTIVITY_PREVIEW_LIMIT = 3;
-
-const CALL_LOG_ENTRIES: {
-  id: string;
-  contactId: string;
-  contactName: string;
-  duration: string;
-  time: string;
-  avatar: string;
-  tone: "green" | "red";
-  missed?: boolean;
-  section: string;
-}[] = [
-  {
-    id: "1",
-    contactId: "servant",
-    contactName: "مينا فادي",
-    duration: "12:46",
-    time: "منذ 35 دقيقة",
-    avatar: avatarMina,
-    tone: "green",
-    section: "اليوم",
-  },
-  {
-    id: "2",
-    contactId: "priest",
-    contactName: "أبونا داود",
-    duration: "4:12",
-    time: "منذ ساعتين",
-    avatar: avatarPriest,
-    tone: "green",
-    section: "اليوم",
-  },
-  {
-    id: "3",
-    contactId: "member",
-    contactName: "مريم عادل",
-    duration: "",
-    time: "أمس 6:20 م",
-    avatar: avatarMina,
-    tone: "red",
-    missed: true,
-    section: "الأمس",
-  },
-  {
-    id: "4",
-    contactId: "servant",
-    contactName: "مينا فادي",
-    duration: "2:08",
-    time: "أمس 9:15 م",
-    avatar: avatarMina,
-    tone: "green",
-    section: "الأمس",
-  },
-];
 
 const VOICE_MESSAGE_ENTRIES: {
   id: string;
@@ -373,11 +354,19 @@ const CONTACT_ROLE_LABEL: Record<Conversation["role"], string> = {
   official: "Alpha الرسمي",
 };
 
+function resolveConnectConversation(id: string, dbConversations: Conversation[]): Conversation | null {
+  const fromDb = dbConversations.find((c) => c.id === id);
+  if (fromDb) return fromDb;
+  const contact = CONVERSATION_CONTACTS.find((c) => c.id === id);
+  if (contact) return mergeConversationWithDb(contact, undefined);
+  const known = conversations.find((item) => item.id === id);
+  return known ?? null;
+}
+
 function AlphaConnect() {
   useAlphaPresenceBootstrap();
   usePresenceStoreVersion();
   const { mode, messagesTab, setMode, setMessagesTab } = useAlphaConnectScreen();
-  const [bottomNavVisible, setBottomNavVisible] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [connectSettings, setConnectSettings] = useState<AlphaConnectSettingsState>(() => loadAlphaConnectSettings());
   const [securityUnlocked, setSecurityUnlocked] = useState(
@@ -395,10 +384,17 @@ function AlphaConnect() {
   const [activeChannelId, setActiveChannelId] = useState("main");
   const [channelMuted, setChannelMuted] = useState(false);
   const [channelToast, setChannelToast] = useState<string | null>(null);
-  const [openChatConv, setOpenChatConv] = useState<(typeof conversations)[number] | null>(null);
+  const [openChatConv, setOpenChatConv] = useState<Conversation | null>(null);
   const [connectToast, setConnectToast] = useState<string | null>(null);
   const [messagesListKey, setMessagesListKey] = useState(0);
+  const appliedConnectTabRef = useRef<AlphaConnectNavTab | null>(null);
   const navigate = useNavigate();
+  const { chat: chatContactId, tab: connectTab } = Route.useSearch();
+  const { conversations: connectDbConversations } = useAlphaConnectConversationList(true);
+  const connectUnreadTotal = useMemo(
+    () => connectDbConversations.reduce((total, conv) => total + (conv.unread ?? 0), 0),
+    [connectDbConversations],
+  );
   const currentUser = getCurrentUser();
   const currentUserId = currentUser.id || "creator";
   void channelStateTick;
@@ -417,6 +413,106 @@ function AlphaConnect() {
     setConnectToast(msg);
     window.setTimeout(() => setConnectToast(null), 2400);
   }, []);
+
+  const navigateConnectSearch = useCallback(
+    (search: { tab?: AlphaConnectNavTab; chat?: string }) => {
+      void navigate({
+        to: "/alpha-connect",
+        search: buildAlphaConnectSearch(search),
+        replace: true,
+      });
+    },
+    [navigate],
+  );
+
+  const closeConnectSettings = useCallback(() => {
+    setSettingsOpen(false);
+    navigateConnectSearch({ chat: chatContactId });
+  }, [chatContactId, navigateConnectSearch]);
+
+  const handleConnectNavTab = useCallback(
+    (tab: AlphaConnectNavTab, source: "user" | "url" = "user") => {
+      if (tab === "settings" && settingsOpen && source === "user") {
+        closeConnectSettings();
+        return;
+      }
+
+      applyAlphaConnectNavTab(tab, {
+        exitToAlphaHome: () => {
+          void navigate({ to: "/home" });
+        },
+        openChannels: () => {
+          setSettingsOpen(false);
+          setChannelSettingsOpen(false);
+          setOpenChatConv(null);
+          setChannelsDrawerOpen(false);
+          setParticipantsDrawerOpen(false);
+          setMode("groups");
+          navigateConnectSearch({ tab: "channels" });
+        },
+        openCalls: () => {
+          setSettingsOpen(false);
+          setChannelSettingsOpen(false);
+          setOpenChatConv(null);
+          setChannelsDrawerOpen(false);
+          setMode("individual");
+          navigateConnectSearch({ tab: "calls" });
+        },
+        openMessages: () => {
+          setSettingsOpen(false);
+          setChannelSettingsOpen(false);
+          setOpenChatConv(null);
+          setMode("messages");
+          setMessagesTab("conversations");
+          navigateConnectSearch({ tab: "messages" });
+        },
+        openSettings: () => {
+          setOpenChatConv(null);
+          setChannelsDrawerOpen(false);
+          setSettingsOpen(true);
+          navigateConnectSearch({ tab: "settings" });
+        },
+      });
+    },
+    [
+      closeConnectSettings,
+      navigate,
+      navigateConnectSearch,
+      setMessagesTab,
+      setMode,
+      settingsOpen,
+    ],
+  );
+
+  const closeOpenChat = useCallback(() => {
+    setOpenChatConv(null);
+    if (chatContactId) {
+      void navigate({ to: "/alpha-connect", search: emptyAlphaConnectSearch(), replace: true });
+    }
+  }, [chatContactId, navigate]);
+
+  const openConnectChat = useCallback(
+    (contact: Conversation) => {
+      setMode("messages");
+      setMessagesTab("conversations");
+      setOpenChatConv(contact);
+      void navigate({
+        to: "/alpha-connect",
+        search: { chat: contact.id },
+      });
+    },
+    [navigate, setMode, setMessagesTab],
+  );
+
+  useEffect(() => {
+    if (!chatContactId) return;
+    if (openChatConv?.id === chatContactId) return;
+    const conv = resolveConnectConversation(chatContactId, connectDbConversations);
+    if (!conv) return;
+    setMode("messages");
+    setMessagesTab("conversations");
+    setOpenChatConv(conv);
+  }, [chatContactId, connectDbConversations, openChatConv?.id, setMode, setMessagesTab]);
 
   useEffect(() => {
     if (!openChatConv) setMessagesListKey((k) => k + 1);
@@ -509,7 +605,7 @@ function AlphaConnect() {
     inviteHandledRef.current = invite;
 
     const channelId = resolveChannelIdFromInvite(decodeURIComponent(invite));
-    void navigate({ to: "/alpha-connect", replace: true });
+    void navigate({ to: "/alpha-connect", search: emptyAlphaConnectSearch(), replace: true });
     if (!channelId) {
       showChannelToast("رابط الدعوة غير صالح");
       return;
@@ -594,27 +690,25 @@ function AlphaConnect() {
 
   const openContactMessage = useCallback(
     (contactId: string, name: string) => {
-      const contact = conversations.find((item) => item.id === contactId);
-      const role = contact?.role;
-      const mappedRole =
-        role === "priest" || role === "servant" || role === "official"
-          ? role === "official"
-            ? "admin"
-            : role
-          : undefined;
-      void navigate({
-        to: "/messages",
-        search: {
-          contactId,
+      const resolved = resolveConnectConversation(contactId, connectDbConversations);
+      const contact: Conversation =
+        resolved ??
+        conversationFromContact({
+          id: contactId,
           name,
-          ...(mappedRole ? { role: mappedRole as "priest" | "servant" | "admin" } : {}),
-          from: "/alpha-connect",
-        },
-      });
+          role: contactId === "priest" ? "priest" : contactId === "servant" ? "servant" : "admin",
+        });
+      openConnectChat(contact);
     },
-    [navigate],
+    [connectDbConversations, openConnectChat],
   );
-  const audio = useConnectAudioOutput();
+  const audio = useConnectAudioOutput({ enabled: mode === "groups" || mode === "individual" });
+
+  useEffect(() => {
+    if (mode === "groups" || mode === "individual") {
+      void audio.refreshDevices();
+    }
+  }, [mode, activeChannelId, audio.refreshDevices]);
   const groupCode = deriveGroupCode(GROUP_VOICE_CHANNEL_ID);
   const messagesVoice = useAlphaConnectVoiceChannel({
     scope: "personal",
@@ -659,25 +753,7 @@ function AlphaConnect() {
     return () => window.removeEventListener(ALPHA_CONNECT_SCREENSHOT_EVENT, onScreenshotAlert);
   }, [connectSettings.screenshotAlert]);
 
-  const syncBottomNav = useCallback((el: HTMLElement) => {
-    const maxScroll = el.scrollHeight - el.clientHeight;
-    const atBottom = maxScroll <= 8 || maxScroll - el.scrollTop <= 32;
-    setBottomNavVisible(atBottom);
-  }, []);
-
-  const handleScroll = useCallback(
-    (event: React.UIEvent<HTMLDivElement>) => {
-      syncBottomNav(event.currentTarget);
-    },
-    [syncBottomNav],
-  );
-
-  useEffect(() => {
-    const el = document.querySelector(".alpha-connect-theme .alpha-screen-frame-scroll");
-    if (el instanceof HTMLElement) {
-      syncBottomNav(el);
-    }
-  }, [mode, messagesTab, syncBottomNav]);
+  const handleScroll = useCallback((_event: React.UIEvent<HTMLDivElement>) => {}, []);
 
   useEffect(() => {
     if (channelSettingsOpen && !canManageChannel) {
@@ -687,16 +763,32 @@ function AlphaConnect() {
   }, [channelSettingsOpen, canManageChannel, showChannelToast]);
 
   useEffect(() => {
-    if (mode !== "messages" && openChatConv) setOpenChatConv(null);
-  }, [mode, openChatConv]);
+    if (mode !== "messages" && openChatConv) {
+      setOpenChatConv(null);
+      if (chatContactId) {
+        void navigate({ to: "/alpha-connect", search: emptyAlphaConnectSearch(), replace: true });
+      }
+    }
+  }, [mode, openChatConv, chatContactId, navigate]);
 
   const contentBottomPadding = openChatConv
     ? "pb-[max(env(safe-area-inset-bottom),8px)]"
-    : "pb-[calc(env(safe-area-inset-bottom)+108px)]";
+    : connectContentBottomPaddingClass();
   const securityLocked = isSecurityLockEnabled(connectSettings) && !securityUnlocked;
   const chatOpen = !!openChatConv;
   const connectFrameClass = getAlphaConnectFrameClass(connectSettings.theme);
   const connectViewportBackdrop = getConnectViewportBackdrop(connectSettings.theme);
+  const connectBottomNav = (
+    <AlphaConnectBottomNavigation
+      mode={mode}
+      settingsOpen={settingsOpen}
+      visible={!chatOpen && !securityLocked}
+      unreadMessages={connectUnreadTotal}
+      themeClassName={connectFrameClass}
+      onTabPress={handleConnectNavTab}
+    />
+  );
+  const showConnectBottomNav = !chatOpen && !securityLocked;
 
   useEffect(() => {
     const onThemeChanged = (event: Event) => {
@@ -707,8 +799,25 @@ function AlphaConnect() {
     return () => window.removeEventListener(CONNECT_THEME_CHANGED_EVENT, onThemeChanged);
   }, []);
 
+  useEffect(() => {
+    if (!connectTab) {
+      appliedConnectTabRef.current = null;
+      return;
+    }
+    if (appliedConnectTabRef.current === connectTab) return;
+
+    const activeTab = alphaConnectModeToNavTab(mode, settingsOpen);
+    if (connectTab === activeTab) {
+      appliedConnectTabRef.current = connectTab;
+      return;
+    }
+
+    appliedConnectTabRef.current = connectTab;
+    handleConnectNavTab(connectTab, "url");
+  }, [connectTab, handleConnectNavTab, mode, settingsOpen]);
+
   if (securityLocked) {
-  return (
+    return (
       <AlphaScreenFrame
         mode="scroll"
         showShellBackground={false}
@@ -728,92 +837,102 @@ function AlphaConnect() {
 
   if (settingsOpen) {
     return (
-      <AlphaScreenFrame
-        mode="scroll"
-        showShellBackground={false}
-        frameClassName={connectFrameClass}
-        viewportBackdrop={connectViewportBackdrop}
-      >
-        <AlphaConnectSettings
-          onBack={() => setSettingsOpen(false)}
-          onThemeChange={(theme) => setConnectSettings((prev) => ({ ...prev, theme }))}
-          trustShield={
-            <AlphaTrustShield
-              context={{ type: "settings" }}
-              channelId={activeChannelId}
-              channel={activeChannel}
-              currentUserId={currentUserId}
-            />
-          }
-        />
-      </AlphaScreenFrame>
+      <>
+        <AlphaScreenFrame
+          mode="scroll"
+          showShellBackground={false}
+          frameClassName={connectFrameClass}
+          viewportBackdrop={connectViewportBackdrop}
+        >
+          <AlphaConnectSettings
+            onBack={closeConnectSettings}
+            onThemeChange={(theme) => setConnectSettings((prev) => ({ ...prev, theme }))}
+            trustShield={
+              <AlphaTrustShield
+                context={{ type: "settings" }}
+                channelId={activeChannelId}
+                channel={activeChannel}
+                currentUserId={currentUserId}
+              />
+            }
+          />
+        </AlphaScreenFrame>
+        {connectBottomNav}
+      </>
     );
   }
 
   if (channelSettingsOpen) {
     return (
-      <AlphaScreenFrame
-        mode="scroll"
-        showShellBackground={false}
-        frameClassName={connectFrameClass}
-        viewportBackdrop={connectViewportBackdrop}
-      >
-        <ConnectChannelSettings
-          channelId={activeChannelId}
-          channelName={activeChannel.name}
-          currentUserId={currentUserId}
-          onBack={() => setChannelSettingsOpen(false)}
-          onToast={showChannelToast}
-          onChannelLifecycleChange={refreshChannelState}
-          onChannelDeleted={() => {
-            const visible = connectListChannelsForViewer(currentUserId);
-            setActiveChannelId(visible[0]?.id ?? "main");
-            setChannelSettingsOpen(false);
-            refreshChannelState();
-          }}
-        />
-      </AlphaScreenFrame>
+      <>
+        <AlphaScreenFrame
+          mode="scroll"
+          showShellBackground={false}
+          frameClassName={connectFrameClass}
+          viewportBackdrop={connectViewportBackdrop}
+        >
+          <ConnectChannelSettings
+            channelId={activeChannelId}
+            channelName={activeChannel.name}
+            currentUserId={currentUserId}
+            onBack={() => setChannelSettingsOpen(false)}
+            onToast={showChannelToast}
+            onChannelLifecycleChange={refreshChannelState}
+            onChannelDeleted={() => {
+              const visible = connectListChannelsForViewer(currentUserId);
+              setActiveChannelId(visible[0]?.id ?? "main");
+              setChannelSettingsOpen(false);
+              refreshChannelState();
+            }}
+          />
+        </AlphaScreenFrame>
+        {connectBottomNav}
+      </>
     );
   }
 
   return (
-    <AlphaScreenFrame
-      mode={chatOpen ? "fixed" : "scroll"}
+    <>
+      <AlphaScreenFrame
+        mode={chatOpen ? "fixed" : "scroll"}
       showShellBackground={false}
       frameClassName={connectFrameClass}
       viewportBackdrop={connectViewportBackdrop}
       onScroll={chatOpen ? undefined : handleScroll}
     >
       <div
-        className={`relative mx-auto w-full max-w-[430px] px-5 ${
+        className={`relative mx-auto w-full max-w-[var(--alpha-content-narrow-width)] px-5 ${
           chatOpen ? "flex h-full min-h-0 flex-col overflow-hidden" : contentBottomPadding
         }`}
       >
         <Header
           mode={mode}
           chatContact={openChatConv}
-          onCloseChat={() => setOpenChatConv(null)}
-          onOpenSettings={() => setSettingsOpen(true)}
+          onCloseChat={closeOpenChat}
+          onOpenSettings={() => handleConnectNavTab("settings")}
           onOpenChannels={openChannelsDrawer}
           onOpenParticipants={openParticipantsDrawer}
           trustShield={trustShieldControl}
         />
-        <ModeSwitcher mode={mode} setMode={setMode} immersive={chatOpen} />
+        {!showConnectBottomNav ? (
+          <ModeSwitcher mode={mode} setMode={setMode} immersive={chatOpen} />
+        ) : null}
 
         {chatOpen && openChatConv ? (
           <div className="connect-chat-immersive flex min-h-0 flex-1 flex-col overflow-hidden -mx-5 px-0">
             <AlphaChatScreen
+              key={openChatConv.id}
               embedded
               hideHeader
               profile={openChatConv}
-              onBack={() => setOpenChatConv(null)}
+              onBack={closeOpenChat}
               onShowToast={showConnectToast}
             />
           </div>
         ) : mode === "individual" ? (
           <>
             <IndividualProfileCard />
-        <StatusStrip />
+            <StatusStrip />
             <CallLogCard onRedial={redialContact} onMessage={openContactMessage} />
             <ConnectScrollAction>
               <ConnectCallButton onPress={() => setCallPickerOpen(true)} />
@@ -826,7 +945,7 @@ function AlphaConnect() {
               activeTab={messagesTab}
               onTabChange={setMessagesTab}
               voiceHistoryPanel={<VoiceRecordingsLogPanel includeChannel={false} />}
-              onOpenChat={setOpenChatConv}
+              onOpenChat={openConnectChat}
               onShowToast={showConnectToast}
             />
             {messagesTab === "voice" ? (
@@ -848,8 +967,12 @@ function AlphaConnect() {
             <ConnectChannelPttFrame>
               <VoiceControl
                 showFooterActions={false}
-                audioOutput={audio.output}
-                onToggleSpeaker={audio.toggleSpeaker}
+                audioSelection={audio.selection}
+                audioDevices={audio.devices}
+                audioPickerOpen={audio.pickerOpen}
+                onOpenAudioPicker={() => void audio.openPicker()}
+                onCloseAudioPicker={() => audio.setPickerOpen(false)}
+                onSelectAudioDevice={(id) => void audio.selectDevice(id)}
                 onSendVoice={(blob, durationMs) => groupVoice.sendVoice(blob, durationMs, "ptt")}
               />
             </ConnectChannelPttFrame>
@@ -865,8 +988,12 @@ function AlphaConnect() {
             <ConnectChannelActionBar
               muted={channelMuted}
               onToggleMute={() => setChannelMuted((value) => !value)}
-              speakerOn={audio.output === "speaker"}
-              onToggleSpeaker={audio.toggleSpeaker}
+              audioSelection={audio.selection}
+              audioDevices={audio.devices}
+              audioPickerOpen={audio.pickerOpen}
+              onOpenAudioPicker={() => void audio.openPicker()}
+              onCloseAudioPicker={() => audio.setPickerOpen(false)}
+              onSelectAudioDevice={(id) => void audio.selectDevice(id)}
               onInvite={() => setInviteSheetOpen(true)}
               canOpenSettings={canManageChannel}
               onChannelSettings={() => {
@@ -877,18 +1004,10 @@ function AlphaConnect() {
                 setChannelSettingsOpen(true);
               }}
             />
+            <ChannelRecordingsHistoryCard />
           </>
         )}
       </div>
-
-      <ConnectBottomDock
-        navVisible={bottomNavVisible && !chatOpen}
-        onOpenSettings={() => setSettingsOpen(true)}
-        onOpenChannels={() => {
-          setMode("groups");
-          openChannelsDrawer();
-        }}
-      />
 
       <ConnectChannelEdgeGestures
         enabled={mode === "groups"}
@@ -988,6 +1107,8 @@ function AlphaConnect() {
       ) : null}
 
     </AlphaScreenFrame>
+    {connectBottomNav}
+    </>
   );
 }
 
@@ -1001,7 +1122,7 @@ function Header({
   trustShield,
 }: {
   mode: Mode;
-  chatContact?: (typeof conversations)[number] | null;
+  chatContact?: Conversation | null;
   onCloseChat?: () => void;
   onOpenSettings: () => void;
   onOpenChannels: () => void;
@@ -1013,7 +1134,7 @@ function Header({
     mode === "groups" ? "قناة صوتية" : mode === "messages" ? "الرسائل والصوت" : "اتصال شخصي";
 
   return (
-    <div className={`connect-header flex items-center justify-between pt-[max(env(safe-area-inset-top),14px)] ${chatOpen ? "mb-2 shrink-0" : "mb-5"}`}>
+    <div className={`connect-header flex items-center justify-between pt-[max(env(safe-area-inset-top),14px)] ${chatOpen ? "mb-2 shrink-0" : "mb-3"}`}>
       <div className="flex items-center gap-1.5">
         {chatOpen ? (
           <button
@@ -1034,7 +1155,7 @@ function Header({
       {chatOpen && chatContact ? (
         <div className="relative flex min-w-0 flex-1 items-center justify-center px-1">
           <div className="connect-header-logo-slot connect-header-logo-slot--hide absolute inset-x-0 flex flex-col items-center">
-            <AlphaConnectLogo size="lg" animated className="-mb-1" />
+            <AlphaConnectLogo size="lg" animated />
             <div className="flex items-center gap-2">
               <h1 className="connect-header-title text-[17px] font-semibold tracking-tight text-neon-green drop-shadow-[0_0_8px_var(--neon-green)]">
                 Alpha Connect
@@ -1058,7 +1179,7 @@ function Header({
         </div>
       ) : (
         <div className="connect-header-logo-slot flex flex-col items-center">
-          <AlphaConnectLogo size="lg" animated className="-mb-1" />
+          <AlphaConnectLogo size="lg" animated />
           <div className="flex items-center gap-2">
             <h1 className="connect-header-title text-[17px] font-semibold tracking-tight text-neon-green drop-shadow-[0_0_8px_var(--neon-green)]">
               Alpha Connect
@@ -1105,7 +1226,7 @@ function ModeSwitcher({
   const activeIndex = tabs.findIndex((t) => t.id === mode);
 
   return (
-    <div className={`connect-mode-tabs glass relative flex h-11 rounded-full p-1 ${immersive ? "connect-tabs-rise mb-2 shrink-0" : "mb-4"}`}>
+    <div className={`connect-mode-tabs glass relative flex h-11 rounded-full p-1 ${immersive ? "connect-tabs-rise mb-2 shrink-0" : "mb-3"}`}>
       <div
         className="connect-mode-tabs-indicator absolute bottom-1 top-1 w-[calc(33.333%-3px)] rounded-full transition-all duration-300"
         style={{ right: `calc(${activeIndex * 33.333}% + ${activeIndex === 0 ? 4 : 2}px)` }}
@@ -1167,7 +1288,7 @@ function IndividualProfileCard() {
               <span className={`h-1.5 w-1.5 rounded-full ${presenceDotClass}`} />
               <span className={`text-[10px] font-medium ${presenceTextClass}`}>{presenceLabel}</span>
             </div>
-            <p className="text-[10px] text-muted-foreground">جاهز للاستماع والتحدث</p>
+            <p className="text-[10px] text-muted-foreground">{presencePresenceSubtitle(myPresence)}</p>
           </>
         }
         trailing={
@@ -1224,8 +1345,8 @@ function CallLogCard({
   onMessage: (contactId: string, name: string) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const visibleEntries = expanded ? CALL_LOG_ENTRIES : CALL_LOG_ENTRIES.slice(0, ACTIVITY_PREVIEW_LIMIT);
-  const hasMore = CALL_LOG_ENTRIES.length > ACTIVITY_PREVIEW_LIMIT;
+  const visibleEntries = expanded ? CALL_LOG_ENTRIES : CALL_LOG_ENTRIES.slice(0, CONNECT_ACTIVITY_PREVIEW_LIMIT);
+  const hasMore = CALL_LOG_ENTRIES.length > CONNECT_ACTIVITY_PREVIEW_LIMIT;
 
   return (
     <div className="glass-strong mb-4 overflow-hidden rounded-3xl p-4">
@@ -1259,15 +1380,17 @@ function MessagesLogCard({
   activeTab: MessagesTab;
   onTabChange: (tab: MessagesTab) => void;
   voiceHistoryPanel: ReactNode;
-  onOpenChat: (conv: (typeof conversations)[number]) => void;
+  onOpenChat: (conv: Conversation) => void;
   onShowToast: (msg: string) => void;
 }) {
+  const { conversations: dbConversations, refresh: refreshConversations } = useAlphaConnectConversationList();
   const [conversationsExpanded, setConversationsExpanded] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showNewChat, setShowNewChat] = useState(false);
   const [searchExpanded, setSearchExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [clearingConv, setClearingConv] = useState(false);
   const [hideConfirmId, setHideConfirmId] = useState<string | null>(null);
   const [unhideConfirmId, setUnhideConfirmId] = useState<string | null>(null);
   const [deletedConvIds, setDeletedConvIds] = useState<string[]>([]);
@@ -1301,17 +1424,17 @@ function MessagesLogCard({
   }, [secretMode]);
 
   const newChatTargets = useMemo(
-    () => conversations.filter((c) => c.kind === "private" && !deletedConvIds.includes(c.id) && !hiddenConvIds.includes(c.id)),
-    [deletedConvIds, hiddenConvIds],
+    () => dbConversations.filter((c) => c.kind === "private" && !deletedConvIds.includes(c.id) && !hiddenConvIds.includes(c.id)),
+    [dbConversations, deletedConvIds, hiddenConvIds],
   );
 
   const filteredConversations = useMemo(
-    () => conversations.filter((c) => !deletedConvIds.includes(c.id) && !hiddenConvIds.includes(c.id)),
-    [deletedConvIds, hiddenConvIds],
+    () => dbConversations.filter((c) => !deletedConvIds.includes(c.id) && !hiddenConvIds.includes(c.id)),
+    [dbConversations, deletedConvIds, hiddenConvIds],
   );
   const visibleHidden = useMemo(
-    () => conversations.filter((c) => hiddenConvIds.includes(c.id) && !deletedConvIds.includes(c.id)),
-    [hiddenConvIds, deletedConvIds],
+    () => dbConversations.filter((c) => hiddenConvIds.includes(c.id) && !deletedConvIds.includes(c.id)),
+    [dbConversations, hiddenConvIds, deletedConvIds],
   );
   const searchedConversations = useMemo(() => {
     if (secretMode) return visibleHidden;
@@ -1323,20 +1446,59 @@ function MessagesLogCard({
   }, [filteredConversations, searchQuery, secretMode, visibleHidden]);
   const visibleConversations = conversationsExpanded
     ? searchedConversations
-    : searchedConversations.slice(0, ACTIVITY_PREVIEW_LIMIT);
-  const conversationsHasMore = searchedConversations.length > ACTIVITY_PREVIEW_LIMIT;
+    : searchedConversations.slice(0, CONNECT_ACTIVITY_PREVIEW_LIMIT);
+  const conversationsHasMore = searchedConversations.length > CONNECT_ACTIVITY_PREVIEW_LIMIT;
   const deleteConfirmConv = deleteConfirmId
-    ? conversations.find((c) => c.id === deleteConfirmId)
+    ? dbConversations.find((c) => c.id === deleteConfirmId)
     : undefined;
+
+  const hideDeletedConversation = useCallback(
+    (convId: string) => {
+      setDeletedConvIds((prev) => [...prev, convId]);
+      setDeleteConfirmId(null);
+    },
+    [],
+  );
+
+  const handleDeleteLocalOnly = useCallback(() => {
+    if (!deleteConfirmConv || clearingConv) return;
+    hapticWarning();
+    hideDeletedConversation(deleteConfirmConv.id);
+    onShowToast("تم مسح المحادثة من قائمتك");
+  }, [clearingConv, deleteConfirmConv, hideDeletedConversation, onShowToast]);
+
+  const handleDeleteForBoth = useCallback(async () => {
+    if (!deleteConfirmConv || clearingConv) return;
+    hapticWarning();
+    setClearingConv(true);
+    try {
+      await clearConversationForBothParties(deleteConfirmConv);
+      hideDeletedConversation(deleteConfirmConv.id);
+      await refreshConversations();
+      onShowToast("تم مسح المحادثة للطرفين");
+    } catch (error) {
+      console.error("[MessagesLogCard:clearBoth]", error);
+      onShowToast("تعذّر مسح المحادثة للطرفين");
+    } finally {
+      setClearingConv(false);
+    }
+  }, [clearingConv, deleteConfirmConv, hideDeletedConversation, onShowToast, refreshConversations]);
+
   const hideConfirmConv = hideConfirmId
-    ? conversations.find((c) => c.id === hideConfirmId)
+    ? dbConversations.find((c) => c.id === hideConfirmId)
     : undefined;
   const unhideConfirmConv = unhideConfirmId
-    ? conversations.find((c) => c.id === unhideConfirmId)
+    ? dbConversations.find((c) => c.id === unhideConfirmId)
     : undefined;
 
   const openConversation = (id: string) => {
-    const conv = conversations.find((c) => c.id === id);
+    let conv = dbConversations.find((c) => c.id === id);
+    if (!conv) {
+      const contact = CONVERSATION_CONTACTS.find((c) => c.id === id);
+      if (contact) {
+        conv = mergeConversationWithDb(contact, undefined);
+      }
+    }
     if (conv) onOpenChat(conv);
   };
 
@@ -1437,7 +1599,7 @@ function MessagesLogCard({
                 </button>
               </div>
               <div className="flex min-w-0 flex-1 justify-end">
-                <ConnectMessagesSearchBar
+                <ConnectExpandableSearchBar
                   expanded={searchExpanded}
                   query={searchQuery}
                   inputRef={searchInputRef}
@@ -1448,6 +1610,8 @@ function MessagesLogCard({
                     setSearchQuery(value);
                     if (needCodePrompt) setNeedCodePrompt(false);
                   }}
+                  collapsedAriaLabel="بحث في المحادثات"
+                  inputAriaLabel="بحث في المحادثات"
                 />
               </div>
             </div>
@@ -1602,88 +1766,20 @@ function MessagesLogCard({
         icon={Eye}
       />
 
-      <ConnectConfirmDialog
+      <ConnectConversationDeleteDialog
         open={!!deleteConfirmConv}
         zIndex={270}
+        busy={clearingConv}
         onClose={() => setDeleteConfirmId(null)}
-        onConfirm={() => {
-          if (!deleteConfirmConv) return;
-          hapticWarning();
-          setDeletedConvIds((prev) => [...prev, deleteConfirmConv.id]);
-          setDeleteConfirmId(null);
-          onShowToast("تم مسح المحادثة");
-        }}
+        onDeleteLocal={handleDeleteLocalOnly}
+        onDeleteBoth={() => void handleDeleteForBoth()}
         title="حذف المحادثة؟"
         description={
           deleteConfirmConv
-            ? `سيتم حذف محادثة «${deleteConfirmConv.name}» من قائمتك.`
-            : undefined
+            ? `اختر طريقة مسح محادثة «${deleteConfirmConv.name}».`
+            : "اختر طريقة المسح."
         }
-        confirmLabel="حذف"
-        tone="danger"
-        icon={Trash2}
       />
-    </div>
-  );
-}
-
-function ConnectMessagesSearchBar({
-  expanded,
-  query,
-  inputRef,
-  secretMode = false,
-  onExpand,
-  onCollapse,
-  onQueryChange,
-}: {
-  expanded: boolean;
-  query: string;
-  inputRef: RefObject<HTMLInputElement | null>;
-  secretMode?: boolean;
-  onExpand: () => void;
-  onCollapse: () => void;
-  onQueryChange: (value: string) => void;
-}) {
-  if (!expanded) {
-    return (
-      <button
-        type="button"
-        onClick={onExpand}
-        aria-label="بحث في المحادثات"
-        className="glass flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/15 text-[var(--neon-blue)] shadow-[0_0_12px_oklch(0.72_0.18_235/0.18)] transition-all active:scale-90"
-      >
-        <Search className="h-[18px] w-[18px]" strokeWidth={2.2} />
-      </button>
-    );
-  }
-
-  return (
-    <div className="connect-search-expand flex w-full min-w-0 items-center justify-end">
-      <div
-        className={`glass flex h-11 w-full items-center gap-2.5 rounded-full border px-3.5 ${
-          secretMode ? "border-neon-green/35 shadow-[0_0_14px_oklch(0.82_0.22_145/0.22)]" : "border-white/15"
-        }`}
-      >
-        <Search className={`h-[18px] w-[18px] shrink-0 ${secretMode ? "text-neon-green" : "text-[var(--neon-blue)]"}`} strokeWidth={2.2} />
-        <input
-          ref={inputRef}
-          type="search"
-          autoComplete="off"
-          value={query}
-          onChange={(e) => onQueryChange(e.target.value)}
-          placeholder={secretMode ? "وضع المحادثات المخفية" : "ابحث أو أدخل الكود السري..."}
-          aria-label="بحث في المحادثات"
-          className="min-w-0 flex-1 bg-transparent text-[13px] text-foreground outline-none placeholder:text-muted-foreground/55"
-        />
-        <button
-          type="button"
-          onClick={onCollapse}
-          aria-label="إغلاق البحث"
-          className="grid size-7 shrink-0 place-items-center rounded-full text-muted-foreground/70 transition-colors hover:text-foreground"
-        >
-          <X className="h-3.5 w-3.5" />
-        </button>
-      </div>
     </div>
   );
 }
@@ -2143,7 +2239,7 @@ function ConnectCallPickerSheet({
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
       <div
         dir="rtl"
-        className="relative w-full max-w-[430px] glass-strong rounded-t-3xl pb-[max(16px,env(safe-area-inset-bottom))] pt-3 animate-in slide-in-from-bottom duration-200"
+        className="relative w-full max-w-[var(--alpha-content-narrow-width)] glass-strong rounded-t-3xl pb-[max(16px,env(safe-area-inset-bottom))] pt-3 animate-in slide-in-from-bottom duration-200"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-white/20" />
@@ -2199,14 +2295,22 @@ function ConnectCallPickerSheet({
 
 function VoiceControl({
   onCall,
-  audioOutput,
-  onToggleSpeaker,
+  audioSelection,
+  audioDevices,
+  audioPickerOpen,
+  onOpenAudioPicker,
+  onCloseAudioPicker,
+  onSelectAudioDevice,
   onSendVoice,
   showFooterActions = true,
 }: {
   onCall?: () => void;
-  audioOutput: ConnectAudioRoute;
-  onToggleSpeaker: () => void;
+  audioSelection: ConnectAudioSelection;
+  audioDevices: ConnectAudioOutputDevice[];
+  audioPickerOpen: boolean;
+  onOpenAudioPicker: () => void;
+  onCloseAudioPicker: () => void;
+  onSelectAudioDevice: (deviceId: string) => void;
   onSendVoice: (blob: Blob, durationMs: number) => Promise<boolean>;
   showFooterActions?: boolean;
 }) {
@@ -2299,22 +2403,15 @@ function VoiceControl({
 
       {showFooterActions ? (
         <div className="mt-2 flex w-full max-w-[320px] items-center justify-between gap-4 px-2" dir="rtl">
-          <button
-            type="button"
-            onClick={onToggleSpeaker}
-            className={`glass flex h-[80px] w-[72px] flex-col items-center justify-center gap-1.5 rounded-2xl transition-transform active:scale-95 ${
-              audioOutput === "speaker" ? "border border-neon-green/35 bg-neon-green/10" : ""
-            }`}
-          >
-            {audioOutput === "speaker" ? (
-              <Volume2 className="h-5 w-5 text-neon-green" />
-            ) : (
-              <Ear className="h-5 w-5 text-foreground/90" />
-            )}
-            <span className={`text-[10px] ${audioOutput === "speaker" ? "text-neon-green" : "text-muted-foreground"}`}>
-              {connectAudioRouteLabel(audioOutput)}
-            </span>
-          </button>
+          <ConnectAudioOutputControl
+            selection={audioSelection}
+            devices={audioDevices}
+            pickerOpen={audioPickerOpen}
+            onOpenPicker={onOpenAudioPicker}
+            onClosePicker={onCloseAudioPicker}
+            onSelectDevice={onSelectAudioDevice}
+            variant="voice-footer"
+          />
           <button
             onClick={onCall}
             className="glass flex h-[80px] w-[72px] flex-col items-center justify-center gap-1.5 rounded-2xl transition-transform active:scale-95"
@@ -2329,25 +2426,108 @@ function VoiceControl({
 }
 
 function StatusStrip() {
+  const connection = useConnectionStatus();
+  const security = useSecurityStatus();
+  const device = useDeviceStatus();
+
+  const connectionIconClass = connectionQualityTone(connection.quality);
+  const securityIconClass = securityStateTone(security.state);
+  const batteryIconClass = batteryLevelTone(device.level);
+
+  const ConnectionIcon =
+    connection.quality === "offline"
+      ? WifiOff
+      : connection.quality === "poor" || connection.quality === "fair"
+        ? SignalLow
+        : connection.quality === "good"
+          ? SignalMedium
+          : SignalHigh;
+
+  const SecurityIcon = security.state === "encrypted" ? ShieldCheck : ShieldAlert;
+
+  const BatteryIcon =
+    device.charging
+      ? BatteryCharging
+      : device.level != null && device.level <= 15
+        ? BatteryLow
+        : device.level != null && device.level <= 35
+          ? BatteryMedium
+          : device.level != null
+            ? BatteryFull
+            : Battery;
+
   return (
     <div className="glass-strong mb-4 grid grid-cols-3 gap-2 rounded-2xl p-4">
-      <StatusCol icon={<SignalHigh className="h-5 w-5 text-neon-green" />} label="جودة الاتصال" value="ممتاز" />
+      <StatusCol
+        icon={<ConnectionIcon className={`h-5 w-5 ${connectionIconClass}`} />}
+        label="جودة الاتصال"
+        value={connection.qualityLabel}
+        detail={connection.typeLabel}
+      />
       <div className="border-r border-l border-white/5">
-        <StatusCol icon={<ShieldCheck className="h-5 w-5 text-neon-green" />} label="التشفير" value="مفعل" />
+        <StatusCol
+          icon={<SecurityIcon className={`h-5 w-5 ${securityIconClass}`} />}
+          label="التشفير"
+          value={security.label}
+        />
       </div>
-      <StatusCol icon={<BatteryFull className="h-5 w-5 text-neon-green" />} label="البطارية" value="85%" />
+      <StatusCol
+        icon={<BatteryIcon className={`h-5 w-5 ${batteryIconClass}`} />}
+        label="البطارية"
+        value={device.label}
+      />
     </div>
   );
 }
 
-function StatusCol({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+function StatusCol({
+  icon,
+  label,
+  value,
+  detail,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  detail?: string;
+}) {
   return (
     <div className="flex items-center justify-center gap-2.5">
       <div className="glass flex h-9 w-9 items-center justify-center rounded-xl">{icon}</div>
       <div className="text-right">
         <p className="text-[10px] leading-tight text-muted-foreground">{label}</p>
         <p className="mt-0.5 text-xs font-semibold leading-tight text-foreground">{value}</p>
+        {detail ? <p className="text-[9px] leading-tight text-muted-foreground/80">{detail}</p> : null}
       </div>
+    </div>
+  );
+}
+
+function ChannelRecordingsHistoryCard() {
+  const [expanded, setExpanded] = useState(false);
+  const voicePlayback = useVoicePlayback();
+  const visibleEntries = expanded
+    ? CHANNEL_VOICE_ENTRIES
+    : CHANNEL_VOICE_ENTRIES.slice(0, CONNECT_ACTIVITY_PREVIEW_LIMIT);
+  const hasMore = CHANNEL_VOICE_ENTRIES.length > CONNECT_ACTIVITY_PREVIEW_LIMIT;
+
+  if (CHANNEL_VOICE_ENTRIES.length === 0) return null;
+
+  return (
+    <div className="glass-strong mb-4 overflow-hidden rounded-3xl p-4">
+      <h3 className="mb-3 text-right text-sm font-semibold text-[var(--neon-blue)]">سجل تسجيلات القناة</h3>
+      <div className="space-y-3">
+        {visibleEntries.map((entry) => (
+          <VoiceActivityItem
+            key={entry.id}
+            {...entry}
+            isPlaying={voicePlayback.isPlaying(entry.id)}
+            progress={voicePlayback.getRowProgress(entry.id)}
+            onTogglePlay={() => voicePlayback.togglePlay(entry.id, parseDurationLabelToMs(entry.duration))}
+          />
+        ))}
+      </div>
+      {hasMore ? <ShowMoreToggle expanded={expanded} onToggle={() => setExpanded((value) => !value)} /> : null}
     </div>
   );
 }
@@ -2359,14 +2539,14 @@ function VoiceRecordingsLogPanel({ includeChannel }: { includeChannel: boolean }
 
   const visibleMessageEntries = messagesExpanded
     ? VOICE_MESSAGE_ENTRIES
-    : VOICE_MESSAGE_ENTRIES.slice(0, ACTIVITY_PREVIEW_LIMIT);
-  const messagesHasMore = VOICE_MESSAGE_ENTRIES.length > ACTIVITY_PREVIEW_LIMIT;
+    : VOICE_MESSAGE_ENTRIES.slice(0, CONNECT_ACTIVITY_PREVIEW_LIMIT);
+  const messagesHasMore = VOICE_MESSAGE_ENTRIES.length > CONNECT_ACTIVITY_PREVIEW_LIMIT;
   const messageSections = sectionTitles(visibleMessageEntries);
 
   const visibleChannelEntries = channelExpanded
     ? CHANNEL_VOICE_ENTRIES
-    : CHANNEL_VOICE_ENTRIES.slice(0, ACTIVITY_PREVIEW_LIMIT);
-  const channelHasMore = CHANNEL_VOICE_ENTRIES.length > ACTIVITY_PREVIEW_LIMIT;
+    : CHANNEL_VOICE_ENTRIES.slice(0, CONNECT_ACTIVITY_PREVIEW_LIMIT);
+  const channelHasMore = CHANNEL_VOICE_ENTRIES.length > CONNECT_ACTIVITY_PREVIEW_LIMIT;
 
   return (
     <div className="overflow-hidden rounded-3xl p-0">
@@ -2401,7 +2581,7 @@ function VoiceRecordingsLogPanel({ includeChannel }: { includeChannel: boolean }
 
       {includeChannel ? (
         <div className="mt-4 border-t border-white/10 pt-3">
-          <h3 className="mb-3 text-right text-sm font-semibold text-[var(--neon-blue)]">آخر الأنشطة الصوتية</h3>
+          <h3 className="mb-3 text-right text-sm font-semibold text-[var(--neon-blue)]">سجل تسجيلات القناة</h3>
       <div className="space-y-3">
             {visibleChannelEntries.map((entry) => (
               <VoiceActivityItem
@@ -2518,77 +2698,6 @@ function Waveform({ color, progress = 0 }: { color: "blue" | "green" | "white"; 
         className="pointer-events-none absolute inset-y-0 left-0 w-px bg-white/70 shadow-[0_0_6px_rgba(255,255,255,0.45)] transition-[left] duration-75"
         style={{ left: `${clamped * 100}%` }}
       />
-    </div>
-  );
-}
-
-function ConnectBottomDock({
-  navVisible,
-  onOpenSettings,
-  onOpenChannels,
-}: {
-  navVisible: boolean;
-  onOpenSettings: () => void;
-  onOpenChannels: () => void;
-}) {
-  return (
-    <div
-      className={`pointer-events-none fixed inset-x-0 bottom-0 z-40 flex flex-col items-center pb-[max(16px,env(safe-area-inset-bottom))] transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] ${
-        navVisible ? "translate-y-0 opacity-100" : "translate-y-[calc(100%+12px)] opacity-0"
-      }`}
-    >
-      <BottomNavBar onOpenSettings={onOpenSettings} onOpenChannels={onOpenChannels} />
-    </div>
-  );
-}
-
-function BottomNavBar({
-  onOpenSettings,
-  onOpenChannels,
-}: {
-  onOpenSettings: () => void;
-  onOpenChannels: () => void;
-}) {
-  const navigate = useNavigate();
-  const { toggleNotifications } = useAlphaNotifications();
-  const unreadCount = useNotifUnreadCount();
-  const tabs = [
-    { icon: Home, label: "الرئيسية", onClick: () => navigate({ to: "/home" }) },
-    { icon: Users, label: "القنوات", onClick: onOpenChannels },
-    { icon: Radio, label: "الاتصال", active: true },
-    {
-      icon: Bell,
-      label: "التنبيهات",
-      badge: unreadCount > 0 ? (unreadCount > 99 ? "99+" : unreadCount) : undefined,
-      onClick: toggleNotifications,
-    },
-    { icon: Settings, label: "الإعدادات", onClick: onOpenSettings },
-  ];
-  return (
-    <div className="pointer-events-auto w-[calc(100%-32px)] max-w-[400px] shrink-0">
-      <div className="glass-strong flex items-center gap-1 rounded-3xl px-2 py-2.5">
-        {tabs.map((t, i) => {
-          const Icon = t.icon;
-          return (
-            <button key={i} onClick={t.onClick} className="relative flex flex-1 flex-col items-center gap-1 py-1.5 active:scale-95 transition-transform">
-              <div className="relative">
-                <Icon className="connect-dock-icon h-5 w-5" />
-                {t.badge ? (
-                  <span className="absolute -right-2 -top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-destructive px-1 text-[9px] font-bold text-white">
-                    {t.badge}
-                  </span>
-                ) : null}
-              </div>
-              <span className={`connect-dock-icon text-[10px] ${t.active ? "font-semibold" : ""}`}>
-                {t.label}
-              </span>
-              {t.active ? (
-                <span className="connect-dock-icon absolute -bottom-0.5 h-0.5 w-6 rounded-full bg-[var(--connect-accent-mid)]" />
-              ) : null}
-            </button>
-          );
-        })}
-      </div>
     </div>
   );
 }

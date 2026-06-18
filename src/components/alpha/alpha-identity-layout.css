@@ -187,6 +187,31 @@
   justify-content: center;
   width: 1.75rem;
   height: 1.75rem;
+  flex-shrink: 0;
+}
+
+/* Global shield slot — identical size/alignment in every list */
+.alpha-identity-shield-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  flex-shrink: 0;
+}
+
+.alpha-identity-shield-slot .alpha-shield,
+.alpha-identity-shield-slot img {
+  width: 1.75rem;
+  height: 1.75rem;
+  object-fit: contain;
+}
+
+.connect-participant-row__shield .alpha-shield,
+.connect-participant-row__shield img {
+  width: 1.75rem;
+  height: 1.75rem;
+  object-fit: contain;
 }
 
 .connect-participant-row__status {
@@ -225,11 +250,11 @@
   min-width: 0;
 }
 
-/* Call log — avatar left · name right · shield column · actions right */
+/* Call log — avatar · name+shield · actions */
 .connect-call-log-row.alpha-identity-row {
   direction: ltr;
   display: grid;
-  grid-template-columns: 2.5rem minmax(0, 1fr) 1.75rem auto;
+  grid-template-columns: 2.5rem minmax(0, 1fr) auto;
   column-gap: 0.625rem;
   align-items: center;
 }
@@ -237,6 +262,17 @@
 .connect-call-log-row__avatar {
   position: relative;
   flex-shrink: 0;
+}
+
+.connect-call-log-row__identity {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.125rem;
+  text-align: right;
+  direction: rtl;
 }
 
 .connect-call-log-row__details {
@@ -256,6 +292,7 @@
   justify-content: center;
   width: 1.75rem;
   height: 1.75rem;
+  flex-shrink: 0;
 }
 
 .connect-call-log-row__trailing {

@@ -3,15 +3,14 @@ import { BooksV2Screen } from "@/features/books-v2";
 
 export const Route = createFileRoute("/books-v2")({
   ssr: false,
-  validateSearch: (search: Record<string, unknown>) => ({
-    testament:
-      search.testament === "old" || search.testament === "new"
-        ? (search.testament as "old" | "new")
-        : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>) => {
+    const raw = String(search.testament ?? "").toLowerCase();
+    const testament = raw === "old" || raw === "new" ? (raw as "old" | "new") : undefined;
+    return { testament };
+  },
   beforeLoad: ({ search }) => {
-    if (!search.testament) {
-      throw redirect({ to: "/books-v2", search: { testament: "new" } });
+    if (search.testament !== "old" && search.testament !== "new") {
+      throw redirect({ to: "/books-v2", search: { testament: "new" }, replace: true });
     }
   },
   head: ({ search }) => ({

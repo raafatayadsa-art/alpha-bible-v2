@@ -40,7 +40,7 @@ function PopupShell({
       <div
         className={
           "relative flex w-full flex-col rounded-t-[24px] sm:rounded-[24px] border border-white/75 bg-[#fbf3e1]/96 backdrop-blur-md shadow-[0_20px_44px_-18px_rgba(60,40,16,0.45)] text-right overflow-hidden " +
-          (compact ? "max-w-[380px] max-h-[min(52dvh,360px)]" : "max-w-[440px] max-h-[min(92dvh,720px)]")
+          (compact ? "max-w-[380px] max-h-[min(52dvh,360px)]" : "max-w-[var(--alpha-content-max-width)] max-h-[min(92dvh,720px)]")
         }
         style={{ paddingBottom: "max(env(safe-area-inset-bottom,0px),0px)" }}
       >

@@ -6,8 +6,7 @@ import type { LookupDictionaryRow } from "@/lib/dictionary";
 
 /**
  * Bottom sheet for entries returned by `public.lookup_dictionary`.
- * Uses the same Alpha glass aesthetic as MeaningSheet but with a LIGHT
- * backdrop (per spec: no heavy blur on the chapter behind).
+ * Uses Alpha Connect Classic palette (see `.dict-sheet-*` in styles.css).
  */
 export function DictionaryLookupSheet({
   row,
@@ -53,7 +52,7 @@ export function DictionaryLookupSheet({
         onClick={onClose}
         aria-hidden
         className={cn(
-          "fixed inset-0 z-[60] bg-[#06251c]/15 transition-opacity duration-300",
+          "fixed inset-0 z-[60] dict-sheet-backdrop transition-opacity duration-300",
           open ? "opacity-100" : "opacity-0 pointer-events-none",
         )}
       />
@@ -62,7 +61,7 @@ export function DictionaryLookupSheet({
         aria-modal="true"
         aria-label={row?.word ?? "تفاصيل الكلمة"}
         className={cn(
-          "fixed inset-x-0 bottom-0 z-[61] mx-auto w-full max-w-[480px]",
+          "fixed inset-x-0 bottom-0 z-[61] mx-auto w-full max-w-[var(--alpha-content-max-width)]",
           "transition-transform duration-[320ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform",
           open ? "translate-y-0" : "translate-y-full",
         )}
@@ -70,9 +69,7 @@ export function DictionaryLookupSheet({
       >
         <div
           className={cn(
-            "mx-2 overflow-hidden rounded-t-[28px] border backdrop-blur-[22px] backdrop-saturate-150",
-            "bg-gradient-to-b from-[#0f3d2e]/75 via-[#0c3326]/72 to-[#07261c]/80 border-[#7af0b8]/35 text-[#eaf6ec]",
-            "shadow-[0_-28px_70px_-18px_rgba(0,0,0,0.6),0_0_36px_-12px_rgba(122,240,184,0.45),inset_0_1px_0_rgba(255,255,255,0.14),inset_0_0_40px_-20px_rgba(122,240,184,0.18)]",
+            "dict-sheet-panel mx-2 overflow-hidden rounded-t-[28px]",
             "transition-[max-height] duration-300",
           )}
           style={{ maxHeight: expanded ? "92vh" : "72vh" }}
@@ -82,23 +79,23 @@ export function DictionaryLookupSheet({
             onTouchStart={onTouchStart}
             onTouchEnd={onTouchEnd}
           >
-            <span className="h-1.5 w-12 rounded-full bg-[#7af0b8]/50" />
+            <span className="dict-sheet-handle h-1.5 w-12 rounded-full" />
           </div>
 
           <header className="flex items-center justify-between gap-3 px-4 pb-3" dir="rtl">
             <div className="min-w-0">
-              <h3 className="font-arabic-serif text-[22px] font-bold text-[#f4f9ee] truncate">
+              <h3 className="dict-sheet-title font-arabic-serif text-[22px] font-bold truncate">
                 {row?.word}
               </h3>
               {row?.category && (
-                <p className="text-[11px] font-bold text-[#e7c97a] mt-0.5">{row.category}</p>
+                <p className="dict-sheet-kind text-[11px] font-bold mt-0.5">{row.category}</p>
               )}
             </div>
             <button
               type="button"
               onClick={onClose}
               aria-label="إغلاق"
-              className="grid h-9 w-9 place-items-center rounded-full bg-white/10 border border-[#7af0b8]/30 text-[#eaf6ec] active:scale-90 transition-transform"
+              className="dict-sheet-close grid h-9 w-9 place-items-center rounded-full active:scale-90 transition-transform"
             >
               <X className="h-4 w-4" />
             </button>
@@ -132,14 +129,14 @@ function Section({
   multiline?: boolean;
 }) {
   return (
-    <div className="rounded-2xl bg-[#0a2a20]/45 border border-[#7af0b8]/20 p-4">
-      <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#e7c97a]">
+    <div className="dict-sheet-card rounded-2xl p-4">
+      <div className="dict-sheet-card-title flex items-center gap-1.5 text-[11px] font-bold">
         {icon}
         {title}
       </div>
       <p
         className={cn(
-          "mt-1.5 text-[14px] leading-relaxed text-[#eaf6ec]",
+          "dict-sheet-body mt-1.5 text-[14px] leading-relaxed",
           multiline && "whitespace-pre-line",
         )}
       >

@@ -59,6 +59,11 @@ export function useContextualSearch(
     setOpen(true);
   };
 
+  const openSearchWithQuery = (initial = "") => {
+    setQuery(initial);
+    setOpen(true);
+  };
+
   const closeSearch = () => setOpen(false);
 
   const goToResult = (result: ContextualSearchResult) => {
@@ -79,6 +84,7 @@ export function useContextualSearch(
         placeholder={meta.placeholder}
         query={query}
         onQueryChange={setQuery}
+        variant={scope === "bible" ? "classic" : "default"}
       >
         {!query.trim() ? (
           <p className="text-center text-[12px] text-[#6a543a] py-6">ابدأ بالكتابة للبحث</p>
@@ -119,5 +125,5 @@ export function useContextualSearch(
       </SearchOverlay>
     ) : null;
 
-  return { open, openSearch, closeSearch, query, setQuery, results, overlay };
+  return { open, openSearch, openSearchWithQuery, closeSearch, query, setQuery, results, overlay };
 }

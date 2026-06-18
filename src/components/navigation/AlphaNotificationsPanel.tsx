@@ -33,7 +33,6 @@ import {
 } from "@/components/alpha/alpha-connect-theme";
 
 type AlphaNotificationsPanelProps = {
-  open: boolean;
   onClose: () => void;
 };
 
@@ -207,9 +206,10 @@ function connectThemeShellClass(theme: AlphaConnectThemeId): string {
 }
 
 /**
- * Top-down mobile notifications sheet — overlay above current screen.
+ * Top-down mobile notifications sheet — mounted only while open (via provider).
+ * Opens from AlphaNotificationButton or legacy /church/notifications redirect.
  */
-export function AlphaNotificationsPanel({ open, onClose }: AlphaNotificationsPanelProps) {
+export function AlphaNotificationsPanel({ onClose }: AlphaNotificationsPanelProps) {
   const router = useRouter();
   const surface = useNotificationsSurface();
   const connectTheme = useConnectThemeForNotifications();
@@ -223,32 +223,28 @@ export function AlphaNotificationsPanel({ open, onClose }: AlphaNotificationsPan
   const dragStartY = useRef(0);
 
   useEffect(() => {
-    if (!open) {
-      setTab("all");
-      setDragOffset(0);
-      setDragging(false);
-      return;
-    }
+    setTab("all");
+    setDragOffset(0);
+    setDragging(false);
     void refreshNotifications();
-  }, [open]);
+  }, []);
 
   useEffect(() => {
-    if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
+  }, [onClose]);
 
   useEffect(() => {
-    if (!open || typeof document === "undefined") return;
+    if (typeof document === "undefined") return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = prev;
     };
-  }, [open]);
+  }, []);
 
   const filtered = useMemo(
     () => items.filter((n) => matchesTab(n, tab)),
@@ -289,36 +285,24 @@ export function AlphaNotificationsPanel({ open, onClose }: AlphaNotificationsPan
     setDragOffset(0);
   }, [dragOffset, onClose]);
 
-  const sheetTransform = open
-    ? `translateY(${dragOffset}px)`
-    : "translateY(-100%)";
+  const sheetTransform = dragOffset > 0 ? `translateY(${dragOffset}px)` : undefined;
 
   if (typeof document === "undefined") return null;
 
   return createPortal(
-    <div
-      dir="rtl"
-      aria-hidden={!open}
-      className={cn(
-        "fixed inset-0 z-[130]",
-        open
-          ? "pointer-events-auto"
-          : "pointer-events-none [&_*]:pointer-events-none",
-      )}
-    >
+    <div dir="rtl" className="fixed inset-0 z-[130] pointer-events-auto">
       <button
         type="button"
         aria-label="إغلاق"
         onClick={onClose}
         className={cn(
-          "fixed inset-0 transition-opacity duration-300",
+          "fixed inset-0 opacity-100 transition-opacity duration-300",
           isConnect ? "bg-black/55 backdrop-blur-[2px]" : "bg-[#1a1408]/18 backdrop-blur-[3px]",
-          open ? "opacity-100" : "opacity-0",
         )}
       />
 
-      {/* Phone-sized sheet — inset slightly from viewport (matches Connect frame ~430px) */}
-      <div className="pointer-events-none fixed inset-0 z-[131] flex items-center justify-center px-3 pt-[max(10px,env(safe-area-inset-top))] pb-[max(10px,env(safe-area-inset-bottom))]">
+      {/* Top-aligned sheet — hidden entirely when unmounted (never parked off-screen) */}
+      <div className="pointer-events-none fixed inset-x-0 top-0 z-[131] flex justify-center px-3 pt-[max(10px,env(safe-area-inset-top))] pb-[max(10px,env(safe-area-inset-bottom))]">
         <div
           role="dialog"
           aria-modal="true"
@@ -327,7 +311,7 @@ export function AlphaNotificationsPanel({ open, onClose }: AlphaNotificationsPan
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
           className={cn(
-            "connect-notifications-sheet pointer-events-auto flex h-[min(calc(100dvh-24px),760px)] w-full max-w-[430px] flex-col overflow-hidden rounded-3xl",
+            "connect-notifications-sheet pointer-events-auto flex h-[min(calc(100dvh-24px),760px)] w-full max-w-[var(--alpha-content-narrow-width)] flex-col overflow-hidden rounded-3xl",
             isConnect
               ? cn(
                   connectThemeShellClass(connectTheme),
@@ -336,7 +320,7 @@ export function AlphaNotificationsPanel({ open, onClose }: AlphaNotificationsPan
               : "bg-[#fbf3e1] shadow-[0_16px_40px_-12px_rgba(58,42,24,0.32)]",
             !dragging && "transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
           )}
-          style={{ transform: sheetTransform }}
+          style={sheetTransform ? { transform: sheetTransform } : undefined}
         >
         <header
           className={cn(

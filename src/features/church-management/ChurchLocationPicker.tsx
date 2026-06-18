@@ -159,7 +159,7 @@ function MapModal({
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-[440px] overflow-hidden rounded-[26px] border border-[#efe2c4]/90 bg-[#f7eed6] shadow-[0_24px_60px_-20px_rgba(58,42,24,0.55)] animate-in slide-in-from-bottom-4 duration-300"
+        className="relative w-full max-w-[var(--alpha-content-max-width)] overflow-hidden rounded-[26px] border border-[#efe2c4]/90 bg-[#f7eed6] shadow-[0_24px_60px_-20px_rgba(58,42,24,0.55)] animate-in slide-in-from-bottom-4 duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between gap-2 border-b border-[#efe2c4]/70 bg-white/50 px-4 py-3 backdrop-blur-md">

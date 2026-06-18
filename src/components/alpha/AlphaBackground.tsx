@@ -4,6 +4,11 @@ import {
   getAlphaBackgroundCss,
   type AlphaBackgroundVariant,
 } from "./alpha-background";
+import {
+  alphaTopDebugBorderStyle,
+  isAlphaTopDebugActive,
+  useAlphaTopDebugTarget,
+} from "./alpha-top-debug";
 
 type AlphaBackgroundProps = {
   variant: AlphaBackgroundVariant;
@@ -22,12 +27,15 @@ export function AlphaBackground({
   className,
 }: AlphaBackgroundProps) {
   const gradient = getAlphaBackgroundCss(variant);
+  const topDebug = useAlphaTopDebugTarget();
+  const fixedBgActive = scope === "fixed" && isAlphaTopDebugActive(6, topDebug);
 
   return (
     <div
       aria-hidden
       data-alpha-background
       data-alpha-background-variant={variant}
+      data-alpha-top-debug={fixedBgActive ? "fixed-background" : undefined}
       className={cn(
         "pointer-events-none inset-0 z-[0]",
         scope === "fixed" ? "fixed" : "absolute",
@@ -36,6 +44,7 @@ export function AlphaBackground({
       style={{
         backgroundColor: ALPHA_BACKGROUND_BASE,
         backgroundImage: gradient,
+        ...alphaTopDebugBorderStyle(fixedBgActive),
       }}
     />
   );

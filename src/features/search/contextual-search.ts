@@ -3,6 +3,14 @@ import type { Saint } from "@/features/synaxarium/types";
 import { AGPEYA_PRAYERS } from "@/features/agpeya/data";
 import { FEASTS } from "@/features/feasts/data";
 import { displayName } from "@/lib/bible-books";
+import {
+  BIBLE_SEARCH_HINTS,
+  hasBibleBookResult,
+  includesBookQuery,
+  normSearchText,
+  resolveCatalogBook,
+  bibleBookResultId,
+} from "./bible-book-search";
 import type { ChurchDashboardContact, ChurchDashboardPrayer } from "@/features/church/church-dashboard-api";
 import type { PrayerRequest } from "@/data/prayer-requests";
 
@@ -48,39 +56,13 @@ export const CONTEXTUAL_SEARCH_META: Record<
   feasts: { title: "البحث في المناسبات", placeholder: "ابحث باسم العيد أو المناسبة..." },
 };
 
-const BIBLE_HINTS = [
-  { title: "إنجيل يوحنا", to: "/يوحنا" },
-  { title: "إنجيل متى", to: "/متى" },
-  { title: "إنجيل مرقس", to: "/مرقس" },
-  { title: "إنجيل لوقا", to: "/لوقا" },
-  { title: "سفر المزامير", to: "/المزامير" },
-  { title: "سفر التكوين", to: "/التكوين" },
-  { title: "سفر الخروج", to: "/الخروج" },
-  { title: "سفر إشعياء", to: "/إشعياء" },
-  { title: "سفر الأمثال", to: "/الأمثال" },
-  { title: "سفر أعمال الرسل", to: "/أعمال" },
-  { title: "رسالة رومية", to: "/رومية" },
-  { title: "سفر الرؤيا", to: "/الرؤيا" },
-];
-
 const CHURCH_QUICK_LINKS: ContextualSearchResult[] = [
   { id: "church:directory", title: "دليل الكنائس", subtitle: "ابحث عن كنيسة قريبة", to: "/church/directory" },
   { id: "church:prayers", title: "طلبات الصلاة", subtitle: "شارك في الصلاة", to: "/prayer-requests" },
   { id: "church:archive", title: "أرشيف المنشورات", subtitle: "منشورات سابقة", to: "/church/archive" },
 ];
 
-export function normSearchText(s: string): string {
-  return (s || "")
-    .toLowerCase()
-    .replace(/[\u064B-\u065F\u0670]/g, "")
-    .replace(/[إأآا]/g, "ا")
-    .replace(/ى/g, "ي")
-    .replace(/ؤ/g, "و")
-    .replace(/ئ/g, "ي")
-    .replace(/ة/g, "ه")
-    .replace(/\s+/g, " ")
-    .trim();
-}
+export { normSearchText } from "./bible-book-search";
 
 function includesQuery(haystack: string, query: string): boolean {
   const nq = normSearchText(query);
@@ -99,11 +81,12 @@ export function searchContextual(
   switch (scope) {
     case "bible": {
       const out: ContextualSearchResult[] = [];
-      for (const book of context.books ?? []) {
+      const books = context.books ?? [];
+      for (const book of books) {
         const name = displayName(book);
-        if (includesQuery(name, query)) {
+        if (includesBookQuery(book, query)) {
           out.push({
-            id: `book:${book}`,
+            id: bibleBookResultId(book),
             title: name,
             subtitle: "اقرأ الإصحاحات",
             to: "/$book",
@@ -111,15 +94,17 @@ export function searchContextual(
           });
         }
       }
-      for (const hint of BIBLE_HINTS) {
-        if (includesQuery(hint.title, query) && !out.some((r) => r.title === hint.title)) {
-          out.push({
-            id: `hint:${hint.title}`,
-            title: hint.title,
-            subtitle: "اقرأ الأصحاحات",
-            to: hint.to,
-          });
-        }
+      for (const hint of BIBLE_SEARCH_HINTS) {
+        if (!includesQuery(`${hint.title} ${hint.book}`, query)) continue;
+        const book = resolveCatalogBook(hint.book, books);
+        if (hasBibleBookResult(out, book)) continue;
+        out.push({
+          id: `hint:${book}`,
+          title: displayName(book),
+          subtitle: "اقرأ الإصحاحات",
+          to: "/$book",
+          params: { book },
+        });
       }
       return out.slice(0, 40);
     }
@@ -190,8 +175,9 @@ export function searchContextual(
             id: `contact:${c.id}`,
             title: c.name,
             subtitle: c.role,
-            to: "/church/chat/$contactId",
+            to: "/messages/chat/$contactId",
             params: { contactId: c.id },
+            search: { name: c.name, from: "/church" },
           });
         }
       }

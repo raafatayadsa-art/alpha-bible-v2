@@ -2,18 +2,13 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { forwardRef, useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
-  Bluetooth,
-  Check,
   ChevronLeft,
   Lock,
   Mic,
   MicOff,
   MoreVertical,
-  Phone,
   PhoneOff,
   ShieldCheck,
-  Volume1,
-  Volume2,
   X,
 } from "lucide-react";
 import { AlphaScreenFrame } from "@/components/alpha/AlphaScreenFrame";
@@ -22,6 +17,8 @@ import { getAlphaConnectFrameClass } from "@/components/alpha/alpha-connect-them
 import { getConnectViewportBackdrop } from "@/components/alpha/alpha-viewport";
 import { loadAlphaConnectSettings } from "@/components/alpha/AlphaConnectSettings";
 import { ConnectCircleButton } from "@/components/alpha/ConnectCircleButton";
+import { ConnectAudioOutputControl } from "@/components/alpha/ConnectAudioOutputControl";
+import { useConnectAudioOutput } from "@/components/alpha/connect-audio-output";
 import { getConnectChannel } from "@/components/alpha/connect-channels-registry";
 import { getCurrentUser } from "@/features/church/current-user";
 import avatarMina from "@/assets/avatar-mina.jpg";
@@ -45,7 +42,6 @@ export const Route = createFileRoute("/personal-call")({
 });
 
 type CallState = "dialing" | "connected" | "ended";
-type AudioOut = "earpiece" | "speaker" | "bluetooth";
 
 function PersonalCallScreen() {
   const navigate = useNavigate();
@@ -53,12 +49,11 @@ function PersonalCallScreen() {
   const displayName = contactName?.trim() || "مينا جورج";
   const [callState, setCallState] = useState<CallState>("dialing");
   const [muted, setMuted] = useState(false);
-  const [audioOut, setAudioOut] = useState<AudioOut>("earpiece");
   const [seconds, setSeconds] = useState(0);
   const [showMenu, setShowMenu] = useState(false);
   const [showSecurity, setShowSecurity] = useState(false);
-  const [showDevices, setShowDevices] = useState(false);
   const securityBtnRef = useRef<HTMLButtonElement>(null);
+  const audio = useConnectAudioOutput({ enabled: true });
 
   useEffect(() => {
     if (callState !== "dialing") return;
@@ -147,24 +142,21 @@ function PersonalCallScreen() {
 
           <section className="w-full mt-auto">
             <div className="glass-strong rounded-3xl p-4">
-              <div className="grid grid-cols-4 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <ControlButton
                   active={muted}
                   onClick={() => setMuted((value) => !value)}
                   icon={muted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
                   label={muted ? "مكتوم" : "كتم"}
                 />
-                <ControlButton
-                  active={audioOut === "speaker"}
-                  onClick={() => setAudioOut((value) => (value === "speaker" ? "earpiece" : "speaker"))}
-                  icon={audioOut === "speaker" ? <Volume2 className="w-5 h-5" /> : <Volume1 className="w-5 h-5" />}
-                  label="السماعة"
-                />
-                <ControlButton
-                  active={audioOut === "bluetooth"}
-                  onClick={() => setShowDevices(true)}
-                  icon={<Bluetooth className="w-5 h-5" />}
-                  label="بلوتوث"
+                <ConnectAudioOutputControl
+                  selection={audio.selection}
+                  devices={audio.devices}
+                  pickerOpen={audio.pickerOpen}
+                  onOpenPicker={() => void audio.openPicker()}
+                  onClosePicker={() => audio.setPickerOpen(false)}
+                  onSelectDevice={(id) => void audio.selectDevice(id)}
+                  variant="call-grid"
                 />
                 <ControlButton
                   active={showMenu}
@@ -192,16 +184,8 @@ function PersonalCallScreen() {
           <Sheet onClose={() => setShowMenu(false)} title="المزيد">
             <SheetItem label={muted ? "إلغاء كتم الميكروفون" : "كتم الميكروفون"} onClick={() => setMuted((value) => !value)} />
             <SheetItem label="تفاصيل أمان المكالمة" onClick={() => setShowSecurity(true)} />
-            <SheetItem label="اختيار مخرج الصوت" onClick={() => setShowDevices(true)} />
+            <SheetItem label="اختيار مخرج الصوت" onClick={() => void audio.openPicker()} />
             <SheetItem label="إنهاء المكالمة" onClick={endCall} danger />
-          </Sheet>
-        )}
-
-        {showDevices && (
-          <Sheet onClose={() => setShowDevices(false)} title="مخرج الصوت">
-            <DeviceItem label="سماعة الأذن" selected={audioOut === "earpiece"} onClick={() => setAudioOut("earpiece")} />
-            <DeviceItem label="السماعة الخارجية" selected={audioOut === "speaker"} onClick={() => setAudioOut("speaker")} />
-            <DeviceItem label="Alpha Bluetooth" selected={audioOut === "bluetooth"} onClick={() => setAudioOut("bluetooth")} />
           </Sheet>
         )}
 
@@ -279,7 +263,7 @@ function Sheet({ children, onClose, title }: { children: React.ReactNode; onClos
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
       <div
         dir="rtl"
-        className="relative w-full max-w-[430px] glass-strong rounded-t-3xl pb-6 pt-3 animate-in slide-in-from-bottom duration-200"
+        className="relative w-full max-w-[var(--alpha-content-narrow-width)] glass-strong rounded-t-3xl pb-6 pt-3 animate-in slide-in-from-bottom duration-200"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="w-10 h-1 rounded-full bg-white/20 mx-auto mb-3" />
@@ -306,18 +290,6 @@ function SheetItem({ label, onClick, danger }: { label: string; onClick: () => v
     >
       <span>{label}</span>
       <ChevronLeft className="w-4 h-4 opacity-60" />
-    </button>
-  );
-}
-
-function DeviceItem({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm text-foreground/90 hover:bg-white/5 active:scale-[0.99] transition"
-    >
-      <span>{label}</span>
-      {selected ? <Check className="w-4 h-4 text-neon-green" /> : <ChevronLeft className="w-4 h-4 opacity-40" />}
     </button>
   );
 }

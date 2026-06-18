@@ -15,5 +15,6 @@ export * from "./DictionaryResultsSheet";
 export * from "./AutoScrollControls";
 export * from "./BottomDock";
 export * from "./Skeletons";
+export * from "./ChapterReadingScrollRail";
 export * from "./RecentJourney";
 

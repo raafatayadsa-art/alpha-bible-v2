@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft, MoreVertical, ShieldCheck, Phone, PhoneOff,
-  Mic, MicOff, Volume2, Volume1, Bluetooth, UserPlus, Grid3x3, Lock,
+  Mic, MicOff, UserPlus, Grid3x3, Lock,
 } from "lucide-react";
 import { AlphaScreenFrame } from "@/components/alpha/AlphaScreenFrame";
 import { AlphaTrustShieldSheet } from "@/components/alpha/AlphaTrustShield";
@@ -10,6 +10,8 @@ import { getAlphaConnectFrameClass } from "@/components/alpha/alpha-connect-them
 import { getConnectViewportBackdrop } from "@/components/alpha/alpha-viewport";
 import { loadAlphaConnectSettings } from "@/components/alpha/AlphaConnectSettings";
 import { ConnectCircleButton } from "@/components/alpha/ConnectCircleButton";
+import { ConnectAudioOutputControl } from "@/components/alpha/ConnectAudioOutputControl";
+import { useConnectAudioOutput } from "@/components/alpha/connect-audio-output";
 import { getConnectChannel } from "@/components/alpha/connect-channels-registry";
 import { getCurrentUser } from "@/features/church/current-user";
 import avatarMina from "@/assets/avatar-mina.jpg";
@@ -28,17 +30,16 @@ export const Route = createFileRoute("/call")({
 });
 
 type CallState = "dialing" | "connected" | "reconnecting" | "ended";
-type AudioOut = "earpiece" | "speaker" | "bluetooth";
 
 function CallScreen() {
   const navigate = useNavigate();
   const [callState, setCallState] = useState<CallState>("dialing");
   const [muted, setMuted] = useState(false);
-  const [audioOut, setAudioOut] = useState<AudioOut>("earpiece");
   const [seconds, setSeconds] = useState(0);
   const [showMenu, setShowMenu] = useState(false);
   const [showSecurity, setShowSecurity] = useState(false);
   const securityBtnRef = useRef<HTMLButtonElement>(null);
+  const audio = useConnectAudioOutput({ enabled: true });
 
   // Simulate dialing → connected
   useEffect(() => {
@@ -67,10 +68,6 @@ function CallScreen() {
   const handleEnd = () => {
     setCallState("ended");
     setTimeout(() => navigate({ to: "/" }), 900);
-  };
-
-  const cycleAudio = () => {
-    setAudioOut((a) => (a === "earpiece" ? "speaker" : a === "speaker" ? "bluetooth" : "earpiece"));
   };
 
   const callTheme = loadAlphaConnectSettings().theme;
@@ -175,24 +172,21 @@ function CallScreen() {
 
         {/* Controls grid */}
         <div className="glass-strong rounded-3xl p-4 mt-auto">
-          <div className="grid grid-cols-5 gap-2">
+          <div className="grid grid-cols-4 gap-2">
             <ControlBtn
               active={muted}
               onClick={() => setMuted((m) => !m)}
               icon={muted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
               label={muted ? "صامت" : "الميكروفون"}
             />
-            <ControlBtn
-              active={audioOut === "speaker"}
-              onClick={() => setAudioOut((a) => (a === "speaker" ? "earpiece" : "speaker"))}
-              icon={audioOut === "speaker" ? <Volume2 className="w-5 h-5" /> : <Volume1 className="w-5 h-5" />}
-              label="سماعة"
-            />
-            <ControlBtn
-              active={audioOut === "bluetooth"}
-              onClick={cycleAudio}
-              icon={<Bluetooth className="w-5 h-5" />}
-              label="بلوتوث"
+            <ConnectAudioOutputControl
+              selection={audio.selection}
+              devices={audio.devices}
+              pickerOpen={audio.pickerOpen}
+              onOpenPicker={() => void audio.openPicker()}
+              onClosePicker={() => audio.setPickerOpen(false)}
+              onSelectDevice={(id) => void audio.selectDevice(id)}
+              variant="call-compact"
             />
             <ControlBtn
               onClick={() => {}}
@@ -272,7 +266,7 @@ function Sheet({ children, onClose, title }: { children: React.ReactNode; onClos
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
       <div
         dir="rtl"
-        className="relative w-full max-w-[430px] glass-strong rounded-t-3xl pb-6 pt-3 animate-in slide-in-from-bottom duration-200"
+        className="relative w-full max-w-[var(--alpha-content-narrow-width)] glass-strong rounded-t-3xl pb-6 pt-3 animate-in slide-in-from-bottom duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="w-10 h-1 rounded-full bg-white/20 mx-auto mb-3" />

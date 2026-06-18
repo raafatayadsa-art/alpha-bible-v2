@@ -14,7 +14,7 @@ export function AlphaBottomNavigation() {
       className="fixed bottom-0 inset-x-0 z-50 pb-[max(env(safe-area-inset-bottom),12px)] px-3 pt-2"
       style={{ background: "linear-gradient(to top, var(--navy-deep) 60%, transparent)" }}
     >
-      <div className="mx-auto max-w-[420px] relative rounded-[28px] bg-card/85 backdrop-blur-xl border border-gold/25 px-2 py-2 flex items-end justify-between gap-1 shadow-2xl">
+      <div className="mx-auto max-w-[var(--alpha-dock-max-width)] relative rounded-[28px] bg-card/85 backdrop-blur-xl border border-gold/25 px-2 py-2 flex items-end justify-between gap-1 shadow-2xl">
         {items.map((it) => {
           const Icon = it.icon;
           if (it.center) {

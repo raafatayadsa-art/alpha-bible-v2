@@ -99,7 +99,7 @@ export function MeaningSheet({
         onClick={onClose}
         aria-hidden
         className={cn(
-          "fixed inset-0 z-[60] bg-[#06251c]/15 transition-opacity duration-300",
+          "fixed inset-0 z-[60] dict-sheet-backdrop transition-opacity duration-300",
           open ? "opacity-100" : "opacity-0 pointer-events-none",
         )}
       />
@@ -109,7 +109,7 @@ export function MeaningSheet({
         aria-modal="true"
         aria-label={data?.word ?? "تفاصيل الكلمة"}
         className={cn(
-          "fixed inset-x-0 bottom-0 z-[61] mx-auto w-full max-w-[480px]",
+          "fixed inset-x-0 bottom-0 z-[61] mx-auto w-full max-w-[var(--alpha-content-max-width)]",
           "transition-transform duration-[320ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform",
           open ? "translate-y-0" : "translate-y-full",
         )}
@@ -117,9 +117,7 @@ export function MeaningSheet({
       >
         <div
           className={cn(
-            "mx-2 overflow-hidden rounded-t-[28px] border backdrop-blur-[22px] backdrop-saturate-150",
-            "bg-gradient-to-b from-[#0f3d2e]/72 via-[#0c3326]/70 to-[#07261c]/78 border-[#7af0b8]/35 text-[#eaf6ec]",
-            "shadow-[0_-28px_70px_-18px_rgba(0,0,0,0.6),0_0_36px_-12px_rgba(122,240,184,0.45),inset_0_1px_0_rgba(255,255,255,0.14),inset_0_0_40px_-20px_rgba(122,240,184,0.18)]",
+            "dict-sheet-panel mx-2 overflow-hidden rounded-t-[28px]",
             "transition-[max-height] duration-300",
           )}
           style={{ maxHeight: expanded ? "92vh" : "70vh" }}
@@ -129,23 +127,23 @@ export function MeaningSheet({
             onTouchStart={onTouchStart}
             onTouchEnd={onTouchEnd}
           >
-            <span className="h-1.5 w-12 rounded-full bg-[#7af0b8]/50" />
+            <span className="dict-sheet-handle h-1.5 w-12 rounded-full" />
           </div>
 
           <header className="flex items-center justify-between gap-3 px-4 pb-3" dir="rtl">
             <div className="min-w-0">
-              <h3 className="font-arabic-serif text-[20px] font-bold text-[#f4f9ee] truncate">
+              <h3 className="dict-sheet-title font-arabic-serif text-[20px] font-bold truncate">
                 {data?.word}
               </h3>
               {data?.kind && (
-                <p className="text-[11px] font-bold text-[#e7c97a]">{data.kind}</p>
+                <p className="dict-sheet-kind text-[11px] font-bold">{data.kind}</p>
               )}
             </div>
             <button
               type="button"
               onClick={onClose}
               aria-label="إغلاق"
-              className="grid h-9 w-9 place-items-center rounded-full bg-white/10 border border-[#7af0b8]/30 text-[#eaf6ec] active:scale-90 transition-transform"
+              className="dict-sheet-close grid h-9 w-9 place-items-center rounded-full active:scale-90 transition-transform"
             >
               <X className="h-4 w-4" />
             </button>
@@ -163,9 +161,7 @@ export function MeaningSheet({
                     onClick={() => setTab(t.key)}
                     className={cn(
                       "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11.5px] font-bold transition-all duration-200",
-                      active
-                        ? "bg-gradient-to-br from-[#9affcc] via-[#5ee6a4] to-[#1f8a64] border-[#caffe2] text-[#04190f] ring-1 ring-[#a8ffd1]/60 shadow-[0_0_22px_-2px_rgba(122,240,184,0.9),0_0_44px_-10px_rgba(94,230,164,0.55),inset_0_1px_0_rgba(255,255,255,0.55)] scale-[1.02]"
-                        : "bg-[#0a2a20]/55 border-[#7af0b8]/30 text-[#d6ecdc] hover:text-[#eaf6ec] hover:border-[#7af0b8]/50",
+                      active ? "dict-sheet-tab--active" : "dict-sheet-tab",
                     )}
                   >
                     <Icon className="h-3.5 w-3.5" />
@@ -190,7 +186,7 @@ export function MeaningSheet({
                   <button
                     type="button"
                     onClick={() => setShowFull(true)}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-[#7af0b8]/50 bg-[#0a2a20]/60 px-4 py-2 text-[12.5px] font-bold text-[#e7c97a] hover:border-[#7af0b8]/80 active:scale-95 transition-all"
+                    className="dict-sheet-btn-secondary inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[12.5px] font-bold active:scale-95 transition-all"
                   >
                     المزيد
                   </button>
@@ -203,21 +199,21 @@ export function MeaningSheet({
                 {(data?.relatedPeople ?? []).map((p, i) => (
                   <div
                     key={i}
-                    className="rounded-2xl bg-[#0a2a20]/45 border border-[#7af0b8]/20 p-3"
+                    className="dict-sheet-card rounded-2xl p-3"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="font-arabic-serif text-[15px] font-bold text-[#f4f9ee] truncate">
+                        <p className="dict-sheet-title font-arabic-serif text-[15px] font-bold truncate">
                           {p.name}
                         </p>
                         {p.role && (
-                          <p className="text-[11px] text-[#e7c97a] mt-0.5">{p.role}</p>
+                          <p className="dict-sheet-kind text-[11px] mt-0.5">{p.role}</p>
                         )}
                       </div>
-                      <Users className="h-4 w-4 text-[#e7c97a] shrink-0 mt-0.5" />
+                      <Users className="dict-sheet-accent h-4 w-4 shrink-0 mt-0.5" />
                     </div>
                     {p.meaning && (
-                      <p className="mt-2 font-arabic-serif text-[13.5px] leading-relaxed text-[#eaf6ec]">
+                      <p className="dict-sheet-body mt-2 font-arabic-serif text-[13.5px] leading-relaxed">
                         {p.meaning}
                       </p>
                     )}
@@ -252,12 +248,12 @@ export function MeaningSheet({
             )}
 
             {tab === "timeline" && (
-              <ol className="relative space-y-3 ps-4 border-s border-[#e7c97a]/60">
+              <ol className="dict-sheet-timeline-line relative space-y-3 ps-4 border-s">
                 {(data?.timeline ?? []).map((t, i) => (
                   <li key={i} className="relative">
-                    <span className="absolute -start-[7px] top-1.5 h-3 w-3 rounded-full bg-[#c79356] ring-2 ring-[#fbf3e1]" />
-                    {t.year && <p className="text-[11px] font-bold text-[#e7c97a]">{t.year}</p>}
-                    <p className="text-[13px] text-[#eaf6ec]">{t.event}</p>
+                    <span className="dict-sheet-timeline-dot absolute -start-[7px] top-1.5 h-3 w-3 rounded-full" />
+                    {t.year && <p className="dict-sheet-kind text-[11px] font-bold">{t.year}</p>}
+                    <p className="dict-sheet-body text-[13px]">{t.event}</p>
                   </li>
                 ))}
                 {!(data?.timeline?.length) && <Empty label="لا يوجد تسلسل زمني بعد." />}
@@ -265,10 +261,10 @@ export function MeaningSheet({
             )}
 
             {tab === "map" && (
-              <div className="rounded-2xl border border-[#efe2c4] bg-gradient-to-br from-[#eef3e6] via-[#dfe9d0] to-[#bcd0a7] aspect-[4/3] grid place-items-center text-center">
+              <div className="dict-sheet-map rounded-2xl border aspect-[4/3] grid place-items-center text-center">
                 <div>
-                  <MapPin className="mx-auto h-6 w-6 text-[#4a6741]" />
-                  <p className="mt-1 text-[12px] font-bold text-[#3a4d2a]">
+                  <MapPin className="dict-sheet-accent mx-auto h-6 w-6" />
+                  <p className="dict-sheet-body mt-1 text-[12px] font-bold">
                     {data?.mapLabel ?? "خريطة الموقع — قريباً"}
                   </p>
                 </div>
@@ -283,7 +279,7 @@ export function MeaningSheet({
         onClick={() => setShowFull(false)}
         aria-hidden
         className={cn(
-          "fixed inset-0 z-[70] bg-[#06251c]/60 backdrop-blur-[6px] transition-opacity duration-300",
+          "fixed inset-0 z-[70] dict-sheet-backdrop--deep backdrop-blur-[2px] transition-opacity duration-300",
           showFull && open ? "opacity-100" : "opacity-0 pointer-events-none",
         )}
       />
@@ -292,32 +288,28 @@ export function MeaningSheet({
         aria-modal="true"
         aria-label={`${data?.word ?? ""} — تفاصيل كاملة`}
         className={cn(
-          "fixed inset-x-0 bottom-0 z-[71] mx-auto w-full max-w-[480px]",
+          "fixed inset-x-0 bottom-0 z-[71] mx-auto w-full max-w-[var(--alpha-content-max-width)]",
           "transition-transform duration-[320ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform",
           showFull && open ? "translate-y-0" : "translate-y-full",
         )}
         style={{ paddingBottom: "max(env(safe-area-inset-bottom), 8px)" }}
       >
         <div
-          className={cn(
-            "mx-2 overflow-hidden rounded-t-[28px] border backdrop-blur-[22px] backdrop-saturate-150",
-            "bg-gradient-to-b from-[#0f3d2e]/85 via-[#0c3326]/82 to-[#07261c]/88 border-[#7af0b8]/35 text-[#eaf6ec]",
-            "shadow-[0_-28px_70px_-18px_rgba(0,0,0,0.65),0_0_36px_-12px_rgba(122,240,184,0.45),inset_0_1px_0_rgba(255,255,255,0.14)]",
-          )}
+          className="dict-sheet-panel mx-2 overflow-hidden rounded-t-[28px]"
           style={{ maxHeight: "92vh" }}
         >
           <div className="grid place-items-center pt-2 pb-1">
-            <span className="h-1.5 w-12 rounded-full bg-[#7af0b8]/50" />
+            <span className="dict-sheet-handle h-1.5 w-12 rounded-full" />
           </div>
           <header className="flex items-center justify-between gap-3 px-4 pb-3" dir="rtl">
-            <h3 className="font-arabic-serif text-[20px] font-bold text-[#f4f9ee] truncate">
+            <h3 className="dict-sheet-title font-arabic-serif text-[20px] font-bold truncate">
               {data?.word}
             </h3>
             <button
               type="button"
               onClick={() => setShowFull(false)}
               aria-label="إغلاق"
-              className="grid h-9 w-9 place-items-center rounded-full bg-white/10 border border-[#7af0b8]/30 text-[#eaf6ec] active:scale-90 transition-transform"
+              className="dict-sheet-close grid h-9 w-9 place-items-center rounded-full active:scale-90 transition-transform"
             >
               <X className="h-4 w-4" />
             </button>
@@ -332,7 +324,7 @@ export function MeaningSheet({
             )}
             {data?.relatedVerses && data.relatedVerses.length > 0 && (
               <div className="space-y-2.5">
-                <p className="text-[11px] font-bold text-[#e7c97a] px-1">الشواهد الكتابية</p>
+                <p className="dict-sheet-card-title text-[11px] font-bold px-1">الشواهد الكتابية</p>
                 {data.relatedVerses.map((v, i) => (
                   <RelatedVerseRow
                     key={i}
@@ -373,7 +365,7 @@ function RefChip({
   const parsed = parseScriptureRef(raw, maps);
   if (!parsed) {
     return (
-      <span className="inline-flex items-center rounded-full border border-[#7af0b8]/25 bg-[#0a2a20]/40 px-2.5 py-1 text-[11px] text-[#cfe4d5]">
+      <span className="dict-sheet-chip inline-flex items-center rounded-full px-2.5 py-1 text-[11px]">
         {raw}
       </span>
     );
@@ -383,7 +375,7 @@ function RefChip({
       to="/$book/$chapter"
       params={{ book: parsed.book, chapter: String(parsed.chapter) }}
       onClick={onNavigate}
-      className="inline-flex items-center gap-1 rounded-full border border-[#7af0b8]/40 bg-[#0a2a20]/55 px-2.5 py-1 text-[11px] font-bold text-[#e7c97a] hover:border-[#7af0b8]/70 active:scale-95 transition-all"
+      className="dict-sheet-chip-link inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold active:scale-95 transition-all"
     >
       <ChevronLeft className="h-3 w-3" />
       {parsed.book} {parsed.chapter}
@@ -420,22 +412,22 @@ function RelatedVerseRow({
   const inner = (
     <>
       <div className="flex items-center justify-between gap-2">
-        <p className="text-[11px] font-bold text-[#e7c97a]">{refLabel}</p>
-        {parsed && <ChevronLeft className="h-3.5 w-3.5 text-[#7af0b8]/70" />}
+        <p className="dict-sheet-card-title text-[11px] font-bold">{refLabel}</p>
+        {parsed && <ChevronLeft className="dict-sheet-accent h-3.5 w-3.5 opacity-70" />}
       </div>
       {text ? (
-        <p className="mt-1 font-arabic-serif text-[14px] leading-relaxed text-[#eaf6ec]">
+        <p className="dict-sheet-body mt-1 font-arabic-serif text-[14px] leading-relaxed">
           {text}
         </p>
       ) : q.isLoading && parsed ? (
-        <p className="mt-1 text-[12px] text-[#cfe4d5]/70">…جاري التحميل</p>
+        <p className="dict-sheet-muted mt-1 text-[12px]">…جاري التحميل</p>
       ) : null}
     </>
   );
 
   if (!parsed) {
     return (
-      <div className="rounded-2xl bg-[#0a2a20]/45 border border-[#7af0b8]/20 p-3">{inner}</div>
+      <div className="dict-sheet-card rounded-2xl p-3">{inner}</div>
     );
   }
 
@@ -444,7 +436,7 @@ function RelatedVerseRow({
       to="/$book/$chapter"
       params={{ book: parsed.book, chapter: String(parsed.chapter) }}
       onClick={onNavigate}
-      className="block rounded-2xl bg-[#0a2a20]/45 border border-[#7af0b8]/25 p-3 hover:border-[#7af0b8]/55 active:scale-[0.99] transition-all"
+      className="dict-sheet-card dict-sheet-card-link block rounded-2xl p-3 active:scale-[0.99] transition-all"
     >
       {inner}
     </Link>
@@ -453,9 +445,9 @@ function RelatedVerseRow({
 
 function TextBlock({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl bg-[#0a2a20]/45 border border-[#7af0b8]/20 p-4">
-      <p className="text-[11px] font-bold text-[#e7c97a]">{title}</p>
-      <p className="mt-1.5 text-[14px] leading-relaxed text-[#eaf6ec]">{children}</p>
+    <div className="dict-sheet-card rounded-2xl p-4">
+      <p className="dict-sheet-card-title text-[11px] font-bold">{title}</p>
+      <p className="dict-sheet-body mt-1.5 text-[14px] leading-relaxed">{children}</p>
     </div>
   );
 }
@@ -463,8 +455,8 @@ function TextBlock({ title, children }: { title: string; children: React.ReactNo
 function Empty({ label }: { label: string }) {
   return (
     <div className="grid place-items-center py-10 text-center">
-      <Sparkles className="h-5 w-5 text-[#c79356]" />
-      <p className="mt-2 text-[12px] text-[#cfe4d5]">{label}</p>
+      <Sparkles className="dict-sheet-accent h-5 w-5 opacity-80" />
+      <p className="dict-sheet-muted mt-2 text-[12px]">{label}</p>
     </div>
   );
 }

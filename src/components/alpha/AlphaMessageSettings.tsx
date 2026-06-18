@@ -166,7 +166,7 @@ export function AlphaMessageSettings({
 
   return (
     <main dir="rtl" className={embedded ? "connect-settings-screen connect-embedded-panel flex h-full min-h-0 flex-col overflow-hidden font-arabic text-foreground" : "flex h-full min-h-0 flex-col overflow-hidden font-arabic text-foreground"}>
-      <div className={`min-h-0 flex-1 overflow-y-auto overscroll-y-contain ${embedded ? "pb-2" : "mx-auto max-w-[420px] px-4 pb-28 pt-[max(env(safe-area-inset-top),16px)]"}`}>
+      <div className={`min-h-0 flex-1 overflow-y-auto overscroll-y-contain ${embedded ? "pb-2" : "mx-auto max-w-[var(--alpha-dock-max-width)] px-4 pb-28 pt-[max(env(safe-area-inset-top),16px)]"}`}>
 
         {embedded ? (
           /* ── Compact embedded header ── */
@@ -205,7 +205,7 @@ export function AlphaMessageSettings({
         <div className={`${embedded ? ALPHA_SETTINGS_CARD : "relative overflow-hidden rounded-[18px] border border-gold/12 bg-[rgba(247,240,224,0.62)] shadow-[0_2px_12px_-4px_rgba(200,149,42,0.18),0_1px_3px_rgba(0,0,0,0.04)] backdrop-blur-xl"} mb-3`}>
           {!embedded && (
             <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center">
-              <img src="/shields/official-shield.png?v=8" alt="" className="size-[118px] object-contain opacity-[0.065]" />
+              <img src="/shields/official-shield.png?v=14" alt="" className="size-[118px] object-contain opacity-[0.065]" />
             </div>
           )}
           <div className="relative z-[1] p-2.5">

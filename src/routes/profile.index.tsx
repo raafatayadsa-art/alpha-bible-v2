@@ -846,31 +846,10 @@ function ChurchFrame() {
 
 function ProfileScreen() {
   return (
-    <div dir="rtl" className="relative min-h-screen w-full overflow-x-hidden">
-      <div
-        aria-hidden
-        className="fixed inset-0 -z-10"
-        style={{
-          background:
-            "radial-gradient(120% 55% at 50% 0%, rgba(231,201,122,0.35), transparent 60%)," +
-            "radial-gradient(80% 60% at 100% 30%, rgba(216,138,42,0.16), transparent 65%)," +
-            "radial-gradient(80% 60% at 0% 80%, rgba(190,150,90,0.22), transparent 65%)," +
-            "linear-gradient(180deg,#f7eed6 0%,#f4ead8 50%,#ecdcb6 100%)",
-        }}
-      />
-      {/* Architectural depth layer */}
-      <div
-        aria-hidden
-        className="fixed inset-0 -z-10 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(70% 40% at 50% 10%, rgba(216,168,58,0.10), transparent 70%)," +
-            "radial-gradient(90% 50% at 50% 100%, rgba(120,80,30,0.10), transparent 70%)",
-        }}
-      />
+    <div dir="rtl" className="relative min-h-screen w-full overflow-x-hidden bg-[#f4ead8]">
       <CopticWatermark />
 
-      <div className="relative mx-auto w-full max-w-[440px] px-4 pb-36">
+      <div className="relative mx-auto w-full max-w-[var(--alpha-content-max-width)] px-4 pb-36">
         <ChurchFrame />
 
         <div className="relative z-10">

@@ -159,7 +159,7 @@ export function AlphaIdentityRow({
           {subtitle ? <p className="mt-0.5 truncate text-[10px] text-muted-foreground">{subtitle}</p> : null}
           {!subtitle && meta ? <div className="mt-0.5 truncate text-[10px] text-muted-foreground">{meta}</div> : null}
         </div>
-        <div className="connect-participant-row__shield">
+        <div className="connect-participant-row__shield alpha-identity-shield-slot">
           <AlphaShield
             role={role}
             size="sm"
@@ -182,19 +182,21 @@ export function AlphaIdentityRow({
         className={cn("alpha-identity-row connect-call-log-row", className)}
       >
         {avatarCell}
-        <div className={cn("connect-call-log-row__details", detailsClassName)}>
-          <span className={cn("alpha-identity-name__text w-full truncate text-right", nameClassName)}>{name}</span>
+        <div className={cn("connect-call-log-row__identity", detailsClassName)}>
+          <div className="alpha-identity-name w-full min-w-0">
+            <span className={cn("alpha-identity-name__text truncate text-right", nameClassName)}>{name}</span>
+            <div className="alpha-identity-shield-slot">
+              <AlphaShield
+                role={role}
+                size="sm"
+                userName={name}
+                userAvatar={userAvatar ?? avatar}
+                isOnline={isOnline}
+                presenceStatus={resolvedShieldPresence}
+              />
+            </div>
+          </div>
           {meta ? <div className={cn(ALPHA_IDENTITY_BLOCK_ROLE, "w-full text-right")}>{meta}</div> : null}
-        </div>
-        <div className="connect-call-log-row__shield">
-          <AlphaShield
-            role={role}
-            size="sm"
-            userName={name}
-            userAvatar={userAvatar ?? avatar}
-            isOnline={isOnline}
-            presenceStatus={resolvedShieldPresence}
-          />
         </div>
         {trailing ? <div className="connect-call-log-row__trailing">{trailing}</div> : null}
       </Tag>

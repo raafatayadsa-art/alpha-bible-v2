@@ -87,7 +87,7 @@ function Header() {
         WebkitBackdropFilter: "blur(14px)",
       }}
     >
-      <div className="mx-auto flex w-full max-w-[440px] items-center justify-between gap-3">
+      <div className="mx-auto flex w-full max-w-[var(--alpha-content-max-width)] items-center justify-between gap-3">
         <Link
           to="/church"
           aria-label="رجوع"
@@ -473,7 +473,7 @@ function ServiceHub() {
   return (
     <div dir="rtl" className="min-h-screen bg-[#f4ead8]">
       <Header />
-      <main className="mx-auto w-full max-w-[440px] px-4 pb-[max(env(safe-area-inset-bottom),16px)] space-y-5">
+      <main className="mx-auto w-full max-w-[var(--alpha-content-max-width)] px-4 pb-[max(env(safe-area-inset-bottom),16px)] space-y-5">
         <Hero />
         <RoleSwitcher role={role} />
         <ManagementBar role={role} onAction={onAction} />

@@ -1,8 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { AlphaMessagingSystem } from "@/components/alpha/AlphaMessagingSystem";
 import { useAlphaPresenceBootstrap, usePresenceStoreVersion } from "@/features/alpha-connect/useAlphaPresence";
 
 export const Route = createFileRoute("/messages")({
+  ssr: false,
   validateSearch: (search: Record<string, unknown>) => ({
     contactId: typeof search.contactId === "string" ? search.contactId : undefined,
     name: typeof search.name === "string" ? search.name : undefined,
@@ -14,21 +15,30 @@ export const Route = createFileRoute("/messages")({
     from: typeof search.from === "string" ? search.from : undefined,
     screen: search.screen === "settings" ? "settings" as const : undefined,
   }),
+  beforeLoad: ({ search }) => {
+    if (search.contactId) {
+      throw redirect({
+        to: "/messages/chat/$contactId",
+        params: { contactId: search.contactId },
+        search: {
+          name: search.name,
+          role: search.role,
+          phone: search.phone,
+          from: search.from,
+        },
+      });
+    }
+  },
   component: MessagesPage,
 });
 
 function MessagesPage() {
   useAlphaPresenceBootstrap();
   usePresenceStoreVersion();
-  const { contactId, name, role, phone, from, screen } = Route.useSearch();
-  const initialContact =
-    contactId && name
-      ? { id: contactId, name, role: role ?? ("priest" as const), phone }
-      : undefined;
+  const { from, screen } = Route.useSearch();
 
   return (
     <AlphaMessagingSystem
-      initialContact={initialContact}
       returnTo={from}
       initialScreen={screen}
     />

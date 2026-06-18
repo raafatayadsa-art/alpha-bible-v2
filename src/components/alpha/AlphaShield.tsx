@@ -61,7 +61,7 @@ const SHIELD_CONFIG: Record<ShieldRole, {
   radiate: { core: string; ring1: string; ring2: string };
 }> = {
   official: {
-    image:      "/shields/official-shield.png?v=10",
+    image:      "/shields/official-shield.png?v=14",
     label:      "درع Alpha الرسمي",
     glow:       "drop-shadow(0 0 5px rgba(200,149,42,0.65))",
     scale:      1.25,
@@ -75,7 +75,7 @@ const SHIELD_CONFIG: Record<ShieldRole, {
     },
   },
   priest: {
-    image:      "/shields/priest-shield.png?v=13",
+    image:      "/shields/priest-shield.png?v=15",
     label:      "درع الكاهن الملكي",
     glow:       "drop-shadow(0 0 6px rgba(22,101,52,0.6))",
     scale:      1.25,
@@ -89,7 +89,7 @@ const SHIELD_CONFIG: Record<ShieldRole, {
     },
   },
   servant: {
-    image:      "/shields/servant-shield.png?v=6",
+    image:      "/shields/servant-shield.png?v=13",
     label:      "درع الخادم",
     glow:       "drop-shadow(0 0 5px rgba(22,101,52,0.5))",
     scale:      1.25,
@@ -103,7 +103,7 @@ const SHIELD_CONFIG: Record<ShieldRole, {
     },
   },
   member: {
-    image:      "/shields/member-shield.png?v=10",
+    image:      "/shields/member-shield.png?v=13",
     label:      "درع العضو الموثّق",
     glow:       "drop-shadow(0 0 5px rgba(59,89,152,0.55))",
     scale:      1.25,

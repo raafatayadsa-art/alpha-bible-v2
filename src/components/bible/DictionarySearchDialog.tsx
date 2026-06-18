@@ -1,15 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Search, X, BookOpen, Sparkles, Loader2 } from "lucide-react";
+import { X, BookOpen, Sparkles, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ConnectSearchBarField } from "@/components/alpha/ConnectExpandableSearchBar";
 import { lookupDictionary, type LookupDictionaryRow } from "@/lib/dictionary";
 import { normalizeAr, rankAndDedupe } from "@/lib/dictionary-search-ranking";
 
 /**
- * Premium glass search dialog. Calls `public.lookup_dictionary` and
- * renders results as Alpha-styled cards. Ranking logic lives in
- * `@/lib/dictionary-search-ranking` (unit-tested).
+ * Dictionary search panel — Alpha Connect Classic + Connect glass search bar.
+ * Calls `public.lookup_dictionary` and renders ranked results.
  */
-
 
 /** Renders `title` with every normalized occurrence of `query` bolded. */
 function HighlightedTitle({
@@ -21,13 +20,9 @@ function HighlightedTitle({
 }) {
   const q = normalizeAr(query.trim());
   if (!q) return <>{title}</>;
-  // Walk the original title char-by-char, building a parallel normalized
-  // string. When the normalized window matches `q`, mark the original
-  // span as highlighted.
   const norm: string[] = [];
   for (let i = 0; i < title.length; i++) norm.push(normalizeAr(title[i]));
   const flat = norm.join("");
-  // Map each normalized position back to its original index.
   const map: number[] = [];
   for (let i = 0; i < title.length; i++) {
     for (let k = 0; k < norm[i].length; k++) map.push(i);
@@ -48,10 +43,7 @@ function HighlightedTitle({
   ranges.forEach(([s, e], i) => {
     if (cursor < s) parts.push(title.slice(cursor, s));
     parts.push(
-      <mark
-        key={i}
-        className="bg-[#7af0b8]/25 text-[#f4f9ee] rounded px-0.5"
-      >
+      <mark key={i} className="rounded bg-[#e8f2ec] px-0.5 text-[#1e3328]">
         {title.slice(s, e)}
       </mark>,
     );
@@ -88,7 +80,6 @@ export function DictionarySearchDialog({
   }, [open]);
 
   useEffect(() => {
-    // Any new keystroke resets back to strict mode.
     setExpanded(false);
   }, [term]);
 
@@ -123,11 +114,9 @@ export function DictionarySearchDialog({
   }, [open, onClose]);
 
   const ranked = useMemo(
-    () =>
-      results ? rankAndDedupe(results, term, { strict: !expanded }) : [],
+    () => (results ? rankAndDedupe(results, term, { strict: !expanded }) : []),
     [results, term, expanded],
   );
-
 
   return (
     <>
@@ -135,7 +124,7 @@ export function DictionarySearchDialog({
         onClick={onClose}
         aria-hidden
         className={cn(
-          "fixed inset-0 z-[70] bg-[#06251c]/25 transition-opacity duration-300",
+          "fixed inset-0 z-[70] dict-sheet-backdrop transition-opacity duration-300",
           open ? "opacity-100" : "opacity-0 pointer-events-none",
         )}
       />
@@ -145,36 +134,37 @@ export function DictionarySearchDialog({
         aria-label="بحث في القاموس"
         dir="rtl"
         className={cn(
-          "fixed inset-x-0 top-0 z-[71] mx-auto w-full max-w-[480px]",
+          "fixed inset-x-0 top-0 z-[71] mx-auto w-full max-w-[var(--alpha-content-max-width)]",
           "transition-transform duration-[320ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform",
           open ? "translate-y-0" : "-translate-y-full",
         )}
         style={{ paddingTop: "max(env(safe-area-inset-top), 8px)" }}
       >
-        <div
-          className={cn(
-            "mx-2 overflow-hidden rounded-b-[28px] border backdrop-blur-[22px] backdrop-saturate-150",
-            "bg-gradient-to-b from-[#0f3d2e]/78 via-[#0c3326]/74 to-[#07261c]/80 border-[#7af0b8]/35 text-[#eaf6ec]",
-            "shadow-[0_28px_70px_-18px_rgba(0,0,0,0.6),0_0_36px_-12px_rgba(122,240,184,0.45),inset_0_1px_0_rgba(255,255,255,0.14)]",
-          )}
-        >
-          <header className="flex items-center gap-2 px-3 pt-3 pb-2">
-            <div className="flex-1 flex items-center gap-2 rounded-full border border-[#7af0b8]/40 bg-[#0a2a20]/55 px-3 py-2">
-              <Search className="h-4 w-4 text-[#e7c97a] shrink-0" />
-              <input
-                ref={inputRef}
-                value={term}
-                onChange={(e) => setTerm(e.target.value)}
-                placeholder="ابحث عن كلمة في القاموس…"
-                className="flex-1 bg-transparent outline-none text-[14.5px] font-arabic-serif text-[#f4f9ee] placeholder:text-[#cfe4d5]/55"
-              />
-              {loading && <Loader2 className="h-3.5 w-3.5 animate-spin text-[#7af0b8]" />}
-            </div>
+        <div className="dict-sheet-panel mx-2 overflow-hidden rounded-b-[28px]">
+          <div className="grid place-items-center pt-2 pb-1">
+            <span className="dict-sheet-handle h-1.5 w-12 rounded-full" />
+          </div>
+
+          <header className="flex items-center gap-2 px-3 pb-2 pt-1">
+            <ConnectSearchBarField
+              query={term}
+              inputRef={inputRef}
+              onQueryChange={setTerm}
+              placeholder="ابحث عن كلمة في القاموس…"
+              inputAriaLabel="بحث في القاموس"
+              classicTheme
+              className="min-w-0 flex-1"
+              trailing={
+                loading ? (
+                  <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-[var(--neon-blue)] opacity-80" />
+                ) : null
+              }
+            />
             <button
               type="button"
               onClick={onClose}
               aria-label="إغلاق"
-              className="grid h-9 w-9 place-items-center rounded-full bg-white/10 border border-[#7af0b8]/30 text-[#eaf6ec] active:scale-90 transition-transform"
+              className="alpha-connect-theme alpha-connect-theme--classic dict-sheet-close grid h-9 w-9 shrink-0 place-items-center rounded-full active:scale-90 transition-transform"
             >
               <X className="h-4 w-4" />
             </button>
@@ -186,24 +176,22 @@ export function DictionarySearchDialog({
           >
             {!term.trim() && (
               <div className="grid place-items-center py-10 text-center">
-                <Sparkles className="h-5 w-5 text-[#c79356]" />
-                <p className="mt-2 text-[12px] text-[#cfe4d5]">
-                  ابدأ بكتابة كلمة للبحث في القاموس
-                </p>
+                <Sparkles className="dict-sheet-accent h-5 w-5 opacity-80" />
+                <p className="dict-sheet-muted mt-2 text-[12px]">ابدأ بكتابة كلمة للبحث في القاموس</p>
               </div>
             )}
 
             {term.trim() && !loading && ranked.length === 0 && (
               <div className="grid place-items-center py-10 text-center">
-                <BookOpen className="h-5 w-5 text-[#c79356]" />
-                <p className="mt-2 text-[13px] font-bold text-[#eaf6ec]">
+                <BookOpen className="dict-sheet-accent h-5 w-5 opacity-80" />
+                <p className="dict-sheet-title mt-2 text-[13px] font-bold">
                   لا توجد نتيجة مطابقة لهذه الكلمة
                 </p>
                 {!expanded && (
                   <button
                     type="button"
                     onClick={() => setExpanded(true)}
-                    className="mt-3 rounded-full border border-[#7af0b8]/40 bg-[#0a2a20]/60 px-4 py-1.5 text-[12px] font-bold text-[#e7c97a] active:scale-95 transition-transform"
+                    className="dict-sheet-btn-secondary mt-3 rounded-full px-4 py-1.5 text-[12px] font-bold active:scale-95 transition-transform"
                   >
                     البحث الموسع
                   </button>
@@ -212,34 +200,29 @@ export function DictionarySearchDialog({
             )}
 
             {term.trim() && ranked.length > 0 && (
-              <p className="px-1 pb-1 text-[11px] text-[#cfe4d5]/70">
+              <p className="dict-sheet-muted px-1 pb-1 text-[11px]">
                 {expanded ? `${ranked.length} نتيجة (بحث موسّع)` : `${ranked.length} نتيجة`}
               </p>
             )}
-
 
             {ranked.map(({ row }, i) => (
               <button
                 key={`${row.id ?? row.word}-${i}`}
                 type="button"
                 onClick={() => onSelect(row)}
-                className={cn(
-                  "w-full text-right rounded-2xl border p-3 transition-all active:scale-[0.99]",
-                  "bg-gradient-to-b from-[#0a2a20]/60 to-[#07241b]/60 border-[#7af0b8]/30",
-                  "hover:border-[#7af0b8]/60 hover:shadow-[0_0_22px_-8px_rgba(122,240,184,0.55)]",
-                )}
+                className="dict-sheet-result-btn w-full rounded-2xl p-3 text-right transition-all active:scale-[0.99]"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <p className="font-arabic-serif text-[17px] font-bold text-[#f4f9ee] truncate">
+                  <p className="dict-sheet-title truncate font-arabic-serif text-[17px] font-bold">
                     <HighlightedTitle title={row.word ?? ""} query={term} />
                   </p>
                   {row.category && (
-                    <span className="shrink-0 rounded-full bg-[#7af0b8]/12 border border-[#7af0b8]/30 px-2 py-0.5 text-[10px] font-bold text-[#e7c97a]">
+                    <span className="dict-sheet-category-badge shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold">
                       {row.category}
                     </span>
                   )}
                 </div>
-                <p className="mt-1.5 font-arabic-serif text-[13.5px] leading-relaxed text-[#d6ecdc] line-clamp-2">
+                <p className="dict-sheet-body mt-1.5 line-clamp-2 font-arabic-serif text-[13.5px] leading-relaxed">
                   {row.short_meaning_ar?.trim() || "لا يوجد معنى مختصر متاح"}
                 </p>
               </button>

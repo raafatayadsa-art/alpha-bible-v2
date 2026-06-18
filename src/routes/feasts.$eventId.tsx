@@ -99,7 +99,7 @@ function EventDetails() {
       <CopticWatermark />
 
       <main
-        className="relative z-10 mx-auto w-full max-w-[430px]"
+        className="relative z-10 mx-auto w-full max-w-[var(--alpha-content-narrow-width)]"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 110px)" }}
       >
         {/* Hero */}

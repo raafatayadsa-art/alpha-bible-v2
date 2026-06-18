@@ -7,7 +7,6 @@ export function AlphaWatermark() {
       <span
         className="absolute -top-10 -left-6 text-[#a07823] leading-none"
         style={{
-          fontFamily: "'Amiri', serif",
           fontSize: "clamp(220px, 60vw, 360px)",
           opacity: 0.04,
           filter: "blur(2px)",
@@ -18,7 +17,6 @@ export function AlphaWatermark() {
       <span
         className="absolute -bottom-16 -right-8 text-[#a07823] leading-none"
         style={{
-          fontFamily: "'Amiri', serif",
           fontSize: "clamp(220px, 60vw, 360px)",
           opacity: 0.04,
           filter: "blur(2px)",

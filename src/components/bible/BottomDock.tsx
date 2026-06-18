@@ -112,16 +112,9 @@ export function BottomDock({
     >
 
 
-      <div className="mx-auto w-full max-w-[420px] px-3 pointer-events-auto">
-        <div
-          className={cn(
-            "relative rounded-[26px] border backdrop-blur-2xl",
-            // Unified dark navy/emerald glass — matches auto-scroll controller
-            "bg-gradient-to-b from-[#0b1a2c]/75 to-[#08131f]/70 border-white/10",
-            "shadow-[0_-12px_36px_-16px_rgba(0,0,0,0.85),0_0_28px_-10px_rgba(62,180,130,0.30),inset_0_1px_0_rgba(255,255,255,0.06)]",
-          )}
-        >
-          <div className="grid grid-cols-5 items-end px-3 pt-2 pb-1.5 gap-1">
+      <div className="mx-auto w-full max-w-[var(--alpha-dock-max-width)] px-3 pointer-events-auto alpha-app-dock">
+        <div className="alpha-dock-bar relative rounded-[26px]">
+          <div className="grid grid-cols-5 items-end px-1.5 py-2 gap-0.5 sm:px-2 sm:py-2.5 sm:gap-1">
             <DockItem icon={HomeIcon} label={t("nav.home")} to="/home" active={isActive("/home")} />
             <DockItem icon={HandHeart} label={t("nav.prayer")} to="/agpeya" active={isActive("/agpeya")} />
             <DockItem
@@ -140,6 +133,16 @@ export function BottomDock({
           </div>
         </div>
       </div>
+      <style>{`
+        @keyframes alphaDockRaisedPulse {
+          0% { transform: scale(1); }
+          45% { transform: scale(1.07); }
+          100% { transform: scale(1); }
+        }
+        .alpha-dock-raised-pulse {
+          animation: alphaDockRaisedPulse 520ms cubic-bezier(0.32, 0.72, 0, 1);
+        }
+      `}</style>
     </nav>
   );
 }
@@ -150,68 +153,70 @@ function DockItem({
   active,
   raised,
   to,
-  spiritualMode,
 }: {
-  icon?: any;
+  icon?: React.ComponentType<{ className?: string; strokeWidth?: number; style?: React.CSSProperties }>;
   label: string;
   active?: boolean;
   raised?: boolean;
   to?: string;
-  spiritualMode?: boolean;
 }) {
-  // Unified dark-glass palette to match auto-scroll controller
-  const iconColor = active ? "#f0d78c" : "#e8e2cf";
-  const labelColor = active ? "#f0d78c" : "rgba(232,226,207,0.78)";
-  const dotColor = "#7af0b8";
-
-  const raisedFilter =
-    "drop-shadow(0 0 14px rgba(122,240,184,0.45)) drop-shadow(0 0 10px rgba(231,201,122,0.35)) drop-shadow(0 6px 10px rgba(0,0,0,0.55))";
+  const [pressing, setPressing] = useState(false);
 
   const inner = (
-    <div className="flex w-full flex-col items-center justify-end gap-1">
+    <>
       {raised ? (
         <div
-          className="-mt-7 grid h-14 w-14 place-items-center"
-          style={{ filter: raisedFilter }}
+          className={cn(
+            "alpha-dock-tab__icon relative grid place-items-center",
+            pressing && "alpha-dock-raised-pulse",
+          )}
         >
-          <img src={logoBible} alt="" className="h-full w-full object-contain" draggable={false} />
+          <span
+            aria-hidden
+            className={cn(
+              "pointer-events-none absolute inset-[-6px] rounded-full transition-opacity duration-200",
+              pressing ? "opacity-100" : "opacity-0",
+            )}
+            style={{
+              background:
+                "radial-gradient(circle, rgba(240,215,140,0.38) 0%, rgba(231,201,122,0.14) 52%, transparent 72%)",
+              boxShadow: pressing
+                ? "0 0 22px 6px rgba(240,215,140,0.42), 0 0 40px 12px rgba(231,201,122,0.18)"
+                : "none",
+            }}
+          />
+          <img src={logoBible} alt="" className="relative h-full w-full object-contain" draggable={false} />
         </div>
       ) : Icon ? (
-        <Icon
-          className="h-[18px] w-[18px]"
-          strokeWidth={1.8}
-          style={{ color: iconColor, opacity: active ? 1 : 0.88 }}
-        />
+        <Icon className="alpha-dock-tab__icon h-[18px] w-[18px] sm:h-5 sm:w-5" strokeWidth={1.8} />
       ) : null}
-      <span
-        className="text-[10.5px] font-semibold leading-none whitespace-nowrap [word-break:keep-all] tracking-tight"
-        style={{ color: labelColor }}
-      >
-        {label}
-      </span>
-      {active && !raised && (
-        <span
-          className="mt-0.5 h-1 w-1 rounded-full"
-          style={{
-            background: dotColor,
-            boxShadow: "0 0 6px rgba(122,240,184,0.7)",
-          }}
-          aria-hidden
-        />
-      )}
-    </div>
+      <span className="alpha-dock-tab__label font-semibold tracking-tight">{label}</span>
+    </>
   );
 
-  const className = "block py-1 active:scale-[0.94] transition-transform";
+  const className = cn(
+    "alpha-dock-tab",
+    active && "alpha-dock-tab--active",
+    raised && "alpha-dock-tab--raised",
+  );
+  const pressHandlers = raised
+    ? {
+        onPointerDown: () => setPressing(true),
+        onPointerUp: () => setPressing(false),
+        onPointerLeave: () => setPressing(false),
+        onPointerCancel: () => setPressing(false),
+      }
+    : {};
+
   if (to) {
     return (
-      <Link to={to as any} aria-label={label} className={className}>
+      <Link to={to as any} aria-label={label} aria-current={active ? "page" : undefined} className={className} {...pressHandlers}>
         {inner}
       </Link>
     );
   }
   return (
-    <button type="button" aria-label={label} className={className}>
+    <button type="button" aria-label={label} aria-current={active ? "page" : undefined} className={className} {...pressHandlers}>
       {inner}
     </button>
   );

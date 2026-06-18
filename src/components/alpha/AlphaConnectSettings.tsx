@@ -40,6 +40,7 @@ import {
 import type { AlphaConnectThemeId } from "./alpha-connect-theme";
 import { dispatchConnectThemeChanged, normalizeConnectTheme } from "./alpha-connect-theme";
 import { AlphaConnectLogo } from "./AlphaConnectLogo";
+import { useConnectionStatus } from "@/features/alpha-connect/useConnectionStatus";
 
 type CodePopup = "create" | "reset-verify" | "reset-confirm" | null;
 
@@ -47,7 +48,7 @@ type CodePopup = "create" | "reset-verify" | "reset-confirm" | null;
 
 export type AudioOutput = "earpiece" | "speaker" | "bluetooth";
 export type WhoCanCall = "all" | "friends" | "church" | "none";
-export type EphemeralDelete = "on_read" | "1h" | "6h" | "12h" | "24h" | "3d" | "7d";
+export type EphemeralDelete = "on_read" | "5s" | "10s" | "30s" | "1m" | "5m" | "30m" | "1d";
 export type CallQuality = "auto" | "economy" | "high";
 
 export type AlphaConnectSettingsState = {
@@ -100,7 +101,7 @@ export const DEFAULT_ALPHA_CONNECT_SETTINGS: AlphaConnectSettingsState = {
   showOnlineStatus: true,
   showLastSeen: false,
   allowVoiceMessages: true,
-  ephemeralDelete: "24h",
+  ephemeralDelete: "1m",
   saveImportantOnly: true,
   groupNotifications: true,
   allowGroupAdd: false,
@@ -157,12 +158,13 @@ const WHO_CAN_CALL_LABELS: Record<WhoCanCall, string> = {
 
 const EPHEMERAL_LABELS: Record<EphemeralDelete, string> = {
   on_read: "فوراً بعد القراءة/الاستماع",
-  "1h": "بعد ساعة",
-  "6h": "بعد 6 ساعات",
-  "12h": "بعد 12 ساعة",
-  "24h": "بعد 24 ساعة",
-  "3d": "بعد 3 أيام",
-  "7d": "بعد 7 أيام",
+  "5s": "بعد ٥ ثواني",
+  "10s": "بعد ١٠ ثواني",
+  "30s": "بعد ٣٠ ثانية",
+  "1m": "بعد دقيقة",
+  "5m": "بعد ٥ دقائق",
+  "30m": "بعد ٣٠ دقيقة",
+  "1d": "بعد يوم",
 };
 
 const QUALITY_LABELS: Record<CallQuality, string> = {
@@ -201,7 +203,6 @@ export function AlphaConnectSettings({
     active: string;
     onPick: (id: string) => void;
   } | null>(null);
-  const [liveStats, setLiveStats] = useState({ ping: 26, packetLoss: 0.18, signal: 94 });
   const [openSection, setOpenSection] = useState<SettingsSectionId | null>(null);
   const [codePopup, setCodePopup] = useState<CodePopup>(null);
   const [createStep, setCreateStep] = useState<1 | 2>(1);
@@ -310,17 +311,6 @@ export function AlphaConnectSettings({
     showToast("تم تفعيل Face ID");
   };
 
-  useEffect(() => {
-    const id = window.setInterval(() => {
-      setLiveStats((s) => ({
-        ping: Math.max(12, Math.min(48, s.ping + (Math.random() > 0.5 ? 1 : -1) * Math.ceil(Math.random() * 3))),
-        packetLoss: Math.max(0, Math.min(2.5, +(s.packetLoss + (Math.random() - 0.5) * 0.12).toFixed(2))),
-        signal: Math.max(72, Math.min(100, s.signal + (Math.random() > 0.5 ? 1 : -1))),
-      }));
-    }, 2400);
-    return () => window.clearInterval(id);
-  }, []);
-
   const handleSave = () => {
     saveAlphaConnectSettings(draft);
     applyAlphaConnectSecurity(draft);
@@ -346,13 +336,12 @@ export function AlphaConnectSettings({
   };
 
   return (
-    <div dir="rtl" className="connect-settings-screen relative mx-auto w-full max-w-[430px] min-h-0">
+    <div dir="rtl" className="connect-settings-screen relative mx-auto w-full max-w-[var(--alpha-content-narrow-width)] min-h-0">
       <ConnectSettingsHeader onBack={onBack} trustShield={trustShield} />
 
-      <div className="space-y-3 px-5 pb-[calc(env(safe-area-inset-bottom)+108px)] pt-1">
+      <div className="space-y-3 px-5 pb-[var(--alpha-connect-nav-clearance,calc(72px+max(16px,env(safe-area-inset-bottom))))] pt-1">
         <ConnectSettingsLivePanel
           callQuality={draft.callQuality}
-          liveStats={liveStats}
           onQualityPick={() =>
             openSelect(
               "جودة الاتصال",
@@ -850,13 +839,18 @@ function ConnectSettingsHeader({
 
 function ConnectSettingsLivePanel({
   callQuality,
-  liveStats,
   onQualityPick,
 }: {
   callQuality: CallQuality;
-  liveStats: { ping: number; packetLoss: number; signal: number };
   onQualityPick: () => void;
 }) {
+  const connection = useConnectionStatus();
+  const pingValue = connection.rttMs != null ? `${connection.rttMs} ms` : "—";
+  const packetLossValue =
+    connection.packetLossPercent != null ? `${connection.packetLossPercent.toFixed(1)}%` : "—";
+  const signalValue =
+    connection.signalStrength != null ? `${connection.signalStrength}%` : "—";
+
   return (
     <section className="connect-settings-live-panel connect-settings-pressable connect-settings-card glass-strong overflow-hidden rounded-2xl border border-[oklch(0.82_0.22_145/0.35)] shadow-[0_0_24px_oklch(0.82_0.22_145/0.12)]">
       <div className="px-2 pb-1 pt-3">
@@ -864,10 +858,13 @@ function ConnectSettingsLivePanel({
       </div>
 
       <div className="grid grid-cols-3 gap-2 px-3 pb-4 pt-1">
-        <LiveStatCard label="Ping" value={`${liveStats.ping} ms`} icon={SignalHigh} />
-        <LiveStatCard label="Packet Loss" value={`${liveStats.packetLoss.toFixed(1)}%`} icon={AlertCircle} />
-        <LiveStatCard label="Signal" value={`${liveStats.signal}%`} icon={Bluetooth} />
+        <LiveStatCard label="Ping" value={pingValue} icon={SignalHigh} />
+        <LiveStatCard label="Packet Loss" value={packetLossValue} icon={AlertCircle} />
+        <LiveStatCard label="Signal" value={signalValue} icon={Bluetooth} />
       </div>
+      <p className="px-3 pb-3 text-center text-[10px] text-muted-foreground">
+        {connection.qualityLabel} · {connection.typeLabel}
+      </p>
     </section>
   );
 }
@@ -1185,7 +1182,7 @@ function SelectSheet({
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
       <div
         dir="rtl"
-        className="relative w-full max-w-[430px] glass-strong rounded-t-3xl pb-[max(env(safe-area-inset-bottom),16px)] pt-3"
+        className="relative w-full max-w-[var(--alpha-content-narrow-width)] glass-strong rounded-t-3xl pb-[max(env(safe-area-inset-bottom),16px)] pt-3"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-white/20" />

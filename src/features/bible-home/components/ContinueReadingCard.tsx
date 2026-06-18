@@ -1,20 +1,17 @@
 import { Link } from "@tanstack/react-router";
 import { Bookmark, ChevronLeft } from "lucide-react";
+import { continueReadingDestination } from "@/lib/continue-reading-nav";
 import type { ContinueReadingData } from "../data/continueReading";
 import { bibleHomeColors } from "../tokens/colors";
 
 export function ContinueReadingCard({ data }: { data: ContinueReadingData }) {
-  const hasReader = !!(data.bookParam && data.chapter);
-
-  const destination = hasReader
-    ? { to: "/$book/$chapter" as const, params: { book: data.bookParam!, chapter: String(data.chapter) } }
-    : { to: "/books" as const, search: { testament: "all" as const } };
+  const destination = continueReadingDestination(data, { booksRoute: "/books" });
 
   return (
     <Link
       {...destination}
       className="block transition active:scale-[0.99]"
-      aria-label={hasReader ? `${data.ctaLabel} — ${data.reference}` : data.ctaLabel}
+      aria-label={`${data.ctaLabel} — ${data.reference}`}
     >
       <article
         className="relative overflow-hidden rounded-[32px] border shadow-[0_16px_40px_-20px_rgba(120,90,40,0.22)]"

@@ -12,14 +12,18 @@ import {
 import appCss from "../styles.css?url";
 import "@/lib/i18n";
 import "@/components/alpha/styles.css";
+import "@/components/alpha/alpha-responsive.css";
 import "@/components/alpha/alpha-viewport.css";
 import "@/components/alpha/alpha-identity-layout.css";
+import "@/components/alpha/alpha-dock-system.css";
 import { DictionaryDebugBadge } from "@/components/DictionaryDebugBadge";
 import { Toaster } from "@/components/ui/sonner";
 import { GlobalBackButton } from "@/components/GlobalBackButton";
 import { AlphaScreenFrame, shouldUseAlphaScreenFrame } from "@/components/alpha/AlphaScreenFrame";
 import { AlphaViewportSync } from "@/components/alpha/alpha-viewport";
 import { AlphaBackgroundProvider } from "@/components/alpha/AlphaBackgroundProvider";
+import { AlphaTopDebugLabel } from "@/components/alpha/AlphaTopDebugLabel";
+import { AlphaTopDebugSafeArea } from "@/components/alpha/AlphaTopDebugSafeArea";
 import { AlphaNavigationProvider } from "@/components/navigation/AlphaNavigationProvider";
 import { BibleSearchProvider } from "@/features/bible-search";
 import { AuthBootstrap } from "@/features/auth";
@@ -102,9 +106,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/QYdr1GjV2FgB9HXoHJo3a5NKgKp2/social-images/social-1779501291200-photo_2026-05-23_04-51-02.webp" },
     ],
     links: [
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Amiri:wght@400;700&display=swap" },
       { rel: "stylesheet", href: appCss },
     ],
 
@@ -121,7 +122,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body className="font-arabic-serif antialiased">
+      <body className="font-sans antialiased">
         {children}
         <Scripts />
       </body>
@@ -164,6 +165,8 @@ function RootComponent() {
             )}
             <GlobalBackButton />
             <Toaster />
+            <AlphaTopDebugSafeArea />
+            <AlphaTopDebugLabel />
           </AlphaBackgroundProvider>
           {/* <DictionaryDebugBadge /> — disabled with smart highlight */}
         </BibleSearchProvider>

@@ -57,8 +57,7 @@ function PlaceDetailsScreen() {
   return (
     <div
       dir="rtl"
-      className="min-h-screen pb-[calc(env(safe-area-inset-bottom,0px)+96px)]"
-      style={{ background: "radial-gradient(120% 80% at 50% 0%, #fbf6ec 0%, #f1ecf7 45%, #e8eef8 100%)" }}
+      className="min-h-screen bg-[#f4ead8] pb-[calc(env(safe-area-inset-bottom,0px)+96px)]"
     >
       <header
         className="sticky top-0 z-20 px-4 pb-2 pt-[max(env(safe-area-inset-top),14px)] backdrop-blur-2xl"
@@ -93,7 +92,7 @@ function PlaceDetailsScreen() {
         </div>
       </div>
 
-      <main className="relative mx-auto w-full max-w-[440px] px-4 -mt-6 space-y-4">
+      <main className="relative mx-auto w-full max-w-[var(--alpha-content-max-width)] px-4 -mt-6 space-y-4">
         <Card>
           <div className="text-right space-y-3">
             {church.priestName ? (

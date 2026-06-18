@@ -1,17 +1,33 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import {
   ArrowLeft, BellOff, Camera, Check, Clock3, Copy, File,
   Fingerprint, Image as ImageIcon, LockKeyhole, MapPin, MoreHorizontal,
-  Pencil, Phone, Plus, SendHorizontal, ShieldCheck, Smartphone, Trash2, VolumeX, X, EyeOff,
+  Pencil, Phone, Plus, SendHorizontal, ShieldCheck, Smartphone, Smile, Trash2, VolumeX, X, EyeOff,
 } from "lucide-react";
 import { ConnectConfirmDialog } from "./connect-code-ui";
+import { ChatEmojiPickerPanel } from "./ChatEmojiPickerPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { AlphaIdentityRow } from "./AlphaIdentityRow";
 import { PRESENCE_LABELS } from "@/features/alpha-connect/presence";
 import { usePresenceDot, useUserPresenceStatus } from "@/features/alpha-connect/useAlphaPresence";
+import { useConnectionStatus, useSecurityStatus } from "@/features/alpha-connect/useAlphaConnectStatus";
+import { useAlphaConnectThread } from "@/features/alpha-connect/useAlphaConnectThread";
+import {
+  mapAlphaConnectMessageToChatMessage,
+} from "@/features/alpha-connect/alpha-connect-message-map";
+import {
+  CHAT_TIMER_LABELS,
+  CHAT_TIMER_TOAST,
+  DEFAULT_CHAT_TIMER_LABEL,
+  isOnReadRetentionPolicy,
+  normalizeChatTimerLabel,
+  timerLabelToRetention,
+} from "@/features/alpha-connect/retention";
+import type { AlphaConnectRetentionPolicy } from "@/features/alpha-connect/types";
+import { getAuthUserSync } from "@/features/auth";
 import { priestProfile, type Conversation } from "./messaging-data";
 import {
   HIDDEN_CONVS_KEY,
@@ -33,7 +49,7 @@ import {
   hapticWarning,
 } from "./messaging-haptics";
 // ─── Types ───────────────────────────────────────────────────
-type Sheet = "timer" | "attach" | "menu" | "security" | "hide-setup" | null;
+type Sheet = "timer" | "attach" | "emoji" | "menu" | "security" | "hide-setup" | null;
 type MessageStatus = "sent" | "delivered" | "read";
 
 interface ChatMessage {
@@ -44,26 +60,27 @@ interface ChatMessage {
   status?: MessageStatus;
   isSystem?: boolean;
   edited?: boolean;
+  deleteCountdown?: string | null;
+  orderedAt?: number;
 }
 
 // ─── Constants / Helpers ─────────────────────────────────────
-const timerOptions = ["بعد القراءة", "٣٠ دقيقة", "ساعة", "٢٤ ساعة", "٧ أيام"];
+const timerOptions = CHAT_TIMER_LABELS;
 
-const TIMER_LABELS: Record<string, string> = {
-  "بعد القراءة": "سيتم حذف الرسائل بعد قراءتها.",
-  "٣٠ دقيقة":   "تم ضبط الحذف التلقائي على ٣٠ دقيقة.",
-  "ساعة":        "تم ضبط الحذف التلقائي على ساعة واحدة.",
-  "٢٤ ساعة":    "تم ضبط الحذف التلقائي على ٢٤ ساعة.",
-  "٧ أيام":      "تم ضبط الحذف التلقائي على ٧ أيام.",
-};
+function isLocalOnlyMessageId(id: string): boolean {
+  return id.startsWith("sys-") || id.startsWith("local-");
+}
 
-const INITIAL_MESSAGES: ChatMessage[] = [
-  { id: "m1", incoming: true,  text: "مساء الخير يا رأفت، عامل إيه؟",                                                     time: "٨:٤١ م", status: "read" },
-  { id: "m2", incoming: true,  text: "كنت بس بطمن عليك وعلى رحلتك الروحية الأسبوع ده.",                                   time: "٨:٤٢ م", status: "read" },
-  { id: "m3", incoming: false, text: "مساء النور يا أبونا 🙏 الحمد لله، بدأت خطة القراءة الجديدة وحاسس بسلام كبير.",      time: "٨:٤٤ م", status: "read" },
-  { id: "m4", incoming: true,  text: "فرحتني جدًا. خليك ثابت حتى لو قرأت آيات قليلة كل يوم، الأمانة أهم من الكثرة.",    time: "٨:٤٥ م", status: "read" },
-  { id: "m5", incoming: false, text: "حاضر يا أبونا. صلّيلي أكمل بنفس الحماس.",                                           time: "٨:٤٧ م", status: "read" },
-];
+/** Embedded chat lives inside overflow/transform ancestors — use absolute overlays. */
+function chatOverlayPosition(embedded: boolean): "fixed" | "absolute" {
+  return embedded ? "absolute" : "fixed";
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} بايت`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} ك.ب`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} م.ب`;
+}
 
 function formatTimeAr(): string {
   const now = new Date();
@@ -109,10 +126,38 @@ export function AlphaChatScreen({
         : contactPresenceDot
           ? "text-[#166534]"
           : "text-[#9CA3AF]";
-  const [messages, setMessages]       = useState<ChatMessage[]>(INITIAL_MESSAGES);
+  const threadScope = profile.kind === "group" ? "group" : "direct";
+  const [timerAnchorMs, setTimerAnchorMs] = useState(0);
+  const [activeRetentionPolicy, setActiveRetentionPolicy] = useState<AlphaConnectRetentionPolicy | null>(null);
+  const thread = useAlphaConnectThread({
+    scope: threadScope,
+    peerKey: profile.kind !== "group" ? profile.id : undefined,
+    groupCode: profile.kind === "group" ? profile.id : undefined,
+    groupTitle: profile.name,
+    conversationId: profile.conversationId,
+    enabled: true,
+    timerAnchorMs,
+    activeRetentionPolicy,
+  });
+
+  const [countdownTick, setCountdownTick] = useState(() => Date.now());
+
+  const dbMessages = useMemo(() => {
+    const user = getAuthUserSync();
+    if (!user?.id) return [];
+    return thread.messages.map((m) =>
+      mapAlphaConnectMessageToChatMessage(m, user.id, countdownTick, timerAnchorMs),
+    );
+  }, [thread.messages, countdownTick, timerAnchorMs]);
+
+  const [localExtra, setLocalExtra] = useState<ChatMessage[]>([]);
+  const messages = useMemo(() => {
+    const merged = [...dbMessages, ...localExtra];
+    return merged.sort((a, b) => (a.orderedAt ?? 0) - (b.orderedAt ?? 0));
+  }, [dbMessages, localExtra]);
   const [input, setInput]             = useState("");
   const [sheet, setSheet]             = useState<Sheet>(null);
-  const [timer, setTimerState]        = useState<string>(() => loadLS(TIMER_KEY, "٢٤ ساعة"));
+  const [timer, setTimerState]        = useState<string>(() => normalizeChatTimerLabel(loadLS(TIMER_KEY, DEFAULT_CHAT_TIMER_LABEL)));
   const [muted, setMutedState]        = useState<boolean>(() => loadLS<string[]>(MUTED_CONVS_KEY, []).includes(convId));
   const [isLocked, setIsLockedState]  = useState<boolean>(() => loadLS(convLockedKey(convId), false));
   const [lockMethod, setLockMethod]   = useState<"face-id" | "pin">(() => loadLS(convLockMethodKey(convId), "face-id"));
@@ -124,11 +169,27 @@ export function AlphaChatScreen({
   const [confirmClear, setConfirmClear] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [longPressId, setLongPressId]   = useState<string | null>(null);
+  const actionMenuOpenedAt = useRef(0);
+  const overlayPos = chatOverlayPosition(embedded);
   const [editingId, setEditingId]       = useState<string | null>(null);
   const [toast, setToast]               = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const footerRef = useRef<HTMLElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const pendingOnReadRef = useRef<Set<string>>(new Set());
+  const exitFlushedRef = useRef(false);
+  const markReadRef = useRef(thread.markRead);
+  const onBackRef = useRef(onBack);
+  markReadRef.current = thread.markRead;
+  onBackRef.current = onBack;
+
+  useEffect(() => {
+    exitFlushedRef.current = false;
+    pendingOnReadRef.current.clear();
+  }, [convId]);
   const [composerH, setComposerH] = useState(72);
   const timerRef = useRef(timer);
   useEffect(() => { timerRef.current = timer; }, [timer]);
@@ -161,6 +222,47 @@ export function AlphaChatScreen({
     setTimeout(() => setToast(null), 2200);
   }, [embedded, onShowToast]);
 
+  useEffect(() => {
+    const interval = setInterval(() => setCountdownTick(Date.now()), 1_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (!thread.error || thread.loading) return;
+    console.error("[AlphaChatScreen:thread]", thread.error);
+    showToast(thread.error);
+  }, [thread.error, thread.loading, showToast]);
+
+  useEffect(() => {
+    const user = getAuthUserSync();
+    if (!user?.id) return;
+    for (const message of thread.messages) {
+      if (message.sender_id === user.id || message.read_at) continue;
+      if (!isOnReadRetentionPolicy(message.retention_policy)) continue;
+      pendingOnReadRef.current.add(message.id);
+    }
+  }, [thread.messages]);
+
+  const flushOnReadOnExit = useCallback(() => {
+    if (exitFlushedRef.current) return;
+    const ids = [...pendingOnReadRef.current];
+    if (!ids.length) return;
+    exitFlushedRef.current = true;
+    pendingOnReadRef.current.clear();
+    for (const id of ids) {
+      void markReadRef.current(id);
+    }
+  }, []);
+
+  const handleLeaveChat = useCallback(() => {
+    flushOnReadOnExit();
+    onBackRef.current();
+  }, [flushOnReadOnExit]);
+
+  useEffect(() => () => {
+    flushOnReadOnExit();
+  }, [flushOnReadOnExit]);
+
   const handleCall = useCallback(() => {
     if (profile.kind === "group") {
       void navigate({ to: "/alpha-connect" });
@@ -176,61 +278,111 @@ export function AlphaChatScreen({
     });
   }, [navigate, profile.id, profile.kind, profile.name, returnTo]);
 
-  const progressMessage = useCallback((id: string) => {
-    setTimeout(() => {
-      setMessages((p) => p.map((m) => m.id === id ? { ...m, status: "delivered" as MessageStatus } : m));
-    }, 1000);
-    setTimeout(() => {
-      setMessages((p) => p.map((m) => m.id === id ? { ...m, status: "read" as MessageStatus } : m));
-      if (timerRef.current === "بعد القراءة") {
-        setTimeout(() => setMessages((p) => p.filter((m) => m.id !== id)), 3000);
-      }
-    }, 2000);
-  }, []);
+  const sendMessageToThread = useCallback(async (body: string) => {
+    const result = await thread.sendText(body, timerLabelToRetention(timerRef.current));
+    if (!result.ok) {
+      console.error("[AlphaChatScreen:send]", result.error);
+      showToast(result.error);
+    }
+    return result.ok;
+  }, [thread.sendText, showToast]);
 
   // ── Send / Save edit ────────────────────────────────────────
-  const handleSend = useCallback(() => {
+  const handleSend = useCallback(async () => {
     const text = input.trim();
     if (!text) return;
     hapticLightTap();
     if (editingId) {
-      setMessages((p) => p.map((m) => m.id === editingId ? { ...m, text, edited: true } : m));
+      if (isLocalOnlyMessageId(editingId)) {
+        setLocalExtra((p) => p.map((m) => (m.id === editingId ? { ...m, text, edited: true } : m)));
+      } else {
+        showToast("لا يمكن تعديل الرسائل المزامنة بعد الإرسال");
+      }
       setInput("");
       setEditingId(null);
       return;
     }
-    const id = `msg-${Date.now()}`;
-    setMessages((p) => [...p, { id, text, time: formatTimeAr(), incoming: false, status: "sent" }]);
-    setInput("");
-    progressMessage(id);
-  }, [input, progressMessage, editingId]);
+    const ok = await sendMessageToThread(text);
+    if (ok) setInput("");
+  }, [input, editingId, sendMessageToThread, showToast]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void handleSend(); }
   }, [handleSend]);
+
+  const handleEmojiSelect = useCallback((emoji: string) => {
+    hapticLightTap();
+    setInput((prev) => prev + emoji);
+  }, []);
+
+  const handleImageFile = useCallback(async (file: File | undefined) => {
+    if (!file) return;
+    hapticLightTap();
+    await sendMessageToThread(`🖼️ صورة: ${file.name || "صورة"} (${formatFileSize(file.size)})`);
+  }, [sendMessageToThread]);
+
+  const handleGenericFile = useCallback(async (file: File | undefined) => {
+    if (!file) return;
+    hapticLightTap();
+    await sendMessageToThread(`📄 ملف: ${file.name} (${formatFileSize(file.size)})`);
+  }, [sendMessageToThread]);
+
+  const handleShareLocation = useCallback(() => {
+    hapticLightTap();
+    if (!navigator.geolocation) {
+      showToast("الموقع غير متاح على هذا الجهاز");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        const link = `https://maps.google.com/?q=${latitude},${longitude}`;
+        void sendMessageToThread(`📍 موقع: ${link}`);
+      },
+      () => showToast("تعذّر الوصول للموقع"),
+      { enableHighAccuracy: true, timeout: 12000 },
+    );
+  }, [sendMessageToThread, showToast]);
 
   // ── Attach ──────────────────────────────────────────────────
   const handleAttach = useCallback((label: string) => {
-    const textMap: Record<string, string> = {
-      "صورة":     "تم إرفاق صورة 🖼️",
-      "الكاميرا": "تم التقاط صورة 📷",
-      "ملف":      "تم إرفاق ملف 📄",
-      "الموقع":   "تم مشاركة الموقع 📍",
-    };
-    const id = `msg-${Date.now()}`;
-    setMessages((p) => [...p, { id, text: textMap[label] ?? label, time: formatTimeAr(), incoming: false, status: "sent" }]);
     setSheet(null);
-    progressMessage(id);
-  }, [progressMessage]);
+    if (label === "صورة") {
+      imageInputRef.current?.click();
+      return;
+    }
+    if (label === "الكاميرا") {
+      cameraInputRef.current?.click();
+      return;
+    }
+    if (label === "ملف") {
+      fileInputRef.current?.click();
+      return;
+    }
+    if (label === "الموقع") {
+      handleShareLocation();
+    }
+  }, [handleShareLocation]);
 
   // ── Timer ───────────────────────────────────────────────────
   const handleSetTimer = useCallback((newTimer: string) => {
+    const anchor = Date.now();
+    const policy = timerLabelToRetention(newTimer);
+    setTimerAnchorMs(anchor);
+    setActiveRetentionPolicy(policy);
     setTimerState(newTimer);
     saveLS(TIMER_KEY, newTimer);
-    const label = TIMER_LABELS[newTimer] ?? `تم ضبط المؤقت على ${newTimer}.`;
-    setMessages((p) => [
+    const label = CHAT_TIMER_TOAST[newTimer as keyof typeof CHAT_TIMER_TOAST] ?? `تم ضبط المؤقت على ${newTimer}.`;
+    setLocalExtra((p) => [
       ...p,
-      { id: `sys-${Date.now()}`, text: `🕒 ${label}`, time: formatTimeAr(), incoming: false, isSystem: true },
+      {
+        id: `sys-${anchor}`,
+        text: `🕒 ${label}`,
+        time: formatTimeAr(),
+        incoming: false,
+        isSystem: true,
+        orderedAt: anchor,
+      },
     ]);
   }, []);
 
@@ -255,12 +407,28 @@ export function AlphaChatScreen({
     }
   }, [lockEntry, savedPin]);
 
-  // ── Message actions ──────────────────────────────────────────
-  const handleDeleteMessage = useCallback((id: string) => {
-    hapticWarning();
-    setMessages((p) => p.filter((m) => m.id !== id));
-    setDeleteConfirmId(null);
+  const openMessageActions = useCallback((messageId: string) => {
+    hapticMediumImpact();
+    actionMenuOpenedAt.current = Date.now();
+    setLongPressId(messageId);
   }, []);
+
+  const handleDeleteMessage = useCallback(async (id: string) => {
+    hapticWarning();
+    if (isLocalOnlyMessageId(id)) {
+      setLocalExtra((p) => p.filter((m) => m.id !== id));
+      setDeleteConfirmId(null);
+      return;
+    }
+
+    const result = await thread.deleteMessage(id);
+    setDeleteConfirmId(null);
+    if (result.ok) {
+      showToast("تم حذف الرسالة للطرفين");
+      return;
+    }
+    showToast(result.error);
+  }, [thread.deleteMessage, showToast]);
 
   // ── Hide conversation ──────────────────────────────────────
   const handleHideConversation = useCallback(() => {
@@ -275,8 +443,8 @@ export function AlphaChatScreen({
     setIsHidden(true);
     setSheet(null);
     showToast("تم إخفاء المحادثة");
-    setTimeout(() => onBack(), 900);
-  }, [onBack, showToast, convId]);
+    setTimeout(() => handleLeaveChat(), 900);
+  }, [handleLeaveChat, showToast, convId]);
 
   // ── Unhide conversation ───────────────────────────────────────
   const handleUnhideConversation = useCallback(() => {
@@ -291,10 +459,11 @@ export function AlphaChatScreen({
   // ── Clear chat ───────────────────────────────────────────────
   const handleClearConfirmed = useCallback(() => {
     hapticWarning();
-    setMessages([]);
+    setLocalExtra([]);
     setConfirmClear(false);
     setSheet(null);
-  }, []);
+    showToast("تم مسح الرسائل المحلية فقط");
+  }, [showToast]);
 
   const headerBg    = embedded ? "border-white/10 bg-[#060d1f]/80"                   : "border-gold/10 bg-card/70";
   const backBtnCls  = embedded
@@ -312,15 +481,15 @@ export function AlphaChatScreen({
     : "size-8 rounded-full text-gold/65 hover:bg-gold/10 hover:text-gold";
 
   return (
-    <main dir="rtl" className={`flex h-full min-h-0 flex-col overflow-hidden font-arabic text-foreground ${embedded ? "connect-chat-surface" : ""}`}>
+    <main dir="rtl" className={`flex h-full min-h-0 flex-col overflow-hidden font-arabic text-foreground ${embedded ? "connect-chat-surface relative" : ""}`}>
 
       {/* ── Header — always visible even when locked ── */}
       {!hideHeader ? (
       <header className={`z-20 border-b px-3 pb-2 backdrop-blur-2xl ${headerBg} ${embedded ? "pt-2" : "pt-[max(env(safe-area-inset-top),8px)]"}`}>
-        <div className="mx-auto grid max-w-[420px] grid-cols-[40px_1fr_76px] items-center gap-1">
+        <div className="mx-auto grid max-w-[var(--alpha-dock-max-width)] grid-cols-[40px_1fr_76px] items-center gap-1">
 
           <Button
-            onClick={onBack}
+            onClick={handleLeaveChat}
             aria-label="رجوع"
             variant="ghost"
             size="icon"
@@ -379,13 +548,13 @@ export function AlphaChatScreen({
           pinError={lockEntryError}
           onFaceId={() => setIsAuthenticated(true)}
           onPinSubmit={handlePinUnlock}
-          onBack={onBack}
+          onBack={handleLeaveChat}
         />
       ) : (
         <>
           {/* ── Immersive toolbar (Connect header owns back/contact) ── */}
           {hideHeader && embedded ? (
-            <div className="z-10 mx-auto flex w-full max-w-[420px] items-center justify-end gap-0.5 px-3 pb-1 pt-0.5">
+            <div className="z-10 mx-auto flex w-full max-w-[var(--alpha-dock-max-width)] items-center justify-end gap-0.5 px-3 pb-1 pt-0.5">
               <Button onClick={() => setSheet("menu")} aria-label="المزيد" variant="ghost" size="icon" className={menuBtnCls}>
                 <MoreHorizontal className="size-[18px]" />
               </Button>
@@ -407,7 +576,7 @@ export function AlphaChatScreen({
 
           {/* ── Messages ── */}
           <section
-            className="no-scrollbar relative mx-auto flex w-full max-w-[420px] flex-1 flex-col gap-3 overflow-y-auto px-4 pb-4 pt-4"
+            className="no-scrollbar relative mx-auto flex w-full max-w-[var(--alpha-dock-max-width)] flex-1 flex-col gap-3 overflow-y-auto px-4 pb-4 pt-4"
             aria-label="الرسائل"
           >
             {/* Watermark */}
@@ -435,7 +604,7 @@ export function AlphaChatScreen({
                 key={msg.id}
                 {...msg}
                 embedded={embedded}
-                onLongPress={!msg.isSystem ? () => setLongPressId(msg.id) : undefined}
+                onOpenActions={!msg.isSystem ? () => openMessageActions(msg.id) : undefined}
               />
             ))}
 
@@ -446,12 +615,6 @@ export function AlphaChatScreen({
               </div>
             )}
 
-            {/* Auto-delete notice */}
-            <div className={`connect-chat-notice connect-chat-notice--timer self-center ${embedded ? "connect-chat-notice--embedded" : ""}`}>
-              <Clock3 className="connect-chat-notice__icon shrink-0" />
-              <span className="connect-chat-notice__text">سيتم حذف الرسائل بعد: {timer}</span>
-            </div>
-
             <div ref={messagesEndRef} />
           </section>
 
@@ -461,7 +624,7 @@ export function AlphaChatScreen({
           }`}>
             {/* Edit mode banner */}
             {editingId && (
-              <div className={`mx-auto mb-2 flex max-w-[420px] items-center justify-between rounded-xl border px-3 py-1.5 ${
+              <div className={`mx-auto mb-2 flex max-w-[var(--alpha-dock-max-width)] items-center justify-between rounded-xl border px-3 py-1.5 ${
                 embedded ? "border-neon-green/20 bg-neon-green/10" : "border-gold/15 bg-gold/8"
               }`}>
                 <div className="flex items-center gap-1.5">
@@ -477,7 +640,7 @@ export function AlphaChatScreen({
                 </button>
               </div>
             )}
-            <div className={`mx-auto flex max-w-[420px] items-center gap-1.5 rounded-[22px] border py-1.5 pl-2 pr-1.5 shadow-sm backdrop-blur-xl ${
+            <div className={`mx-auto flex max-w-[var(--alpha-dock-max-width)] items-center gap-1.5 rounded-[22px] border py-1.5 pl-2 pr-1.5 shadow-sm backdrop-blur-xl ${
               embedded
                 ? "border-white/12 bg-white/6"
                 : "border-gold/18 bg-background/65"
@@ -485,8 +648,8 @@ export function AlphaChatScreen({
               <button
                 type="button"
                 aria-label={editingId ? "حفظ التعديل" : "إرسال الرسالة"}
-                disabled={!input.trim()}
-                onClick={handleSend}
+                disabled={!input.trim() || thread.sending}
+                onClick={() => void handleSend()}
                 className={`connect-chat-send-btn grid h-10 min-w-[48px] shrink-0 place-items-center rounded-full px-3 transition-all hover:scale-105 disabled:opacity-30 disabled:shadow-none disabled:hover:scale-100 me-2 ${
                   embedded
                     ? "connect-chat-send-btn--embedded"
@@ -527,8 +690,27 @@ export function AlphaChatScreen({
 
               <button
                 type="button"
-                onClick={() => setSheet("attach")}
+                onClick={() => setSheet((prev) => (prev === "emoji" ? null : "emoji"))}
+                aria-label="إيموجي"
+                aria-pressed={sheet === "emoji"}
+                className={`connect-chat-emoji-btn grid size-8 shrink-0 place-items-center rounded-full border transition-colors ${
+                  embedded
+                    ? sheet === "emoji"
+                      ? "border-neon-green/35 bg-neon-green/12 text-neon-green"
+                      : "border-white/12 bg-white/6 text-muted-foreground hover:text-foreground"
+                    : sheet === "emoji"
+                      ? "border-gold/40 bg-gold/12 text-gold"
+                      : "border-[#D6C4A8] bg-[#F5F0E6] text-[#5B4636] hover:bg-[#D6C4A8]/70 hover:text-[#3F2F24]"
+                }`}
+              >
+                <Smile className="size-[17px]" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSheet((prev) => (prev === "attach" ? null : "attach"))}
                 aria-label="إرفاق"
+                aria-pressed={sheet === "attach"}
                 className={`connect-chat-attach-btn grid size-8 shrink-0 place-items-center rounded-full border transition-colors ${
                   embedded
                     ? "connect-chat-attach-btn--embedded"
@@ -546,17 +728,21 @@ export function AlphaChatScreen({
       {embedded ? (
         <ConnectConfirmDialog
           open={!!deleteConfirmId}
+          scoped
+          zIndex={280}
           onClose={() => setDeleteConfirmId(null)}
-          onConfirm={() => deleteConfirmId && handleDeleteMessage(deleteConfirmId)}
+          onConfirm={() => {
+            if (deleteConfirmId) void handleDeleteMessage(deleteConfirmId);
+          }}
           title="حذف هذه الرسالة؟"
-          description="ستُحذف من هذا الجهاز فقط."
+          description="ستُحذف عندك وعند الطرف الآخر."
           confirmLabel="حذف"
           tone="danger"
           icon={Trash2}
         />
       ) : deleteConfirmId ? (
         <div
-          className="fixed inset-0 z-[160] flex items-center justify-center bg-black/45 backdrop-blur-[4px]"
+          className={`${overlayPos} inset-0 z-[160] flex items-center justify-center bg-black/45 backdrop-blur-[4px]`}
           onClick={() => setDeleteConfirmId(null)}
         >
           <div
@@ -570,10 +756,10 @@ export function AlphaChatScreen({
               </div>
             </div>
             <p className="mb-1 text-center text-[13px] font-bold text-[#1F2937]">حذف هذه الرسالة؟</p>
-            <p className="mb-4 text-center text-[10px] text-[#6B7280]">ستُحذف من هذا الجهاز فقط.</p>
+            <p className="mb-4 text-center text-[10px] text-[#6B7280]">ستُحذف عندك وعند الطرف الآخر.</p>
             <div className="flex gap-2.5">
               <Button onClick={() => setDeleteConfirmId(null)} variant="ghost" className="h-10 flex-1 rounded-2xl border border-[#E5E7EB] bg-white/80 text-[12px] text-[#374151]">إلغاء</Button>
-              <Button onClick={() => handleDeleteMessage(deleteConfirmId)} variant="ghost" className="h-10 flex-1 rounded-2xl bg-[#FEE2E2] text-[12px] font-bold text-[#B91C1C]">حذف</Button>
+              <Button onClick={() => void handleDeleteMessage(deleteConfirmId)} variant="ghost" className="h-10 flex-1 rounded-2xl bg-[#FEE2E2] text-[12px] font-bold text-[#B91C1C]">حذف</Button>
             </div>
           </div>
         </div>
@@ -583,6 +769,8 @@ export function AlphaChatScreen({
       {embedded ? (
         <ConnectConfirmDialog
           open={confirmClear}
+          scoped
+          zIndex={280}
           onClose={() => setConfirmClear(false)}
           onConfirm={handleClearConfirmed}
           title="مسح المحادثة"
@@ -593,7 +781,7 @@ export function AlphaChatScreen({
         />
       ) : confirmClear ? (
         <div
-          className="fixed inset-0 z-[160] flex items-center justify-center bg-black/45 backdrop-blur-[4px]"
+          className={`${overlayPos} inset-0 z-[160] flex items-center justify-center bg-black/45 backdrop-blur-[4px]`}
           onClick={() => setConfirmClear(false)}
         >
           <div
@@ -623,14 +811,17 @@ export function AlphaChatScreen({
         </div>
       ) : null}
 
-      {/* ── Long-press message action menu ── */}
+      {/* ── Message action menu (tap or long-press) ── */}
       {longPressId && (() => {
         const msg = messages.find((m) => m.id === longPressId);
         if (!msg) return null;
         return (
           <div
-            className="fixed inset-0 z-[160]"
-            onClick={() => setLongPressId(null)}
+            className={`${overlayPos} inset-0 z-[270]`}
+            onPointerDown={() => {
+              if (Date.now() - actionMenuOpenedAt.current < 400) return;
+              setLongPressId(null);
+            }}
           >
             <div
               dir="rtl"
@@ -668,18 +859,50 @@ export function AlphaChatScreen({
                 type="button"
                 onClick={() => {
                   hapticMediumImpact();
+                  actionMenuOpenedAt.current = Date.now();
                   setDeleteConfirmId(msg.id);
                   setLongPressId(null);
                 }}
                 className="flex w-full items-center gap-3 px-4 py-3 text-right text-[12px] text-[#F87171] transition-colors hover:bg-white/8"
               >
                 <Trash2 className="size-3.5 shrink-0" />
-                حذف من هذا الجهاز
+                حذف الرسالة
               </button>
             </div>
           </div>
         );
       })()}
+
+      <input
+        ref={imageInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(event) => {
+          void handleImageFile(event.target.files?.[0]);
+          event.target.value = "";
+        }}
+      />
+      <input
+        ref={cameraInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={(event) => {
+          void handleImageFile(event.target.files?.[0]);
+          event.target.value = "";
+        }}
+      />
+      <input
+        ref={fileInputRef}
+        type="file"
+        className="hidden"
+        onChange={(event) => {
+          void handleGenericFile(event.target.files?.[0]);
+          event.target.value = "";
+        }}
+      />
 
       <AlphaSheet
         sheet={sheet}
@@ -696,6 +919,7 @@ export function AlphaChatScreen({
         onUnhideChat={handleUnhideConversation}
         composerBottom={composerH}
         embedded={embedded}
+        onEmojiSelect={handleEmojiSelect}
       />
     </main>
   );
@@ -717,28 +941,84 @@ function SystemMessage({ text, embedded = false }: { text: string; embedded?: bo
 }
 
 // ─── Message bubble ───────────────────────────────────────────
-function Message({ id, text, time, incoming, status, isSystem, edited, embedded = false, onLongPress }: {
+function Message({ id, text, time, incoming, status, isSystem, edited, deleteCountdown, embedded = false, onOpenActions }: {
   id: string; text: string; time: string; incoming?: boolean; status?: MessageStatus;
-  isSystem?: boolean; edited?: boolean; embedded?: boolean; onLongPress?: () => void;
+  isSystem?: boolean; edited?: boolean; deleteCountdown?: string | null; embedded?: boolean; onOpenActions?: () => void;
 }) {
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const longPressFired = useRef(false);
+  const pointerStart = useRef<{ x: number; y: number } | null>(null);
 
-  const handleTouchStart = useCallback(() => {
-    if (!onLongPress) return;
-    pressTimer.current = setTimeout(onLongPress, 600);
-  }, [onLongPress]);
-
-  const handleTouchCancel = useCallback(() => {
-    if (pressTimer.current) { clearTimeout(pressTimer.current); pressTimer.current = null; }
+  const clearPressTimer = useCallback(() => {
+    if (pressTimer.current) {
+      clearTimeout(pressTimer.current);
+      pressTimer.current = null;
+    }
   }, []);
+
+  const handlePointerDown = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    if (!onOpenActions || event.button !== 0) return;
+    longPressFired.current = false;
+    pointerStart.current = { x: event.clientX, y: event.clientY };
+    clearPressTimer();
+    pressTimer.current = setTimeout(() => {
+      longPressFired.current = true;
+      onOpenActions();
+    }, 480);
+  }, [clearPressTimer, onOpenActions]);
+
+  const handlePointerMove = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    if (!pointerStart.current || !pressTimer.current) return;
+    const dx = event.clientX - pointerStart.current.x;
+    const dy = event.clientY - pointerStart.current.y;
+    if (Math.hypot(dx, dy) > 12) clearPressTimer();
+  }, [clearPressTimer]);
+
+  const handlePointerUp = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    clearPressTimer();
+    if (longPressFired.current) {
+      event.preventDefault();
+      event.stopPropagation();
+      window.setTimeout(() => { longPressFired.current = false; }, 350);
+    }
+    pointerStart.current = null;
+  }, [clearPressTimer]);
+
+  const handleClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    if (!onOpenActions) return;
+    if (longPressFired.current) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+    event.stopPropagation();
+    onOpenActions();
+  }, [onOpenActions]);
 
   if (isSystem) return <SystemMessage text={text} embedded={embedded} />;
   return (
     <div
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchCancel}
-      onTouchMove={handleTouchCancel}
-      className={`relative max-w-[82%] select-none px-4 py-3 text-[13px] leading-[1.7] backdrop-blur-md ${
+      role="button"
+      tabIndex={0}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerLeave={handlePointerUp}
+      onPointerMove={handlePointerMove}
+      onPointerCancel={handlePointerUp}
+      onClick={handleClick}
+      onContextMenu={(event) => {
+        if (!onOpenActions) return;
+        event.preventDefault();
+        onOpenActions();
+      }}
+      onKeyDown={(event) => {
+        if (!onOpenActions) return;
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onOpenActions();
+        }
+      }}
+      className={`relative max-w-[82%] cursor-pointer select-none px-4 py-3 text-[13px] leading-[1.7] backdrop-blur-md touch-manipulation ${
         embedded
           ? incoming
             ? "connect-chat-bubble connect-chat-bubble--in self-start rounded-[20px] rounded-tl-[5px] border border-white/14 bg-[oklch(0.24_0.03_260/0.92)] text-foreground shadow-[0_2px_14px_-4px_rgba(0,0,0,0.35)]"
@@ -754,6 +1034,21 @@ function Message({ id, text, time, incoming, status, isSystem, edited, embedded 
           ? incoming ? "text-muted-foreground/75" : "text-neon-green/70"
           : incoming ? "text-foreground/40" : "text-[#8a6200]/55"
       }`}>
+        {deleteCountdown ? (
+          <span
+            className={`inline-flex items-center gap-0.5 font-medium ${
+              embedded
+                ? incoming ? "text-[#fbbf24]/85" : "text-neon-green/80"
+                : incoming ? "text-[#b45309]/80" : "text-[#8a6200]/75"
+            }`}
+            title="الحذف التلقائي"
+          >
+            <Clock3 className="size-2.5 shrink-0" />
+            <span>
+              {/^[٠-٩]+$/.test(deleteCountdown) ? `${deleteCountdown} ث` : deleteCountdown}
+            </span>
+          </span>
+        ) : null}
         <time className="ltr">{time}</time>
         {edited && <span className={embedded ? (incoming ? "text-muted-foreground/55" : "text-neon-green/50") : (incoming ? "text-foreground/30" : "text-[#8a6200]/40")}>· تم التعديل</span>}
         {!incoming && status && (
@@ -935,6 +1230,7 @@ interface AlphaSheetProps {
   onUnhideChat:      () => void;
   composerBottom:    number;
   embedded?:         boolean;
+  onEmojiSelect:     (emoji: string) => void;
 }
 
 function AlphaSheet({
@@ -944,8 +1240,21 @@ function AlphaSheet({
   isHidden, onHideRequest, onHideConfirm, onUnhideChat,
   composerBottom,
   embedded = false,
+  onEmojiSelect,
 }: AlphaSheetProps) {
   const open = sheet !== null;
+  const security = useSecurityStatus();
+  const connection = useConnectionStatus();
+  const trustLevelLabel = security.authenticated ? "موثّق" : "غير مصادق";
+  const encryptionLabel = security.label;
+  const securityBadgeLabel =
+    security.state === "encrypted"
+      ? "موثّقة وآمنة"
+      : security.state === "warning"
+        ? "تحذير أمني"
+        : connection.online
+          ? "اتصال محدود"
+          : "غير متصل";
 
   const attachItems: [typeof ImageIcon, string, "blue" | "purple" | "green" | "red"][] = [
     [ImageIcon, "صورة",     "blue"],
@@ -969,6 +1278,15 @@ function AlphaSheet({
           value={timer}
           options={timerOptions}
           onSelect={(opt) => { hapticSelection(); setTimer(opt); setSheet(null); }}
+          onClose={() => setSheet(null)}
+          composerBottom={composerBottom}
+          embedded={embedded}
+        />
+      )}
+
+      {sheet === "emoji" && (
+        <ChatEmojiPickerPanel
+          onPick={onEmojiSelect}
           onClose={() => setSheet(null)}
           composerBottom={composerBottom}
           embedded={embedded}
@@ -1084,14 +1402,14 @@ function AlphaSheet({
                 : "border-[#166534]/22 bg-[#ECFDF5]/85 text-[#166534]"
             }`}>
               <ShieldCheck className={`size-3.5 ${embedded ? "text-neon-green" : "text-[#166534]"}`} />
-              موثّقة وآمنة
+              {securityBadgeLabel}
             </span>
           </div>
           <div className="space-y-2">
             {([
-              [ShieldCheck, "مستوى الثقة",    "موثّق"],
+              [ShieldCheck, "مستوى الثقة", trustLevelLabel],
               [Clock3,      "الحذف التلقائي", timer],
-              [LockKeyhole, "التشفير",         "مفعّل"],
+              [LockKeyhole, "التشفير", encryptionLabel],
             ] as const).map(([Icon, label, value]) => (
               <div
                 key={label}
@@ -1175,7 +1493,7 @@ function AlphaSheet({
       ) : null}
 
       <Drawer open={open && sheet === "attach" && !embedded} onOpenChange={(v) => !v && setSheet(null)}>
-      <DrawerContent dir="rtl" className="mx-auto max-w-[420px] border-gold/25 bg-card/97 px-5 pb-6 text-foreground backdrop-blur-2xl">
+      <DrawerContent dir="rtl" className="mx-auto max-w-[var(--alpha-dock-max-width)] border-gold/25 bg-card/97 px-5 pb-6 text-foreground backdrop-blur-2xl">
 
         {/* Attach — standard (non-embedded) */}
         {sheet === "attach" && !embedded && (
@@ -1416,7 +1734,7 @@ function TimerGlassPicker({
           }
         `}</style>
         <div
-          className="connect-chat-timer-sheet absolute inset-x-0 bottom-0 mx-auto w-full max-w-[430px]"
+          className="connect-chat-timer-sheet absolute inset-x-0 bottom-0 mx-auto w-full max-w-[var(--alpha-content-narrow-width)]"
           onClick={(e) => e.stopPropagation()}
         >
           <div dir="rtl" className="glass-strong overflow-hidden rounded-t-3xl shadow-[0_-12px_48px_rgba(0,0,0,0.45)]">
@@ -1424,19 +1742,19 @@ function TimerGlassPicker({
             <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 pb-3 pt-2">
               <button
                 type="button"
+                onClick={() => onSelect(active)}
+                className="text-[15px] font-bold text-neon-green active:scale-95"
+              >
+                تم
+              </button>
+              <p className="flex-1 text-center text-[15px] font-bold text-neon-green">مؤقت الاختفاء</p>
+              <button
+                type="button"
                 onClick={onClose}
                 aria-label="إغلاق"
                 className="glass flex size-9 items-center justify-center rounded-full text-muted-foreground active:scale-95"
               >
                 <X className="size-4" />
-              </button>
-              <p className="text-[15px] font-bold text-neon-green">مؤقت الاختفاء</p>
-              <button
-                type="button"
-                onClick={() => onSelect(active)}
-                className="text-[15px] font-bold text-neon-green active:scale-95"
-              >
-                تم
               </button>
             </div>
             {pickerWheel}
@@ -1468,13 +1786,13 @@ function TimerGlassPicker({
         dir="rtl"
         className={MESSAGING_GLASS_SHELL}
       >
-        {/* iOS toolbar: عنوان وسط | تم أخضر */}
+        {/* iOS toolbar: تم يمين | عنوان وسط */}
         <div className="relative flex h-12 items-center justify-center px-4 pt-2" dir="rtl">
           <p className="text-[14px] font-bold text-[#1F2937]">مؤقت الاختفاء</p>
           <button
             type="button"
             onClick={() => onSelect(active)}
-            className="absolute inset-y-0 start-4 flex items-center pt-0.5 text-[16px] font-bold text-[#166534] transition-colors hover:text-[#14532D] active:text-[#0F3D22]"
+            className="absolute inset-y-0 right-4 flex items-center pt-0.5 text-[16px] font-bold text-[#166534] transition-colors hover:text-[#14532D] active:text-[#0F3D22]"
           >
             تم
           </button>

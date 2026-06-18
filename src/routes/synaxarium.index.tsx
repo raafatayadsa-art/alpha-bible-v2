@@ -132,7 +132,7 @@ function SynaxariumHome() {
         <AlphaHeaderShell>
           <AlphaHeader variant="internal" title="السنكسار" subtitle="سير القديسين وقراءات اليوم" onSearchClick={() => setSearchOpen(true)} />
         </AlphaHeaderShell>
-        <main className="relative z-10 mx-auto w-full max-w-[430px] px-4" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 110px)" }}>
+        <main className="relative z-10 mx-auto w-full max-w-[var(--alpha-content-narrow-width)] px-4" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 110px)" }}>
           <SynaxariumStatusPanel title="جاري تحميل السنكسار..." />
         </main>
         <BottomDock />
@@ -147,7 +147,7 @@ function SynaxariumHome() {
         <AlphaHeaderShell>
           <AlphaHeader variant="internal" title="السنكسار" subtitle="سير القديسين وقراءات اليوم" onSearchClick={() => setSearchOpen(true)} />
         </AlphaHeaderShell>
-        <main className="relative z-10 mx-auto w-full max-w-[430px] px-4" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 110px)" }}>
+        <main className="relative z-10 mx-auto w-full max-w-[var(--alpha-content-narrow-width)] px-4" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 110px)" }}>
           <SynaxariumStatusPanel
             title="لا توجد سير قديسين بعد"
             description="لم تُضَف بيانات السنكسار في قاعدة البيانات. بعد إدخال البيانات في Supabase ستظهر السير هنا."
@@ -182,7 +182,7 @@ function SynaxariumHome() {
       </AlphaHeaderShell>
 
       <main
-        className="relative z-10 mx-auto w-full max-w-[430px] px-4"
+        className="relative z-10 mx-auto w-full max-w-[var(--alpha-content-narrow-width)] px-4"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 110px)" }}
       >
         {/* Filter chips */}

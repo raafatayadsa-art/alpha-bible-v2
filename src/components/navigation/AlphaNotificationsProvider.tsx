@@ -32,7 +32,7 @@ export function AlphaNotificationsProvider({ children }: { children: ReactNode }
   return (
     <AlphaNotificationsContext.Provider value={value}>
       {children}
-      <AlphaNotificationsPanel open={open} onClose={closeNotifications} />
+      {open ? <AlphaNotificationsPanel onClose={closeNotifications} /> : null}
     </AlphaNotificationsContext.Provider>
   );
 }

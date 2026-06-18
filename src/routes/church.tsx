@@ -1118,7 +1118,7 @@ function PremiumPostCard({ post, inCoverflow = false }: { post: ChurchPost; inCo
       className={
         (inCoverflow
           ? "w-full relative rounded-[28px]"
-          : "shrink-0 snap-center w-[88vw] max-w-[420px] relative rounded-[28px]") +
+          : "shrink-0 snap-center w-[88vw] max-w-[var(--alpha-dock-max-width)] relative rounded-[28px]") +
         " border border-white/75 bg-[#fbf3e1]/92 backdrop-blur-xl shadow-[0_24px_50px_-26px_rgba(120,80,30,0.55),inset_0_1px_0_rgba(255,255,255,0.9)] overflow-hidden"
       }
     >
@@ -1895,9 +1895,9 @@ function MessageRow({ contact, unread, onClose }: { contact: Contact; unread?: n
 
   return (
     <Link
-      to="/messages"
+      to="/messages/chat/$contactId"
+      params={{ contactId: contact.id }}
       search={{
-        contactId: contact.id,
         name: contact.name,
         role: contact.roleType,
         phone: contact.phone,
@@ -1921,7 +1921,7 @@ function PopupShell({
   return (
     <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-end sm:items-center justify-center px-3 pb-[max(env(safe-area-inset-bottom,0px),12px)]">
       <button type="button" aria-label="إغلاق" onClick={onClose} className="absolute inset-0 bg-[#1a0f04]/55 backdrop-blur-sm" />
-      <div className="relative w-full max-w-[420px] rounded-[28px] border border-white/75 bg-[#fbf3e1]/95 backdrop-blur-2xl shadow-[0_30px_60px_-20px_rgba(60,40,16,0.6)] p-3.5 text-right max-h-[80vh] overflow-y-auto no-scrollbar">
+      <div className="relative w-full max-w-[var(--alpha-dock-max-width)] rounded-[28px] border border-white/75 bg-[#fbf3e1]/95 backdrop-blur-2xl shadow-[0_30px_60px_-20px_rgba(60,40,16,0.6)] p-3.5 text-right max-h-[80vh] overflow-y-auto no-scrollbar">
         <div className="flex items-center justify-between gap-2 mb-2.5">
           <div className="min-w-0">
             <h3 className="font-arabic-serif text-[15.5px] font-extrabold text-[#3a2a18] leading-tight">{title}</h3>
@@ -2066,21 +2066,11 @@ function ChurchScreen() {
       dir="rtl"
       className="relative min-h-screen w-full overflow-x-hidden bg-[#f4ead8]"
     >
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0 -z-0"
-        style={{
-          background:
-            "radial-gradient(120% 50% at 50% 0%, rgba(255,231,184,0.6), transparent 60%)," +
-            "radial-gradient(70% 60% at 100% 30%, rgba(167,139,217,0.18), transparent 65%)," +
-            "radial-gradient(80% 60% at 0% 85%, rgba(214,168,98,0.22), transparent 65%)",
-        }}
-      />
       <CopticWatermark />
 
       <Header searchContext={searchContext} />
 
-      <div className="relative mx-auto w-full max-w-[440px] px-4 pt-2 pb-[calc(env(safe-area-inset-bottom,0px)+120px)] space-y-5">
+      <div className="relative mx-auto w-full max-w-[var(--alpha-content-max-width)] px-4 pt-2 pb-[calc(env(safe-area-inset-bottom,0px)+120px)] space-y-5">
         {showBootLoading ? (
           <Glass className="text-center py-12">
             <p className="text-[13px] font-bold text-[#6a543a]">جاري تحميل بيانات الكنيسة…</p>

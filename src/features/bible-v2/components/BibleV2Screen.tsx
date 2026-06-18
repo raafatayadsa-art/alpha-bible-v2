@@ -1,5 +1,4 @@
 import bgWatermark from "@/features/bible-lavoble/assets/bg-watermark.jpg";
-import { useBibleSearch } from "@/features/bible-search";
 import { newTestamentRef, oldTestamentRef } from "../assets";
 import { bibleV2Tokens } from "../tokens";
 import { BibleV2BottomNav } from "./BibleV2BottomNav";
@@ -18,8 +17,6 @@ const testamentCards: BibleV2TestamentData[] = [
     image: oldTestamentRef,
     tone: "gold",
     badgeInImage: true,
-    to: "/books-v2",
-    search: { testament: "old" },
   },
   {
     id: "new",
@@ -28,18 +25,14 @@ const testamentCards: BibleV2TestamentData[] = [
     image: newTestamentRef,
     tone: "blue",
     badgeInImage: true,
-    to: "/books-v2",
-    search: { testament: "new" },
   },
 ];
 
 export function BibleV2Screen() {
-  const { openSearch } = useBibleSearch();
-
   return (
     <div
       dir="rtl"
-      className="relative min-h-screen overflow-x-hidden"
+      className="relative min-h-screen overflow-x-hidden font-sans"
       style={{ backgroundColor: bibleV2Tokens.ivory }}
     >
       <img
@@ -56,12 +49,12 @@ export function BibleV2Screen() {
         }}
       />
 
-      <div className="relative z-10 mx-auto max-w-[440px] pb-32">
+      <div className="relative z-10 mx-auto max-w-[var(--alpha-content-max-width)] pb-32">
         <BibleV2Header />
         <div className="mt-1">
           <BibleV2VerseCard />
         </div>
-        <BibleV2SearchRow onSearch={openSearch} />
+        <BibleV2SearchRow />
         <div className="mx-3.5 mt-5 flex items-stretch gap-3.5 [perspective:900px]">
           {testamentCards.map((card) => (
             <BibleV2TestamentCard key={card.id} data={card} />

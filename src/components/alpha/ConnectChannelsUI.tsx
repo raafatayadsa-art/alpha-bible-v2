@@ -6,6 +6,7 @@ import {
   Info,
   Lock,
   Menu,
+  Mic,
   MicOff,
   PanelLeftOpen,
   Pin,
@@ -13,9 +14,14 @@ import {
   Settings,
   UserPlus,
   Users,
-  Volume2,
   X,
 } from "lucide-react";
+import { useConnectionStatus } from "@/features/alpha-connect/useConnectionStatus";
+import { ConnectAudioOutputControl } from "@/components/alpha/ConnectAudioOutputControl";
+import {
+  type ConnectAudioOutputDevice,
+  type ConnectAudioSelection,
+} from "@/components/alpha/connect-audio-output";
 import { AlphaIdentityRow } from "./AlphaIdentityRow";
 import { AlphaPresenceDot } from "./AlphaPresenceDot";
 import { AlphaShield } from "./AlphaShield";
@@ -43,6 +49,7 @@ import { ConnectChannelIconView } from "./ConnectChannelIconView";
 import { ConnectChannelQrBadge } from "./ConnectChannelQrBadge";
 import { usePresenceStoreVersion } from "@/features/alpha-connect/useAlphaPresence";
 import { PRESENCE_LABELS, resolvePresenceDotForUser } from "@/features/alpha-connect/presence";
+import { cn } from "@/lib/utils";
 
 export type { ConnectChannel, ConnectChannelIcon, ConnectTalkPermission };
 
@@ -191,14 +198,19 @@ function ParticipantStatusIcons({ member }: { member: ChannelMember }) {
   );
 }
 
-function SignalBars() {
+function SignalBars({ strength = 0 }: { strength?: number | null }) {
+  const normalized = strength == null ? 0 : Math.max(0, Math.min(100, strength));
+  const activeBars = normalized >= 75 ? 4 : normalized >= 50 ? 3 : normalized >= 25 ? 2 : normalized > 0 ? 1 : 0;
+  const tone =
+    normalized >= 50 ? "bg-neon-green" : normalized >= 25 ? "bg-[#F59E0B]" : normalized > 0 ? "bg-destructive" : "bg-muted-foreground/40";
+
   return (
     <div className="flex h-4 items-end gap-[2px]" aria-hidden>
       {[3, 5, 7, 9].map((h, i) => (
         <span
           key={i}
-          className="w-[3px] rounded-sm bg-neon-green"
-          style={{ height: `${h}px`, opacity: 0.45 + i * 0.15 }}
+          className={`w-[3px] rounded-sm ${i < activeBars ? tone : "bg-white/15"}`}
+          style={{ height: `${h}px`, opacity: i < activeBars ? 0.45 + i * 0.15 : 0.35 }}
         />
       ))}
     </div>
@@ -364,6 +376,7 @@ function ChannelListRow({
   onSelect: () => void;
 }) {
   usePresenceStoreVersion();
+  const connection = useConnectionStatus();
 
   return (
     <button
@@ -384,7 +397,7 @@ function ChannelListRow({
           </span>
         </p>
       </div>
-      <SignalBars />
+      <SignalBars strength={connection.signalStrength} />
     </button>
   );
 }
@@ -691,71 +704,122 @@ export function ConnectChannelTalkPermission({
 export function ConnectChannelActionBar({
   muted,
   onToggleMute,
-  speakerOn,
-  onToggleSpeaker,
+  audioSelection,
+  audioDevices,
+  audioPickerOpen,
+  onOpenAudioPicker,
+  onCloseAudioPicker,
+  onSelectAudioDevice,
   onInvite,
   onChannelSettings,
   canOpenSettings,
 }: {
   muted: boolean;
   onToggleMute: () => void;
-  speakerOn: boolean;
-  onToggleSpeaker: () => void;
+  audioSelection: ConnectAudioSelection;
+  audioDevices: ConnectAudioOutputDevice[];
+  audioPickerOpen: boolean;
+  onOpenAudioPicker: () => void;
+  onCloseAudioPicker: () => void;
+  onSelectAudioDevice: (deviceId: string) => void;
   onInvite: () => void;
   onChannelSettings: () => void;
   canOpenSettings: boolean;
 }) {
-  const actions = [
-    { label: "كتم الصوت", icon: MicOff, active: muted, onClick: onToggleMute },
-    { label: "سماعة", icon: Volume2, active: speakerOn, onClick: onToggleSpeaker },
-    { label: "تسجيل", record: true, soon: true, onClick: () => undefined },
-    { label: "دعوة", icon: UserPlus, onClick: onInvite },
+  type ActionTone = "mute" | "record" | "invite" | "settings";
+
+  const actions: Array<{
+    key: string;
+    label: string;
+    tone: ActionTone;
+    onClick: () => void;
+    toggled?: boolean;
+    soon?: boolean;
+    record?: boolean;
+    icon?: typeof Mic;
+  }> = [
+    {
+      key: "mute",
+      label: "كتم الصوت",
+      tone: "mute",
+      icon: muted ? MicOff : Mic,
+      toggled: muted,
+      onClick: onToggleMute,
+    },
+    { key: "record", label: "تسجيل", tone: "record", record: true, soon: true, onClick: () => undefined },
+    { key: "invite", label: "دعوة", tone: "invite", icon: UserPlus, onClick: onInvite },
     ...(canOpenSettings
-      ? [{ label: "إعدادات القناة", icon: Settings, onClick: onChannelSettings } as const]
+      ? [{ key: "settings", label: "إعدادات القناة", tone: "settings" as const, icon: Settings, onClick: onChannelSettings }]
       : []),
-  ] as const;
+  ];
 
   const gridCols = canOpenSettings ? "grid-cols-5" : "grid-cols-4";
+  const muteAction = actions[0];
+  const MuteIcon = muteAction.icon;
 
   return (
-    <div className={`glass-strong mb-4 grid ${gridCols} gap-1 rounded-3xl px-2 py-3`} dir="rtl">
-      {actions.map((action) => (
-        <button
-          key={action.label}
-          type="button"
-          onClick={action.onClick}
-          disabled={"soon" in action && action.soon}
-          className="relative flex flex-col items-center gap-1.5 rounded-xl px-1 py-1 active:scale-95 disabled:opacity-80"
-        >
-          {"soon" in action && action.soon ? (
-            <span className="absolute -top-1 left-1/2 z-10 -translate-x-1/2 rounded-full px-1.5 py-0.5 text-[7px] font-bold text-[#0a1430]" style={{ background: "oklch(0.78 0.16 75)" }}>
-              قريباً
-            </span>
-          ) : null}
-          <span
-            className={`glass flex h-10 w-10 items-center justify-center rounded-full ${
-              "active" in action && action.active ? "border border-[rgba(45,106,79,0.35)] bg-[rgba(45,106,79,0.1)]" : ""
-            }`}
+    <div className={`glass-strong connect-channel-action-bar mb-4 grid ${gridCols} gap-1 rounded-3xl px-2 py-3`} dir="rtl">
+      <button
+        type="button"
+        onClick={muteAction.onClick}
+        className={cn(
+          "connect-action-bar-btn relative flex flex-col items-center gap-1.5 rounded-xl px-1 py-1",
+          "connect-action-bar-btn--mute",
+          muteAction.toggled && "connect-action-bar-btn--on",
+        )}
+      >
+        <span className="connect-action-bar-btn__ring glass flex h-10 w-10 items-center justify-center rounded-full">
+          {MuteIcon ? <MuteIcon className="connect-action-bar-btn__icon h-4 w-4" strokeWidth={2.1} /> : null}
+        </span>
+        <span className="connect-action-bar-btn__label text-center text-[9px] leading-tight text-muted-foreground">
+          {muteAction.label}
+        </span>
+      </button>
+
+      <ConnectAudioOutputControl
+        selection={audioSelection}
+        devices={audioDevices}
+        pickerOpen={audioPickerOpen}
+        onOpenPicker={onOpenAudioPicker}
+        onClosePicker={onCloseAudioPicker}
+        onSelectDevice={onSelectAudioDevice}
+        variant="action-bar"
+        pickerAlign="center"
+      />
+
+      {actions.slice(1).map((action) => {
+        const Icon = action.icon;
+        return (
+          <button
+            key={action.key}
+            type="button"
+            onClick={action.onClick}
+            disabled={action.soon}
+            className={cn(
+              "connect-action-bar-btn relative flex flex-col items-center gap-1.5 rounded-xl px-1 py-1 disabled:opacity-80",
+              `connect-action-bar-btn--${action.tone}`,
+              action.toggled && "connect-action-bar-btn--on",
+              action.soon && "connect-action-bar-btn--soon",
+            )}
           >
-            {"record" in action && action.record ? (
-              <span className="h-3.5 w-3.5 rounded-full bg-destructive/70" />
-            ) : "icon" in action && action.icon ? (
-              <action.icon
-                className={`h-4 w-4 connect-action-bar-icon ${
-                  "active" in action && action.active ? "connect-action-bar-icon--active" : ""
-                }`}
-              />
+            {action.soon ? (
+              <span className="absolute -top-1 left-1/2 z-10 -translate-x-1/2 rounded-full px-1.5 py-0.5 text-[7px] font-bold text-[#0a1430]" style={{ background: "oklch(0.78 0.16 75)" }}>
+                قريباً
+              </span>
             ) : null}
-          </span>
-          <span
-            className={`text-center text-[9px] leading-tight ${
-              "active" in action && action.active ? "connect-action-bar-icon--active font-medium" : "text-muted-foreground"
-            }`}
-          >
-            {action.label}
-          </span>
-        </button>
-      ))}
+            <span className="connect-action-bar-btn__ring glass flex h-10 w-10 items-center justify-center rounded-full">
+              {action.record ? (
+                <span className="connect-action-bar-btn__record-dot h-3.5 w-3.5 rounded-full bg-destructive/70" />
+              ) : Icon ? (
+                <Icon className="connect-action-bar-btn__icon h-4 w-4" strokeWidth={2.1} />
+              ) : null}
+            </span>
+            <span className="connect-action-bar-btn__label text-center text-[9px] leading-tight text-muted-foreground">
+              {action.label}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -906,7 +970,7 @@ export function ConnectChannelModerationSheet({
   return (
     <div className="fixed inset-0 z-[60] flex items-end justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-      <div dir="rtl" className="relative w-full max-w-[430px] glass-strong rounded-t-3xl p-4 pb-[max(16px,env(safe-area-inset-bottom))]" onClick={(e) => e.stopPropagation()}>
+      <div dir="rtl" className="relative w-full max-w-[var(--alpha-content-narrow-width)] glass-strong rounded-t-3xl p-4 pb-[max(16px,env(safe-area-inset-bottom))]" onClick={(e) => e.stopPropagation()}>
         <p className="mb-3 text-center text-sm font-semibold">إدارة {member.name}</p>
         <div className="grid grid-cols-3 gap-2">
           <button type="button" onClick={() => onAction("mute")} className="glass rounded-2xl py-3 text-[12px] font-medium">

@@ -55,7 +55,7 @@ export function AlphaConnectSecurityGate({ settings, onUnlock }: AlphaConnectSec
   };
 
   return (
-    <div dir="rtl" className="relative mx-auto flex min-h-full w-full max-w-[430px] flex-col items-center justify-center px-6 py-10">
+    <div dir="rtl" className="relative mx-auto flex min-h-full w-full max-w-[var(--alpha-content-narrow-width)] flex-col items-center justify-center px-6 py-10">
       <div className="glass-strong w-full max-w-[360px] rounded-3xl p-6 text-center">
         <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl border border-[oklch(0.82_0.22_145/0.35)] bg-[oklch(0.82_0.22_145/0.08)]">
           <ShieldCheck className="h-8 w-8 text-neon-green" strokeWidth={2.1} />

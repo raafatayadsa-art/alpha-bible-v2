@@ -12,7 +12,7 @@ export function AudioScreen() {
   return (
     <main dir="rtl" className="relative min-h-dvh bg-[#F4EEE6] pb-28">
       <CopticWatermark />
-      <div className="relative mx-auto w-full max-w-[430px]">
+      <div className="relative mx-auto w-full max-w-[var(--alpha-content-narrow-width)]">
         <AudioHeader />
         <HeroCard />
         <CategoriesStrip />

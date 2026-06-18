@@ -1,6 +1,7 @@
 import { Search, X } from "lucide-react";
 import { useEffect, useRef, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { ConnectSearchBarField } from "@/components/alpha/ConnectExpandableSearchBar";
 
 interface SearchOverlayProps {
   open: boolean;
@@ -10,6 +11,7 @@ interface SearchOverlayProps {
   query: string;
   onQueryChange: (v: string) => void;
   children: ReactNode;
+  variant?: "default" | "classic";
 }
 
 /**
@@ -27,6 +29,7 @@ export function SearchOverlay({
   query,
   onQueryChange,
   children,
+  variant = "default",
 }: SearchOverlayProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const startY = useRef<number | null>(null);
@@ -66,6 +69,8 @@ export function SearchOverlay({
 
   if (!open) return null;
 
+  const isClassic = variant === "classic";
+
   return (
     <div
       dir="rtl"
@@ -77,53 +82,94 @@ export function SearchOverlay({
         type="button"
         aria-label="إغلاق"
         onClick={onClose}
-        className="absolute inset-0 bg-[#3a2a18]/25 backdrop-blur-[6px]"
+        className={cn(
+          "absolute inset-0 backdrop-blur-[2px]",
+          isClassic ? "dict-sheet-backdrop" : "bg-[#3a2a18]/25 backdrop-blur-[6px]",
+        )}
       />
 
       {/* Panel — top-anchored */}
       <div
         ref={panelRef}
         className={cn(
-          "absolute inset-x-0 top-0 mx-auto w-full max-w-[460px] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          "absolute inset-x-0 top-0 mx-auto w-full max-w-[var(--alpha-content-max-width)] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
           open ? "translate-y-0" : "-translate-y-full",
         )}
         style={{ paddingTop: "max(env(safe-area-inset-top), 10px)" }}
       >
         <div
-          className="mx-2 rounded-b-3xl bg-white/95 backdrop-blur-xl border border-[#ead9b1] shadow-[0_24px_60px_-20px_rgba(120,80,30,0.45)] overflow-hidden"
+          className={cn(
+            "mx-2 overflow-hidden rounded-b-3xl",
+            isClassic
+              ? "dict-sheet-panel"
+              : "bg-white/95 backdrop-blur-xl border border-[#ead9b1] shadow-[0_24px_60px_-20px_rgba(120,80,30,0.45)]",
+          )}
           style={{ maxHeight: "80dvh" }}
         >
           {/* Sticky search bar */}
           <div
-            className="sticky top-0 z-10 bg-white/95 backdrop-blur-xl px-3 pt-3 pb-2 border-b border-[#ead9b1]/70"
+            className={cn(
+              "sticky top-0 z-10 px-3 pt-3 pb-2",
+              isClassic
+                ? "border-b border-[#e0eae4] bg-[#edf3ef]"
+                : "bg-white/95 backdrop-blur-xl border-b border-[#ead9b1]/70",
+            )}
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
           >
-            <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-[#ead9b1]" />
+            <div
+              className={cn(
+                "mx-auto mb-2 h-1 w-10 rounded-full",
+                isClassic ? "dict-sheet-handle" : "bg-[#ead9b1]",
+              )}
+            />
             <div className="flex items-center gap-2">
-              <div className="relative flex-1">
-                <Search className="pointer-events-none absolute top-1/2 -translate-y-1/2 right-3 h-4 w-4 text-[#b8893a]" />
-                <input
-                  ref={inputRef}
-                  value={query}
-                  onChange={(e) => onQueryChange(e.target.value)}
-                  placeholder={placeholder}
-                  aria-label={title}
-                  type="search"
-                  enterKeyHint="search"
-                  autoComplete="off"
-                  className="w-full h-11 rounded-2xl bg-[#faf3e3] border border-[#ead9b1] pr-9 pl-3 text-[13px] text-[#3a2a18] placeholder:text-[#b08a55] focus:outline-none focus:border-[#6a4ab5]"
-                />
-              </div>
-              <button
-                type="button"
-                onClick={onClose}
-                aria-label="إغلاق البحث"
-                className="grid h-10 w-10 place-items-center rounded-full bg-white border border-[#ead9b1] text-[#3a2a18] active:scale-90 transition-transform"
-              >
-                <X className="h-4 w-4" />
-              </button>
+              {isClassic ? (
+                <div className="alpha-connect-theme alpha-connect-theme--classic flex min-w-0 flex-1 items-center gap-2">
+                  <ConnectSearchBarField
+                    query={query}
+                    inputRef={inputRef}
+                    onQueryChange={onQueryChange}
+                    placeholder={placeholder}
+                    inputAriaLabel={title}
+                    className="min-w-0 flex-1"
+                  />
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    aria-label="إغلاق البحث"
+                    className="glass grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/15 text-muted-foreground transition-all active:scale-90 hover:text-foreground"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : (
+                <div className="relative flex-1">
+                  <Search className="pointer-events-none absolute top-1/2 -translate-y-1/2 right-3 h-4 w-4 text-[#b8893a]" />
+                  <input
+                    ref={inputRef}
+                    value={query}
+                    onChange={(e) => onQueryChange(e.target.value)}
+                    placeholder={placeholder}
+                    aria-label={title}
+                    type="search"
+                    enterKeyHint="search"
+                    autoComplete="off"
+                    className="w-full h-11 rounded-2xl bg-[#faf3e3] border border-[#ead9b1] pr-9 pl-3 text-[13px] text-[#3a2a18] placeholder:text-[#b08a55] focus:outline-none focus:border-[#6a4ab5]"
+                  />
+                </div>
+              )}
+              {!isClassic && (
+                <button
+                  type="button"
+                  onClick={onClose}
+                  aria-label="إغلاق البحث"
+                  className="grid h-10 w-10 place-items-center rounded-full bg-white border border-[#ead9b1] text-[#3a2a18] active:scale-90 transition-transform"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </div>
           </div>
 

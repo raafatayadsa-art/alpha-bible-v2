@@ -127,21 +127,11 @@ function ChurchPostScreen() {
 
   return (
     <main dir="rtl" className="relative min-h-[100dvh] w-full overflow-x-hidden overflow-y-auto bg-[#f4ead8]">
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0 -z-0"
-        style={{
-          background:
-            "radial-gradient(120% 50% at 50% 0%, rgba(255,231,184,0.6), transparent 60%)," +
-            "radial-gradient(70% 60% at 100% 30%, rgba(167,139,217,0.18), transparent 65%)," +
-            "radial-gradient(80% 60% at 0% 85%, rgba(214,168,98,0.22), transparent 65%)",
-        }}
-      />
       <CopticWatermark />
 
       <PostHero post={post} meta={meta} pinned={pinned} title={title} excerpt={excerpt} />
 
-      <div className="relative mx-auto w-full max-w-[420px] px-4 -mt-5 pb-[calc(env(safe-area-inset-bottom,0px)+96px)] space-y-3">
+      <div className="relative mx-auto w-full max-w-[var(--alpha-dock-max-width)] px-4 -mt-5 pb-[calc(env(safe-area-inset-bottom,0px)+96px)] space-y-3">
         <article className={GLASS + " p-4 min-w-0 overflow-hidden"}>
           <p className="text-[10.5px] font-extrabold text-[#6aaf8a] text-right">{churchName}</p>
           <h1
@@ -736,7 +726,7 @@ function PinDurationSheet({ postId, onClose }: { postId: string; onClose: () => 
   return createPortal(
     <div className="fixed inset-0 z-[80] flex items-end justify-center">
       <button type="button" aria-label="إغلاق" onClick={onClose} className="absolute inset-0 bg-[#1a0f04]/22" />
-      <div className="relative w-full max-w-[420px] rounded-t-[24px] border border-white/75 bg-[#fbf3e1]/96 backdrop-blur-md p-4 text-right shadow-xl">
+      <div className="relative w-full max-w-[var(--alpha-dock-max-width)] rounded-t-[24px] border border-white/75 bg-[#fbf3e1]/96 backdrop-blur-md p-4 text-right shadow-xl">
         <p className="font-extrabold text-[#3a2a18] mb-3">مدة التثبيت</p>
         <div className="grid grid-cols-2 gap-2">
           {days.map((d) => (

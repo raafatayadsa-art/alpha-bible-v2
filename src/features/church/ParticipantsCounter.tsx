@@ -101,7 +101,7 @@ export function ParticipantsAdminSheet({
       className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center px-3 pb-[max(env(safe-area-inset-bottom,0px),12px)]"
     >
       <button type="button" aria-label="إغلاق" onClick={onClose} className="absolute inset-0 bg-[#1a0f04]/55 backdrop-blur-sm" />
-      <div className="relative flex w-full max-w-[420px] max-h-[min(88dvh,640px)] flex-col rounded-[28px] border border-white/75 bg-[#fbf3e1]/95 backdrop-blur-2xl shadow-[0_30px_60px_-20px_rgba(60,40,16,0.6)] text-right overflow-hidden">
+      <div className="relative flex w-full max-w-[var(--alpha-dock-max-width)] max-h-[min(88dvh,640px)] flex-col rounded-[28px] border border-white/75 bg-[#fbf3e1]/95 backdrop-blur-2xl shadow-[0_30px_60px_-20px_rgba(60,40,16,0.6)] text-right overflow-hidden">
         <div className="shrink-0 flex items-start justify-between gap-2 p-4 pb-2 border-b border-[#efe2c4]/80">
           <div className="min-w-0">
             <h3 className="font-arabic-serif text-[15px] font-extrabold text-[#3a2a18] leading-tight inline-flex items-center gap-1.5">

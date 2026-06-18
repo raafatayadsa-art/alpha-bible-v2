@@ -12,10 +12,13 @@ import { AlphaDatePicker } from "@/components/controls";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { GlassSurface } from "@/components/bible/primitives";
 import { CopticCross, CopticTitle } from "@/components/coptic";
-import { AlphaHeader, AlphaHeaderShell } from "@/components/navigation/AlphaHeader";
+import { AlphaHeader } from "@/components/navigation/AlphaHeader";
 import { NotificationsCenter, type NotificationItem } from "@/components/overlays/NotificationsCenter";
 import { KatamerosDateStrip } from "@/features/katameros/components/KatamerosDateStrip";
 import { KatamerosScreenBackground } from "@/features/katameros/components/KatamerosScreenBackground";
+import { KatamerosPreviewHeaderShell } from "@/features/katameros/components/KatamerosPreviewHeaderShell";
+import { useKatamerosCurvePreview } from "@/features/katameros/useKatamerosCurvePreview";
+import type { KatamerosCurvePreviewVariant } from "@/features/katameros/katameros-curve-preview";
 import katamerosHero from "@/assets/katameros-hero.png";
 import katamerosCalendarIcon from "@/assets/katameros-calendar-icon.png";
 import {
@@ -80,6 +83,7 @@ function KatamerosHeroDatePicker({
 
 function KatamerosHome() {
   const [selectedIso, setSelectedIso] = useState(todayIsoDate);
+  const curvePreview = useKatamerosCurvePreview();
   const { data: day, isPending, isError } = useQuery(katamerosDayQueryOptionsForDate(selectedIso));
   const dayId = day?.id ?? "today";
   const { statusOf, setStatus, lastInProgress } = useKatamerosProgress(dayId);
@@ -99,7 +103,7 @@ function KatamerosHome() {
 
   if (isPending) {
     return (
-      <KatamerosPageShell searchContext={{ katamerosReadings: [] }}>
+      <KatamerosPageShell searchContext={{ katamerosReadings: [] }} curvePreview={curvePreview}>
         <KatamerosStatusPanel title="جاري تحميل القطمارس..." />
       </KatamerosPageShell>
     );
@@ -107,7 +111,7 @@ function KatamerosHome() {
 
   if (isError || !day) {
     return (
-      <KatamerosPageShell searchContext={{ katamerosReadings: [] }}>
+      <KatamerosPageShell searchContext={{ katamerosReadings: [] }} curvePreview={curvePreview}>
         <KatamerosStatusPanel
           title="لا توجد بيانات قطمارس بعد"
           description="لم يُضَف يوم قطمارس في قاعدة البيانات. بعد إدخال البيانات في Supabase ستظهر قراءات اليوم هنا."
@@ -153,6 +157,7 @@ function KatamerosHome() {
         reading={detailReading}
         readings={readings}
         index={detailIndex}
+        curvePreview={curvePreview}
         onBack={() => setDetailId(null)}
         onSelect={openReading}
         onComplete={() => {
@@ -167,9 +172,9 @@ function KatamerosHome() {
 
   return (
     <div dir="rtl" className="relative min-h-dvh">
-      <KatamerosScreenBackground />
+      <KatamerosScreenBackground previewVariant={curvePreview} />
 
-      <AlphaHeaderShell>
+      <KatamerosPreviewHeaderShell previewVariant={curvePreview}>
         <AlphaHeader
           variant="internal"
           title="القطمارس"
@@ -186,10 +191,10 @@ function KatamerosHome() {
             </div>
           }
         />
-      </AlphaHeaderShell>
+      </KatamerosPreviewHeaderShell>
 
       <main
-        className="relative z-10 mx-auto w-full max-w-[430px] px-4"
+        className="relative z-10 mx-auto w-full max-w-[var(--alpha-content-narrow-width)] px-4"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 110px)" }}
       >
         {/* Hero card */}
@@ -323,6 +328,7 @@ function KatamerosReadingDetail({
   reading,
   readings,
   index,
+  curvePreview,
   onBack,
   onSelect,
   onComplete,
@@ -331,6 +337,7 @@ function KatamerosReadingDetail({
   reading: DailyReading;
   readings: DailyReading[];
   index: number;
+  curvePreview?: KatamerosCurvePreviewVariant | null;
   onBack: () => void;
   onSelect: (id: string) => void;
   onComplete: () => void;
@@ -366,10 +373,15 @@ function KatamerosReadingDetail({
 
   return (
     <div dir="rtl" className="relative min-h-dvh">
-      <KatamerosScreenBackground />
+      <KatamerosScreenBackground previewVariant={curvePreview} />
 
-      <header className="sticky top-0 z-20 bg-transparent border-0 shadow-none pt-[max(env(safe-area-inset-top),8px)] px-4 pb-2">
-        <div className="mx-auto max-w-[430px] rounded-2xl border border-[#d4c4a8]/65 bg-[#faf6ec]/80 backdrop-blur-md px-3 py-2.5 shadow-[0_8px_22px_-14px_rgba(120,80,30,0.32),inset_0_1px_0_rgba(255,255,255,0.7)]">
+      <header
+        className={cn(
+          "sticky top-0 z-20 border-0 shadow-none pt-[max(env(safe-area-inset-top),8px)] px-4 pb-2",
+          curvePreview === "c" ? "bg-[#f4ead8]/97 backdrop-blur-md" : "bg-transparent",
+        )}
+      >
+        <div className="mx-auto max-w-[var(--alpha-content-narrow-width)] rounded-2xl border border-[#d4c4a8]/65 bg-[#faf6ec]/80 backdrop-blur-md px-3 py-2.5 shadow-[0_8px_22px_-14px_rgba(120,80,30,0.32),inset_0_1px_0_rgba(255,255,255,0.7)]">
           <div className="flex items-center justify-between gap-2">
             <button
               type="button"
@@ -405,7 +417,7 @@ function KatamerosReadingDetail({
       </header>
 
       <main
-        className="relative z-10 mx-auto w-full max-w-[430px] px-4 pt-2 transition-[padding] duration-300"
+        className="relative z-10 mx-auto w-full max-w-[var(--alpha-content-narrow-width)] px-4 pt-2 transition-[padding] duration-300"
         style={{
           paddingBottom: showNavBar
             ? "calc(env(safe-area-inset-bottom) + 92px)"
@@ -446,7 +458,7 @@ function KatamerosReadingDetail({
         )}
         style={{ paddingBottom: "max(env(safe-area-inset-bottom), 8px)" }}
       >
-        <div className="mx-auto max-w-[430px] px-4 py-2 pointer-events-auto">
+        <div className="mx-auto max-w-[var(--alpha-content-narrow-width)] px-4 py-2 pointer-events-auto">
           <div className="flex items-center justify-between gap-2 rounded-2xl border border-[#d4c4a8]/65 bg-[#faf6ec]/80 backdrop-blur-md px-2.5 py-1.5 shadow-[0_8px_22px_-14px_rgba(120,80,30,0.32),inset_0_1px_0_rgba(255,255,255,0.7)]">
             <button
               type="button"
@@ -482,14 +494,16 @@ function KatamerosReadingDetail({
 function KatamerosPageShell({
   children,
   searchContext,
+  curvePreview,
 }: {
   children: React.ReactNode;
   searchContext?: ContextualSearchContext;
+  curvePreview?: KatamerosCurvePreviewVariant | null;
 }) {
   return (
     <div dir="rtl" className="relative min-h-dvh">
-      <KatamerosScreenBackground />
-      <AlphaHeaderShell>
+      <KatamerosScreenBackground previewVariant={curvePreview} />
+      <KatamerosPreviewHeaderShell previewVariant={curvePreview}>
         <AlphaHeader
           variant="internal"
           title="القطمارس"
@@ -506,9 +520,9 @@ function KatamerosPageShell({
             </div>
           }
         />
-      </AlphaHeaderShell>
+      </KatamerosPreviewHeaderShell>
       <main
-        className="relative z-10 mx-auto w-full max-w-[430px] px-4"
+        className="relative z-10 mx-auto w-full max-w-[var(--alpha-content-narrow-width)] px-4"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 110px)" }}
       >
         {children}

@@ -50,16 +50,7 @@ function MembershipScreen() {
   };
 
   return (
-    <div dir="rtl" className="relative min-h-screen w-full overflow-x-hidden">
-      {/* Background */}
-      <div
-        aria-hidden
-        className="fixed inset-0 -z-10"
-        style={{
-          background:
-            "radial-gradient(120% 70% at 50% 0%, #fbf2dc 0%, #f5e9cf 45%, #efdfba 100%)",
-        }}
-      />
+    <div dir="rtl" className="relative min-h-screen w-full overflow-x-hidden bg-[#f4ead8]">
       {/* Faint coptic ornaments background */}
       <div
         aria-hidden
@@ -71,7 +62,7 @@ function MembershipScreen() {
         }}
       />
 
-      <div className="relative mx-auto w-full max-w-[440px] px-4 pb-10 pt-[max(env(safe-area-inset-top),12px)]">
+      <div className="relative mx-auto w-full max-w-[var(--alpha-content-max-width)] px-4 pb-10 pt-[max(env(safe-area-inset-top),12px)]">
         {/* === HEADER === */}
         <header className="relative flex items-center justify-between gap-2 pt-1">
           <Link

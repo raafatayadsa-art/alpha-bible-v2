@@ -69,7 +69,7 @@ export function ConnectTopAnchorSheet({
       <button type="button" aria-label="إغلاق" className="absolute inset-0 bg-black/55 backdrop-blur-[2px]" />
       <div
         dir="rtl"
-        className="connect-top-anchor-sheet pointer-events-none absolute inset-x-0 mx-auto w-full max-w-[430px] px-5 animate-in fade-in slide-in-from-top duration-200"
+        className="connect-top-anchor-sheet pointer-events-none absolute inset-x-0 mx-auto w-full max-w-[var(--alpha-content-narrow-width)] px-5 animate-in fade-in slide-in-from-top duration-200"
         style={{ top }}
         onClick={(event) => event.stopPropagation()}
       >

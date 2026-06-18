@@ -14,7 +14,7 @@ export function BottomNav() {
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-2">
-      <div className="glass-card mx-auto flex max-w-[430px] items-end justify-around rounded-full px-2 py-2.5">
+      <div className="glass-card mx-auto flex max-w-[var(--alpha-content-narrow-width)] items-end justify-around rounded-full px-2 py-2.5">
         {items.map(({ icon: Icon, label, to }) => {
           const active = pathname === to || pathname.startsWith(`${to}/`);
           return (

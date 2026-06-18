@@ -19,7 +19,6 @@ export function SearchOptionsRow({ onOptions }: SearchOptionsRowProps) {
           type="text"
           placeholder="ابحث في الكتاب المقدس"
           className="flex-1 bg-transparent text-[13px] text-[#3a2c10] placeholder:text-[#a89370] outline-none text-right"
-          style={{ fontFamily: "'Tajawal', sans-serif" }}
         />
       </div>
       <button
@@ -28,7 +27,6 @@ export function SearchOptionsRow({ onOptions }: SearchOptionsRowProps) {
       >
         <span
           className="text-[13px] font-medium"
-          style={{ fontFamily: "'Tajawal', sans-serif" }}
         >
           خيارات
         </span>

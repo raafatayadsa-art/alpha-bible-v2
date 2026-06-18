@@ -65,6 +65,7 @@ import { Route as PlatformApprovalsRouteImport } from './routes/platform.approva
 import { Route as PlatformAnalyticsRouteImport } from './routes/platform.analytics'
 import { Route as PlatformAiRouteImport } from './routes/platform.ai'
 import { Route as FeastsEventIdRouteImport } from './routes/feasts.$eventId'
+import { Route as DevKatamerosCurvePreviewRouteImport } from './routes/dev.katameros-curve-preview'
 import { Route as DevBackgroundPreviewRouteImport } from './routes/dev.background-preview'
 import { Route as DevAuthRouteImport } from './routes/dev.auth'
 import { Route as ChurchServiceRouteImport } from './routes/church.service'
@@ -85,6 +86,7 @@ import { Route as AgpeyaPrayerIdRouteImport } from './routes/agpeya.$prayerId'
 import { Route as BookChapterRouteImport } from './routes/$book.$chapter'
 import { Route as ProfileChurchSetupRouteImport } from './routes/profile.church.setup'
 import { Route as PlatformApprovalsIdRouteImport } from './routes/platform.approvals.$id'
+import { Route as MessagesChatContactIdRouteImport } from './routes/messages.chat.$contactId'
 import { Route as ChurchPostIdRouteImport } from './routes/church.post.$id'
 import { Route as ChurchDirectoryPlaceIdRouteImport } from './routes/church.directory.$placeId'
 import { Route as ChurchChatContactIdRouteImport } from './routes/church.chat.$contactId'
@@ -370,6 +372,12 @@ const FeastsEventIdRoute = FeastsEventIdRouteImport.update({
   path: '/feasts/$eventId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DevKatamerosCurvePreviewRoute =
+  DevKatamerosCurvePreviewRouteImport.update({
+    id: '/dev/katameros-curve-preview',
+    path: '/dev/katameros-curve-preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const DevBackgroundPreviewRoute = DevBackgroundPreviewRouteImport.update({
   id: '/dev/background-preview',
   path: '/dev/background-preview',
@@ -470,6 +478,11 @@ const PlatformApprovalsIdRoute = PlatformApprovalsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => PlatformApprovalsRoute,
 } as any)
+const MessagesChatContactIdRoute = MessagesChatContactIdRouteImport.update({
+  id: '/chat/$contactId',
+  path: '/chat/$contactId',
+  getParentRoute: () => MessagesRoute,
+} as any)
 const ChurchPostIdRoute = ChurchPostIdRouteImport.update({
   id: '/post/$id',
   path: '/post/$id',
@@ -512,7 +525,7 @@ export interface FileRoutesByFullPath {
   '/intro': typeof IntroRoute
   '/katameros-test': typeof KatamerosTestRoute
   '/login': typeof LoginRoute
-  '/messages': typeof MessagesRoute
+  '/messages': typeof MessagesRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/personal-call': typeof PersonalCallRoute
   '/prayer-requests': typeof PrayerRequestsRoute
@@ -538,6 +551,7 @@ export interface FileRoutesByFullPath {
   '/church/service': typeof ChurchServiceRoute
   '/dev/auth': typeof DevAuthRoute
   '/dev/background-preview': typeof DevBackgroundPreviewRoute
+  '/dev/katameros-curve-preview': typeof DevKatamerosCurvePreviewRoute
   '/feasts/$eventId': typeof FeastsEventIdRoute
   '/platform/ai': typeof PlatformAiRoute
   '/platform/analytics': typeof PlatformAnalyticsRoute
@@ -570,6 +584,7 @@ export interface FileRoutesByFullPath {
   '/church/chat/$contactId': typeof ChurchChatContactIdRoute
   '/church/directory/$placeId': typeof ChurchDirectoryPlaceIdRoute
   '/church/post/$id': typeof ChurchPostIdRoute
+  '/messages/chat/$contactId': typeof MessagesChatContactIdRoute
   '/platform/approvals/$id': typeof PlatformApprovalsIdRoute
   '/profile/church/setup': typeof ProfileChurchSetupRoute
   '/platform/scan/trust/$trustId': typeof PlatformScanTrustTrustIdRoute
@@ -593,7 +608,7 @@ export interface FileRoutesByTo {
   '/intro': typeof IntroRoute
   '/katameros-test': typeof KatamerosTestRoute
   '/login': typeof LoginRoute
-  '/messages': typeof MessagesRoute
+  '/messages': typeof MessagesRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/personal-call': typeof PersonalCallRoute
   '/prayer-requests': typeof PrayerRequestsRoute
@@ -619,6 +634,7 @@ export interface FileRoutesByTo {
   '/church/service': typeof ChurchServiceRoute
   '/dev/auth': typeof DevAuthRoute
   '/dev/background-preview': typeof DevBackgroundPreviewRoute
+  '/dev/katameros-curve-preview': typeof DevKatamerosCurvePreviewRoute
   '/feasts/$eventId': typeof FeastsEventIdRoute
   '/platform/ai': typeof PlatformAiRoute
   '/platform/analytics': typeof PlatformAnalyticsRoute
@@ -651,6 +667,7 @@ export interface FileRoutesByTo {
   '/church/chat/$contactId': typeof ChurchChatContactIdRoute
   '/church/directory/$placeId': typeof ChurchDirectoryPlaceIdRoute
   '/church/post/$id': typeof ChurchPostIdRoute
+  '/messages/chat/$contactId': typeof MessagesChatContactIdRoute
   '/platform/approvals/$id': typeof PlatformApprovalsIdRoute
   '/profile/church/setup': typeof ProfileChurchSetupRoute
   '/platform/scan/trust/$trustId': typeof PlatformScanTrustTrustIdRoute
@@ -676,7 +693,7 @@ export interface FileRoutesById {
   '/intro': typeof IntroRoute
   '/katameros-test': typeof KatamerosTestRoute
   '/login': typeof LoginRoute
-  '/messages': typeof MessagesRoute
+  '/messages': typeof MessagesRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/personal-call': typeof PersonalCallRoute
   '/prayer-requests': typeof PrayerRequestsRoute
@@ -702,6 +719,7 @@ export interface FileRoutesById {
   '/church/service': typeof ChurchServiceRoute
   '/dev/auth': typeof DevAuthRoute
   '/dev/background-preview': typeof DevBackgroundPreviewRoute
+  '/dev/katameros-curve-preview': typeof DevKatamerosCurvePreviewRoute
   '/feasts/$eventId': typeof FeastsEventIdRoute
   '/platform/ai': typeof PlatformAiRoute
   '/platform/analytics': typeof PlatformAnalyticsRoute
@@ -734,6 +752,7 @@ export interface FileRoutesById {
   '/church/chat/$contactId': typeof ChurchChatContactIdRoute
   '/church/directory/$placeId': typeof ChurchDirectoryPlaceIdRoute
   '/church/post/$id': typeof ChurchPostIdRoute
+  '/messages/chat/$contactId': typeof MessagesChatContactIdRoute
   '/platform/approvals/$id': typeof PlatformApprovalsIdRoute
   '/profile/church/setup': typeof ProfileChurchSetupRoute
   '/platform/scan/trust/$trustId': typeof PlatformScanTrustTrustIdRoute
@@ -786,6 +805,7 @@ export interface FileRouteTypes {
     | '/church/service'
     | '/dev/auth'
     | '/dev/background-preview'
+    | '/dev/katameros-curve-preview'
     | '/feasts/$eventId'
     | '/platform/ai'
     | '/platform/analytics'
@@ -818,6 +838,7 @@ export interface FileRouteTypes {
     | '/church/chat/$contactId'
     | '/church/directory/$placeId'
     | '/church/post/$id'
+    | '/messages/chat/$contactId'
     | '/platform/approvals/$id'
     | '/profile/church/setup'
     | '/platform/scan/trust/$trustId'
@@ -867,6 +888,7 @@ export interface FileRouteTypes {
     | '/church/service'
     | '/dev/auth'
     | '/dev/background-preview'
+    | '/dev/katameros-curve-preview'
     | '/feasts/$eventId'
     | '/platform/ai'
     | '/platform/analytics'
@@ -899,6 +921,7 @@ export interface FileRouteTypes {
     | '/church/chat/$contactId'
     | '/church/directory/$placeId'
     | '/church/post/$id'
+    | '/messages/chat/$contactId'
     | '/platform/approvals/$id'
     | '/profile/church/setup'
     | '/platform/scan/trust/$trustId'
@@ -949,6 +972,7 @@ export interface FileRouteTypes {
     | '/church/service'
     | '/dev/auth'
     | '/dev/background-preview'
+    | '/dev/katameros-curve-preview'
     | '/feasts/$eventId'
     | '/platform/ai'
     | '/platform/analytics'
@@ -981,6 +1005,7 @@ export interface FileRouteTypes {
     | '/church/chat/$contactId'
     | '/church/directory/$placeId'
     | '/church/post/$id'
+    | '/messages/chat/$contactId'
     | '/platform/approvals/$id'
     | '/profile/church/setup'
     | '/platform/scan/trust/$trustId'
@@ -1006,7 +1031,7 @@ export interface RootRouteChildren {
   IntroRoute: typeof IntroRoute
   KatamerosTestRoute: typeof KatamerosTestRoute
   LoginRoute: typeof LoginRoute
-  MessagesRoute: typeof MessagesRoute
+  MessagesRoute: typeof MessagesRouteWithChildren
   OnboardingRoute: typeof OnboardingRoute
   PersonalCallRoute: typeof PersonalCallRoute
   PrayerRequestsRoute: typeof PrayerRequestsRoute
@@ -1018,6 +1043,7 @@ export interface RootRouteChildren {
   AgpeyaSavedRoute: typeof AgpeyaSavedRoute
   DevAuthRoute: typeof DevAuthRoute
   DevBackgroundPreviewRoute: typeof DevBackgroundPreviewRoute
+  DevKatamerosCurvePreviewRoute: typeof DevKatamerosCurvePreviewRoute
   FeastsEventIdRoute: typeof FeastsEventIdRoute
   PlatformAiRoute: typeof PlatformAiRoute
   PlatformAnalyticsRoute: typeof PlatformAnalyticsRoute
@@ -1441,6 +1467,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FeastsEventIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dev/katameros-curve-preview': {
+      id: '/dev/katameros-curve-preview'
+      path: '/dev/katameros-curve-preview'
+      fullPath: '/dev/katameros-curve-preview'
+      preLoaderRoute: typeof DevKatamerosCurvePreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dev/background-preview': {
       id: '/dev/background-preview'
       path: '/dev/background-preview'
@@ -1581,6 +1614,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlatformApprovalsIdRouteImport
       parentRoute: typeof PlatformApprovalsRoute
     }
+    '/messages/chat/$contactId': {
+      id: '/messages/chat/$contactId'
+      path: '/chat/$contactId'
+      fullPath: '/messages/chat/$contactId'
+      preLoaderRoute: typeof MessagesChatContactIdRouteImport
+      parentRoute: typeof MessagesRoute
+    }
     '/church/post/$id': {
       id: '/church/post/$id'
       path: '/post/$id'
@@ -1683,6 +1723,18 @@ const ChurchRouteChildren: ChurchRouteChildren = {
 const ChurchRouteWithChildren =
   ChurchRoute._addFileChildren(ChurchRouteChildren)
 
+interface MessagesRouteChildren {
+  MessagesChatContactIdRoute: typeof MessagesChatContactIdRoute
+}
+
+const MessagesRouteChildren: MessagesRouteChildren = {
+  MessagesChatContactIdRoute: MessagesChatContactIdRoute,
+}
+
+const MessagesRouteWithChildren = MessagesRoute._addFileChildren(
+  MessagesRouteChildren,
+)
+
 interface SettingsRouteChildren {
   SettingsTrustRoute: typeof SettingsTrustRoute
 }
@@ -1750,7 +1802,7 @@ const rootRouteChildren: RootRouteChildren = {
   IntroRoute: IntroRoute,
   KatamerosTestRoute: KatamerosTestRoute,
   LoginRoute: LoginRoute,
-  MessagesRoute: MessagesRoute,
+  MessagesRoute: MessagesRouteWithChildren,
   OnboardingRoute: OnboardingRoute,
   PersonalCallRoute: PersonalCallRoute,
   PrayerRequestsRoute: PrayerRequestsRoute,
@@ -1762,6 +1814,7 @@ const rootRouteChildren: RootRouteChildren = {
   AgpeyaSavedRoute: AgpeyaSavedRoute,
   DevAuthRoute: DevAuthRoute,
   DevBackgroundPreviewRoute: DevBackgroundPreviewRoute,
+  DevKatamerosCurvePreviewRoute: DevKatamerosCurvePreviewRoute,
   FeastsEventIdRoute: FeastsEventIdRoute,
   PlatformAiRoute: PlatformAiRoute,
   PlatformAnalyticsRoute: PlatformAnalyticsRoute,

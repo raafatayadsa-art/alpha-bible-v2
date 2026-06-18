@@ -14,6 +14,7 @@ import type { ConnectChannel } from "./connect-channels-registry";
 import type { AlphaTrustShieldContext } from "@/features/alpha-connect/alpha-trust-shield-context";
 import { loadAlphaConnectSettings } from "./AlphaConnectSettings";
 import { usePresenceStoreVersion } from "@/features/alpha-connect/useAlphaPresence";
+import { useAlphaConnectStatus } from "@/features/alpha-connect/useAlphaConnectStatus";
 import {
   CONNECT_THEME_CHANGED_EVENT,
   getConnectTheme,
@@ -175,7 +176,7 @@ function ConnectTrustCenterSheet({
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="connect-trust-center-sheet relative z-[1] flex w-full max-w-[430px] max-h-[min(82dvh,680px)] flex-col overflow-hidden glass-strong rounded-t-3xl shadow-[0_-16px_52px_rgba(0,0,0,0.48)]"
+        className="connect-trust-center-sheet relative z-[1] flex w-full max-w-[var(--alpha-content-narrow-width)] max-h-[min(82dvh,680px)] flex-col overflow-hidden glass-strong rounded-t-3xl shadow-[0_-16px_52px_rgba(0,0,0,0.48)]"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex shrink-0 justify-center pt-3 pb-1" aria-hidden>
@@ -230,6 +231,7 @@ export function AlphaTrustShieldSheet({
   anchorRef?: React.RefObject<HTMLButtonElement | null>;
 }) {
   usePresenceStoreVersion();
+  const status = useAlphaConnectStatus();
 
   const resolvedChannel = resolveTrustShieldChannel(context, channelId);
   const settings = loadAlphaConnectSettings();
@@ -238,6 +240,7 @@ export function AlphaTrustShieldSheet({
     channel: resolvedChannel,
     currentUserId,
     settings,
+    status,
   });
 
   return (

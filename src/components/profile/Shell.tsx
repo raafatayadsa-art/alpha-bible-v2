@@ -24,7 +24,7 @@ export function ProfileSubShell({
   return (
     <div dir="rtl" className="relative min-h-screen w-full overflow-x-hidden">
       <CopticWatermark subtle={subtleWatermark} />
-      <div className="relative mx-auto w-full max-w-[440px] px-4 pb-36">
+      <div className="relative mx-auto w-full max-w-[var(--alpha-content-max-width)] px-4 pb-36">
         <div className="flex items-center justify-between gap-2 pt-[max(env(safe-area-inset-top),12px)] pb-2">
           <button
             type="button"

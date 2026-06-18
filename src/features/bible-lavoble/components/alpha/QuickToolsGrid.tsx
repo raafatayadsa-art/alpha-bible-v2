@@ -29,7 +29,6 @@ export function QuickToolCard({ tool, onClick }: QuickToolCardProps) {
       <Icon className="h-5 w-5 text-[#1e2b54]" strokeWidth={1.6} />
       <span
         className="text-[11px] font-medium text-[#3a2c10]"
-        style={{ fontFamily: "'Tajawal', sans-serif" }}
       >
         {tool.label}
       </span>
@@ -48,7 +47,6 @@ export function QuickToolsGrid({ onToolClick }: QuickToolsGridProps) {
         <span className="text-[#c9a84c]">✦</span>
         <h2
           className="text-[14px] font-bold text-[#1e2b54]"
-          style={{ fontFamily: "'Tajawal', sans-serif" }}
         >
           أدوات سريعة
         </h2>

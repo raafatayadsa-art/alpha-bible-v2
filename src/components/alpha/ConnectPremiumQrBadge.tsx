@@ -60,10 +60,10 @@ export function ConnectPremiumQrBadge({
         />
       </div>
       <span
-        className={`mt-0.5 max-w-[72px] truncate tabular-nums tracking-wide ${
+        className={`connect-user-code mt-0.5 max-w-[80px] truncate tabular-nums tracking-wider ${
           isFlat
-            ? "text-[9px] font-semibold text-[#1b4332]"
-            : "text-[7px] font-bold text-neon-green/85"
+            ? "text-[11px] font-bold text-[var(--connect-code-gold-muted,#d4a84b)] drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]"
+            : "text-[8px] font-bold text-[var(--connect-code-gold,#e7b84a)] drop-shadow-[0_0_6px_rgba(231,184,74,0.35)]"
         }`}
       >
         {shortCode}

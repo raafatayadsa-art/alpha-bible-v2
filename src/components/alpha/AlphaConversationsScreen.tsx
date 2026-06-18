@@ -6,7 +6,9 @@ import { Input } from "@/components/ui/input";
 import { useAlphaNavigation } from "@/components/navigation/AlphaNavigationProvider";
 import { AlphaBottomNavigation } from "./AlphaBottomNavigation";
 import { AlphaIdentityRow } from "./AlphaIdentityRow";
-import { conversations } from "./messaging-data";
+import { type Conversation } from "./messaging-data";
+import { useAlphaConnectConversationList } from "@/features/alpha-connect/useAlphaConnectConversationList";
+import { clearConversationForBothParties } from "@/features/alpha-connect/clearConversation";
 import {
   HIDDEN_CONVS_KEY,
   HIDDEN_CODE_KEY,
@@ -32,7 +34,7 @@ export function AlphaConversationsScreen({
   returnTo,
   onBack,
 }: {
-  onOpenChat: () => void;
+  onOpenChat: (profile: Conversation) => void;
   onOpenSettings: () => void;
   returnTo?: string;
   onBack?: () => void;
@@ -57,14 +59,50 @@ export function AlphaConversationsScreen({
   const [hiddenCode, setHiddenCode]         = useState<string>("");
   const [deletedConvIds, setDeletedConvIds] = useState<string[]>([]);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [clearingConv, setClearingConv] = useState(false);
   const [convToast, setConvToast]           = useState<string | null>(null);
   const [needCodePrompt, setNeedCodePrompt] = useState(false);
   const [showNewChat, setShowNewChat]       = useState(false);
+
+  const { conversations: dbConversations, refresh: refreshConversations } = useAlphaConnectConversationList();
 
   const showConvToast = useCallback((msg: string) => {
     setConvToast(msg);
     setTimeout(() => setConvToast(null), 2200);
   }, []);
+
+  const confirmDeleteConv = confirmDeleteId
+    ? dbConversations.find((c) => c.id === confirmDeleteId)
+    : undefined;
+
+  const hideDeletedConversation = useCallback((convId: string) => {
+    setDeletedConvIds((prev) => [...prev, convId]);
+    setConfirmDeleteId(null);
+  }, []);
+
+  const handleDeleteLocalOnly = useCallback(() => {
+    if (!confirmDeleteConv || clearingConv) return;
+    hapticWarning();
+    hideDeletedConversation(confirmDeleteConv.id);
+    showConvToast("تم مسح المحادثة من قائمتك");
+  }, [clearingConv, confirmDeleteConv, hideDeletedConversation, showConvToast]);
+
+  const handleDeleteForBoth = useCallback(async () => {
+    if (!confirmDeleteConv || clearingConv) return;
+    hapticWarning();
+    setClearingConv(true);
+    try {
+      await clearConversationForBothParties(confirmDeleteConv);
+      hideDeletedConversation(confirmDeleteConv.id);
+      await refreshConversations();
+      showConvToast("تم مسح المحادثة للطرفين");
+    } catch (error) {
+      console.error("[AlphaConversations:clearBoth]", error);
+      showConvToast("تعذّر مسح المحادثة للطرفين");
+    } finally {
+      setClearingConv(false);
+    }
+  }, [clearingConv, confirmDeleteConv, hideDeletedConversation, refreshConversations, showConvToast]);
 
   // Re-read from localStorage every time this screen mounts (after returning from chat)
   useEffect(() => {
@@ -132,12 +170,12 @@ export function AlphaConversationsScreen({
 
   // Conversations visible in secret mode (hidden ones only)
   const visibleHidden = useMemo(
-    () => conversations.filter((item) => hiddenConvIds.includes(item.id)),
-    [hiddenConvIds],
+    () => dbConversations.filter((item) => hiddenConvIds.includes(item.id)),
+    [dbConversations, hiddenConvIds],
   );
 
   // Conversations visible in normal mode (hidden + deleted are always excluded)
-  const visible = useMemo(() => conversations.filter((item) => {
+  const visible = useMemo(() => dbConversations.filter((item) => {
     if (hiddenConvIds.includes(item.id)) return false;
     if (deletedConvIds.includes(item.id)) return false;
     const matchesSearch = search.trim() === "" || `${item.name} ${item.message}`.includes(search.trim());
@@ -148,26 +186,28 @@ export function AlphaConversationsScreen({
       || (activeFilter === "خدام" && item.role === "servant")
       || (activeFilter === "غير مقروءة" && Boolean(item.unread));
     return matchesSearch && matchesFilter;
-  }), [activeFilter, search, hiddenConvIds, deletedConvIds]);
+  }), [activeFilter, search, hiddenConvIds, deletedConvIds, dbConversations]);
 
   const newChatTargets = useMemo(
-    () => conversations.filter(
+    () => dbConversations.filter(
       (item) => item.kind === "private"
         && !hiddenConvIds.includes(item.id)
         && !deletedConvIds.includes(item.id),
     ),
-    [hiddenConvIds, deletedConvIds],
+    [dbConversations, hiddenConvIds, deletedConvIds],
   );
+
+  const openConversation = useCallback((conversation: Conversation) => {
+    hapticSelection();
+    onOpenChat(conversation);
+  }, [onOpenChat]);
 
   const handleNewChatSelect = useCallback((id: string) => {
     hapticSelection();
     setShowNewChat(false);
-    if (id === "priest") {
-      onOpenChat();
-      return;
-    }
-    showConvToast("المحادثة مع هذا العضو ستتوفر قريباً");
-  }, [onOpenChat, showConvToast]);
+    const conversation = dbConversations.find((item) => item.id === id);
+    if (conversation) openConversation(conversation);
+  }, [dbConversations, openConversation]);
 
   return (
     <main dir="rtl" className="flex h-full min-h-0 flex-col overflow-hidden font-arabic text-foreground">
@@ -230,7 +270,7 @@ export function AlphaConversationsScreen({
 
         {/* ── Filter pills — hidden in secret mode, revealed on scroll-down / pull-down ── */}
         <div
-          className="mx-auto max-w-[420px]"
+          className="mx-auto max-w-[var(--alpha-dock-max-width)]"
           style={{
             maxHeight: (!secretMode && filtersVisible) ? "56px" : "0px",
             opacity: (!secretMode && filtersVisible) ? 1 : 0,
@@ -264,7 +304,7 @@ export function AlphaConversationsScreen({
         onTouchStart={onListTouchStart}
         onTouchMove={onListTouchMove}
         onTouchEnd={onListTouchEnd}
-        className="mx-auto min-h-0 w-full max-w-[420px] flex-1 overflow-y-auto overscroll-y-contain px-4 pb-28"
+        className="mx-auto min-h-0 w-full max-w-[var(--alpha-dock-max-width)] flex-1 overflow-y-auto overscroll-y-contain px-4 pb-28"
       >
 
         {/* ── Conversation cards ── */}
@@ -307,12 +347,12 @@ export function AlphaConversationsScreen({
               onDeleteRequest={() => { hapticMediumImpact(); setConfirmDeleteId(conversation.id); }}
             >
             <article
-              onClick={conversation.id === "priest" ? onOpenChat : undefined}
+              onClick={() => openConversation(conversation)}
               onKeyDown={(event) => {
-                if (conversation.id === "priest" && (event.key === "Enter" || event.key === " ")) onOpenChat();
+                if (event.key === "Enter" || event.key === " ") openConversation(conversation);
               }}
-              role={conversation.id === "priest" ? "button" : undefined}
-              tabIndex={conversation.id === "priest" ? 0 : undefined}
+              role="button"
+              tabIndex={0}
               className={MESSAGING_CONV_CARD}
             >
               <AlphaIdentityRow
@@ -395,7 +435,7 @@ export function AlphaConversationsScreen({
                     nameClassName="text-[12px] font-semibold text-[#1F2937]"
                     subtitle={
                       <span className="text-[10px] text-[#6B7280]">
-                        {conversation.id === "priest" ? "اضغط لبدء المحادثة" : "رسائل خاصة وموثّقة"}
+                        {conversation.message || "اضغط لبدء المحادثة"}
                       </span>
                     }
                   />
@@ -425,10 +465,10 @@ export function AlphaConversationsScreen({
       )}
 
       {/* ── Delete confirm (center glass popup) ── */}
-      {confirmDeleteId && (
+      {confirmDeleteConv && (
         <div
           className="fixed inset-0 z-[160] flex items-center justify-center bg-black/45 backdrop-blur-[4px]"
-          onClick={() => setConfirmDeleteId(null)}
+          onClick={() => { if (!clearingConv) setConfirmDeleteId(null); }}
         >
           <div
             dir="rtl"
@@ -441,15 +481,31 @@ export function AlphaConversationsScreen({
               </div>
             </div>
             <p className="mb-1 text-center text-[13px] font-bold text-[#1F2937]">مسح هذه المحادثة؟</p>
-            <p className="mb-4 text-center text-[10px] text-[#6B7280]">سيتم مسحها من هذا الجهاز فقط.</p>
-            <div className="flex gap-2.5">
-              <Button onClick={() => setConfirmDeleteId(null)} variant="ghost" className="h-10 flex-1 rounded-2xl border border-[#E5E7EB] bg-white/80 text-[12px] text-[#374151]">إلغاء</Button>
+            <p className="mb-4 text-center text-[10px] text-[#6B7280]">اختر طريقة المسح.</p>
+            <div className="flex flex-col gap-2">
               <Button
-                onClick={() => { hapticWarning(); setDeletedConvIds((p) => [...p, confirmDeleteId]); setConfirmDeleteId(null); showConvToast("تم مسح المحادثة"); }}
+                onClick={() => void handleDeleteForBoth()}
+                disabled={clearingConv}
                 variant="ghost"
-                className="h-10 flex-1 rounded-2xl bg-[#FEE2E2] text-[12px] font-bold text-[#B91C1C]"
+                className="h-10 w-full rounded-2xl bg-[#FEE2E2] text-[12px] font-bold text-[#B91C1C] disabled:opacity-35"
               >
-                مسح
+                مسح للطرفين
+              </Button>
+              <Button
+                onClick={handleDeleteLocalOnly}
+                disabled={clearingConv}
+                variant="ghost"
+                className="h-10 w-full rounded-2xl border border-[#E5E7EB] bg-white/80 text-[12px] font-semibold text-[#374151] disabled:opacity-35"
+              >
+                من قائمتي فقط
+              </Button>
+              <Button
+                onClick={() => setConfirmDeleteId(null)}
+                disabled={clearingConv}
+                variant="ghost"
+                className="h-10 w-full rounded-2xl border border-[#E5E7EB] bg-white/80 text-[12px] text-[#374151] disabled:opacity-35"
+              >
+                إلغاء
               </Button>
             </div>
           </div>

@@ -42,7 +42,6 @@ export function AlphaTopHeader({
           <div
             className="text-[38px] leading-none font-serif tracking-wider"
             style={{
-              fontFamily: "'Amiri', serif",
               background: "linear-gradient(180deg,#d4a93a 0%,#a07823 70%,#7a5a18 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
@@ -68,13 +67,11 @@ export function AlphaTopHeader({
       <div className="mt-16 flex flex-col items-center text-center">
         <h1
           className="text-[32px] font-bold text-[#1e2b54] leading-tight"
-          style={{ fontFamily: "'Tajawal', sans-serif" }}
         >
           {title}
         </h1>
         <p
           className="mt-0.5 text-[13px] text-[#8a7544]"
-          style={{ fontFamily: "'Tajawal', sans-serif" }}
         >
           {subtitle}
         </p>

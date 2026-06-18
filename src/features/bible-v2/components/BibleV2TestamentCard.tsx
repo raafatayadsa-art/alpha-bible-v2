@@ -3,15 +3,13 @@ import { ChevronLeft } from "lucide-react";
 import type { ReactNode } from "react";
 
 export interface BibleV2TestamentData {
-  id: string;
+  id: "old" | "new";
   title: string;
   subtitle: string;
   image: string;
   badge?: ReactNode;
   tone: "gold" | "blue";
   badgeInImage?: boolean;
-  to: "/books-v2";
-  search: { testament: "old" | "new" };
 }
 
 export function BibleV2TestamentCard({ data }: { data: BibleV2TestamentData }) {
@@ -25,8 +23,8 @@ export function BibleV2TestamentCard({ data }: { data: BibleV2TestamentData }) {
     : "0 24px 48px -16px rgba(20,30,60,0.38), 0 10px 22px -10px rgba(61,90,154,0.24)";
   return (
     <Link
-      to={data.to}
-      search={data.search}
+      to="/books-v2"
+      search={{ testament: data.id }}
       dir="rtl"
       aria-label={data.title}
       className="group relative flex aspect-[1/1.55] flex-1 flex-col overflow-hidden rounded-[26px] transition duration-300 hover:-translate-y-1 active:scale-[0.98]"

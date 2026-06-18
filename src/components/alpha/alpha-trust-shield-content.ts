@@ -14,6 +14,7 @@ import {
 } from "@/components/alpha/connect-channels-registry";
 import { conversations } from "@/components/alpha/messaging-data";
 import type { AlphaTrustShieldContext } from "@/features/alpha-connect/alpha-trust-shield-context";
+import type { AlphaConnectStatusSnapshot } from "@/features/alpha-connect/status/types";
 
 const DEFAULT_CHURCH_NAME = "كنيسة مارجرجس — مصر الجديدة";
 
@@ -167,7 +168,11 @@ function userTrustContent(
   };
 }
 
-function messagesTrustContent(settings: AlphaConnectSettingsState): TrustShieldContent {
+function messagesTrustContent(
+  settings: AlphaConnectSettingsState,
+  status?: AlphaConnectStatusSnapshot,
+): TrustShieldContent {
+  const encryptionLabel = status?.security.label ?? "—";
   return {
     title: "مركز الثقة والأمان للرسائل",
     subtitle: "حماية · خصوصية · تخزين",
@@ -178,7 +183,7 @@ function messagesTrustContent(settings: AlphaConnectSettingsState): TrustShieldC
           { label: "نوع الحماية", value: "Alpha Messages Secure" },
           { label: "سياسة الحذف", value: EPHEMERAL_LABELS[settings.ephemeralDelete] },
           { label: "طريقة التخزين", value: "تخزين مشفر داخل Alpha" },
-          { label: "حالة التشفير", value: "Alpha Connect · TLS + at-rest" },
+          { label: "حالة التشفير", value: encryptionLabel },
         ],
       },
       {
@@ -217,7 +222,20 @@ function voiceMessagesTrustContent(settings: AlphaConnectSettingsState): TrustSh
   };
 }
 
-function callTrustContent(settings: AlphaConnectSettingsState): TrustShieldContent {
+function callTrustContent(
+  settings: AlphaConnectSettingsState,
+  status?: AlphaConnectStatusSnapshot,
+): TrustShieldContent {
+  const connection = status?.connection;
+  const security = status?.security;
+  const rttLabel = connection?.rttMs != null ? `${connection.rttMs} ms` : "—";
+  const qualityLabel = connection?.qualityLabel ?? QUALITY_LABELS[settings.callQuality];
+  const connectionStateLabel = connection?.online
+    ? security?.state === "encrypted"
+      ? "جاهز للاتصال"
+      : security?.label ?? "تحذير"
+    : "غير متصل";
+
   return {
     title: "مركز الثقة والأمان للاتصال",
     subtitle: "جودة · أمان · حماية",
@@ -225,10 +243,10 @@ function callTrustContent(settings: AlphaConnectSettingsState): TrustShieldConte
       {
         title: "حالة الاتصال",
         rows: [
-          { label: "جودة الاتصال", value: QUALITY_LABELS[settings.callQuality] },
-          { label: "زمن الاستجابة", value: "≈ 26 ms" },
-          { label: "مستوى الحماية", value: "Alpha Connect Secure" },
-          { label: "حالة الاتصال", value: "جاهز للاتصال" },
+          { label: "جودة الاتصال", value: qualityLabel },
+          { label: "زمن الاستجابة", value: rttLabel },
+          { label: "مستوى الحماية", value: security?.label ?? "—" },
+          { label: "حالة الاتصال", value: connectionStateLabel },
           { label: "من يمكنه الاتصال", value: WHO_CAN_CALL_LABELS[settings.whoCanCall] },
         ],
       },
@@ -274,7 +292,10 @@ function churchTrustContent(): TrustShieldContent {
   };
 }
 
-function settingsTrustContent(settings: AlphaConnectSettingsState): TrustShieldContent {
+function settingsTrustContent(
+  settings: AlphaConnectSettingsState,
+  status?: AlphaConnectStatusSnapshot,
+): TrustShieldContent {
   return {
     title: "مركز الثقة والأمان للإعدادات",
     subtitle: "خصوصية · إشعارات · حماية",
@@ -285,8 +306,9 @@ function settingsTrustContent(settings: AlphaConnectSettingsState): TrustShieldC
           { label: "إعدادات الخصوصية", value: WHO_CAN_CALL_LABELS[settings.whoCanCall] },
           { label: "إعدادات الإشعارات", value: settings.groupNotifications ? "مفعّلة" : "مخفّفة" },
           { label: "إعدادات الحماية", value: settings.securityPin.length === 4 ? "رمز أمان مفعّل" : "قياسية" },
-          { label: "حالة الحساب", value: "نشط · موثّق" },
-          { label: "آخر تحديث للأمان", value: "١٥ يونيو ٢٠٢٦" },
+          { label: "حالة الاتصال", value: status?.connection.qualityLabel ?? "—" },
+          { label: "حالة التشفير", value: status?.security.label ?? "—" },
+          { label: "حالة الحساب", value: status?.security.authenticated ? "نشط · موثّق" : "غير مصادق" },
           { label: "سياسة الحذف", value: EPHEMERAL_LABELS[settings.ephemeralDelete] },
         ],
       },
@@ -336,9 +358,10 @@ export function buildTrustShieldContent(
     channel: ConnectChannel;
     currentUserId: string;
     settings: AlphaConnectSettingsState;
+    status?: AlphaConnectStatusSnapshot;
   },
 ): TrustShieldContent {
-  const { channelId, channel, currentUserId, settings } = input;
+  const { channelId, channel, currentUserId, settings, status } = input;
 
   switch (context.type) {
     case "channel":
@@ -354,11 +377,11 @@ export function buildTrustShieldContent(
         settings,
       );
     case "messages":
-      return messagesTrustContent(settings);
+      return messagesTrustContent(settings, status);
     case "voice_messages":
       return voiceMessagesTrustContent(settings);
     case "call":
-      return callTrustContent(settings);
+      return callTrustContent(settings, status);
     case "church":
       return churchTrustContent();
     case "service":
@@ -384,7 +407,7 @@ export function buildTrustShieldContent(
     case "group":
       return conversationTrustContent(channelId, channel, context.conversationId ?? "group", currentUserId, settings);
     case "settings":
-      return settingsTrustContent(settings);
+      return settingsTrustContent(settings, status);
     default:
       return userTrustContent(channelId, channel, currentUserId);
   }

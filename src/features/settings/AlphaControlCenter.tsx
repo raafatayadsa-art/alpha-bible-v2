@@ -126,7 +126,7 @@ export function AlphaControlCenter() {
     <div dir={dir} className="relative min-h-screen w-full overflow-x-hidden">
       <ControlCenterScreenBackground />
 
-      <div className="relative mx-auto w-full max-w-[440px] px-4 pb-36">
+      <div className="relative mx-auto w-full max-w-[var(--alpha-content-max-width)] px-4 pb-36">
         <AlphaHeaderShell className="pb-0">
           <AlphaHeader variant="internal" title={t("pageTitle")} />
         </AlphaHeaderShell>

@@ -1,26 +1,44 @@
-import { ChevronLeft, Search } from "lucide-react";
+import { useCallback, useRef, useState } from "react";
+import { ChevronLeft } from "lucide-react";
 import { useRouter } from "@tanstack/react-router";
 import { alphaOmegaLogo, headerCathedralBg } from "@/assets/bible-home";
 import { useBibleSearch } from "@/features/bible-search";
+import { ConnectExpandableSearchBar } from "@/components/alpha/ConnectExpandableSearchBar";
+import { ALPHA_HEADER_BTN } from "@/components/navigation/AlphaNotificationButton";
+import { cn } from "@/lib/utils";
 import { bibleHomeColors } from "../tokens/colors";
-
-const HEADER_BTN =
-  "grid h-10 w-10 place-items-center rounded-full border border-white/80 bg-white/70 shadow-[0_8px_20px_rgba(120,90,40,0.1)] backdrop-blur-md transition active:scale-95";
 
 export function BibleHeader({ onSearchClick }: { onSearchClick?: () => void }) {
   const router = useRouter();
-  const { openSearch } = useBibleSearch();
+  const { openSearchWithQuery } = useBibleSearch();
+  const [searchExpanded, setSearchExpanded] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSearch = () => {
-    (onSearchClick ?? openSearch)();
-  };
+  const collapseSearch = useCallback(() => {
+    setSearchExpanded(false);
+    setSearchQuery("");
+  }, []);
+
+  const submitSearch = useCallback(() => {
+    const q = searchQuery.trim();
+    if (onSearchClick) {
+      onSearchClick();
+    } else {
+      openSearchWithQuery(q);
+    }
+    collapseSearch();
+  }, [searchQuery, onSearchClick, openSearchWithQuery, collapseSearch]);
 
   const goBack = () => {
     const idx =
       typeof window !== "undefined"
         ? (((window.history.state as Record<string, unknown>)?.idx as number) ?? 0)
         : 0;
-    if (idx > 0) { router.history.back(); return; }
+    if (idx > 0) {
+      router.history.back();
+      return;
+    }
     void router.navigate({ to: "/home" });
   };
 
@@ -45,18 +63,23 @@ export function BibleHeader({ onSearchClick }: { onSearchClick?: () => void }) {
         }}
       />
 
-      <div className="relative mx-auto max-w-[440px] px-4 pb-2 pt-[max(env(safe-area-inset-top),10px)]">
-        <div className="flex items-center justify-between gap-2" dir="rtl">
+      <div className="relative mx-auto max-w-[var(--alpha-content-max-width)] px-4 pb-2 pt-[max(env(safe-area-inset-top),10px)]">
+        <div className="flex items-center gap-2" dir="rtl">
           <button
-              type="button"
-              onClick={goBack}
-              aria-label="رجوع"
-              className={HEADER_BTN}
-            >
-              <ChevronLeft className="h-[18px] w-[18px] -scale-x-100" style={{ color: bibleHomeColors.textPrimary }} />
-            </button>
+            type="button"
+            onClick={goBack}
+            aria-label="رجوع"
+            className={`${ALPHA_HEADER_BTN} shrink-0 text-[#3a2a18]`}
+          >
+            <ChevronLeft className="h-[18px] w-[18px] -scale-x-100" style={{ color: bibleHomeColors.textPrimary }} />
+          </button>
 
-          <div className="flex min-w-0 flex-1 flex-col items-center text-center" dir="rtl">
+          <div
+            className={cn(
+              "flex min-w-0 flex-1 flex-col items-center overflow-hidden text-center transition-[opacity,max-width] duration-200",
+              searchExpanded && "pointer-events-none max-w-0 flex-none opacity-0",
+            )}
+          >
             <img
               src={alphaOmegaLogo}
               alt=""
@@ -70,20 +93,33 @@ export function BibleHeader({ onSearchClick }: { onSearchClick?: () => void }) {
               الكتاب المقدس
             </h1>
             <p className="mt-0.5 flex items-center gap-1.5 text-[11px]" style={{ color: bibleHomeColors.textMuted }}>
-              <span className="text-[10px]" style={{ color: bibleHomeColors.gold }}>✦</span>
+              <span className="text-[10px]" style={{ color: bibleHomeColors.gold }}>
+                ✦
+              </span>
               كلمة الله حياة
-              <span className="text-[10px]" style={{ color: bibleHomeColors.gold }}>✦</span>
+              <span className="text-[10px]" style={{ color: bibleHomeColors.gold }}>
+                ✦
+              </span>
             </p>
           </div>
 
-          <button
-            type="button"
-            aria-label="بحث"
-            onClick={handleSearch}
-            className={HEADER_BTN}
-          >
-            <Search className="h-[18px] w-[18px]" style={{ color: bibleHomeColors.textPrimary }} strokeWidth={2.2} />
-          </button>
+          <div className={cn("flex min-w-0", searchExpanded ? "flex-1 justify-end" : "shrink-0")}>
+            <div className={cn("flex min-w-0 justify-end", searchExpanded && "w-full flex-1")}>
+              <ConnectExpandableSearchBar
+                expanded={searchExpanded}
+                query={searchQuery}
+                inputRef={searchInputRef}
+                onExpand={() => setSearchExpanded(true)}
+                onCollapse={collapseSearch}
+                onQueryChange={setSearchQuery}
+                onSubmit={submitSearch}
+                classicTheme
+                placeholder="ابحث في الكتاب المقدس..."
+                collapsedAriaLabel="بحث في الكتاب المقدس"
+                inputAriaLabel="بحث في الكتاب المقدس"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </header>
