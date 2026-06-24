@@ -15,12 +15,8 @@ export const Route = createFileRoute("/")({
 });
 
 function RouteEntry() {
-  // TODO: Re-enable onboarding completion persistence after final approval.
-  // Temporarily always show onboarding during development.
-  // Restore the hasSeenOnboarding() guard once design is fully approved:
-  //   if (!hasSeenOnboarding()) return <Navigate to="/intro" replace />;
-  //   return <Navigate to="/home" replace />;
-  return <Navigate to="/intro" replace />;
+  if (!hasSeenOnboarding()) return <Navigate to="/intro" replace />;
+  return <Navigate to="/home" replace />;
 }
 
 function SplashScreen() {

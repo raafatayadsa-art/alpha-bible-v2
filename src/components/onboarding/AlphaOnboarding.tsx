@@ -6,6 +6,7 @@
  * mobile browsers regardless of parent layout constraints.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import type { CSSProperties } from "react";
 import { ChevronRight } from "lucide-react";
 import { AlphaScreenFrame } from "@/components/alpha/AlphaScreenFrame";
@@ -276,6 +277,7 @@ function SlideGradient({ mode }: { mode: GradientMode }) {
 /* ─────────────────────────────────────────────────────────────────────────── */
 
 export function AlphaOnboarding() {
+  const navigate = useNavigate();
   const [current, setCurrent] = useState(0);
   const [animKey, setAnimKey] = useState(0);
   const [exiting, setExiting] = useState(false);
@@ -292,9 +294,16 @@ export function AlphaOnboarding() {
   const goNext = useCallback(() => goTo(current + 1), [current, goTo]);
   const goPrev = useCallback(() => goTo(current - 1), [current, goTo]);
 
-  const finish = useCallback((_dest: "/register" | "/login" | "/home") => {
-    goTo(0);
-  }, [goTo]);
+  const finish = useCallback(
+    (dest: "/register" | "/login" | "/home") => {
+      markOnboardingDone();
+      setExiting(true);
+      window.setTimeout(() => {
+        void navigate({ to: dest });
+      }, 400);
+    },
+    [navigate],
+  );
 
   const onPtrDown = (e: React.PointerEvent) => {
     ptrX.current = e.clientX;
