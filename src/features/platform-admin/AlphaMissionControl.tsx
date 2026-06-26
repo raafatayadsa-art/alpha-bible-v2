@@ -1,136 +1,225 @@
 import {
   COMMAND_ICONS,
-  EmergencyBanner,
-  LuxuryCommandCard,
-  LuxuryHeroPanel,
   MissionControlShell,
   MissionHeader,
 } from "./mission-control-ui";
 import { usePlatformDashboard } from "./use-platform-dashboard";
 import { MC } from "./platform-store";
+import {
+  formatPlatformNumber,
+  PlatformControlHero,
+  PlatformDashboardPanel,
+  PlatformEmergencyCard,
+  PlatformModuleCard,
+  PlatformPremiumStyles,
+  PlatformSectionTitle,
+  PP_GOLD,
+} from "./PlatformPremiumUI";
 
 export function AlphaMissionControl() {
   const dash = usePlatformDashboard();
+  const alertCount = dash.pendingApprovals + dash.criticalAlerts;
+
+  const dashboardItems = [
+    { label: "Users", value: formatPlatformNumber(dash.stats.users), color: MC.blue },
+    { label: "Churches", value: formatPlatformNumber(dash.stats.churches), color: PP_GOLD },
+    { label: "Priests", value: formatPlatformNumber(dash.stats.priests), color: MC.purple },
+    { label: "Messages", value: formatPlatformNumber(dash.stats.messages), color: MC.cyan },
+    { label: "Reports", value: formatPlatformNumber(dash.stats.reports), color: MC.red },
+  ];
 
   return (
     <MissionControlShell
       toolbarActive="home"
       toolbarBadges={{ approvals: dash.pendingApprovals, alerts: dash.criticalAlerts }}
     >
-      <MissionHeader />
+      <PlatformPremiumStyles />
+      <MissionHeader alertCount={alertCount} />
 
-      <LuxuryHeroPanel
-        platformHealth={dash.healthScore}
-        pendingApprovals={dash.pendingApprovals}
-        criticalAlerts={dash.criticalAlerts}
-        churches={dash.stats.churchesLabel}
-        users={dash.stats.usersLabel}
-      />
+      <PlatformControlHero subtitle="لوحة المالك · إدارة المنصة · بيانات حية من قاعدة البيانات" />
 
-      <div className="mb-2.5 grid grid-cols-2 gap-2.5">
-        <LuxuryCommandCard
+      <PlatformDashboardPanel healthScore={dash.healthScore} items={dashboardItems} loading={dash.loading} />
+
+      <PlatformSectionTitle>Core Operations</PlatformSectionTitle>
+      <div className="mb-3 space-y-2.5">
+        <PlatformModuleCard
           to="/platform/approvals"
-          size="large"
+          variant="slim"
           title="مركز الاعتمادات"
-          titleEn="Approvals Center"
-          subtitle={`${dash.pendingApprovals} طلب معلق تحتاج مراجعة`}
+          titleEn="Approvals"
+          subtitle={`${formatPlatformNumber(dash.pendingApprovals)} pending requests`}
           icon={COMMAND_ICONS.approvals}
           accent={MC.gold}
           badge={dash.pendingApprovals}
-          actionLabel="عرض جميع الطلبات"
+          actionLabel="Open"
+          footerMetrics={[
+            { label: "Pending", value: formatPlatformNumber(dash.pendingApprovals) },
+            { label: "Requests", value: formatPlatformNumber(dash.stats.requests) },
+          ]}
         />
-        <LuxuryCommandCard
+        <PlatformModuleCard
           to="/platform/privacy"
-          size="large"
+          variant="slim"
           title="الخصوصية والأمان"
-          titleEn="Privacy & Security"
-          subtitle="حماية البيانات · التشفير · المراقبة"
+          titleEn="Privacy"
+          subtitle="Encryption · monitoring · data protection"
           icon={COMMAND_ICONS.privacy}
           accent={MC.green}
-          actionLabel="إعدادات الأمان"
+          actionLabel="Open"
+          btnTone="blue"
         />
-      </div>
-
-      <div className="mb-2.5 grid grid-cols-2 gap-2.5">
-        <LuxuryCommandCard
+        <PlatformModuleCard
           to="/platform/modules"
-          size="large"
+          variant="slim"
           title="إدارة الموديولات"
-          titleEn="Module Control"
-          subtitle="تشغيل وإيقاف ميزات المنصة"
+          titleEn="Modules"
+          subtitle="Enable or disable platform features"
           icon={COMMAND_ICONS.modules}
           accent={MC.purple}
-          actionLabel="إدارة الموديولات"
+          actionLabel="Open"
         />
-        <LuxuryCommandCard
+        <PlatformModuleCard
           to="/platform/reports"
-          size="large"
+          variant="slim"
           title="المحتوى المبلغ"
-          titleEn="Reported Content"
-          subtitle={`${dash.summary.reports} بلاغات تحتاج مراجعة`}
+          titleEn="Reports"
+          subtitle={`${formatPlatformNumber(dash.summary.reports)} open reports`}
           icon={COMMAND_ICONS.reports}
           accent={MC.red}
           badge={dash.summary.reports}
-          actionLabel="عرض البلاغات"
+          actionLabel="Open"
+          btnTone="blue"
+          footerMetrics={[
+            { label: "Reports", value: formatPlatformNumber(dash.stats.reports) },
+            { label: "Alerts", value: formatPlatformNumber(dash.criticalAlerts) },
+          ]}
         />
       </div>
 
-      <div className="mb-2.5 grid grid-cols-3 gap-2">
-        <LuxuryCommandCard
+      <PlatformSectionTitle>Tools & Analytics</PlatformSectionTitle>
+      <div className="mb-3 space-y-2.5">
+        <PlatformModuleCard
+          to="/platform/church-locations"
+          variant="slim"
+          title="مدير مواقع الكنائس"
+          titleEn="Locations"
+          subtitle="Google Maps verification workflow"
+          icon={COMMAND_ICONS.churchLocations}
+          accent={PP_GOLD}
+          actionLabel="Open"
+        />
+        <PlatformModuleCard
+          to="/platform/publisher-center"
+          variant="slim"
+          title="مركز الناشرين"
+          titleEn="Publisher Center"
+          subtitle="طلبات · نشر مباشر · بلاغات حقوق النشر"
+          icon={COMMAND_ICONS.contentReview}
+          accent={MC.gold}
+          actionLabel="Open"
+          btnTone="blue"
+        />
+        <PlatformModuleCard
+          to="/platform/content-review"
+          variant="slim"
+          title="مراجعة المحتوى"
+          titleEn="Content Review"
+          subtitle="ألبومات · ترانيم · كتب — Pending Review"
+          icon={COMMAND_ICONS.contentReview}
+          accent={MC.cyan}
+          actionLabel="Open"
+          btnTone="blue"
+        />
+        <PlatformModuleCard
+          to="/platform/churches"
+          variant="slim"
+          title="إدارة صفحات الكنائس"
+          titleEn="Churches"
+          subtitle="page_status lifecycle · inactive / claim / verified"
+          icon={COMMAND_ICONS.churches}
+          accent={MC.purple}
+          actionLabel="Open"
+        />
+        <PlatformModuleCard
+          to="/platform/monasteries"
+          variant="slim"
+          title="إدارة الأديرة"
+          titleEn="Monasteries"
+          subtitle="Monastery pages foundation · ALPHA-107"
+          icon={COMMAND_ICONS.monasteries}
+          accent={MC.cyan}
+          actionLabel="Open"
+          btnTone="blue"
+        />
+        <PlatformModuleCard
           to="/platform/analytics"
-          size="compact"
+          variant="slim"
           title="التحليلات"
           titleEn="Analytics"
-          subtitle="تقارير عامة"
+          subtitle="Platform metrics and trends"
           icon={COMMAND_ICONS.analytics}
           accent={MC.blue}
-          actionLabel="عرض"
+          actionLabel="Open"
+          btnTone="blue"
+          footerMetrics={[
+            { label: "Users", value: formatPlatformNumber(dash.stats.users) },
+            { label: "Churches", value: formatPlatformNumber(dash.stats.churches) },
+          ]}
         />
-        <LuxuryCommandCard
+        <PlatformModuleCard
           to="/platform/ai"
-          size="compact"
+          variant="slim"
           title="AI Control"
-          subtitle="Auto Moderation"
+          titleEn="Moderation"
+          subtitle="AI rules and review queues"
           icon={COMMAND_ICONS.ai}
           accent={MC.purple}
-          actionLabel="فتح"
+          actionLabel="Open"
         />
-        <LuxuryCommandCard
+        <PlatformModuleCard
           to="/platform/audit"
-          size="compact"
+          variant="slim"
           title="سجل التدقيق"
           titleEn="Audit"
-          subtitle="عمليات مسجّلة"
+          subtitle="Recorded admin operations"
           icon={COMMAND_ICONS.audit}
           accent={MC.blue}
-          actionLabel="عرض"
+          actionLabel="Open"
+          btnTone="blue"
         />
       </div>
 
-      <div className="mb-2.5 grid grid-cols-2 gap-2.5">
-        <LuxuryCommandCard
+      <PlatformSectionTitle>System</PlatformSectionTitle>
+      <div className="mb-3 space-y-2.5">
+        <PlatformModuleCard
           to="/platform/settings"
-          size="medium"
+          variant="slim"
           title="إعدادات النظام"
           titleEn="Settings"
-          subtitle="إعدادات المنصة العامة"
+          subtitle="Global platform configuration"
           icon={COMMAND_ICONS.settings}
           accent={MC.steel}
-          actionLabel="فتح الإعدادات"
+          actionLabel="Open"
+          footerMetrics={[
+            { label: "Servants", value: formatPlatformNumber(dash.stats.servants) },
+            { label: "Reports", value: formatPlatformNumber(dash.stats.reports) },
+          ]}
         />
-        <LuxuryCommandCard
+        <PlatformModuleCard
           to="/platform/library"
-          size="medium"
+          variant="slim"
           title="مكتبة Alpha"
           titleEn="Library"
-          subtitle="وثائق · أدلة · سياسات"
+          subtitle="Policies · guides · documentation"
           icon={COMMAND_ICONS.library}
           accent={MC.blue}
-          actionLabel="فتح المكتبة"
+          actionLabel="Open"
+          btnTone="blue"
         />
       </div>
 
-      <EmergencyBanner to="/platform/emergency" />
+      <PlatformSectionTitle>Emergency</PlatformSectionTitle>
+      <PlatformEmergencyCard to="/platform/emergency" />
     </MissionControlShell>
   );
 }

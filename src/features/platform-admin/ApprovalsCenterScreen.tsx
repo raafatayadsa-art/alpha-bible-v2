@@ -12,11 +12,12 @@ import type { ApprovalItem } from "./types";
 import { kindMatchesFilter, normalizeApprovalStatus } from "./types";
 import { MC } from "./platform-store";
 
-type ListFilter = "all" | "churches" | "priests" | "servants" | "saints" | "reports";
+type ListFilter = "all" | "churches" | "priests" | "servants" | "saints" | "reports" | "publishers";
 
 const FILTERS: { key: ListFilter; label: string }[] = [
   { key: "all", label: "All" },
   { key: "churches", label: "Churches" },
+  { key: "publishers", label: "Publishers" },
   { key: "priests", label: "Priests" },
   { key: "servants", label: "Servants" },
   { key: "saints", label: "Saint Images" },

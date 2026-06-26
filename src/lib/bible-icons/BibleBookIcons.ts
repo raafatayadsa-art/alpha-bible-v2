@@ -34,15 +34,22 @@ export type BibleBookId =
   | "2Chronicles"
   | "Ezra"
   | "Nehemiah"
+  | "Tobit"
+  | "Judith"
   | "Esther"
+  | "1Maccabees"
+  | "2Maccabees"
   | "Job"
   | "Psalms"
   | "Proverbs"
   | "Ecclesiastes"
   | "SongOfSolomon"
+  | "Wisdom"
+  | "Sirach"
   | "Isaiah"
   | "Jeremiah"
   | "Lamentations"
+  | "Baruch"
   | "Ezekiel"
   | "Daniel"
   | "Hosea"
@@ -122,17 +129,24 @@ export const BIBLE_BOOK_ICONS: BibleBookIconEntry[] = [
   entry("2Chronicles", "أخبار الأيام الثاني", null, "old-testament"),
   entry("Ezra", "عزرا", null, "old-testament"),
   entry("Nehemiah", "نحميا", null, "old-testament"),
+  entry("Tobit", "طوبيا", "deuterocanonical", "old-testament"),
+  entry("Judith", "يهوديت", "deuterocanonical", "old-testament"),
   entry("Esther", "أستير", null, "old-testament"),
+  entry("1Maccabees", "المكابيين الأول", "deuterocanonical", "old-testament"),
+  entry("2Maccabees", "المكابيين الثاني", "deuterocanonical", "old-testament"),
   // Wisdom
   entry("Job", "أيوب", "wisdom", "old-testament"),
   entry("Psalms", "المزامير", "psalms", "old-testament"),
   entry("Proverbs", "الأمثال", "wisdom", "old-testament"),
   entry("Ecclesiastes", "الجامعة", "wisdom", "old-testament"),
   entry("SongOfSolomon", "نشيد الأنشاد", "wisdom", "old-testament"),
+  entry("Wisdom", "الحكمة", "deuterocanonical", "old-testament"),
+  entry("Sirach", "يشوع بن سيراخ", "deuterocanonical", "old-testament"),
   // Major & minor prophets
   entry("Isaiah", "إشعياء", "prophets", "old-testament"),
   entry("Jeremiah", "إرميا", "prophets", "old-testament"),
   entry("Lamentations", "مراثي إرميا", "prophets", "old-testament"),
+  entry("Baruch", "باروخ", "deuterocanonical", "old-testament"),
   entry("Ezekiel", "حزقيال", "prophets", "old-testament"),
   entry("Daniel", "دانيال", "prophets", "old-testament"),
   entry("Hosea", "هوشع", "prophets", "old-testament"),

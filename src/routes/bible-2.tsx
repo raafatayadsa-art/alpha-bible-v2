@@ -1,14 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { BibleV2Screen } from "@/features/bible-v2";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-/** Premium Bible home preview — official /bible is unchanged. */
+/** Legacy preview URL — canonical Bible home is `/bible`. */
 export const Route = createFileRoute("/bible-2")({
   ssr: false,
-  head: () => ({
-    meta: [
-      { title: "الكتاب المقدس 2 — Alpha Bible" },
-      { name: "description", content: "تجربة فاخرة لشاشة الكتاب المقدس." },
-    ],
-  }),
-  component: BibleV2Screen,
+  beforeLoad: () => {
+    throw redirect({ to: "/bible", replace: true });
+  },
+  component: () => null,
 });

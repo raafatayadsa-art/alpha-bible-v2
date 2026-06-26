@@ -135,7 +135,7 @@ function PrayerRequestsScreen() {
   };
 
   return (
-    <main dir="rtl" className="relative min-h-screen w-full overflow-x-hidden bg-[#f4ead8]">
+    <main dir="rtl" className="relative min-h-screen w-full overflow-x-hidden bg-alpha-base text-alpha">
       <CopticWatermark tone="light" />
       {/* Header — ivory glass */}
       <AlphaHeaderShell

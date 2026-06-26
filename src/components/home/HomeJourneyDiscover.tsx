@@ -4,9 +4,6 @@ import { CopticCross } from "@/components/coptic";
 import { useAutoMarquee } from "@/hooks/useAutoMarquee";
 import { HeroBadgeEmblem, HeroCompactLedgerCell, HeroLedgerStylesHost } from "./hero-card-chrome";
 
-const HOME_ON_BG = "#5a1f2a";
-const HOME_ON_BG_MUTED = "#7a3944";
-
 export type JourneyDiscoverItem = {
   key: string;
   title: string;
@@ -20,6 +17,7 @@ const JOURNEY_BADGE: Record<string, string> = {
   bible: "الكتاب",
   bible2: "قراءة",
   agpeya: "أجبية",
+  kholagy: "خولاجي",
   katameros: "قطمارس",
   synaxarium: "سنكسار",
   church: "كنيسة",
@@ -164,8 +162,10 @@ export function HomeJourneyDiscover({ items }: { items: JourneyDiscoverItem[] })
     return () => ro.disconnect();
   }, [updateCenter, items.length]);
 
+  if (!items.length) return null;
+
   return (
-    <section className="mt-7">
+    <section className="mt-5">
       <HeroLedgerStylesHost />
       <style>{`
         .journey-discover-card {
@@ -231,23 +231,17 @@ export function HomeJourneyDiscover({ items }: { items: JourneyDiscoverItem[] })
 
       <div className="mb-3 flex items-end justify-between px-1">
         <div>
-          <p className="text-[10px] font-extrabold tracking-wide" style={{ color: HOME_ON_BG_MUTED }}>
+          <p className="text-[10px] font-extrabold tracking-wide text-alpha-heading-muted">
             بوابات ألفا الروحية
           </p>
-          <h2
-            className="mt-0.5 flex items-center gap-1.5 text-[15px] font-extrabold tracking-tight"
-            style={{ color: HOME_ON_BG }}
-          >
-            <span style={{ color: HOME_ON_BG }}>
+          <h2 className="mt-0.5 flex items-center gap-1.5 text-[15px] font-extrabold tracking-tight text-alpha-heading">
+            <span className="text-alpha-gold-bright">
               <CopticCross size={14} />
             </span>
             اكتشف رحلتك اليوم
           </h2>
         </div>
-        <span
-          className="rounded-full border border-[#ead9b1] bg-white/60 px-2 py-0.5 text-[9.5px] font-bold backdrop-blur-sm"
-          style={{ color: HOME_ON_BG }}
-        >
+        <span className="rounded-full border border-alpha bg-alpha-surface px-2 py-0.5 text-[9.5px] font-bold text-alpha-gold-deep backdrop-blur-sm">
           {items.length} أبواب
         </span>
       </div>
@@ -273,7 +267,7 @@ export function HomeJourneyDiscover({ items }: { items: JourneyDiscoverItem[] })
         </div>
       </div>
 
-      <p className="mt-2 text-center text-[9px] font-semibold" style={{ color: HOME_ON_BG_MUTED }}>
+      <p className="mt-2 text-center text-[9px] font-semibold text-alpha-heading-muted">
         اسحب للتوقف · الكارت في المنتصف يُرفع تلقائياً
       </p>
     </section>

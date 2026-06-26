@@ -1,0 +1,12 @@
+=== OLD ===
+export const Route = createFileRoute("/$book/$chapter")({
+  ssr: false,
+  head: ({ params }) => ({
+
+=== NEW ===
+export const Route = createFileRoute("/$book/$chapter")({
+  ssr: false,
+  validateSearch: (search: Record<string, unknown>) => ({
+    verse: typeof search.verse === "string" ? search.verse : undefined,
+  }),
+  head: ({ params }) => ({

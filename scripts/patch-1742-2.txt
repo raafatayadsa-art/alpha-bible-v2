@@ -1,0 +1,6 @@
+=== OLD ===
+import { chapterKey, updateSession, useSavedChapters, useSavedVerses, useTypographyPrefs, verseKey } from "@/lib/reading-state";
+
+=== NEW ===
+import { chapterKey, updateSession, useSavedChapters, useSavedVerses, useTypographyPrefs, verseKey } from "@/lib/reading-state";
+import { stashJournalVersePrefill } from "@/lib/bible-journal-prefill";

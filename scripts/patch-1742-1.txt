@@ -1,0 +1,18 @@
+=== OLD ===
+import {
+  Bookmark,
+  BookmarkCheck,
+  ChevronLeft,
+  Headphones,
+  Share2,
+} from "lucide-react";
+
+=== NEW ===
+import {
+  Bookmark,
+  BookmarkCheck,
+  ChevronLeft,
+  FilePen,
+  Headphones,
+  Share2,
+} from "lucide-react";

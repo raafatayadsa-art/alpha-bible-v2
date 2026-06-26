@@ -74,7 +74,7 @@ export function KatamerosScreenBackground({
 
         data-katameros-bg-preview="a"
 
-        style={{ backgroundColor: "#f4ead8", ...pngBorder }}
+        style={{ backgroundColor: "var(--alpha-bg-base)", ...pngBorder }}
 
       />
 

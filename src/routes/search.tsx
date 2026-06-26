@@ -6,6 +6,7 @@ import { BookIcon } from "@/components/bible/BookIcon";
 import { resolveBookId } from "@/lib/bible-icons";
 import { booksQueryOptions } from "@/lib/bible";
 import { displayName } from "@/lib/bible-books";
+import { SEARCH_SCOPE_MODULE, usePlatformModules, type PlatformModuleKey } from "@/lib/platform-modules";
 import {
   BIBLE_SEARCH_HINTS,
   hasBibleBookResult,
@@ -211,8 +212,27 @@ const CATEGORY_META: Record<Category, { label: string; icon: typeof BookOpen; ic
   meditations:{ label: "التأملات",       icon: Sparkles,      iconBg: "bg-[#5b8fd1]" },
 };
 
+const CATEGORY_MODULE: Record<Category, PlatformModuleKey | undefined> = {
+  bible: "bible",
+  agpeya: "agpeya",
+  katameros: "katameros",
+  synaxarium: "synaxarium",
+  feasts: undefined,
+  meditations: "meditations",
+};
+
 function SearchHub() {
   const navigate = useNavigate();
+  const { isModuleEnabled } = usePlatformModules();
+  const scopeAllowed = (id: Scope) => {
+    const mod = SEARCH_SCOPE_MODULE[id];
+    return mod ? isModuleEnabled(mod) : true;
+  };
+  const categoryAllowed = (cat: Category) => {
+    const mod = CATEGORY_MODULE[cat];
+    return mod ? isModuleEnabled(mod) : true;
+  };
+  const visibleScopes = SCOPES.filter((s) => scopeAllowed(s.id));
   const { q: initialQ } = Route.useSearch();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [query, setQuery] = useState(initialQ);
@@ -232,10 +252,17 @@ function SearchHub() {
     return () => clearTimeout(t);
   }, []);
 
+  useEffect(() => {
+    if (!scopeAllowed(scope)) setScope("all");
+  }, [scope, isModuleEnabled]);
+
   const results = useMemo(() => {
-    const all = searchAll(query, katamerosDay?.readings ?? [], synaxariumSaints, books);
-    return scope === "all" ? all : all.filter((r) => r.category === scope);
-  }, [query, scope, katamerosDay, synaxariumSaints, books]);
+    const all = searchAll(query, katamerosDay?.readings ?? [], synaxariumSaints, books).filter((r) =>
+      categoryAllowed(r.category),
+    );
+    const scoped = scope === "all" ? all : all.filter((r) => r.category === scope);
+    return scoped;
+  }, [query, scope, katamerosDay, synaxariumSaints, books, isModuleEnabled]);
 
   const grouped = useMemo(() => {
     const map = new Map<Category, Result[]>();
@@ -259,10 +286,10 @@ function SearchHub() {
     }
   };
 
-  const activeScope = SCOPES.find((s) => s.id === scope) ?? SCOPES[0];
+  const activeScope = visibleScopes.find((s) => s.id === scope) ?? visibleScopes[0] ?? SCOPES[0];
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#FAF8F3] text-[#3a2a18] pb-28">
+    <div dir="rtl" className="min-h-screen bg-alpha-base text-alpha pb-28">
       {/* Header */}
       <header
         className="sticky top-0 z-20 backdrop-blur-xl bg-[#FAF8F3]/85 border-b border-[#ead9b1]/60"
@@ -311,7 +338,7 @@ function SearchHub() {
           {/* Compact scope selector */}
           <div className="mt-3 -mx-4 px-4 overflow-x-auto no-scrollbar">
             <div className="flex items-center gap-1.5 w-max">
-              {SCOPES.map((s) => {
+              {visibleScopes.map((s) => {
                 const active = s.id === scope;
                 const col = SCOPE_COLORS[s.id];
                 const c = col.color;

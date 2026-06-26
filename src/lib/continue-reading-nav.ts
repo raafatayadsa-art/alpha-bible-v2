@@ -10,14 +10,13 @@ export type ContinueReadingView = {
   chapter?: number;
 };
 
-export type BooksCatalogRoute = "/books" | "/books-v2";
+export type BooksCatalogRoute = "/books";
 
 export type ContinueReadingDestination =
   | { to: "/$book/$chapter"; params: { book: string; chapter: string } }
-  | { to: "/books"; search: { testament: "all" | "old" | "new" } }
-  | { to: "/books-v2"; search: { testament: "old" | "new" } };
+  | { to: "/books"; search: { testament: "old" | "new" } };
 
-/** Shared continue-reading row — Bible 1 & Bible 2. */
+/** Shared continue-reading row — Bible home & reader. */
 export function resolveContinueReadingView(session: ReadingSession | null): ContinueReadingView {
   if (!session) {
     return {
@@ -47,10 +46,8 @@ export function hasContinueReadingTarget(view: Pick<ContinueReadingView, "bookPa
 /** Runtime CTA target — reader chapter or books catalog fallback. */
 export function continueReadingDestination(
   view: Pick<ContinueReadingView, "bookParam" | "chapter">,
-  opts: { booksRoute?: BooksCatalogRoute } = {},
+  _opts: { booksRoute?: BooksCatalogRoute } = {},
 ): ContinueReadingDestination {
-  const booksRoute = opts.booksRoute ?? "/books";
-
   if (hasContinueReadingTarget(view)) {
     return {
       to: "/$book/$chapter",
@@ -58,9 +55,5 @@ export function continueReadingDestination(
     };
   }
 
-  if (booksRoute === "/books-v2") {
-    return { to: "/books-v2", search: { testament: "new" } };
-  }
-
-  return { to: "/books", search: { testament: "all" } };
+  return { to: "/books", search: { testament: "new" } };
 }

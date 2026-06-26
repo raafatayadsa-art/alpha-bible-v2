@@ -1,0 +1,6 @@
+=== OLD ===
+import { normalizeEntityTab, isPersonEntity, isPlaceEntity } from "@/lib/entity-category";
+
+=== NEW ===
+import { normalizeEntityTab, isPersonEntity, isPlaceEntity } from "@/lib/entity-category";
+import { VERSE_PULSE_DURATION_MS } from "@/lib/chapter-verse-highlight";

@@ -1,0 +1,427 @@
+{
+  "startedAt": "2026-06-22T04:51:38.013Z",
+  "finishedAt": "2026-06-22T04:52:56.839Z",
+  "mode": "dry-run",
+  "options": {
+    "limit": 25,
+    "delayMs": 1100,
+    "apply": false
+  },
+  "baseline": {
+    "total": 1241,
+    "withCoords": 1200,
+    "missingCoords": 41,
+    "note": "Live DB snapshot at run time via Supabase SQL"
+  },
+  "summary": {
+    "processed": 25,
+    "success": 0,
+    "failed": 25,
+    "manualReview": 0,
+    "applied": 0
+  },
+  "successes": [],
+  "failures": [
+    {
+      "status": "failed",
+      "reason": "all_strategies_exhausted",
+      "churchId": 1,
+      "churchName": "كنيسة ماربقطر \nشو الشهيد، دير \nشو، مصر",
+      "queries": [
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة ماربقطر شو الشهيد، دير شو، مصر, دير شو, أسيوط, Egypt"
+        },
+        {
+          "strategy": "name_city",
+          "q": "كنيسة ماربقطر شو الشهيد، دير شو، مصر, دير شو, Egypt"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "reason": "all_strategies_exhausted",
+      "churchId": 2,
+      "churchName": "كنيسة الشهيد الأمير تادروس، \nدير بصرة، مصر",
+      "queries": [
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الشهيد الأمير تادروس، دير بصرة، مصر, دير بصرة, أسيوط, Egypt"
+        },
+        {
+          "strategy": "name_city",
+          "q": "كنيسة الشهيد الأمير تادروس، دير بصرة، مصر, دير بصرة, Egypt"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "reason": "all_strategies_exhausted",
+      "churchId": 4,
+      "churchName": "كنيسة القديسة العذراء مريم، \nشقلقيل، مصر",
+      "queries": [
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة القديسة العذراء مريم، شقلقيل، مصر, شقلقيل, أسيوط, Egypt"
+        },
+        {
+          "strategy": "name_city",
+          "q": "كنيسة القديسة العذراء مريم، شقلقيل، مصر, شقلقيل, Egypt"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "reason": "all_strategies_exhausted",
+      "churchId": 5,
+      "churchName": "كنيسة العذراء مريم، المعابدة \nالغربية، مصر",
+      "queries": [
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة العذراء مريم، المعابدة الغربية، مصر, المعابدة الغربية, أسيوط, Egypt"
+        },
+        {
+          "strategy": "name_city",
+          "q": "كنيسة العذراء مريم، المعابدة الغربية، مصر, المعابدة الغربية, Egypt"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "reason": "all_strategies_exhausted",
+      "churchId": 7,
+      "churchName": "كنيسة العذراء مريم القديسة، \nبني عليج، مصر",
+      "queries": [
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة العذراء مريم القديسة، بني عليج، مصر, بني عليج, أسيوط, Egypt"
+        },
+        {
+          "strategy": "name_city",
+          "q": "كنيسة العذراء مريم القديسة، بني عليج، مصر, بني عليج, Egypt"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "reason": "all_strategies_exhausted",
+      "churchId": 10,
+      "churchName": "كنيسة الشهيد مارمرقس، مدينة \nالفتح، مصر",
+      "queries": [
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الشهيد مارمرقس، مدينة الفتح، مصر, مدينة الفتح, أسيوط, Egypt"
+        },
+        {
+          "strategy": "name_city",
+          "q": "كنيسة الشهيد مارمرقس، مدينة الفتح، مصر, مدينة الفتح, Egypt"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "reason": "all_strategies_exhausted",
+      "churchId": 12,
+      "churchName": "كنيسة الشهيد مارجرجس، \nالمعابدة الغربية، مصر",
+      "queries": [
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الشهيد مارجرجس، المعابدة الغربية، مصر, المعابدة الغربية, أسيوط, Egypt"
+        },
+        {
+          "strategy": "name_city",
+          "q": "كنيسة الشهيد مارجرجس، المعابدة الغربية، مصر, المعابدة الغربية, Egypt"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "reason": "all_strategies_exhausted",
+      "churchId": 53,
+      "churchName": "كنيسة الشهيد مارجرجس، ساقلتة، مصر",
+      "queries": [
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الشهيد مارجرجس، ساقلتة، مصر, ساقلتة, سوهاج, Egypt"
+        },
+        {
+          "strategy": "name_city",
+          "q": "كنيسة الشهيد مارجرجس، ساقلتة، مصر, ساقلتة, Egypt"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "reason": "all_strategies_exhausted",
+      "churchId": 89,
+      "churchName": "كنيسة الشهيد ماربقطر، موشا، مصر",
+      "queries": [
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الشهيد ماربقطر، موشا، مصر, موشا, أسيوط, Egypt"
+        },
+        {
+          "strategy": "name_city",
+          "q": "كنيسة الشهيد ماربقطر، موشا، مصر, موشا, Egypt"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "reason": "all_strategies_exhausted",
+      "churchId": 90,
+      "churchName": "كنيسة الأمير تادرس الشطبي، \nشطب، مصر",
+      "queries": [
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الأمير تادرس الشطبي، شطب، مصر, شطب, أسيوط, Egypt"
+        },
+        {
+          "strategy": "name_city",
+          "q": "كنيسة الأمير تادرس الشطبي، شطب، مصر, شطب, Egypt"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "reason": "all_strategies_exhausted",
+      "churchId": 91,
+      "churchName": "كنيسة الأمير تادرس \nالمشرقي، دير ريفا، مصر",
+      "queries": [
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الأمير تادرس المشرقي، دير ريفا، مصر, دير ريفا, أسيوط, Egypt"
+        },
+        {
+          "strategy": "name_city",
+          "q": "كنيسة الأمير تادرس المشرقي، دير ريفا، مصر, دير ريفا, Egypt"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "reason": "all_strategies_exhausted",
+      "churchId": 94,
+      "churchName": "كنيسة الملاك ميخائيل، منشاة \nالعقال البحري، مصر",
+      "queries": [
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الملاك ميخائيل، منشاة العقال البحري، مصر, منشاة العقال البحري, أسيوط, Egypt"
+        },
+        {
+          "strategy": "name_city",
+          "q": "كنيسة الملاك ميخائيل، منشاة العقال البحري، مصر, منشاة العقال البحري, Egypt"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "reason": "all_strategies_exhausted",
+      "churchId": 100,
+      "churchName": "كنيسة الأنبا قلته الطبيب، \nريفا، مصر",
+      "queries": [
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الأنبا قلته الطبيب، ريفا، مصر, ريفا, أسيوط, Egypt"
+        },
+        {
+          "strategy": "name_city",
+          "q": "كنيسة الأنبا قلته الطبيب، ريفا، مصر, ريفا, Egypt"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "reason": "all_strategies_exhausted",
+      "churchId": 247,
+      "churchName": "كنيسة الشهيد مار مرقس، رشيد، \nبالبحيرة، مصر",
+      "queries": [
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الشهيد مار مرقس، رشيد، بالبحيرة، مصر, بالبحيرة, البحيرة, Egypt"
+        },
+        {
+          "strategy": "name_city",
+          "q": "كنيسة الشهيد مار مرقس، رشيد، بالبحيرة، مصر, بالبحيرة, Egypt"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "reason": "all_strategies_exhausted",
+      "churchId": 277,
+      "churchName": "كنيسة الشهيد مارجرجس، مصراتة، \nليبيا",
+      "queries": [
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الشهيد مارجرجس، مصراتة، ليبيا, مصراتة, البحيرة, Egypt"
+        },
+        {
+          "strategy": "name_city",
+          "q": "كنيسة الشهيد مارجرجس، مصراتة، ليبيا, مصراتة, Egypt"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "reason": "all_strategies_exhausted",
+      "churchId": 409,
+      "churchName": "كنيسة الأنبا بشاي والأنبا \nبطرس، الزقازيق، بالشرقية، مصر",
+      "queries": [
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الأنبا بشاي والأنبا بطرس، الزقازيق، بالشرقية، مصر, بالشرقية, الشرقية, Egypt"
+        },
+        {
+          "strategy": "name_city",
+          "q": "كنيسة الأنبا بشاي والأنبا بطرس، الزقازيق، بالشرقية، مصر, بالشرقية, Egypt"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "reason": "all_strategies_exhausted",
+      "churchId": 465,
+      "churchName": "كنيسة مارجرجس الروماني، \nالفيوم (المطرانية)، مصر",
+      "queries": [
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة مارجرجس الروماني، الفيوم (المطرانية)، مصر, الفيوم (المطرانية), الفيوم, Egypt"
+        },
+        {
+          "strategy": "name_city",
+          "q": "كنيسة مارجرجس الروماني، الفيوم (المطرانية)، مصر, الفيوم (المطرانية), Egypt"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "reason": "all_strategies_exhausted",
+      "churchId": 529,
+      "churchName": "كنيسة القديس مارجرجس، كفر \nششتا، بزفتى، بالغربية، مصر",
+      "queries": [
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة القديس مارجرجس، كفر ششتا، بزفتى، بالغربية، مصر, بالغربية, الغربية, Egypt"
+        },
+        {
+          "strategy": "name_city",
+          "q": "كنيسة القديس مارجرجس، كفر ششتا، بزفتى، بالغربية، مصر, بالغربية, Egypt"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "reason": "all_strategies_exhausted",
+      "churchId": 684,
+      "churchName": "كنيسة الشهيد مارجرجس \nالروماني، نزلة الفشن، مصر",
+      "queries": [
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الشهيد مارجرجس الروماني، نزلة الفشن، مصر, نزلة الفشن, بني سويف, Egypt"
+        },
+        {
+          "strategy": "name_city",
+          "q": "كنيسة الشهيد مارجرجس الروماني، نزلة الفشن، مصر, نزلة الفشن, Egypt"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "reason": "all_strategies_exhausted",
+      "churchId": 874,
+      "churchName": "كنيسة الملاك، بني غنى، \nسمالوط",
+      "queries": [
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الملاك، بني غنى، سمالوط, بني غنى, المنيا, Egypt"
+        },
+        {
+          "strategy": "name_city",
+          "q": "كنيسة الملاك، بني غنى، سمالوط, بني غنى, Egypt"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "reason": "all_strategies_exhausted",
+      "churchId": 875,
+      "churchName": "كنيسة الأنبا بيشوي، عزبة \nبشرى، سمالوط",
+      "queries": [
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الأنبا بيشوي، عزبة بشرى، سمالوط, عزبة بشرى, المنيا, Egypt"
+        },
+        {
+          "strategy": "name_city",
+          "q": "كنيسة الأنبا بيشوي، عزبة بشرى، سمالوط, عزبة بشرى, Egypt"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "reason": "all_strategies_exhausted",
+      "churchId": 877,
+      "churchName": "كنيسة الشهيد مارمينا، طحا \nالعمدة، سمالوط",
+      "queries": [
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الشهيد مارمينا، طحا العمدة، سمالوط, طحا العمدة, المنيا, Egypt"
+        },
+        {
+          "strategy": "name_city",
+          "q": "كنيسة الشهيد مارمينا، طحا العمدة، سمالوط, طحا العمدة, Egypt"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "reason": "all_strategies_exhausted",
+      "churchId": 878,
+      "churchName": "كنيسة الملاك ميخائيل، \nالعوايسة، سمالوط",
+      "queries": [
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الملاك ميخائيل، العوايسة، سمالوط, العوايسة, المنيا, Egypt"
+        },
+        {
+          "strategy": "name_city",
+          "q": "كنيسة الملاك ميخائيل، العوايسة، سمالوط, العوايسة, Egypt"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "reason": "all_strategies_exhausted",
+      "churchId": 879,
+      "churchName": "كنيسة الملاك ميخائيل والآباء \nالرسل، قلوصنا، سمالوط",
+      "queries": [
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الملاك ميخائيل والآباء الرسل، قلوصنا، سمالوط, قلوصنا, المنيا, Egypt"
+        },
+        {
+          "strategy": "name_city",
+          "q": "كنيسة الملاك ميخائيل والآباء الرسل، قلوصنا، سمالوط, قلوصنا, Egypt"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "reason": "all_strategies_exhausted",
+      "churchId": 880,
+      "churchName": "كنيسة العذراء مريم، قرى \nالمهاجرين، سمالوط",
+      "queries": [
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة العذراء مريم، قرى المهاجرين، سمالوط, قرى المهاجرين, المنيا, Egypt"
+        },
+        {
+          "strategy": "name_city",
+          "q": "كنيسة العذراء مريم، قرى المهاجرين، سمالوط, قرى المهاجرين, Egypt"
+        }
+      ]
+    }
+  ],
+  "manualReviews": []
+}

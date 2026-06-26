@@ -51,8 +51,16 @@ export function resolveAlphaViewportBackdrop(pathname: string, connectTheme?: Al
     };
   }
 
-  if (pathname === "/messages" || pathname.startsWith("/messages/")) {
-    return { lock: true, backdrop: "messaging" };
+  if (
+    pathname === "/messages" ||
+    pathname.startsWith("/messages/") ||
+    pathname === "/profile/messages"
+  ) {
+    const theme = connectTheme ?? getConnectTheme();
+    return {
+      lock: true,
+      backdrop: theme === "classic" ? "connect-classic" : "connect-secure",
+    };
   }
 
   return { lock: true, backdrop: "shell" };

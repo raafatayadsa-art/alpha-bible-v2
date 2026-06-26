@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AlphaMissionControl } from "@/features/platform-admin";
-import { PlatformAccessGate } from "@/features/platform-admin/PlatformAccessGate";
+import { AlphaMissionControl } from "@/features/platform-admin/AlphaMissionControl";
 
 export const Route = createFileRoute("/platform/")({
   ssr: false,
@@ -11,9 +10,5 @@ export const Route = createFileRoute("/platform/")({
 });
 
 function PlatformHomeRoute() {
-  return (
-    <PlatformAccessGate>
-      <AlphaMissionControl />
-    </PlatformAccessGate>
-  );
+  return <AlphaMissionControl />;
 }

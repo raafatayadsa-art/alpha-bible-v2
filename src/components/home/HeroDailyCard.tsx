@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { CopticCross } from "@/components/coptic";
-import { alphaShareText } from "@/lib/alpha-share-brand";
+import { KatamerosDateStrip } from "@/features/katameros/components/KatamerosDateStrip";
+import { openAlphaShareSheet } from "@/lib/alpha-share-sheet";
 import {
   HeroCardTopBar,
   HeroSpiritLedgerRow,
@@ -25,6 +26,8 @@ export type HeroDailyCardData = {
   image: string;
   accent: string;
   link: HeroCardRoute;
+  dateCoptic?: string;
+  dateGregorian?: string;
 };
 
 type HeroDailyCardProps = {
@@ -114,7 +117,7 @@ export function HeroDailyCard({ card, variant, onBrandedShare }: HeroDailyCardPr
     writeHeroSet(likedKey, likedSet);
   }, [meditated, eid, card.id, likeKey, likedKey]);
 
-  const onShare = useCallback(async () => {
+  const onShare = useCallback(() => {
     const shareMap = readHeroMap(shareKey);
     const base = seedHeroCount(card.id, 13);
     shareMap[eid] = (shareMap[eid] ?? 0) + 1;
@@ -125,19 +128,7 @@ export function HeroDailyCard({ card, variant, onBrandedShare }: HeroDailyCardPr
       onBrandedShare(sharePayload);
       return;
     }
-    const text = alphaShareText(sharePayload);
-    if (typeof navigator !== "undefined" && navigator.share) {
-      try {
-        await navigator.share({ title: card.title, text });
-        return;
-      } catch { /* fall through */ }
-    }
-    try {
-      await navigator.clipboard.writeText(text);
-      setToast("تم النسخ");
-    } catch {
-      setToast("تعذّر المشاركة");
-    }
+    openAlphaShareSheet(sharePayload);
   }, [card, eid, onBrandedShare, sharePayload, shareKey]);
 
   const onOpen = useCallback(() => {
@@ -213,6 +204,17 @@ export function HeroDailyCard({ card, variant, onBrandedShare }: HeroDailyCardPr
           onShare={() => void onShare()}
           onToggleSave={onToggleSaved}
         />
+
+        {(card.dateCoptic || card.dateGregorian) && isFront ? (
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-center px-4 pt-3">
+            <KatamerosDateStrip
+              copticDate={card.dateCoptic ?? ""}
+              gregorianDate={card.dateGregorian ?? ""}
+              variant="image-hero"
+              align="center"
+            />
+          </div>
+        ) : null}
 
         <div className={`absolute inset-x-0 bottom-0 z-10 px-4 ${isPeek ? "pb-3 pt-10" : "pb-3 pt-12"}`}>
           <p

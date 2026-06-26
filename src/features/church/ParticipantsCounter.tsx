@@ -8,6 +8,9 @@ import {
   exportRegistrationsCsv,
   usePostRegistrations,
 } from "./post-registrations";
+import { countWaiting, getActiveWaitlistQueue } from "./trip-reservations/trip-waitlist";
+import { familyDisplayLabel, getFamilyBookingMeta } from "./trip-reservations/family-booking";
+import { getEmergencyContact } from "./trip-reservations/emergency-contact";
 import { useCanManagePosts } from "./post-store";
 
 function statusLabel(s: PostRegistration["status"]) {
@@ -125,6 +128,12 @@ export function ParticipantsAdminSheet({
         </div>
 
         <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 py-3 space-y-2">
+          {kind === "trip" && countWaiting(postId) > 0 ? (
+            <p className="text-[10px] font-bold text-[#8a6a1e] text-right rounded-xl bg-[#fff8e8] border border-[#e7c97a] px-3 py-2">
+              قائمة الانتظار: {countWaiting(postId).toLocaleString("ar-EG")} · عروض نشطة:{" "}
+              {getActiveWaitlistQueue(postId).filter((e) => e.status === "offered").length.toLocaleString("ar-EG")}
+            </p>
+          ) : null}
           {rows.length === 0 ? (
             <p className="text-center text-[12px] text-[#6a543a] py-6">لا يوجد مشاركون بعد.</p>
           ) : (
@@ -159,12 +168,20 @@ export function ParticipantsAdminSheet({
 function ParticipantRow({ row }: { row: PostRegistration }) {
   const [busy, setBusy] = useState(false);
   const tone = statusTone(row.status);
+  const familyMeta = getFamilyBookingMeta(row.id);
+  const emergency = getEmergencyContact(row.id);
 
   return (
     <div className="rounded-2xl bg-white/85 border border-[#efe2c4] p-3">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <p className="font-arabic-serif text-[13px] font-extrabold text-[#3a2a18] truncate">{row.userName}</p>
+          {familyMeta && familyMeta.mode === "family" ? (
+            <p className="mt-0.5 text-[10px] font-bold text-[#1f8a5a]">{familyDisplayLabel(familyMeta)}</p>
+          ) : null}
+          {emergency ? (
+            <p className="mt-0.5 text-[9px] text-[#9a3030] font-bold">طوارئ: {emergency.name} · {emergency.phone}</p>
+          ) : null}
           <p className="mt-0.5 text-[10px] text-[#6a543a] truncate">{row.churchName}</p>
           <p className="mt-1 text-[10px] text-[#8a6a3a]">
             {new Date(row.registeredAt).toLocaleString("ar-EG", { dateStyle: "medium", timeStyle: "short" })}

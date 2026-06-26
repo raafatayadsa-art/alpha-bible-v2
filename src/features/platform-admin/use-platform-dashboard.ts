@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useApprovalsCenter } from "./approvals-store";
-import { PLATFORM_STATS } from "./platform-store";
 import {
   fetchDashboardStats,
   fetchPlatformHealth,
@@ -29,10 +28,10 @@ export function usePlatformDashboard() {
     };
   }, [pendingCount]);
 
-  const users = stats?.users ?? PLATFORM_STATS.users;
-  const churches = stats?.churches ?? PLATFORM_STATS.churches;
-  const priests = stats?.priests ?? PLATFORM_STATS.priests;
-  const servants = stats?.servants ?? PLATFORM_STATS.servants;
+  const users = stats?.users ?? 0;
+  const churches = stats?.churches ?? 0;
+  const priests = stats?.priests ?? 0;
+  const servants = stats?.servants ?? 0;
 
   return {
     loading,
@@ -46,8 +45,8 @@ export function usePlatformDashboard() {
       priests,
       servants,
       usersLabel: formatCount(users),
-      churchesLabel: String(churches),
-      priestsLabel: String(priests),
+      churchesLabel: formatCount(churches),
+      priestsLabel: formatCount(priests),
       servantsLabel: formatCount(servants),
       messages: stats?.messages ?? 0,
       requests: stats?.requests ?? pendingCount,

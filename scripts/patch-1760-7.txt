@@ -1,0 +1,10 @@
+=== OLD ===
+  isActive,
+  saved,
+  spiritualMode,
+
+=== NEW ===
+  isActive,
+  isPulsing,
+  saved,
+  spiritualMode,

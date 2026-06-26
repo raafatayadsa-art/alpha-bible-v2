@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PlatformTrustProfileScreen } from "@/features/platform-admin/PlatformTrustProfileScreen";
-import { PlatformAccessGate } from "@/features/platform-admin/PlatformAccessGate";
 
 export const Route = createFileRoute("/platform/scan/trust/$trustId")({
   ssr: false,
@@ -12,9 +11,5 @@ export const Route = createFileRoute("/platform/scan/trust/$trustId")({
 
 function PlatformTrustProfileRoute() {
   const { trustId } = Route.useParams();
-  return (
-    <PlatformAccessGate>
-      <PlatformTrustProfileScreen trustId={trustId} />
-    </PlatformAccessGate>
-  );
+  return <PlatformTrustProfileScreen trustId={trustId} />;
 }

@@ -1,0 +1,45 @@
+=== OLD ===
+  const onToggleSaveVerse = useCallback(
+    (v: Parameters<typeof toggleSaved>[0]) => {
+      toggleSaved(v);
+    },
+    [toggleSaved],
+  );
+
+=== NEW ===
+  const onToggleSaveVerse = useCallback(
+    (v: Parameters<typeof toggleSaved>[0]) => {
+      toggleSaved(v);
+    },
+    [toggleSaved],
+  );
+
+  const onAddJournalNote = useCallback(
+    (v: {
+      book: string;
+      bookName: string;
+      chapter: number;
+      verse: number;
+      text: string;
+      kind?: "note" | "meditation";
+    }) => {
+      stashJournalVersePrefill({
+        book: v.book,
+        bookName: v.bookName,
+        chapter: v.chapter,
+        verse: v.verse,
+        verseText: v.text,
+        kind: v.kind ?? "note",
+      });
+      navigate({
+        to: "/bible/notes",
+        search: {
+          compose: "1",
+          book: v.book,
+          chapter: String(v.chapter),
+          verse: String(v.verse),
+        },
+      });
+    },
+    [navigate],
+  );

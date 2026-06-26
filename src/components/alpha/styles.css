@@ -59,7 +59,7 @@
   --connect-accent-bright: #40916c;
 
   --alpha-connect-nav-dock-height: 72px;
-  --alpha-connect-nav-clearance: calc(var(--alpha-connect-nav-dock-height) + max(16px, env(safe-area-inset-bottom)));
+  --alpha-connect-nav-clearance: var(--alpha-bottom-nav-clearance, calc(140px + env(safe-area-inset-bottom, 0px)));
   --connect-code-gold: #e7b84a;
   --connect-code-gold-muted: #d4a84b;
 

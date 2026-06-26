@@ -18,7 +18,7 @@ import {
   RefSystemNotes,
   RefVerificationPanel,
 } from "./approvals-reference-ui";
-import { MissionControlShell } from "./mission-control-ui";
+import { MissionControlShell, usePlatformBack } from "./mission-control-ui";
 import type { ApprovalDocument, ApprovalItem } from "./types";
 import {
   canTakeApprovalDecision,
@@ -33,6 +33,7 @@ import { MC } from "./platform-store";
 export function ApprovalDetailsScreen() {
   const { id } = useParams({ from: "/platform/approvals/$id" });
   const navigate = useNavigate();
+  const goBack = usePlatformBack("/platform/approvals");
   const { refreshOne, startReview, approveRequest, rejectRequest, requestInfo } = useApprovalsCenter();
   const [item, setItem] = useState<ApprovalItem | null>(null);
   const [loading, setLoading] = useState(true);
@@ -43,6 +44,7 @@ export function ApprovalDetailsScreen() {
   const [previewDoc, setPreviewDoc] = useState<ApprovalDocument | null>(null);
   const [reviewerNotes, setReviewerNotes] = useState("");
   const [acting, setActing] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -83,9 +85,14 @@ export function ApprovalDetailsScreen() {
 
   const handleApprove = async () => {
     setActing(true);
+    setActionError(null);
     const ok = await approveRequest(approvalId);
     setActing(false);
-    if (ok) setSuccess(true);
+    if (ok) {
+      setSuccess(true);
+      return;
+    }
+    setActionError("تعذّر إتمام الاعتماد — تحقق من مزامنة حالة الناشر في قاعدة البيانات.");
   };
 
   if (loading) {
@@ -129,7 +136,7 @@ export function ApprovalDetailsScreen() {
       <RefDetailsHeader
         requestNo={enriched.requestNo}
         status={enriched.status}
-        onBack={() => navigate({ to: "/platform/approvals" })}
+        onBack={goBack}
         onCopy={() => void navigator.clipboard?.writeText(enriched.requestNo)}
       />
 
@@ -157,6 +164,12 @@ export function ApprovalDetailsScreen() {
       )}
 
       <RefSystemNotes notes={systemNotesText || "لا توجد ملاحظات نظام."} />
+
+      {actionError ? (
+        <p className="mb-3 text-center text-[11px] font-bold" style={{ color: MC.red }}>
+          {actionError}
+        </p>
+      ) : null}
 
       {canDecide && (
         <RefDetailsFooter

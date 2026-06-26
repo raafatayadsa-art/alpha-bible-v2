@@ -57,7 +57,7 @@ function ReadingProgressBar({ value }: { value: number }) {
 export function BibleV2ContinueReading() {
   const session = useCurrentSession();
   const data = resolveContinueReadingView(session);
-  const destination = continueReadingDestination(data, { booksRoute: "/books-v2" });
+  const destination = continueReadingDestination(data, { booksRoute: "/books" });
 
   return (
     <section className="relative mx-4 mt-7 mb-1">

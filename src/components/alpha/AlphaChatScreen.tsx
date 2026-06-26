@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "@tanstack/react-router";
 import {
   ArrowLeft, BellOff, Camera, Check, Clock3, Copy, File,
@@ -28,6 +29,7 @@ import {
 } from "@/features/alpha-connect/retention";
 import type { AlphaConnectRetentionPolicy } from "@/features/alpha-connect/types";
 import { getAuthUserSync } from "@/features/auth";
+import { cn } from "@/lib/utils";
 import { priestProfile, type Conversation } from "./messaging-data";
 import {
   HIDDEN_CONVS_KEY,
@@ -100,7 +102,7 @@ function formatTimeAr(): string {
 export function AlphaChatScreen({
   onBack,
   profile: profileProp,
-  returnTo = "/messages",
+  returnTo = "/alpha-connect",
   embedded = false,
   hideHeader = false,
   onShowToast,
@@ -1528,8 +1530,8 @@ function AlphaSheet({
 }
 
 // ─── Apple-style glass timer picker (compact) ─────────────────
-const PICKER_ITEM_H = 32;
-const PICKER_VISIBLE = 112;
+const PICKER_ITEM_H = 26;
+const PICKER_VISIBLE = 96;
 const PICKER_SNAP_MS = 130;
 
 let pickerAudioCtx: AudioContext | null = null;
@@ -1650,157 +1652,129 @@ function TimerGlassPicker({
   };
 
   const pickerWheel = (
-    <div className="relative mx-2.5 mb-3 mt-1" style={{ height: PICKER_VISIBLE }}>
-      <div
-        className={`pointer-events-none absolute inset-x-0 top-0 z-10 h-9 bg-gradient-to-b ${
-          embedded ? "from-[#060d1f]/95 to-transparent" : "from-white/80 to-transparent"
-        }`}
-      />
-      <div
-        className={`pointer-events-none absolute inset-x-0 bottom-0 z-10 h-9 bg-gradient-to-t ${
-          embedded ? "from-[#060d1f]/95 to-transparent" : "from-white/80 to-transparent"
-        }`}
-      />
-      <div
-        className={`pointer-events-none absolute inset-x-0.5 top-1/2 z-10 -translate-y-1/2 rounded-[10px] border ${
-          embedded ? "border-neon-green/25 bg-neon-green/10" : "border-gold/20 bg-gold/8"
-        }`}
-        style={{ height: PICKER_ITEM_H }}
-      />
-      <ul
-        ref={listRef}
-        className="h-full overflow-y-auto scroll-smooth overscroll-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        style={{
-          scrollSnapType: "y mandatory",
-          paddingTop: padY,
-          paddingBottom: padY,
-          WebkitOverflowScrolling: "touch",
-        }}
-        onTouchStart={() => void pickerAudioCtx?.resume()}
-        onScroll={handleScroll}
-        onTouchEnd={handleScroll}
-        onMouseUp={handleScroll}
-      >
-        {options.map((option, idx) => {
-          const selected = active === option;
-          const isFocused = idx === focusedIdx;
-          const dist = Math.abs(idx - focusedIdx);
-          return (
-            <li
-              key={option}
-              style={{
-                height: PICKER_ITEM_H,
-                scrollSnapAlign: "center",
-                animation: selected && isFocused && tickKey > 0
-                  ? "alphaTimerWheelTick 0.18s ease-out both"
-                  : undefined,
-              }}
-              className="flex w-full cursor-pointer items-center justify-center"
-              onClick={() => selectOption(idx)}
-            >
-              <span
-                className={`block w-full truncate px-2 text-center text-[13.5px] font-semibold leading-none transition-[opacity,color] duration-150 ${
-                  embedded && isFocused ? "text-neon-green" : ""
-                }`}
-                style={
-                  embedded
-                    ? { opacity: isFocused ? 1 : dist === 1 ? 0.58 : 0.32 }
-                    : {
-                        opacity: isFocused ? 1 : dist === 1 ? 0.58 : 0.32,
-                        color: isFocused ? "#1F2937" : "#6B7280",
-                      }
-                }
+    <div className="relative mx-2.5 mb-3 mt-1 overflow-hidden rounded-[14px] border border-white/32 bg-white/42 backdrop-blur-sm">
+      <div className="relative px-0 pb-1.5">
+        <div
+          className="pointer-events-none absolute inset-x-0 top-1/2 z-10 h-[26px] -translate-y-1/2 rounded-[11px] border border-white/95 bg-white/82 shadow-[0_0_18px_rgba(255,255,255,0.5),0_4px_14px_rgba(212,168,87,0.08),inset_0_1px_0_rgba(255,255,255,1)] backdrop-blur-sm"
+          aria-hidden
+        />
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 z-20 h-7 bg-gradient-to-b from-white/72 to-transparent"
+          aria-hidden
+        />
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-7 bg-gradient-to-t from-white/72 to-transparent"
+          aria-hidden
+        />
+        <ul
+          ref={listRef}
+          className="alpha-date-wheel relative z-[25] h-full overflow-y-auto scroll-smooth overscroll-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          style={{
+            height: PICKER_VISIBLE,
+            scrollSnapType: "y mandatory",
+            paddingTop: padY,
+            paddingBottom: padY,
+            WebkitOverflowScrolling: "touch",
+          }}
+          onTouchStart={() => void pickerAudioCtx?.resume()}
+          onScroll={handleScroll}
+          onTouchEnd={handleScroll}
+          onMouseUp={handleScroll}
+        >
+          {options.map((option, idx) => {
+            const selected = active === option;
+            const isFocused = idx === focusedIdx;
+            const dist = Math.abs(idx - focusedIdx);
+            const wheelColor = isFocused ? "#1F2937" : dist === 1 ? "#6B7280" : "#9CA3AF";
+            const wheelOpacity = isFocused ? 1 : dist === 1 ? 0.75 : 0.45;
+            return (
+              <li
+                key={option}
+                style={{
+                  height: PICKER_ITEM_H,
+                  scrollSnapAlign: "center",
+                  fontSize: isFocused ? "15px" : dist === 1 ? "13px" : "12px",
+                  fontWeight: isFocused ? 700 : 500,
+                  color: wheelColor,
+                  opacity: wheelOpacity,
+                  transform: isFocused ? "scale(1.06)" : dist === 1 ? "scale(0.97)" : "scale(0.92)",
+                  textShadow: isFocused ? "0 1px 2px rgba(255,255,255,0.9)" : "none",
+                  animation:
+                    selected && isFocused && tickKey > 0
+                      ? "alphaDateWheelTick 0.24s cubic-bezier(0.22,1,0.36,1) both"
+                      : undefined,
+                }}
+                className="flex w-full cursor-pointer items-center justify-center transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                onClick={() => selectOption(idx)}
               >
-                {option}
-              </span>
-            </li>
-          );
-        })}
-      </ul>
+                <span className="block w-full truncate px-2 text-center leading-none">{option}</span>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
     </div>
   );
 
-  if (embedded) {
-    return (
-      <div
-        className="fixed inset-0 z-[120] bg-black/45 backdrop-blur-[3px]"
-        onClick={onClose}
-      >
-        <style>{`
-          @keyframes alphaTimerWheelTick {
-            0% { opacity: 1; }
-            50% { opacity: 0.72; }
-            100% { opacity: 1; }
-          }
-        `}</style>
-        <div
-          className="connect-chat-timer-sheet absolute inset-x-0 bottom-0 mx-auto w-full max-w-[var(--alpha-content-narrow-width)]"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div dir="rtl" className="glass-strong overflow-hidden rounded-t-3xl shadow-[0_-12px_48px_rgba(0,0,0,0.45)]">
-            <div className="mx-auto mt-3 h-1 w-10 rounded-full bg-white/20" />
-            <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 pb-3 pt-2">
-              <button
-                type="button"
-                onClick={() => onSelect(active)}
-                className="text-[15px] font-bold text-neon-green active:scale-95"
-              >
-                تم
-              </button>
-              <p className="flex-1 text-center text-[15px] font-bold text-neon-green">مؤقت الاختفاء</p>
-              <button
-                type="button"
-                onClick={onClose}
-                aria-label="إغلاق"
-                className="glass flex size-9 items-center justify-center rounded-full text-muted-foreground active:scale-95"
-              >
-                <X className="size-4" />
-              </button>
-            </div>
-            {pickerWheel}
-            <div className="pb-[max(env(safe-area-inset-bottom),12px)]" />
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const sheetPaddingBottom = embedded
+    ? "max(calc(env(safe-area-inset-bottom) + 32px), 40px)"
+    : `max(calc(${composerBottom}px + 32px), 40px)`;
 
-  return (
-    <div
-      className="fixed inset-0 z-[120] bg-black/28 backdrop-blur-[3px]"
-      onClick={onClose}
-    >
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <>
       <style>{`
-        @keyframes alphaTimerWheelTick {
-          0% { opacity: 1; }
-          50% { opacity: 0.72; }
-          100% { opacity: 1; }
+        @keyframes alphaDateWheelTick {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.1); }
+          100% { transform: scale(1.06); }
+        }
+        @keyframes alphaDateSheetIn {
+          from { opacity: 0; transform: translateY(16px) scale(0.98); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
         }
       `}</style>
       <div
-        className="absolute left-1/2 w-[84%] max-w-[260px] -translate-x-1/2"
-        style={{ bottom: composerBottom + 8 }}
-        onClick={(e) => e.stopPropagation()}
-      >
-      <div
+        className={cn(
+          "fixed inset-0 z-[120] flex items-end justify-center px-4",
+          embedded && "alpha-bottom-sheet-host",
+        )}
         dir="rtl"
-        className={MESSAGING_GLASS_SHELL}
+        style={{ paddingBottom: sheetPaddingBottom }}
       >
-        {/* iOS toolbar: تم يمين | عنوان وسط */}
-        <div className="relative flex h-12 items-center justify-center px-4 pt-2" dir="rtl">
-          <p className="text-[14px] font-bold text-[#1F2937]">مؤقت الاختفاء</p>
-          <button
-            type="button"
-            onClick={() => onSelect(active)}
-            className="absolute inset-y-0 right-4 flex items-center pt-0.5 text-[16px] font-bold text-[#166534] transition-colors hover:text-[#14532D] active:text-[#0F3D22]"
-          >
-            تم
-          </button>
+        <button
+          type="button"
+          aria-label="إغلاق"
+          onClick={onClose}
+          className="absolute inset-0 bg-black/28 backdrop-blur-[3px] animate-in fade-in duration-200"
+        />
+        <div
+          className={cn("relative z-[1] w-full max-w-[320px] overflow-hidden", MESSAGING_GLASS_SHELL)}
+          style={{ animation: "alphaDateSheetIn 0.34s cubic-bezier(0.22, 1, 0.36, 1) both" }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="relative flex h-12 items-center justify-center px-4 pt-1" dir="rtl">
+            <p className="text-[14px] font-bold text-[#1F2937]">مؤقت الاختفاء</p>
+            <button
+              type="button"
+              onClick={() => onSelect(active)}
+              className="absolute inset-y-0 start-4 flex items-center pt-0.5 text-[16px] font-bold text-[#166534] transition-colors hover:text-[#14532D] active:text-[#0F3D22]"
+            >
+              تم
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="absolute inset-y-0 end-4 flex items-center pt-0.5 text-[14px] font-semibold text-[#EF4444]"
+            >
+              إلغاء
+            </button>
+          </div>
+          {pickerWheel}
         </div>
-
-        {pickerWheel}
       </div>
-      </div>
-    </div>
+    </>,
+    document.body,
   );
 }

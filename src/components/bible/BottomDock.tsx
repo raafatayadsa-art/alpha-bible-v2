@@ -1,10 +1,11 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home as HomeIcon, HandHeart, Church as ChurchIcon, User as UserIcon } from "lucide-react";
+import { House, Church, UsersRound, CircleUser, BookMarked } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import logoBible from "@/assets/home/logo-bible.png";
 import { cn } from "@/lib/utils";
 import { useLocale } from "@/lib/i18n/use-locale";
+import { activateBottomNavLayout } from "@/components/navigation/alpha-bottom-nav-layout";
+import { usePlatformModules } from "@/lib/platform-modules";
 
 /**
  * Persistent floating Alpha Bible bottom navigation.
@@ -23,9 +24,32 @@ export function BottomDock({
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { t } = useTranslation("common");
   const { dir } = useLocale();
+  const { isModuleEnabled } = usePlatformModules();
+  const showCommunity = isModuleEnabled("community");
+  const showAgpeya = isModuleEnabled("agpeya");
+
+  const dockSlotCount = 2 + (showAgpeya ? 1 : 0) + (showCommunity ? 1 : 0) + 1;
+  const dockGridClass =
+    dockSlotCount === 6
+      ? "grid-cols-6"
+      : dockSlotCount === 5
+      ? "grid-cols-5"
+      : dockSlotCount === 4
+        ? "grid-cols-4"
+        : dockSlotCount === 3
+          ? "grid-cols-3"
+          : "grid-cols-2";
 
   const isActive = (match: string | RegExp) =>
     typeof match === "string" ? pathname === match || pathname.startsWith(match + "/") : match.test(pathname);
+
+  const isBibleArea =
+    isActive("/bible") ||
+    isActive("/books") ||
+    (() => {
+      const parts = pathname.split("/").filter(Boolean);
+      return parts.length === 2 && /^\d+$/.test(parts[1] ?? "");
+    })();
 
   // ===== Auto-hide after idle =====
   const [autoHidden, setAutoHidden] = useState(false);
@@ -90,6 +114,11 @@ export function BottomDock({
 
   const isHidden = hidden || autoHidden;
 
+  useEffect(() => {
+    if (isHidden) return;
+    return activateBottomNavLayout();
+  }, [isHidden]);
+
   return (
     <nav
       dir={dir}
@@ -114,35 +143,29 @@ export function BottomDock({
 
       <div className="mx-auto w-full max-w-[var(--alpha-dock-max-width)] px-3 pointer-events-auto alpha-app-dock">
         <div className="alpha-dock-bar relative rounded-[26px]">
-          <div className="grid grid-cols-5 items-end px-1.5 py-2 gap-0.5 sm:px-2 sm:py-2.5 sm:gap-1">
-            <DockItem icon={HomeIcon} label={t("nav.home")} to="/home" active={isActive("/home")} />
-            <DockItem icon={HandHeart} label={t("nav.prayer")} to="/agpeya" active={isActive("/agpeya")} />
+          <div className={cn("grid items-end px-2 py-2.5 gap-1 sm:px-2.5 sm:py-3 sm:gap-1.5", dockGridClass)}>
+            <DockItem icon={House} label={t("nav.home")} to="/home" active={isActive("/home")} />
+            {showAgpeya ? (
+              <DockItem icon={Church} label={t("nav.prayer")} to="/agpeya" active={isActive("/agpeya")} />
+            ) : null}
             <DockItem
-              raised
+              icon={BookMarked}
               label={t("nav.bible")}
               to="/bible"
-              active={isActive("/bible") || isActive("/books")}
+              active={isBibleArea}
             />
-            <DockItem
-              icon={ChurchIcon}
-              label={t("nav.church")}
-              to="/church"
-              active={isActive("/profile/church") || isActive("/church")}
-            />
-            <DockItem icon={UserIcon} label={t("nav.profile")} to="/profile" active={isActive("/profile")} />
+            {showCommunity ? (
+              <DockItem
+                icon={UsersRound}
+                label={t("nav.community")}
+                to="/church"
+                active={isActive("/profile/church") || isActive("/church")}
+              />
+            ) : null}
+            <DockItem icon={CircleUser} label={t("nav.profile")} to="/profile" active={isActive("/profile")} />
           </div>
         </div>
       </div>
-      <style>{`
-        @keyframes alphaDockRaisedPulse {
-          0% { transform: scale(1); }
-          45% { transform: scale(1.07); }
-          100% { transform: scale(1); }
-        }
-        .alpha-dock-raised-pulse {
-          animation: alphaDockRaisedPulse 520ms cubic-bezier(0.32, 0.72, 0, 1);
-        }
-      `}</style>
     </nav>
   );
 }
@@ -151,72 +174,33 @@ function DockItem({
   icon: Icon,
   label,
   active,
-  raised,
   to,
 }: {
   icon?: React.ComponentType<{ className?: string; strokeWidth?: number; style?: React.CSSProperties }>;
   label: string;
   active?: boolean;
-  raised?: boolean;
   to?: string;
 }) {
-  const [pressing, setPressing] = useState(false);
-
   const inner = (
     <>
-      {raised ? (
-        <div
-          className={cn(
-            "alpha-dock-tab__icon relative grid place-items-center",
-            pressing && "alpha-dock-raised-pulse",
-          )}
-        >
-          <span
-            aria-hidden
-            className={cn(
-              "pointer-events-none absolute inset-[-6px] rounded-full transition-opacity duration-200",
-              pressing ? "opacity-100" : "opacity-0",
-            )}
-            style={{
-              background:
-                "radial-gradient(circle, rgba(240,215,140,0.38) 0%, rgba(231,201,122,0.14) 52%, transparent 72%)",
-              boxShadow: pressing
-                ? "0 0 22px 6px rgba(240,215,140,0.42), 0 0 40px 12px rgba(231,201,122,0.18)"
-                : "none",
-            }}
-          />
-          <img src={logoBible} alt="" className="relative h-full w-full object-contain" draggable={false} />
-        </div>
-      ) : Icon ? (
-        <Icon className="alpha-dock-tab__icon h-[18px] w-[18px] sm:h-5 sm:w-5" strokeWidth={1.8} />
+      {Icon ? (
+        <Icon className="alpha-dock-tab__icon h-[21px] w-[21px] sm:h-[23px] sm:w-[23px]" strokeWidth={2} />
       ) : null}
       <span className="alpha-dock-tab__label font-semibold tracking-tight">{label}</span>
     </>
   );
 
-  const className = cn(
-    "alpha-dock-tab",
-    active && "alpha-dock-tab--active",
-    raised && "alpha-dock-tab--raised",
-  );
-  const pressHandlers = raised
-    ? {
-        onPointerDown: () => setPressing(true),
-        onPointerUp: () => setPressing(false),
-        onPointerLeave: () => setPressing(false),
-        onPointerCancel: () => setPressing(false),
-      }
-    : {};
+  const className = cn("alpha-dock-tab", active && "alpha-dock-tab--active");
 
   if (to) {
     return (
-      <Link to={to as any} aria-label={label} aria-current={active ? "page" : undefined} className={className} {...pressHandlers}>
+      <Link to={to as any} aria-label={label} aria-current={active ? "page" : undefined} className={className}>
         {inner}
       </Link>
     );
   }
   return (
-    <button type="button" aria-label={label} aria-current={active ? "page" : undefined} className={className} {...pressHandlers}>
+    <button type="button" aria-label={label} aria-current={active ? "page" : undefined} className={className}>
       {inner}
     </button>
   );

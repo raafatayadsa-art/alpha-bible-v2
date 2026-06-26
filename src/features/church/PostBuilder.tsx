@@ -1,13 +1,15 @@
 import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { X, ImagePlus, Send, ShieldCheck, ChevronDown } from "lucide-react";
+import { X, ImagePlus, Send, ShieldCheck, ChevronDown, Clock } from "lucide-react";
 import { CopticWatermark } from "@/components/coptic";
 import { POST_TYPE_META, type ChurchPost, type ChurchPostDetails, type PostType } from "@/data/church-posts";
 import { computeDefaultExpiry, newPostId } from "./post-store";
-import { createChurchPost } from "./church-posts-api";
 import { getCurrentUser } from "./current-user";
 import { generatePostImage } from "./post-image-engine";
 import { AlphaDatePicker, AlphaTimePicker, formatAlphaDateDisplay, formatAlphaTimeDisplay } from "@/components/controls";
+import { submitTripPost } from "./trip-organizer/trip-approval-workflow";
+import { canPublishTripDirectly, isTripOrganizerOnly } from "./trip-organizer/trip-organizer-access";
+import { createChurchPost } from "./church-posts-api";
 
 /* --------------------------------- Categories -------------------------------- */
 export type CategoryKey =
@@ -111,10 +113,12 @@ function CategoryPickerMenu({
   activeKey,
   onSelect,
   onClose,
+  categories = CATEGORIES,
 }: {
   activeKey: CategoryKey;
   onSelect: (k: CategoryKey) => void;
   onClose: () => void;
+  categories?: CategoryDef[];
 }) {
   if (typeof document === "undefined") return null;
 
@@ -130,7 +134,7 @@ function CategoryPickerMenu({
           <p className="text-[14px] font-extrabold text-[#3a2a18]">نوع المنشور</p>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 grid grid-cols-2 gap-2 content-start">
-          {CATEGORIES.map((c) => {
+          {categories.map((c) => {
             const active = c.key === activeKey;
             return (
               <button
@@ -327,6 +331,8 @@ type FormState = {
   returnDate: string;
   seats: string;
   places: string;
+  price: string;
+  program: string;
   expiresAt: string; // datetime-local string ("YYYY-MM-DDTHH:mm"), "" means no expiration
   useAutoImage: boolean;
 };
@@ -335,7 +341,8 @@ const EMPTY: FormState = {
   title: "", body: "", author: "خدمة الإعلام", image: null,
   date: "", time: "", place: "", priest: "", audience: "",
   groom: "", bride: "", personName: "", deathDate: "",
-  verse: "", returnDate: "", seats: "", places: "", expiresAt: "", useAutoImage: true,
+  verse: "", returnDate: "", seats: "", places: "", price: "", program: "",
+  expiresAt: "", useAutoImage: true,
 };
 
 function toDatetimeLocal(ms: number | null): string {
@@ -426,10 +433,12 @@ function buildPost(cat: CategoryDef, f: FormState): ChurchPost | null {
       details.date = f.date; details.returnDate = f.returnDate;
       details.places = f.places;
       if (!Number.isNaN(seatsN) && seatsN > 0) details.seats = seatsN;
+      if (has(f.price)) details.price = trim(f.price);
+      if (has(f.program)) details.program = trim(f.program);
       return finalize({
         id, type: "trip", title: trim(f.title),
         body: trim(f.body) || `رحلة إلى ${trim(f.places) || trim(f.title)}.`,
-        excerpt: `${f.date}${has(f.returnDate) ? ` → ${f.returnDate}` : ""}${seatsN > 0 ? ` · ${seatsN} مكان` : ""}`,
+        excerpt: `${f.date}${has(f.returnDate) ? ` → ${f.returnDate}` : ""}${seatsN > 0 ? ` · ${seatsN} مكان` : ""}${has(f.price) ? ` · ${trim(f.price)}` : ""}`,
         image, date, author, details,
       });
     }
@@ -538,7 +547,9 @@ function CategoryForm({
             <LabeledDateField label="تاريخ العودة" value={f.returnDate} onChange={(v) => set("returnDate", v)} minYear={EVENT_MIN_YEAR} maxYear={EVENT_MAX_YEAR} />
           </div>
           <Field label="عدد الأماكن المتاحة" type="number" value={f.seats} onChange={(v) => set("seats", v)} placeholder="مثال: 40" />
+          <Field label="السعر" value={f.price} onChange={(v) => set("price", v)} maxLength={80} placeholder="مثال: 200 جنيه" />
           <Field label="أماكن الزيارة" value={f.places} onChange={(v) => set("places", v)} maxLength={200} placeholder="دير الأنبا بيشوي · وادي النطرون" />
+          <Field label="البرنامج" value={f.program} onChange={(v) => set("program", v)} multiline maxLength={1500} rows={3} placeholder="جدول اليوم الأول · الثاني · تفاصيل الحجز" />
           <Field label="وصف" value={f.body} onChange={(v) => set("body", v)} multiline maxLength={1500} rows={3} />
         </div>
       );
@@ -610,7 +621,15 @@ function ExpirationField({
   );
 }
 
-function PublishButton({ onClick, disabled }: { onClick: () => void; disabled?: boolean }) {
+function PublishButton({
+  onClick,
+  disabled,
+  label,
+}: {
+  onClick: () => void;
+  disabled?: boolean;
+  label?: string;
+}) {
   return (
     <button
       type="button"
@@ -619,7 +638,7 @@ function PublishButton({ onClick, disabled }: { onClick: () => void; disabled?: 
       className="w-full min-h-[52px] inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-l from-[#1a7a4a] to-[#2f9d6e] text-white text-[15px] font-extrabold shadow-[0_14px_32px_-12px_rgba(31,138,90,0.65),inset_0_1px_0_rgba(255,255,255,0.25)] border border-[#1f8a5a]/30 active:scale-[0.98] transition-transform disabled:opacity-60"
     >
       <Send className="h-5 w-5 -scale-x-100" strokeWidth={2.4} />
-      {disabled ? "جاري النشر…" : "نشر المنشور"}
+      {disabled ? "جاري الإرسال…" : (label ?? "نشر المنشور")}
     </button>
   );
 }
@@ -628,19 +647,32 @@ function PublishButton({ onClick, disabled }: { onClick: () => void; disabled?: 
 /* --------------------------------- Builder ----------------------------------- */
 export function PostBuilder({
   churchId,
+  churchName = "الكنيسة",
   onClose,
   onCreated,
+  tripOnly = false,
 }: {
   churchId: string;
+  churchName?: string;
   onClose: () => void;
   onCreated?: (post: ChurchPost) => void;
+  /** Restrict to trip categories for منظم رحلات */
+  tripOnly?: boolean;
 }) {
-  const [activeKey, setActiveKey] = useState<CategoryKey>("news");
+  const allowedCategories = useMemo(
+    () => (tripOnly ? CATEGORIES.filter((c) => c.key === "trip") : CATEGORIES),
+    [tripOnly],
+  );
+  const [activeKey, setActiveKey] = useState<CategoryKey>(tripOnly ? "trip" : "news");
   const [form, setForm] = useState<FormState>(EMPTY);
   const [catOpen, setCatOpen] = useState(false);
-  const cat = useMemo(() => CATEGORIES.find((c) => c.key === activeKey)!, [activeKey]);
+  const cat = useMemo(() => allowedCategories.find((c) => c.key === activeKey) ?? allowedCategories[0]!, [activeKey, allowedCategories]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [pendingNotice, setPendingNotice] = useState(false);
+  const tripOrganizerMode = isTripOrganizerOnly(churchId);
+  const directPublish = canPublishTripDirectly();
+  const isTripSubmit = cat.type === "trip" && !directPublish;
 
   function set<K extends keyof FormState>(k: K, v: FormState[K]) {
     setForm((f) => ({ ...f, [k]: v }));
@@ -661,6 +693,27 @@ export function PostBuilder({
     setBusy(true);
     setError("");
     const user = getCurrentUser();
+
+    if (post.type === "trip") {
+      const result = await submitTripPost(churchId, post, churchName);
+      setBusy(false);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      if (result.pending) {
+        setPendingNotice(true);
+        setTimeout(() => {
+          onCreated?.(result.post);
+          onClose();
+        }, 1800);
+        return;
+      }
+      onCreated?.(result.post);
+      onClose();
+      return;
+    }
+
     const result = await createChurchPost(churchId, post, user.id || null);
     setBusy(false);
     if (!result.ok) {
@@ -685,17 +738,33 @@ export function PostBuilder({
             <X className="h-5 w-5" />
           </button>
           <div className="flex-1 min-w-0 flex items-center justify-center">
-            <h1 className="text-[15px] font-extrabold text-[#3a2a18] leading-none">إنشاء منشور</h1>
+            <h1 className="text-[15px] font-extrabold text-[#3a2a18] leading-none">
+              {tripOnly || tripOrganizerMode ? "إنشاء رحلة" : "إنشاء منشور"}
+            </h1>
           </div>
           <span className="w-10 shrink-0" aria-hidden />
         </div>
         <p className="mt-1 text-center text-[10px] text-[#7a5a30] inline-flex items-center justify-center gap-1 w-full">
-          <ShieldCheck className="h-3 w-3 text-[#1f8a5a]" /> للكهنة والخدام
+          <ShieldCheck className="h-3 w-3 text-[#1f8a5a]" />
+          {tripOrganizerMode || tripOnly
+            ? "منظم رحلات · يتطلب اعتماد الكاهن"
+            : "للكهنة والخدام"}
         </p>
       </div>
 
+      {pendingNotice ? (
+        <div className="absolute inset-0 z-[80] grid place-items-center bg-[#1a0f04]/35 backdrop-blur-sm px-6">
+          <div className="rounded-2xl bg-white/95 border border-[#efe2c4] p-6 text-center max-w-[320px]">
+            <Clock className="mx-auto h-10 w-10 text-[#b8893a] mb-2" />
+            <p className="text-[15px] font-extrabold text-[#3a2a18]">بانتظار الموافقة</p>
+            <p className="mt-2 text-[12px] text-[#6a543a]">تم إرسال الرحلة للكاهن أو الخادم المخوّل للمراجعة</p>
+          </div>
+        </div>
+      ) : null}
+
       <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-3 pb-2">
         <div className="mx-auto w-full max-w-[400px] min-w-0 space-y-3">
+          {!tripOnly ? (
           <button
             type="button"
             onClick={() => setCatOpen(true)}
@@ -709,6 +778,7 @@ export function PostBuilder({
               </span>
             </div>
           </button>
+          ) : null}
           <div className={GLASS_CARD + " p-3.5 min-w-0"}>
             <CategoryForm cat={cat} f={form} set={set} autoPreview={autoPreview} />
           </div>
@@ -719,13 +789,18 @@ export function PostBuilder({
 
       <div className="shrink-0 px-4 pt-2 border-t border-[#efe2c4]/80 bg-[#f4ead8]/95 backdrop-blur-xl" style={{ paddingBottom: "max(env(safe-area-inset-bottom), 14px)" }}>
         <div className="mx-auto w-full max-w-[400px] min-w-0">
-          <PublishButton onClick={() => void submit()} disabled={busy} />
+          <PublishButton
+            onClick={() => void submit()}
+            disabled={busy}
+            label={isTripSubmit ? "إرسال للاعتماد" : undefined}
+          />
         </div>
       </div>
 
       {catOpen ? (
         <CategoryPickerMenu
           activeKey={activeKey}
+          categories={allowedCategories}
           onSelect={setActiveKey}
           onClose={() => setCatOpen(false)}
         />

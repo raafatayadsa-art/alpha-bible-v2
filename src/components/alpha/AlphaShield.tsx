@@ -125,6 +125,13 @@ const SHIELD_INFO: Record<ShieldRole, { church: string; since: string }> = {
   member:   { church: "كنيسة مارمرقس — مصر الجديدة",        since: "٢٠٢٦" },
 };
 
+export type ShieldProfileInfo = {
+  churchName?: string;
+  diocese?: string | null;
+  memberSince?: string | null;
+  roleLabel?: string;
+};
+
 type FlyTransform = { x: number; y: number; scale: number };
 
 function heroHoverPoint(): FlyTransform {
@@ -145,10 +152,7 @@ function originTransform(origin: DOMRect | null): FlyTransform {
   };
 }
 
-// ─────────────────────────────────────────────────────────────
-// Shield image with radiate glow
-// ─────────────────────────────────────────────────────────────
-function ShieldImage({
+export function ShieldImage({
   role,
   px,
   className = "",
@@ -227,6 +231,7 @@ function VerificationCard({
   isOnline,
   presenceStatus,
   originRect,
+  profileInfo,
 }: {
   role: ShieldRole;
   onClose: () => void;
@@ -235,9 +240,14 @@ function VerificationCard({
   isOnline?: boolean;
   presenceStatus?: AlphaPresenceStatus | null;
   originRect: DOMRect | null;
+  profileInfo?: ShieldProfileInfo;
 }) {
   const cfg = SHIELD_CONFIG[role];
-  const info = SHIELD_INFO[role];
+  const fallback = SHIELD_INFO[role];
+  const churchLine = profileInfo?.churchName?.trim() || fallback.church;
+  const dioceseLine = profileInfo?.diocese?.trim() || null;
+  const sinceLine = profileInfo?.memberSince?.trim() || fallback.since;
+  const roleLine = profileInfo?.roleLabel?.trim() || cfg.label;
   const resolvedPresence = presenceStatus ?? (isOnline ? "available" : isOnline === false ? null : undefined);
   const slotRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -346,6 +356,8 @@ function VerificationCard({
           className={cn(
             MESSAGING_GLASS_SHELL,
             "pointer-events-auto relative w-[min(100%,276px)] border-white/30 bg-white/50 shadow-[0_20px_52px_rgba(0,0,0,0.16),inset_0_1px_0_rgba(255,255,255,0.62)] backdrop-blur-3xl will-change-transform",
+            profileInfo &&
+              "border-[#f0d78c]/45 shadow-[0_24px_56px_rgba(120,80,30,0.22),inset_0_1px_0_rgba(255,255,255,0.72)]",
           )}
           style={{
             transform: cardVisible ? "translate3d(0, 0, 0)" : "translate3d(0, calc(100% + 28px), 0)",
@@ -379,6 +391,9 @@ function VerificationCard({
           <div className="px-4 pb-0.5 text-center">
             <p className="text-[13px] font-bold text-[#1F2937]">{cfg.label}</p>
             <p className="mt-0.5 text-[9.5px] text-[#6B7280]">{cfg.status}</p>
+            {profileInfo?.roleLabel ? (
+              <p className="mt-1 text-[10px] font-extrabold text-[#b8893a]">{profileInfo.roleLabel}</p>
+            ) : null}
           </div>
 
           {(userAvatar || userName) && (
@@ -431,9 +446,10 @@ function VerificationCard({
 
           <div className={`${MESSAGING_GLASS_INNER} mx-4 mb-2.5 space-y-1.5 px-2.5 py-2`}>
             {[
-              ["الكنيسة", info.church],
-              ["عضو منذ", info.since],
-              ["نوع الدرع", cfg.label],
+              ["الكنيسة", churchLine],
+              ...(dioceseLine ? [["الإيبارشية", dioceseLine] as const] : []),
+              ["عضو منذ", sinceLine],
+              ["الخدمة", roleLine],
               ["الحالة", "الحساب نشط ✓"],
             ].map(([lbl, val]) => (
               <div key={lbl} className="flex items-center gap-2 text-[9.5px]">
@@ -443,7 +459,12 @@ function VerificationCard({
             ))}
           </div>
 
-          <div className={`${MESSAGING_GLASS_INNER} mx-4 mb-4 px-3 py-2.5`}>
+          <div
+            className={cn(
+              `${MESSAGING_GLASS_INNER} mx-4 mb-4 px-3 py-2.5`,
+              profileInfo && "border-[#f0d78c]/25 bg-gradient-to-b from-white/40 to-[#fdf6e3]/55",
+            )}
+          >
             <p className="text-[10.5px] font-bold leading-tight text-[#14532D]">{cfg.trustLabel}</p>
             <p className="mt-0.5 text-[9px] leading-relaxed text-[#6B7280]">{cfg.trustNote}</p>
           </div>
@@ -454,23 +475,33 @@ function VerificationCard({
   );
 }
 
+const SHIELD_SIZES = { sm: 28, md: 36, lg: 48, xl: 92 } as const;
+export type AlphaShieldSize = keyof typeof SHIELD_SIZES;
+
 // ─────────────────────────────────────────────────────────────
 // Public component
 // ─────────────────────────────────────────────────────────────
 export function AlphaShield({
   role,
-  size = "md",
+  size = "sm",
   userName,
   userAvatar,
   isOnline,
   presenceStatus,
+  pulseWrap = false,
+  profileInfo,
+  className,
 }: {
   role: ShieldRole;
-  size?: "sm" | "md" | "lg";
+  size?: AlphaShieldSize;
   userName?: string;
   userAvatar?: string;
   isOnline?: boolean;
   presenceStatus?: AlphaPresenceStatus | null;
+  /** Hero-card style pulse ring around shield (membership card) */
+  pulseWrap?: boolean;
+  profileInfo?: ShieldProfileInfo;
+  className?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -479,7 +510,7 @@ export function AlphaShield({
 
   useEffect(() => setMounted(true), []);
 
-  const px = size === "lg" ? 48 : 28;
+  const px = SHIELD_SIZES[size];
 
   const handleOpen = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
@@ -487,18 +518,31 @@ export function AlphaShield({
     setOpen(true);
   };
 
+  const trigger = (
+    <button
+      ref={triggerRef}
+      type="button"
+      aria-label={`بطاقة توثيق · ${SHIELD_CONFIG[role].label}`}
+      onClick={handleOpen}
+      className={cn(
+        "inline-flex shrink-0 items-center justify-center p-0 focus:outline-none active:scale-95 transition-transform",
+        className,
+      )}
+      style={{ width: px, height: px, background: "transparent", border: "none" }}
+    >
+      <ShieldImage role={role} px={px} />
+    </button>
+  );
+
   return (
     <>
-      <button
-        ref={triggerRef}
-        type="button"
-        aria-label={`بطاقة توثيق · ${SHIELD_CONFIG[role].label}`}
-        onClick={handleOpen}
-        className="inline-flex shrink-0 items-center justify-center p-0 focus:outline-none active:scale-95 transition-transform"
-        style={{ width: px, height: px, background: "transparent", border: "none" }}
-      >
-        <ShieldImage role={role} px={px} />
-      </button>
+      {pulseWrap ? (
+        <span className="hero-ledger-pulse-wrap hero-ledger-pulse-wrap--gold inline-flex rounded-2xl">
+          {trigger}
+        </span>
+      ) : (
+        trigger
+      )}
 
       {mounted && open && (
         <VerificationCard
@@ -509,6 +553,7 @@ export function AlphaShield({
           isOnline={isOnline}
           presenceStatus={presenceStatus}
           originRect={originRect}
+          profileInfo={profileInfo}
         />
       )}
     </>

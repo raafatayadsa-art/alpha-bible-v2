@@ -5,6 +5,11 @@ import {
   backfillApprovedChurchSetupRequests,
   ensureCurrentUserApprovedChurchMembership,
 } from "./church-provisioning";
+import {
+  CHURCHES_DIRECTORY_SELECT,
+  mapChurchesTableRow,
+  type ChurchesTableRow,
+} from "./churches-table";
 
 export type ChurchDashboardRecord = {
   id: string;
@@ -17,10 +22,16 @@ export type ChurchDashboardRecord = {
   locationLng: number | null;
   phone: string | null;
   whatsapp: string | null;
+  email: string | null;
+  churchUrl: string | null;
+  websiteUrl: string | null;
+  facebookUrl: string | null;
+  youtubeUrl: string | null;
   coverImageUrl: string | null;
   memberCount: number;
   servantCount: number;
   primaryPriestName: string | null;
+  priestsFull: string | null;
   primaryPriestInitials: string | null;
   primaryPriestAvatarUrl: string | null;
 };
@@ -52,22 +63,6 @@ export type ChurchDashboardData = {
   church: ChurchDashboardRecord;
   contacts: ChurchDashboardContact[];
   prayers: ChurchDashboardPrayer[];
-};
-
-type ChurchRow = {
-  id: string | number;
-  name: string;
-  diocese: string | null;
-  governorate: string | null;
-  city: string | null;
-  address: string | null;
-  location_lat: number | null;
-  location_lng: number | null;
-  phone: string | null;
-  whatsapp: string | null;
-  cover_image_url: string | null;
-  member_count: number;
-  servant_count: number;
 };
 
 type RoleRow = {
@@ -110,31 +105,41 @@ function formatRelativeTime(iso: string): string {
 }
 
 function mapChurch(
-  row: ChurchRow,
+  row: ChurchesTableRow,
   primaryPriest: RoleRow | undefined,
   currentUserId: string | null,
   currentUserAvatar: string | null,
 ): ChurchDashboardRecord {
-  const priestName = primaryPriest?.role_name ?? primaryPriest?.display_name ?? null;
+  const core = mapChurchesTableRow(row);
+  const rolePriestName = primaryPriest?.role_name ?? primaryPriest?.display_name ?? null;
+  const priestName = rolePriestName ?? core.priestName;
   const priestUserId = primaryPriest?.user_id ?? null;
   const priestAvatar =
     priestUserId && currentUserId && priestUserId === currentUserId ? currentUserAvatar : null;
 
+  const priestsFull = row.priests?.trim() || null;
+
   return {
-    id: String(row.id),
-    name: row.name,
-    diocese: row.diocese,
-    governorate: row.governorate,
-    city: row.city,
-    address: row.address,
-    locationLat: row.location_lat != null ? Number(row.location_lat) : null,
-    locationLng: row.location_lng != null ? Number(row.location_lng) : null,
-    phone: row.phone,
-    whatsapp: row.whatsapp,
-    coverImageUrl: row.cover_image_url,
-    memberCount: row.member_count,
-    servantCount: row.servant_count,
+    id: core.id,
+    name: core.name,
+    diocese: core.diocese,
+    governorate: core.governorate,
+    city: core.city,
+    address: core.address,
+    locationLat: core.locationLat,
+    locationLng: core.locationLng,
+    phone: core.phone,
+    whatsapp: core.whatsapp,
+    email: row.email?.trim() || null,
+    churchUrl: row.church_url?.trim() || null,
+    websiteUrl: row.website_url?.trim() || null,
+    facebookUrl: row.facebook_url?.trim() || null,
+    youtubeUrl: row.youtube_url?.trim() || null,
+    coverImageUrl: core.coverImageUrl,
+    memberCount: core.memberCount,
+    servantCount: core.servantCount,
     primaryPriestName: priestName,
+    priestsFull,
     primaryPriestInitials: primaryPriest?.initials ?? (priestName?.trim().charAt(0) || "✚"),
     primaryPriestAvatarUrl: priestAvatar,
   };
@@ -173,7 +178,7 @@ async function churchIdBySetupRequest(setupRequestId: string): Promise<string | 
     .from("churches")
     .select("id")
     .eq("setup_request_id", setupRequestId)
-    .eq("status", "approved")
+    .eq("is_active", true)
     .maybeSingle();
   return bySetup?.id != null ? String(bySetup.id) : null;
 }
@@ -239,7 +244,7 @@ async function resolveChurchId(userId: string | null): Promise<string | null> {
         .from("churches")
         .select("id")
         .eq("id", memberChurchId)
-        .eq("status", "approved")
+        .eq("is_active", true)
         .maybeSingle();
       if (approved?.id != null) return String(approved.id);
     }
@@ -306,7 +311,7 @@ async function hasActiveApprovedMembership(userId: string): Promise<boolean> {
     .from("churches")
     .select("id")
     .eq("id", membership.church_id)
-    .eq("status", "approved")
+    .eq("is_active", true)
     .maybeSingle();
 
   return church?.id != null;
@@ -390,7 +395,7 @@ export async function fetchChurchDashboard(): Promise<ChurchDashboardData | null
   if (!churchId) return null;
 
   const [churchRes, rolesRes, prayersRes] = await Promise.all([
-    supabase.from("churches").select("*").eq("id", churchId).eq("status", "approved").maybeSingle(),
+    supabase.from("churches").select(CHURCHES_DIRECTORY_SELECT).eq("id", churchId).eq("is_active", true).maybeSingle(),
     supabase
       .from("church_roles")
       .select("*")
@@ -419,24 +424,44 @@ export async function fetchChurchDashboard(): Promise<ChurchDashboardData | null
   const { getAuthUserSync } = await import("@/features/auth");
   const authUser = getAuthUserSync();
 
-  const liveStats = await countChurchLiveStats(String(churchRes.data.id), {
-    memberCount: (churchRes.data as ChurchRow).member_count ?? 0,
-    servantCount: (churchRes.data as ChurchRow).servant_count ?? 0,
+  const tableRow = churchRes.data as ChurchesTableRow;
+  const core = mapChurchesTableRow(tableRow);
+
+  const liveStats = await countChurchLiveStats(String(tableRow.id), {
+    memberCount: core.memberCount,
+    servantCount: core.servantCount,
   });
 
   const churchRecord = mapChurch(
-    churchRes.data as ChurchRow,
+    tableRow,
     primaryPriest,
     authUser?.id ?? null,
     authUser?.avatarUrl ?? null,
   );
 
+  let joinedAt: string | null = null;
+  if (userId) {
+    const { data: membership } = await supabase
+      .from("church_memberships")
+      .select("joined_at")
+      .eq("user_id", userId)
+      .eq("church_id", churchId)
+      .eq("status", "active")
+      .maybeSingle();
+    joinedAt = membership?.joined_at ?? null;
+  }
+
+  const dashboardChurch = {
+    ...churchRecord,
+    memberCount: liveStats.memberCount,
+    servantCount: liveStats.servantCount,
+  };
+
+  const { seedMemberChurchCache } = await import("./member-church-api");
+  seedMemberChurchCache(dashboardChurch, joinedAt);
+
   return {
-    church: {
-      ...churchRecord,
-      memberCount: liveStats.memberCount,
-      servantCount: liveStats.servantCount,
-    },
+    church: dashboardChurch,
     contacts: roles.map(mapContact),
     prayers: ((prayersRes.data ?? []) as PrayerRow[]).map(mapPrayer),
   };

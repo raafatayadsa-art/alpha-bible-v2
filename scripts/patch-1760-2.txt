@@ -1,0 +1,8 @@
+=== OLD ===
+    >
+      {/* Cinematic dark cloud atmosphere — soft spiritual bloom (no top bowl) */}
+
+=== NEW ===
+    >
+      <VersePulseStyles />
+      {/* Cinematic dark cloud atmosphere — soft spiritual bloom (no top bowl) */}

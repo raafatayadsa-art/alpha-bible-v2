@@ -20,6 +20,10 @@
   --alpha-content-narrow-width: 100%;
   --alpha-dock-max-width: min(100%, calc(100vw - 2 * var(--alpha-content-padding-x)));
   --alpha-reader-max-width: min(100%, calc(100vw - 2 * var(--alpha-content-padding-x)));
+
+  /* ALPHA-105 — unified clearance above every bottom navigation bar */
+  --alpha-bottom-nav-clearance: calc(140px + env(safe-area-inset-bottom, 0px));
+  --alpha-connect-nav-clearance: var(--alpha-bottom-nav-clearance);
 }
 
 /* Large phone — 600px+ */
@@ -51,6 +55,38 @@
 }
 
 /* ── Global shell safety (phone / tablet / desktop) ── */
+
+/**
+ * ALPHA-105 — When any bottom dock is mounted, scroll owners get safe clearance
+ * so cards, buttons, and settings never sit under the navigation bar.
+ */
+html[data-alpha-bottom-nav="active"] .alpha-viewport-scroll,
+html[data-alpha-bottom-nav="active"] .alpha-screen-frame-scroll {
+  padding-bottom: var(--alpha-bottom-nav-clearance);
+  scroll-padding-bottom: var(--alpha-bottom-nav-clearance);
+  box-sizing: border-box;
+}
+
+/**
+ * Bottom sheets & fixed footers — sit above the dock (stacking context safe).
+ * Host uses padding so panel content is never drawn under the navigation bar.
+ */
+html[data-alpha-bottom-nav="active"] .alpha-bottom-sheet-host {
+  padding-bottom: var(--alpha-bottom-nav-clearance);
+  box-sizing: border-box;
+}
+
+html[data-alpha-bottom-nav="active"] .alpha-bottom-sheet-host .alpha-bottom-sheet-scroll {
+  scroll-padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+}
+
+html[data-alpha-bottom-nav="active"] .alpha-dock-fixed-footer {
+  bottom: var(--alpha-bottom-nav-clearance);
+}
+
+html[data-alpha-bottom-nav="active"] .connect-settings-screen .connect-settings-body {
+  padding-bottom: 5rem;
+}
 
 .alpha-app-shell {
   box-sizing: border-box;
@@ -201,7 +237,7 @@
 @media (min-width: 768px) {
   .alpha-viewport-root--shell,
   .alpha-viewport-root--messaging {
-    background-color: #f4ead8;
+    background-color: var(--alpha-bg-base);
   }
 }
 

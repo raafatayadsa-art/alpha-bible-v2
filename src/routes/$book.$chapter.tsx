@@ -5,29 +5,35 @@ import {
   Bookmark,
   BookmarkCheck,
   ChevronLeft,
+  FilePen,
   Headphones,
   Share2,
 } from "lucide-react";
-import { ALPHA_HEADER_BTN } from "@/components/navigation/AlphaNotificationButton";
 import { CopticWatermark } from "@/components/coptic";
 import { chaptersQueryOptions, versesQueryOptions } from "@/lib/bible";
 import type { BibleVerse } from "@/integrations/supabase/client";
 import { displayName } from "@/lib/bible-books";
-import { chapterWithNumber } from "@/lib/bible-labels";
+import { chapterOrdinalBadge, chapterWithNumber } from "@/lib/bible-labels";
 import {
   AutoScrollControls,
   BottomDock,
+  ChapterReadingScrollRail,
   HighlightedWord,
   MeaningSheet,
   ReferenceIndicator,
   VerseSkeleton,
   DictionaryLookupSheet,
   DictionaryResultsSheet,
+  ReaderArticleProgress,
   type MeaningSheetData,
 } from "@/components/bible";
 import { chapterKey, updateSession, useSavedChapters, useSavedVerses, useTypographyPrefs, verseKey } from "@/lib/reading-state";
+import { stashJournalVersePrefill } from "@/lib/bible-journal-prefill";
+import { VERSE_PULSE_DURATION_MS } from "@/lib/chapter-verse-highlight";
 import { articleScrollProgress, bindScroll, resolveScrollRoot, scrollMetrics, scrollToBottom, scrollToTop, scrollToY } from "@/lib/chapter-scroll";
 import { cn } from "@/lib/utils";
+import { openAlphaShareSheet } from "@/lib/alpha-share-sheet";
+import cardBibleShare from "@/assets/home/card-bible.jpg";
 import {
   useDictionary,
   buildDictionaryIndex,
@@ -43,6 +49,8 @@ import {
 } from "@/lib/dictionary";
 import { setChapterDictState } from "@/lib/chapter-dict-store";
 import { normalizeEntityTab, isPersonEntity, isPlaceEntity } from "@/lib/entity-category";
+import { useResolvedTheme } from "@/lib/alpha-theme";
+import { useSettings } from "@/features/settings/settings-store";
 
 /**
  * HMR_EPOCH — bumps on every hot-module reload of this file (and indirectly
@@ -199,6 +207,9 @@ async function buildSheetForEntry(e: DictionaryEntry): Promise<MeaningSheetData>
 
 export const Route = createFileRoute("/$book/$chapter")({
   ssr: false,
+  validateSearch: (search: Record<string, unknown>) => ({
+    verse: typeof search.verse === "string" ? search.verse : undefined,
+  }),
   head: ({ params }) => ({
     meta: [
       { title: `${params.book} ${params.chapter} — الكتاب المقدس` },
@@ -222,22 +233,13 @@ type ChapterNavState = {
 
 /* ---------------- Reader ---------------- */
 
-function chapterHeaderBtnClass(spiritualMode: boolean, active?: boolean) {
-  if (spiritualMode) {
-    return cn(
-      "grid h-11 w-11 place-items-center rounded-full border border-white/10 bg-[#0e1a2e]/55 backdrop-blur-xl text-[#f3e6c4] active:scale-95 transition",
-      active && "border-[#f0d78c]/50 bg-[#f0d78c]/15",
-    );
-  }
-  return cn(
-    ALPHA_HEADER_BTN,
-    "text-[#3a2a18]",
-    active && "border-[#5a3d92]/35 bg-[#7a5cb0]/12 text-[#5a3d92]",
-  );
+function chapterHeaderBtnClass(_spiritualMode: boolean, active?: boolean) {
+  return cn("alpha-reader-header-btn", active && "alpha-reader-header-btn--active");
 }
 
 function ScriptureReader() {
   const { book, chapter } = Route.useParams();
+  const { verse: highlightVerseParam } = Route.useSearch();
   const router = useRouter();
   const navigate = useNavigate();
   const ch = Number(chapter);
@@ -254,12 +256,14 @@ function ScriptureReader() {
   });
   const freshNavRef = useRef<{ book: string; chapter: number; anchor: ChapterScrollAnchor } | null>(null);
 
-  const [spiritualMode, setSpiritualMode] = useState(false);
+  const { patch } = useSettings();
+  const spiritualMode = useResolvedTheme() === "dark";
   const [sheet, setSheet] = useState<MeaningSheetData | null>(null);
   const [lookupRow, setLookupRow] = useState<LookupDictionaryRow | null>(null);
   const [lookupChoices, setLookupChoices] = useState<LookupDictionaryRow[] | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [activeVerse, setActiveVerse] = useState<string | null>(null);
+  const [pulsingVerseId, setPulsingVerseId] = useState<string | null>(null);
   const [readingVerse, setReadingVerse] = useState(1);
 
   // Tap a highlighted/any word: query lookup_dictionary first. If multiple
@@ -453,7 +457,7 @@ function ScriptureReader() {
   }, []);
 
   const goBack = useCallback(() => {
-    void router.navigate({ to: "/bible-2" });
+    void router.navigate({ to: "/bible" });
   }, [router]);
 
   const openAdjacentChapter = useCallback(
@@ -465,6 +469,7 @@ function ScriptureReader() {
       void navigate({
         to: "/$book/$chapter",
         params: { book, chapter: String(targetChapter) },
+        search: {},
         state: { chapterNav: { book, chapter: targetChapter, anchor } },
       });
     },
@@ -480,26 +485,17 @@ function ScriptureReader() {
     [openAdjacentChapter],
   );
 
-  const handleShareChapter = useCallback(async () => {
-    const title = `${bookName} — ${chapterWithNumber(book, ch)}`;
-    const url = window.location.href;
-    if (navigator.share) {
-      try {
-        await navigator.share({ title, url });
-        return;
-      } catch {
-        /* cancelled */
-      }
-    }
-    try {
-      await navigator.clipboard.writeText(url);
-      setToast("تم نسخ الرابط");
-      window.setTimeout(() => setToast(null), 1800);
-    } catch {
-      setToast("تعذّر المشاركة");
-      window.setTimeout(() => setToast(null), 1800);
-    }
-  }, [bookName, book, ch]);
+  const handleShareChapter = useCallback(() => {
+    const title = bookName;
+    const body = `${chapterWithNumber(book, ch)} — الكتاب المقدس`;
+    openAlphaShareSheet({
+      title,
+      body,
+      meta: "ألفا — الكتاب المقدس",
+      imageSrc: cardBibleShare,
+      accent: spiritualMode ? "#f0d78c" : "#8a6ec1",
+    });
+  }, [bookName, book, ch, spiritualMode]);
 
   const handleToggleChapterSave = useCallback(() => {
     const added = toggleChapter({ book, bookName, chapter: ch });
@@ -536,6 +532,36 @@ function ScriptureReader() {
       toggleSaved(v);
     },
     [toggleSaved],
+  );
+
+  const onAddJournalNote = useCallback(
+    (v: {
+      book: string;
+      bookName: string;
+      chapter: number;
+      verse: number;
+      text: string;
+      kind?: "note" | "meditation";
+    }) => {
+      stashJournalVersePrefill({
+        book: v.book,
+        bookName: v.bookName,
+        chapter: v.chapter,
+        verse: v.verse,
+        verseText: v.text,
+        kind: v.kind ?? "note",
+      });
+      navigate({
+        to: "/bible/notes",
+        search: {
+          compose: "1",
+          book: v.book,
+          chapter: String(v.chapter),
+          verse: String(v.verse),
+        },
+      });
+    },
+    [navigate],
   );
 
   const isNT = useMemo(() => {
@@ -616,15 +642,64 @@ function ScriptureReader() {
 
   // Persist reading session (throttled) + restore scroll on first load.
   const restoredRef = useRef(false);
+  const highlightConsumedRef = useRef<string | null>(null);
   useEffect(() => {
     restoredRef.current = false;
+    highlightConsumedRef.current = null;
   }, [book, ch]);
+
+  // Hero / saved-verse deep link — golden pulse for 5s, then clear ?verse= from URL.
+  useEffect(() => {
+    if (!verses.data?.length || !highlightVerseParam) return;
+    const highlightNum = parseInt(highlightVerseParam, 10);
+    if (Number.isNaN(highlightNum) || highlightNum <= 0) return;
+
+    const consumeKey = `${book}::${ch}::${highlightNum}`;
+    if (highlightConsumedRef.current === consumeKey) return;
+    highlightConsumedRef.current = consumeKey;
+    restoredRef.current = true;
+
+    const id = verseKey(book, ch, highlightNum);
+    setPulsingVerseId(id);
+    setActiveVerse(id);
+    setReadingVerse(highlightNum);
+
+    let attempts = 0;
+    const scrollToHighlight = () => {
+      const el = verseElementsRef.current.get(highlightNum);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        return true;
+      }
+      return false;
+    };
+    const tryScroll = () => {
+      if (scrollToHighlight() || attempts > 40) return;
+      attempts += 1;
+      requestAnimationFrame(tryScroll);
+    };
+    requestAnimationFrame(tryScroll);
+
+    const pulseTimer = window.setTimeout(() => {
+      setPulsingVerseId(null);
+      void navigate({
+        to: "/$book/$chapter",
+        params: { book, chapter: String(ch) },
+        search: {},
+        replace: true,
+      });
+    }, VERSE_PULSE_DURATION_MS);
+
+    return () => window.clearTimeout(pulseTimer);
+  }, [verses.data, highlightVerseParam, book, ch, navigate]);
 
   useEffect(() => {
     if (!verses.data?.length) return;
     if (restoredRef.current) return;
+    if (highlightVerseParam) return;
     const root = scrollRoot ?? resolveScrollRoot(mainRef.current);
     if (!root) return;
+
     restoredRef.current = true;
 
     const freshFromRef =
@@ -671,6 +746,7 @@ function ScriptureReader() {
           void navigate({
             to: "/$book/$chapter",
             params: { book, chapter: String(ch) },
+            search: {},
             replace: true,
             state: {},
           });
@@ -694,7 +770,7 @@ function ScriptureReader() {
     } catch {
       applyAnchor("top");
     }
-  }, [verses.data, book, bookName, ch, scrollRoot, chapterNavState, navigate]);
+  }, [verses.data, book, bookName, ch, scrollRoot, chapterNavState, navigate, highlightVerseParam]);
 
   useEffect(() => {
     if (!verses.data?.length) return;
@@ -731,14 +807,10 @@ function ScriptureReader() {
     };
   }, [verses.data, book, bookName, ch, scrollRoot]);
 
-  // Palette
-  const bgClass = spiritualMode ? "bg-[#08131f] text-[#e8e2cf]" : "bg-[#f4ead8] text-[#3a2410]";
-  const surfaceClass = spiritualMode
-    ? "bg-[#11223a]/60 border-white/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_8px_22px_-16px_rgba(0,0,0,0.7)]"
-    : "bg-white/70 border-[#efe2c4]";
-  const verseCardClass = spiritualMode
-    ? "bg-[#11223a]/55 border-white/[0.07] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_6px_18px_-14px_rgba(0,0,0,0.6)]"
-    : "bg-white/65 border-[#efe2c4]/80 shadow-[0_6px_18px_-14px_rgba(120,80,30,0.30)]";
+  // Palette — driven by global Alpha theme tokens
+  const bgClass = "bg-alpha-reader text-alpha-reader";
+  const surfaceClass = "alpha-reader-surface border";
+  const verseCardClass = "alpha-reader-verse border";
 
   const totalVerses = verses.data?.length ?? 0;
 
@@ -772,7 +844,11 @@ function ScriptureReader() {
       if (chromeTimer.current) window.clearTimeout(chromeTimer.current);
       chromeTimer.current = window.setTimeout(() => setChromeVisible(false), 5000);
     };
-    return bindScroll(scrollRoot, show);
+    const unbind = bindScroll(scrollRoot, show);
+    return () => {
+      unbind();
+      if (chromeTimer.current) window.clearTimeout(chromeTimer.current);
+    };
   }, [scrollRoot]);
   const chromeHidden = !chromeVisible;
 
@@ -901,12 +977,12 @@ function ScriptureReader() {
             </div>
           </div>
 
-          <ChapterVerseProgress
+          <ReaderArticleProgress
             spiritualMode={spiritualMode}
-            totalVerses={totalVerses}
-            currentVerse={readingVerse}
             scrollRoot={scrollRoot}
             articleRef={articleRef}
+            positionLabel={`الآية ${Math.min(Math.max(1, readingVerse), totalVerses)} من ${totalVerses}`}
+            enabled={totalVerses > 0}
           />
         </div>
 
@@ -933,6 +1009,7 @@ function ScriptureReader() {
               ch={ch}
               bookName={bookName}
               activeVerse={activeVerse}
+              pulsingVerseId={pulsingVerseId}
               spiritualMode={spiritualMode}
               verseCardClass={verseCardClass}
               matchedSet={matchedSet}
@@ -942,6 +1019,7 @@ function ScriptureReader() {
               registerVerseElement={registerVerseElement}
               onVerseActive={onVerseActive}
               onToggleSaveVerse={onToggleSaveVerse}
+              onAddJournalNote={onAddJournalNote}
               onSelectWord={onSelectWordStable}
               onOpenCrossRef={onOpenCrossRef}
             />
@@ -990,7 +1068,7 @@ function ScriptureReader() {
 
       <AutoScrollControls
         spiritualMode={spiritualMode}
-        onToggleSpiritual={() => setSpiritualMode((s) => !s)}
+        onToggleSpiritual={() => patch("themeMode", spiritualMode ? "light" : "dark")}
         scrollContainer={scrollRoot}
         bottomClass="bottom-[88px]"
         hidden={chromeHidden}
@@ -1002,6 +1080,13 @@ function ScriptureReader() {
         fontStep={1}
         lineHeight={lineHeight}
         setLineHeight={setLineHeight}
+      />
+
+      <ChapterReadingScrollRail
+        scrollRoot={scrollRoot}
+        contentRef={contentColumnRef}
+        articleRef={articleRef}
+        spiritualMode={spiritualMode}
       />
 
       {/* Persistent global navigation */}
@@ -1030,128 +1115,6 @@ function ScriptureReader() {
   );
 }
 
-/* ---------------- Chapter verse progress (in-chapter only) ---------------- */
-
-function ChapterVerseProgress({
-  spiritualMode,
-  totalVerses,
-  currentVerse,
-  scrollRoot,
-  articleRef,
-}: {
-  spiritualMode: boolean;
-  totalVerses: number;
-  currentVerse: number;
-  scrollRoot: HTMLElement | null;
-  articleRef: React.RefObject<HTMLElement | null>;
-}) {
-  const fillRef = useRef<HTMLDivElement>(null);
-  const rafRef = useRef<number | null>(null);
-  const displayed = useRef(0);
-  const target = useRef(0);
-  const [labelPct, setLabelPct] = useState(0);
-
-  useEffect(() => {
-    displayed.current = 0;
-    target.current = 0;
-    setLabelPct(0);
-    if (fillRef.current) fillRef.current.style.width = "0%";
-  }, [totalVerses]);
-
-  useEffect(() => {
-    const root = scrollRoot ?? document.documentElement;
-    const article = articleRef.current;
-
-    const paint = (pct: number) => {
-      if (fillRef.current) fillRef.current.style.width = `${pct}%`;
-      setLabelPct(Math.round(pct));
-    };
-
-    const onScroll = () => {
-      if (!article) return;
-      target.current = articleScrollProgress(root, article);
-      if (rafRef.current == null) {
-        const tick = () => {
-          const diff = target.current - displayed.current;
-          displayed.current += diff * 0.2;
-          const done = Math.abs(diff) < 0.05;
-          if (done) {
-            displayed.current = target.current;
-            paint(displayed.current);
-            rafRef.current = null;
-            return;
-          }
-          paint(displayed.current);
-          rafRef.current = requestAnimationFrame(tick);
-        };
-        rafRef.current = requestAnimationFrame(tick);
-      }
-    };
-
-    onScroll();
-    const unbind = bindScroll(root, onScroll);
-    window.addEventListener("resize", onScroll);
-    return () => {
-      unbind();
-      window.removeEventListener("resize", onScroll);
-      if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
-      rafRef.current = null;
-    };
-  }, [scrollRoot, articleRef, totalVerses]);
-
-  if (totalVerses <= 0) return null;
-
-  const verseNum = Math.min(Math.max(1, currentVerse), totalVerses);
-
-  return (
-    <div className="mt-1 w-full min-w-0 px-3 pb-1" dir="rtl">
-      <div className="mb-1 flex items-center justify-between gap-3">
-        <p
-          className={cn(
-            "text-[11px] font-bold tabular-nums",
-            spiritualMode ? "text-[#e8d5a0]/90" : "text-[#7a5a32]",
-          )}
-        >
-          الآية {verseNum} من {totalVerses}
-        </p>
-        <p
-          className={cn(
-            "text-[11px] font-extrabold tabular-nums",
-            spiritualMode ? "text-[#f0d78c]" : "text-[#5a3d92]",
-          )}
-        >
-          {labelPct}% مكتمل
-        </p>
-      </div>
-      <div
-        className={cn(
-          "flex h-[5px] w-full gap-px overflow-hidden rounded-full",
-          spiritualMode ? "bg-white/8" : "bg-[#c79356]/15",
-        )}
-        role="progressbar"
-        aria-valuenow={labelPct}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-label={`تقدم القراءة ${labelPct}%`}
-      >
-        <div className="relative min-w-0 flex-1 overflow-hidden">
-          <div className={cn("absolute inset-0", spiritualMode ? "bg-white/10" : "bg-[#c79356]/14")} />
-          <div
-            ref={fillRef}
-            className={cn(
-              "absolute inset-y-0 right-0 transition-[width,box-shadow] duration-200 ease-out",
-              spiritualMode
-                ? "bg-gradient-to-l from-[#f0d78c] via-[#d4af37] to-[#b8893a] shadow-[0_0_12px_rgba(212,175,55,0.75)]"
-                : "bg-gradient-to-l from-[#7a5cb0] via-[#9b7fd4] to-[#5a3d92] shadow-[0_0_12px_rgba(122,92,176,0.85)]",
-            )}
-            style={{ width: "0%" }}
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
 /* ---------------- Chapter verse list ---------------- */
 
 type ChapterVerseListProps = {
@@ -1160,6 +1123,7 @@ type ChapterVerseListProps = {
   ch: number;
   bookName: string;
   activeVerse: string | null;
+  pulsingVerseId: string | null;
   spiritualMode: boolean;
   verseCardClass: string;
   matchedSet: Set<string>;
@@ -1169,6 +1133,14 @@ type ChapterVerseListProps = {
   registerVerseElement: (num: number, el: HTMLElement | null) => void;
   onVerseActive: (id: string) => void;
   onToggleSaveVerse: (v: Parameters<ReturnType<typeof useSavedVerses>["toggle"]>[0]) => void;
+  onAddJournalNote: (v: {
+    book: string;
+    bookName: string;
+    chapter: number;
+    verse: number;
+    text: string;
+    kind?: "note" | "meditation";
+  }) => void;
   onSelectWord: (word: string, entry?: DictionaryEntry) => void;
   onOpenCrossRef: (num: number) => void;
 };
@@ -1179,6 +1151,7 @@ const ChapterVerseList = memo(function ChapterVerseList({
   ch,
   bookName,
   activeVerse,
+  pulsingVerseId,
   spiritualMode,
   verseCardClass,
   matchedSet,
@@ -1188,6 +1161,7 @@ const ChapterVerseList = memo(function ChapterVerseList({
   registerVerseElement,
   onVerseActive,
   onToggleSaveVerse,
+  onAddJournalNote,
   onSelectWord,
   onOpenCrossRef,
 }: ChapterVerseListProps) {
@@ -1213,12 +1187,14 @@ const ChapterVerseList = memo(function ChapterVerseList({
             chapter={ch}
             text={v?.verse_text ?? ""}
             isActive={activeVerse === id}
+            isPulsing={pulsingVerseId === id}
             saved={isSaved(id)}
             spiritualMode={spiritualMode}
             surfaceClass={verseCardClass}
             registerVerseElement={registerVerseElement}
             onVerseActive={onVerseActive}
             onToggleSaveVerse={onToggleSaveVerse}
+            onAddJournalNote={onAddJournalNote}
             onSelectWord={onSelectWord}
             matchedSet={matchedSet}
             dictIndex={dictIndex}
@@ -1242,12 +1218,14 @@ const VerseCard = memo(function VerseCard({
   chapter,
   text,
   isActive,
+  isPulsing,
   saved,
   spiritualMode,
   surfaceClass,
   registerVerseElement,
   onVerseActive,
   onToggleSaveVerse,
+  onAddJournalNote,
   onSelectWord,
   matchedSet,
   dictIndex,
@@ -1262,12 +1240,21 @@ const VerseCard = memo(function VerseCard({
   chapter: number;
   text: string;
   isActive: boolean;
+  isPulsing: boolean;
   saved: boolean;
   spiritualMode: boolean;
   surfaceClass: string;
   registerVerseElement: (num: number, el: HTMLElement | null) => void;
   onVerseActive: (id: string) => void;
   onToggleSaveVerse: (v: Parameters<ReturnType<typeof useSavedVerses>["toggle"]>[0]) => void;
+  onAddJournalNote: (v: {
+    book: string;
+    bookName: string;
+    chapter: number;
+    verse: number;
+    text: string;
+    kind?: "note" | "meditation";
+  }) => void;
   onSelectWord: (word: string, entry?: DictionaryEntry) => void;
   matchedSet: Set<string>;
   dictIndex: DictionaryIndex;
@@ -1296,6 +1283,10 @@ const VerseCard = memo(function VerseCard({
     });
   }, [onToggleSaveVerse, book, bookName, chapter, verseNum, text]);
 
+  const onOpenJournal = useCallback(() => {
+    onAddJournalNote({ book, bookName, chapter, verse: verseNum, text });
+  }, [onAddJournalNote, book, bookName, chapter, verseNum, text]);
+
   const onOpenRef = useCallback(() => {
     onOpenCrossRef(verseNum);
   }, [onOpenCrossRef, verseNum]);
@@ -1306,9 +1297,12 @@ const VerseCard = memo(function VerseCard({
       data-verse-num={verseNum}
       onClick={onTap}
       className={cn(
-        "group relative w-full min-w-0 cursor-pointer rounded-2xl border px-3.5 py-3 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-        surfaceClass,
+        "group relative w-full min-w-0 cursor-pointer rounded-2xl border px-3.5 py-3",
+        !isPulsing && "transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        !isPulsing && surfaceClass,
+        isPulsing && (spiritualMode ? "verse-hero-highlight verse-hero-highlight--spirit" : "verse-hero-highlight verse-hero-highlight--light"),
         isActive &&
+          !isPulsing &&
           (spiritualMode
             ? "scale-[1.015] border-[#7af0b8]/35 ring-1 ring-[#7af0b8]/30 shadow-[0_0_28px_-4px_rgba(122,240,184,0.40),0_0_60px_-20px_rgba(62,180,130,0.45)]"
             : "scale-[1.012] ring-1 ring-[#3eb482]/45 shadow-[0_10px_24px_-14px_rgba(31,110,84,0.45)]"),
@@ -1318,7 +1312,11 @@ const VerseCard = memo(function VerseCard({
         <span
           className={cn(
             "shrink-0 mt-0.5 min-w-[18px] text-center text-[15px] font-extrabold tabular-nums font-arabic-serif leading-none pt-[2px]",
-            spiritualMode ? "text-[#f0d78c]" : "text-[#a87a35]",
+            isPulsing
+              ? "text-[#f0d78c] drop-shadow-[0_0_10px_rgba(240,215,140,0.85)]"
+              : spiritualMode
+                ? "text-[#f0d78c]"
+                : "text-[#a87a35]",
           )}
         >
           {verseNum}
@@ -1342,26 +1340,44 @@ const VerseCard = memo(function VerseCard({
             />
           )}
         </p>
-        <button
-          type="button"
-          aria-label={saved ? "إزالة من المحفوظات" : "حفظ الآية"}
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleSave();
-          }}
-          className={cn(
-            "shrink-0 grid h-7 w-7 place-items-center rounded-full border transition-all active:scale-90",
-            saved
-              ? spiritualMode
-                ? "bg-[#e7c97a]/20 border-[#e7c97a]/45 text-[#f0d78c]"
-                : "bg-gradient-to-br from-[#fff1c7] to-[#e7c07a] border-transparent text-[#7a4a26]"
-              : spiritualMode
-                ? "bg-white/5 border-white/10 text-[#c79356] opacity-70 group-hover:opacity-100"
-                : "bg-white/70 border-[#efe2c4] text-[#b8893a] opacity-70 group-hover:opacity-100",
-          )}
-        >
-          {saved ? <BookmarkCheck className="h-3.5 w-3.5" /> : <Bookmark className="h-3.5 w-3.5" />}
-        </button>
+        <div className="flex shrink-0 flex-col items-center gap-1">
+          <button
+            type="button"
+            aria-label="ملاحظة أو تأمل على هذه الآية"
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenJournal();
+            }}
+            className={cn(
+              "grid h-7 w-7 place-items-center rounded-full border transition-all active:scale-90",
+              spiritualMode
+                ? "bg-[#6eb5f0]/15 border-[#6eb5f0]/35 text-[#8fd4ff] opacity-80 group-hover:opacity-100"
+                : "bg-[#e8f4ff] border-[#9ec8ef] text-[#4a7eb8] opacity-80 group-hover:opacity-100",
+            )}
+          >
+            <FilePen className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            aria-label={saved ? "إزالة من المحفوظات" : "حفظ الآية"}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleSave();
+            }}
+            className={cn(
+              "grid h-7 w-7 place-items-center rounded-full border transition-all active:scale-90",
+              saved
+                ? spiritualMode
+                  ? "bg-[#e7c97a]/20 border-[#e7c97a]/45 text-[#f0d78c]"
+                  : "bg-gradient-to-br from-[#fff1c7] to-[#e7c07a] border-transparent text-[#7a4a26]"
+                : spiritualMode
+                  ? "bg-white/5 border-white/10 text-[#c79356] opacity-70 group-hover:opacity-100"
+                  : "bg-white/70 border-[#efe2c4] text-[#b8893a] opacity-70 group-hover:opacity-100",
+            )}
+          >
+            {saved ? <BookmarkCheck className="h-3.5 w-3.5" /> : <Bookmark className="h-3.5 w-3.5" />}
+          </button>
+        </div>
       </div>
     </div>
   );

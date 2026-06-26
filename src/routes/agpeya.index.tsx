@@ -200,7 +200,7 @@ function AgpeyaHome() {
        .filter(Boolean).join(" — ");
 
   return (
-    <div dir="rtl" className="relative min-h-dvh bg-[#faf8f3] pb-32">
+    <div dir="rtl" className="relative min-h-dvh bg-alpha-base text-alpha pb-32">
       <CopticWatermark />
       {/* ===== Premium Header ===== */}
       <header className="relative">

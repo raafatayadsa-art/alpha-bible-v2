@@ -43,6 +43,7 @@ import {
   suspendConnectChannel,
 } from "./connect-channels-registry";
 import { conversations } from "./messaging-data";
+import { connectBottomSheetHostClass } from "@/features/alpha-connect/alpha-connect-layout";
 
 type ConnectChannelSettingsProps = {
   channelId: string;
@@ -600,11 +601,11 @@ export function ConnectChannelInviteSheet({
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end justify-center" onClick={onClose}>
+    <div className={`${connectBottomSheetHostClass()} z-[60]`} onClick={onClose}>
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
       <div
         dir="rtl"
-        className="relative mb-[var(--alpha-connect-nav-clearance,calc(72px+max(16px,env(safe-area-inset-bottom))))] w-full max-w-[var(--alpha-content-narrow-width)] glass-strong rounded-t-3xl pb-[max(16px,env(safe-area-inset-bottom))] pt-3"
+        className="relative w-full max-w-[var(--alpha-content-narrow-width)] glass-strong rounded-t-3xl pb-[max(16px,env(safe-area-inset-bottom))] pt-3"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-white/20" />

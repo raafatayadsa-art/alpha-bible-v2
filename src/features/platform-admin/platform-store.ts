@@ -8,6 +8,7 @@ import {
   patchEmergencyDb,
   toggleModuleDb,
 } from "./platform-api";
+import { fetchPlatformModulesPublic, mergeOwnerModuleStates, notifyPlatformModulesChanged, OWNER_MODULE_DEFAULTS, patchCachedPlatformModule } from "@/lib/platform-modules";
 
 /** Luxury Owner Control palette — isolated from Alpha Bible cream UI. */
 export const MC = {
@@ -44,8 +45,12 @@ export const PLATFORM_STATS = {
 export type PlatformModuleKey =
   | "bible"
   | "agpeya"
+  | "kholagy"
   | "synaxarium"
   | "katameros"
+  | "audio"
+  | "kids"
+  | "meditations"
   | "community"
   | "messaging"
   | "trips"
@@ -75,17 +80,7 @@ const MODULES_KEY = "ab:mc-modules";
 const AUDIT_KEY = "ab:mc-audit";
 const EMERGENCY_KEY = "ab:mc-emergency";
 
-const DEFAULT_MODULES: ModuleState[] = [
-  { key: "bible", label: "Bible", labelAr: "الكتاب المقدس", enabled: true },
-  { key: "agpeya", label: "Agpeya", labelAr: "الأجبية", enabled: true },
-  { key: "synaxarium", label: "Synaxarium", labelAr: "السنكسار", enabled: true },
-  { key: "katameros", label: "Katameros", labelAr: "القطمارس", enabled: true },
-  { key: "community", label: "Community", labelAr: "المجتمع", enabled: true },
-  { key: "messaging", label: "Messaging", labelAr: "الرسائل", enabled: true },
-  { key: "trips", label: "Trips", labelAr: "الرحلات", enabled: true },
-  { key: "reservations", label: "Reservations", labelAr: "الحجوزات", enabled: false },
-  { key: "donations", label: "Donations", labelAr: "التبرعات", enabled: true },
-];
+const DEFAULT_MODULES = OWNER_MODULE_DEFAULTS;
 
 const DEFAULT_AUDIT: AuditLogEntry[] = [
   { id: "1", action: "اعتماد كنيسة", admin: "Owner", reason: "مستندات مكتملة", timestamp: Date.now() - 86400000 },
@@ -112,8 +107,13 @@ function writeJson(key: string, value: unknown) {
   } catch { /* ignore */ }
 }
 
+function readModulesCache(): ModuleState[] {
+  const raw = readJson<ModuleState[]>(MODULES_KEY, DEFAULT_MODULES);
+  return mergeOwnerModuleStates(Array.isArray(raw) ? raw : DEFAULT_MODULES);
+}
+
 export function usePlatformStore() {
-  const [modules, setModules] = useState<ModuleState[]>(() => readJson(MODULES_KEY, DEFAULT_MODULES));
+  const [modules, setModules] = useState<ModuleState[]>(() => readModulesCache());
   const [auditLog, setAuditLog] = useState<AuditLogEntry[]>(() => readJson(AUDIT_KEY, DEFAULT_AUDIT));
   const [emergency, setEmergency] = useState<EmergencyFlags>(() =>
     readJson(EMERGENCY_KEY, {
@@ -136,9 +136,12 @@ export function usePlatformStore() {
       ]);
       if (cancelled) return;
       if (remoteModules?.length) {
-        setModules(remoteModules);
-        writeJson(MODULES_KEY, remoteModules);
+        const merged = mergeOwnerModuleStates(remoteModules);
+        setModules(merged);
+        writeJson(MODULES_KEY, merged);
         setDbSynced(true);
+      } else {
+        setModules((prev) => mergeOwnerModuleStates(prev));
       }
       if (remoteAudit?.length) {
         setAuditLog(remoteAudit);
@@ -156,7 +159,7 @@ export function usePlatformStore() {
 
   useEffect(() => {
     const sync = () => {
-      setModules(readJson(MODULES_KEY, DEFAULT_MODULES));
+      setModules(readModulesCache());
       setAuditLog(readJson(AUDIT_KEY, DEFAULT_AUDIT));
       setEmergency(
         readJson(EMERGENCY_KEY, {
@@ -169,22 +172,41 @@ export function usePlatformStore() {
       );
     };
     window.addEventListener("ab:mc-store", sync);
-    return () => window.removeEventListener("ab:mc-store", sync);
+    window.addEventListener("ab:platform-modules", sync);
+    return () => {
+      window.removeEventListener("ab:mc-store", sync);
+      window.removeEventListener("ab:platform-modules", sync);
+    };
   }, []);
 
-  const toggleModule = useCallback(
-    (key: PlatformModuleKey) => {
+  const toggleModule = useCallback(async (key: PlatformModuleKey): Promise<boolean> => {
+    const target = modules.find((m) => m.key === key);
+    if (!target) return false;
+    const nextEnabled = !target.enabled;
+    const prevEnabled = target.enabled;
+
+    const applyLocal = (enabled: boolean) => {
       setModules((prev) => {
-        const target = prev.find((m) => m.key === key);
-        const enabled = target ? !target.enabled : true;
-        const next = prev.map((m) => (m.key === key ? { ...m, enabled: !m.enabled } : m));
+        const next = prev.map((m) => (m.key === key ? { ...m, enabled } : m));
         writeJson(MODULES_KEY, next);
-        void toggleModuleDb(key, enabled);
         return next;
       });
-    },
-    [],
-  );
+      patchCachedPlatformModule(key, enabled);
+      notifyPlatformModulesChanged();
+    };
+
+    applyLocal(nextEnabled);
+
+    const ok = await toggleModuleDb(key, nextEnabled);
+    if (!ok) {
+      applyLocal(prevEnabled);
+      return false;
+    }
+
+    await fetchPlatformModulesPublic();
+    notifyPlatformModulesChanged();
+    return true;
+  }, [modules]);
 
   const patchEmergency = useCallback((patch: Partial<EmergencyFlags>) => {
     setEmergency((prev) => {

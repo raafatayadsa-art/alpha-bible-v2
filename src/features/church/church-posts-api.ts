@@ -41,6 +41,7 @@ export function mapRowToChurchPost(row: ChurchPostRow): ChurchPost {
     body: row.body ?? row.excerpt ?? "",
     image: row.image_url ?? assignPostImage({ id, type, details: row.details ?? undefined }),
     date: row.created_at ? new Date(row.created_at).toLocaleDateString("ar-EG") : "",
+    createdAt: row.created_at ? new Date(row.created_at).getTime() : undefined,
     author: row.author ?? "",
     pinnedUntil: row.pinned_until ? new Date(row.pinned_until).getTime() : undefined,
     expiresAt: row.expires_at ? new Date(row.expires_at).getTime() : null,
@@ -150,6 +151,25 @@ export async function patchChurchPost(id: string, patch: PostOverride): Promise<
   const { error } = await supabase.from("church_posts").update(payload).eq("id", id);
   if (error) {
     console.error("patchChurchPost", error);
+    return false;
+  }
+  notifyChurchPostsChanged();
+  return true;
+}
+
+export async function patchChurchPostDetails(
+  id: string,
+  patch: Partial<ChurchPostDetails>,
+): Promise<boolean> {
+  const current = await fetchChurchPostById(id);
+  if (!current) return false;
+  const merged: ChurchPostDetails = { ...(current.details ?? {}), ...patch };
+  const { error } = await supabase
+    .from("church_posts")
+    .update({ details: merged, updated_at: new Date().toISOString() })
+    .eq("id", id);
+  if (error) {
+    console.error("patchChurchPostDetails", error);
     return false;
   }
   notifyChurchPostsChanged();

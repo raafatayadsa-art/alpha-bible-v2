@@ -13,6 +13,7 @@ import {
 } from "./bible-book-search";
 import type { ChurchDashboardContact, ChurchDashboardPrayer } from "@/features/church/church-dashboard-api";
 import type { PrayerRequest } from "@/data/prayer-requests";
+import { buildAlphaConnectChatSearch } from "@/features/alpha-connect/alpha-connect-nav";
 
 export type ContextualSearchScope =
   | "bible"
@@ -175,9 +176,12 @@ export function searchContextual(
             id: `contact:${c.id}`,
             title: c.name,
             subtitle: c.role,
-            to: "/messages/chat/$contactId",
-            params: { contactId: c.id },
-            search: { name: c.name, from: "/church" },
+            to: "/alpha-connect",
+            search: buildAlphaConnectChatSearch({
+              contactId: c.id,
+              name: c.name,
+              role: c.roleType === "priest" || c.roleType === "servant" || c.roleType === "admin" ? c.roleType : "admin",
+            }),
           });
         }
       }

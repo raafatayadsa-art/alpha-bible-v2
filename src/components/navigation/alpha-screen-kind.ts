@@ -11,6 +11,7 @@ const MAIN_ROOTS = [
   "/synaxarium",
   "/feasts",
   "/agpeya",
+  "/kholagy",
   "/katameros",
   "/audio",
   "/search",
@@ -18,7 +19,7 @@ const MAIN_ROOTS = [
 ] as const;
 
 /** Inline text-reading routes — right-edge nav disabled. */
-const READING_PREFIXES = ["/agpeya/"] as const;
+const READING_PREFIXES = ["/agpeya/", "/kholagy/"] as const;
 
 function isChapterReader(pathname: string) {
   const parts = pathname.split("/").filter(Boolean);

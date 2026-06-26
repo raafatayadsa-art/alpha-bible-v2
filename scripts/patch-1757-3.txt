@@ -1,0 +1,15 @@
+=== OLD ===
+  return (
+    <main
+      ref={mainRef}
+      dir="rtl"
+      data-chapter-reader=""
+      className={cn(
+
+=== NEW ===
+  return (
+    <main
+      ref={mainRef}
+      dir="rtl"
+      data-chapter-reader=""
+      className={cn(

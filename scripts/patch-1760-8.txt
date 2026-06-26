@@ -1,0 +1,8 @@
+=== OLD ===
+  isActive: boolean;
+  saved: boolean;
+
+=== NEW ===
+  isActive: boolean;
+  isPulsing: boolean;
+  saved: boolean;

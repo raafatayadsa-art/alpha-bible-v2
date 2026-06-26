@@ -1,4 +1,6 @@
 import { Home, BookOpen, Users, MoreHorizontal, Plus } from "lucide-react";
+import { useEffect } from "react";
+import { activateBottomNavLayout } from "@/components/navigation/alpha-bottom-nav-layout";
 
 const items = [
   { id: "more", label: "المزيد", icon: MoreHorizontal },
@@ -9,6 +11,8 @@ const items = [
 ];
 
 export function AlphaBottomNavigation() {
+  useEffect(() => activateBottomNavLayout(), []);
+
   return (
     <nav
       className="fixed bottom-0 inset-x-0 z-50 pb-[max(env(safe-area-inset-bottom),12px)] px-3 pt-2"

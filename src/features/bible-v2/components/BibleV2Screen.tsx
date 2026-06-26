@@ -1,7 +1,6 @@
 import bgWatermark from "@/features/bible-lavoble/assets/bg-watermark.jpg";
 import { newTestamentRef, oldTestamentRef } from "../assets";
-import { bibleV2Tokens } from "../tokens";
-import { BibleV2BottomNav } from "./BibleV2BottomNav";
+import { BottomDock } from "@/components/bible/BottomDock";
 import { BibleV2ContinueReading } from "./BibleV2ContinueReading";
 import { BibleV2Header } from "./BibleV2Header";
 import { BibleV2QuickTools } from "./BibleV2QuickTools";
@@ -32,21 +31,17 @@ export function BibleV2Screen() {
   return (
     <div
       dir="rtl"
-      className="relative min-h-screen overflow-x-hidden font-sans"
-      style={{ backgroundColor: bibleV2Tokens.ivory }}
+      className="relative min-h-screen overflow-x-hidden bg-alpha-base text-alpha font-sans"
     >
       <img
         src={bgWatermark}
         alt=""
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-[50vh] w-full object-cover opacity-[0.22] mix-blend-luminosity"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[50vh] w-full object-cover opacity-[0.22] mix-blend-luminosity dark:opacity-10"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background: `linear-gradient(180deg, transparent 0%, ${bibleV2Tokens.ivory}88 45%, ${bibleV2Tokens.ivory} 100%)`,
-        }}
+        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[var(--alpha-bg-base)]"
       />
 
       <div className="relative z-10 mx-auto max-w-[var(--alpha-content-max-width)] pb-32">
@@ -64,7 +59,7 @@ export function BibleV2Screen() {
         <BibleV2ContinueReading />
       </div>
 
-      <BibleV2BottomNav />
+      <BottomDock />
     </div>
   );
 }

@@ -2,8 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { CopticCross } from "@/components/coptic";
-import { alphaShareText } from "@/lib/alpha-share-brand";
+import { openAlphaShareSheet } from "@/lib/alpha-share-sheet";
 import { parseVerseReference } from "@/lib/bible-labels";
+import { resolveBibleRouteBookParam } from "@/lib/bible-book-names";
+import { chapterVerseHighlightSearch } from "@/lib/chapter-verse-highlight";
 import { useSavedVerses, verseKey } from "@/lib/reading-state";
 import {
   HeroCardTopBar,
@@ -15,11 +17,18 @@ import {
   writeHeroSet,
 } from "./hero-card-chrome";
 import { navigateHeroCard, resolveHeroVerseLink } from "./hero-stack-data";
+import { fetchTodaysDailyVerse } from "@/lib/daily-verse";
 import artVerse from "@/assets/home/art-verse.jpg";
 
 const VERSE_ACCENT = "#e7c97a";
 
-type VerseData = { text: string; reference: string };
+type VerseData = {
+  text: string;
+  reference: string;
+  bookRoute?: string;
+  chapter?: number;
+  verse?: number;
+};
 
 const LIKE_KEY = "alpha.verse-day.likes";
 const SHARE_KEY = "alpha.verse-day.shares";
@@ -61,22 +70,26 @@ export function PremiumVerseHeroCard({
     let cancelled = false;
     (async () => {
       try {
-        const { data: dc } = await supabase.from("daily_content").select("*").limit(1).maybeSingle();
-        if (!cancelled && dc) {
-          const row = dc as Record<string, unknown>;
-          const text = row.verse_text ?? row.text ?? row.content ?? row.body;
-          const reference = row.verse_reference ?? row.reference ?? "";
-          if (text) {
-            setVerse({ text: String(text), reference: String(reference || "") });
-            return;
-          }
+        const daily = await fetchTodaysDailyVerse();
+        if (!cancelled && daily) {
+          setVerse({
+            text: daily.text,
+            reference: daily.reference,
+            bookRoute: daily.bookRoute,
+            chapter: daily.chapter,
+            verse: daily.verse,
+          });
+          return;
         }
-      } catch { /* fallback */ }
+      } catch {
+        /* fallback below */
+      }
+
       try {
         const { data: bv } = await supabase
           .from("bible_verses")
           .select("book_name,chapter_number,verse_number,verse_text")
-          .eq("book_name", "المزامير")
+          .eq("book_name", "سفر المزامير")
           .eq("chapter_number", 46)
           .eq("verse_number", 1)
           .maybeSingle();
@@ -89,12 +102,19 @@ export function PremiumVerseHeroCard({
           };
           setVerse({
             text: row.verse_text,
-            reference: `${row.book_name} ${row.chapter_number}:${row.verse_number}`,
+            reference: `مزامير ${row.chapter_number}:${row.verse_number}`,
+            bookRoute: row.book_name,
+            chapter: row.chapter_number,
+            verse: row.verse_number,
           });
         }
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const body = verse?.text ?? "رَبَّنَا هُوَ مَلْجَأنَا وَقُوَّتَنَا، عَوْنًا فِي الضِّيقَاتِ جِدًّا.";
@@ -117,7 +137,10 @@ export function PremiumVerseHeroCard({
   }, [toast]);
 
   const parsed = parseVerseReference(ref);
-  const saveId = parsed ? verseKey(parsed.book, parsed.chapter, parsed.verse) : `verse-day:${ref}`;
+  const readerBook = verse?.bookRoute ?? (parsed ? resolveBibleRouteBookParam(parsed.book) : undefined);
+  const readerChapter = verse?.chapter ?? parsed?.chapter;
+  const readerVerse = verse?.verse ?? parsed?.verse;
+  const saveId = parsed ? verseKey(readerBook ?? parsed.book, parsed.chapter, parsed.verse) : `verse-day:${ref}`;
   const saved = isSaved(saveId);
 
   const sharePayload: VerseSharePayload = useMemo(
@@ -126,20 +149,20 @@ export function PremiumVerseHeroCard({
   );
 
   const onToggleSaved = useCallback(() => {
-    if (!parsed) {
+    if (!parsed || !readerBook) {
       setToast("تعذّر حفظ الآية — مرجع غير واضح");
       return;
     }
     toggle({
-      book: parsed.book,
-      bookName: parsed.book,
+      book: readerBook,
+      bookName: readerBook,
       chapter: parsed.chapter,
       verse: parsed.verse,
       text: body,
       id: saveId,
     });
     setToast(saved ? "تمت إزالة الآية" : "تم حفظ الآية");
-  }, [parsed, toggle, body, saveId, saved]);
+  }, [parsed, toggle, body, saveId, saved, readerBook]);
 
   const onToggleMeditation = useCallback(() => {
     const likeMap = readHeroMap(LIKE_KEY);
@@ -160,7 +183,7 @@ export function PremiumVerseHeroCard({
     writeHeroSet(LIKED_KEY, likedSet);
   }, [meditated, eid, ref]);
 
-  const onShare = useCallback(async () => {
+  const onShare = useCallback(() => {
     const shareMap = readHeroMap(SHARE_KEY);
     const base = seedHeroCount(ref, 13);
     shareMap[eid] = (shareMap[eid] ?? 0) + 1;
@@ -171,20 +194,8 @@ export function PremiumVerseHeroCard({
       onBrandedShare(sharePayload);
       return;
     }
-    const payload = alphaShareText(sharePayload);
-    if (typeof navigator !== "undefined" && navigator.share) {
-      try {
-        await navigator.share({ title: ref, text: payload });
-        return;
-      } catch { /* fall through */ }
-    }
-    try {
-      await navigator.clipboard.writeText(payload);
-      setToast("تم نسخ الآية");
-    } catch {
-      setToast("تعذّر المشاركة");
-    }
-  }, [body, ref, eid, onBrandedShare, sharePayload]);
+    openAlphaShareSheet(sharePayload);
+  }, [eid, onBrandedShare, sharePayload, ref]);
 
   const isPeek = variant === "peek";
   const isFront = variant === "front";
@@ -192,11 +203,16 @@ export function PremiumVerseHeroCard({
 
   const onOpenVerse = useCallback(() => {
     if (!isFront) return;
-    navigateHeroCard(
-      navigate,
-      resolveHeroVerseLink(ref, linkTo ? { to: linkTo as "/bible" } : { to: "/bible" }),
-    );
-  }, [linkTo, navigate, ref, isFront]);
+    if (readerBook && readerChapter && readerVerse) {
+      void navigate({
+        to: "/$book/$chapter",
+        params: { book: readerBook, chapter: String(readerChapter) },
+        search: chapterVerseHighlightSearch(readerVerse),
+      });
+      return;
+    }
+    navigateHeroCard(navigate, resolveHeroVerseLink(ref, { to: "/bible" }));
+  }, [isFront, navigate, readerBook, readerChapter, readerVerse, ref]);
 
   return (
     <div className="relative">
@@ -255,9 +271,8 @@ export function PremiumVerseHeroCard({
           accent={VERSE_ACCENT}
           saved={saved}
           compact={isPeek}
+          hideShare
           saveLabel={saved ? "إزالة الحفظ" : "حفظ الآية"}
-          shareLabel="مشاركة الآية"
-          onShare={() => void onShare()}
           onToggleSave={onToggleSaved}
         />
 
@@ -287,6 +302,7 @@ export function PremiumVerseHeroCard({
             broadcasts={broadcasts}
             meditated={meditated}
             onMeditate={onToggleMeditation}
+            onBroadcast={() => void onShare()}
           />
           </>
           ) : (

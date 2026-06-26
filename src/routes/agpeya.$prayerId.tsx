@@ -10,7 +10,7 @@ import {
   Send,
   MessageCircle,
 } from "lucide-react";
-import { AutoScrollControls } from "@/components/bible/AutoScrollControls";
+import { AutoScrollControls, ReaderArticleProgress } from "@/components/bible";
 import {
   PresentationMode,
   DisplayButton,
@@ -36,6 +36,7 @@ import {
   type MidnightDisplayGroup,
 } from "@/features/agpeya";
 import { useTypographyPrefs } from "@/lib/reading-state";
+import { bindScroll } from "@/lib/chapter-scroll";
 import type { AgpeyaPrayer } from "@/features/agpeya";
 import { CopticDivider, CopticWatermark } from "@/components/coptic";
 import { cn } from "@/lib/utils";
@@ -443,7 +444,7 @@ function querySectionEl(root: HTMLElement, sectionId: string): HTMLElement | nul
   return root.querySelector(`[data-section-id="${CSS.escape(sectionId)}"]`) as HTMLElement | null;
 }
 
-/** Shared scroll math for progress rail + section tabs */
+/** Shared scroll math for section tabs */
 function computeAgpeyaScrollState(
   root: HTMLElement,
   sectionIds: string[],
@@ -509,7 +510,6 @@ function PrayerReader() {
   const setFontSize = (n: number) => setPrefs({ ...prefs, fontSize: n });
   const setLineHeight = (n: number) => setPrefs({ ...prefs, lineHeight: n });
   const [theme, setTheme] = useAgpeyaTheme();
-  const [progress, setProgress] = useState(0);
   const [sectionFills, setSectionFills] = useState<number[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string>("");
@@ -518,7 +518,6 @@ function PrayerReader() {
   useEffect(() => {
     setActiveId("");
     setSectionFills([]);
-    setProgress(0);
   }, [prayerId]);
 
   const [shareOpen, setShareOpen] = useState(false);
@@ -560,12 +559,56 @@ function PrayerReader() {
   useEffect(() => { setAudioState({ prayerId, positionSec: 0 }); }, [prayerId, setAudioState]);
 
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const articleRef = useRef<HTMLElement>(null);
   const chipsRef = useRef<HTMLDivElement>(null);
   // Lock active chip during programmatic smooth scroll (prevents flicker on iPhone)
   const lockUntilRef = useRef<number>(0);
   /** Prev/next + swipe: prayer id that must open from the top */
   const freshStartPrayerRef = useRef<string | null>(null);
   const dark = theme === "dark";
+  const [scrollRoot, setScrollRoot] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    setScrollRoot(scrollerRef.current);
+  }, [prayerId, sections.length, sectionsState.status]);
+
+  const activeSectionIndex = useMemo(() => {
+    const idx = sections.findIndex((s) => s.id === activeId);
+    return idx >= 0 ? idx + 1 : 1;
+  }, [sections, activeId]);
+
+  const [chromeVisible, setChromeVisible] = useState(true);
+  const chromeTimer = useRef<number | null>(null);
+  useEffect(() => {
+    const show = () => {
+      setChromeVisible(true);
+      if (chromeTimer.current) window.clearTimeout(chromeTimer.current);
+      chromeTimer.current = window.setTimeout(() => setChromeVisible(false), 5000);
+    };
+    show();
+    window.addEventListener("pointerdown", show, { passive: true });
+    window.addEventListener("touchstart", show, { passive: true });
+    window.addEventListener("keydown", show);
+    window.addEventListener("wheel", show, { passive: true });
+    return () => {
+      window.removeEventListener("pointerdown", show);
+      window.removeEventListener("touchstart", show);
+      window.removeEventListener("keydown", show);
+      window.removeEventListener("wheel", show);
+      if (chromeTimer.current) window.clearTimeout(chromeTimer.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!scrollRoot) return;
+    const show = () => {
+      setChromeVisible(true);
+      if (chromeTimer.current) window.clearTimeout(chromeTimer.current);
+      chromeTimer.current = window.setTimeout(() => setChromeVisible(false), 5000);
+    };
+    return bindScroll(scrollRoot, show);
+  }, [scrollRoot]);
+  const chromeHidden = !chromeVisible;
 
   const openAdjacentPrayer = useCallback((targetPrayerId: string) => {
     freshStartPrayerRef.current = targetPrayerId;
@@ -609,7 +652,6 @@ function PrayerReader() {
           el.scrollTop = 0;
           setActiveId(sections[0]!.id);
           setSectionFills(sections.map(() => 0));
-          setProgress(0);
           if (forceFreshStart) {
             savePrayerPosition(prayerId, { tab: "text", scrollPercent: 0, updatedAt: Date.now() });
           }
@@ -632,7 +674,7 @@ function PrayerReader() {
     });
   }, [prayerId, sections, sectionsState.status, adjacentFreshStartId, navigate]);
 
-  // Scroll: progress rail + section tabs (shared logic)
+  // Scroll: section tabs (shared logic)
   useEffect(() => {
     const root = scrollerRef.current;
     if (!root || sections.length === 0) return;
@@ -644,7 +686,6 @@ function PrayerReader() {
       const state = computeAgpeyaScrollState(root, sectionIds);
       if (!state) return;
 
-      setProgress(state.progress);
       setSectionFills((prev) => {
         if (
           prev.length !== state.fills.length
@@ -896,38 +937,13 @@ function PrayerReader() {
           </div>
         )}
 
-        {/* Section-synced progress rail */}
-        {sections.length > 0 && (
-          <div
-            className={cn("flex h-[3px] w-full gap-px", dark ? "bg-white/5" : "bg-[#c79356]/15")}
-            role="progressbar"
-            aria-valuenow={Math.round(progress * 100)}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-label="تقدم القراءة"
-          >
-            {sections.map((s, i) => {
-              const fill = sectionFills[i] ?? 0;
-              const active = s.id === activeId;
-              return (
-                <div key={s.id} className="relative min-w-0 flex-1 overflow-hidden" title={s.label}>
-                  <div className={cn("absolute inset-0", dark ? "bg-white/8" : "bg-[#c79356]/14")} />
-                  <div
-                    className={cn(
-                      "absolute inset-y-0 right-0 transition-[width,box-shadow,opacity] duration-200 ease-out",
-                      active
-                        ? "bg-gradient-to-l from-[#7a5cb0] via-[#9b7fd4] to-[#5a3d92] shadow-[0_0_12px_rgba(122,92,176,0.85)]"
-                        : fill >= 0.999
-                          ? "bg-[#7a5cb0]/70"
-                          : "bg-gradient-to-l from-[#7a5cb0]/85 via-[#9b7fd4]/85 to-[#5a3d92]/85",
-                    )}
-                    style={{ width: `${Math.round(fill * 100)}%` }}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        )}
+        <ReaderArticleProgress
+          spiritualMode={dark}
+          scrollRoot={scrollRoot}
+          articleRef={articleRef}
+          positionLabel={`القسم ${activeSectionIndex} من ${sections.length}`}
+          enabled={sections.length > 0}
+        />
       </header>
 
       {/* Reader body */}
@@ -939,6 +955,7 @@ function PrayerReader() {
         style={{ scrollBehavior: "smooth" }}
       >
         <article
+          ref={articleRef}
           className="relative mx-auto max-w-[var(--alpha-reader-max-width)] px-3 pb-44 pt-5 sm:px-5 font-arabic-serif"
           style={{ fontSize, lineHeight }}
         >
@@ -1034,8 +1051,10 @@ function PrayerReader() {
       <AutoScrollControls
         spiritualMode={dark}
         onToggleSpiritual={() => setTheme(dark ? "light" : "dark")}
-        scrollContainer={scrollerRef.current}
+        scrollContainer={scrollRoot}
         bottomClass="bottom-[88px]"
+        hidden={chromeHidden}
+        barSize="comfort"
         fontSize={fontSize}
         setFontSize={(n) => setFontSize(Math.max(14, Math.min(34, n)))}
         fontMin={14}

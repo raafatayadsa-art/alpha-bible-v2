@@ -1,5 +1,5 @@
 import { useState, type MouseEvent, type ReactNode } from "react";
-import { Bookmark, Heart, QrCode, Share2, UserPlus, type LucideIcon } from "lucide-react";
+import { Bookmark, Heart, Layers, QrCode, Share2, ShieldCheck, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const HERO_STACK_LABELS = ["آية اليوم", "القطمارس", "قديس اليوم", "مناسبة"] as const;
@@ -9,6 +9,23 @@ export const ALPHA_HERO_ACCENT = "#e7c97a";
 
 const HERO_GOLD = "#f0d78c";
 const HERO_GOLD_BRIGHT = "#ffd86a";
+
+/** Publisher hero — dark glass so gold glow reads through */
+export const PUBLISHER_HERO_FOLLOW_BLUE = "#5b9fd8";
+const PUBLISHER_LEDGER_DARK_BG = "rgba(0,0,0,0.26)";
+const PUBLISHER_ENGAGEMENT_BG = "rgba(0,0,0,0.54)";
+const PUBLISHER_LEDGER_FRAME_BG = PUBLISHER_LEDGER_DARK_BG;
+const PUBLISHER_LEDGER_CELL_IDLE =
+  "linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(0,0,0,0.28) 100%)";
+const PUBLISHER_ENGAGEMENT_CELL_IDLE =
+  "linear-gradient(180deg, rgba(240,215,140,0.03) 0%, rgba(0,0,0,0.5) 100%)";
+/** Light ivory nav — distinct from dark engagement row (like · repost · QR) */
+const PUBLISHER_SECTION_NAV_BG =
+  "linear-gradient(180deg, rgba(255,255,255,0.97) 0%, rgba(247,236,214,0.94) 100%)";
+const PUBLISHER_VERIFIED_GREEN_BG = "rgba(16, 185, 129, 0.22)";
+const PUBLISHER_STAT_LIKE = "#e85d7a";
+const PUBLISHER_STAT_CONTENT = "#e7c97a";
+const PUBLISHER_TOP_CHIP_H = "h-[30px]";
 
 function HeroLedgerStyles() {
   return (
@@ -139,6 +156,29 @@ function HeroLedgerStyles() {
         border: 1px solid rgba(240,215,140,0.42);
         animation: heroLedgerBroadcastGlow 2.4s ease-in-out infinite;
       }
+      .hero-ledger-broadcast-face--publisher {
+        background: linear-gradient(180deg, rgba(240,215,140,0.05) 0%, rgba(0,0,0,0.28) 100%);
+        border: 1px solid rgba(240,215,140,0.22);
+      }
+      .hero-ledger-broadcast-face--engagement {
+        background: linear-gradient(180deg, rgba(240,215,140,0.07) 0%, rgba(0,0,0,0.52) 100%);
+        border: 1px solid rgba(240,215,140,0.26);
+        animation: heroLedgerBroadcastGlowEngagement 2.4s ease-in-out infinite;
+      }
+      @keyframes heroLedgerBroadcastGlowEngagement {
+        0%, 100% {
+          box-shadow:
+            0 0 0 1px rgba(240,215,140,0.1),
+            0 0 14px rgba(240,215,140,0.16),
+            inset 0 0 20px rgba(0,0,0,0.35);
+        }
+        50% {
+          box-shadow:
+            0 0 0 1px rgba(240,215,140,0.28),
+            0 0 26px rgba(240,215,140,0.38),
+            inset 0 0 24px rgba(0,0,0,0.4);
+        }
+      }
       .hero-ledger-glyph-shimmer {
         animation: heroLedgerGlyphShimmer 2.4s ease-in-out infinite;
       }
@@ -160,6 +200,14 @@ function HeroLedgerStyles() {
       }
       .hero-ledger-meditate-pulse-once--delay {
         animation-delay: 180ms;
+      }
+      .hero-ledger-broadcast-active {
+        border-color: rgba(240, 215, 140, 0.55) !important;
+        background: linear-gradient(180deg, rgba(212, 168, 87, 0.24) 0%, rgba(0, 0, 0, 0.12) 100%) !important;
+        box-shadow:
+          0 0 0 1px rgba(240, 215, 140, 0.32),
+          0 0 22px rgba(212, 168, 87, 0.42),
+          inset 0 0 18px rgba(212, 168, 87, 0.14) !important;
       }
     `}</style>
   );
@@ -224,6 +272,7 @@ export function HeroSpiritLedgerCell({
   notifyPulse = false,
   notifyPulseTone = "gold",
   valueHidden = false,
+  surface = "default",
 }: {
   glyph: string;
   label: string;
@@ -250,6 +299,8 @@ export function HeroSpiritLedgerCell({
   notifyPulseTone?: "gold" | "blue" | "red";
   /** Hide numeric count when glyph is pinned to the edge (icon-only cells) */
   valueHidden?: boolean;
+  /** Lighter glass on publisher hero ledger rows */
+  surface?: "default" | "publisher" | "engagement";
 }) {
   const [pressing, setPressing] = useState(false);
   const [pulseTick, setPulseTick] = useState(0);
@@ -362,15 +413,19 @@ export function HeroSpiritLedgerCell({
             : `انتشار ${formatHeroCount(value)}`
         }
         className={`hero-ledger-broadcast-face relative w-full rounded-xl ${
-          isInteractive ? "" : "cursor-default"
-        }`}
+          surface === "engagement"
+            ? "hero-ledger-broadcast-face--engagement"
+            : surface === "publisher"
+              ? "hero-ledger-broadcast-face--publisher"
+              : ""
+        } ${isInteractive ? "" : "cursor-default"}`}
       >
         {content}
       </div>
     );
 
     return (
-      <div className="hero-ledger-pulse-wrap hero-ledger-pulse-wrap--gold relative flex min-w-0 flex-1 ms-1">
+      <div className="hero-ledger-pulse-wrap hero-ledger-pulse-wrap--gold relative flex h-full min-w-0 w-full flex-1">
         {isInteractive ? (
           <button
             type="button"
@@ -381,9 +436,9 @@ export function HeroSpiritLedgerCell({
             }}
             onPointerUp={() => setTimeout(() => setPressing(false), 420)}
             onPointerLeave={() => setPressing(false)}
-            className={`group relative w-full overflow-hidden rounded-xl border transition cursor-pointer active:scale-[0.98] ${
+            className={`group relative w-full h-full min-h-[52px] overflow-hidden rounded-xl border transition cursor-pointer active:scale-[0.98] ${
               pressing ? "hero-ledger-meditate-press" : ""
-            }`}
+            } ${active ? "hero-ledger-broadcast-active" : ""}`}
             style={{
               borderColor: `${accent}38`,
               background:
@@ -432,7 +487,11 @@ export function HeroSpiritLedgerCell({
                 ? "linear-gradient(180deg, rgba(100,190,255,0.22) 0%, rgba(0,0,0,0.16) 100%)"
                 : notifyPulse && notifyPulseTone === "red"
                   ? "linear-gradient(180deg, rgba(255,90,90,0.24) 0%, rgba(0,0,0,0.16) 100%)"
-                  : "linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.12) 100%)",
+                  : surface === "engagement"
+                    ? PUBLISHER_ENGAGEMENT_CELL_IDLE
+                    : surface === "publisher"
+                      ? PUBLISHER_LEDGER_CELL_IDLE
+                      : "linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.12) 100%)",
             boxShadow: active ? `0 0 16px ${accent}38` : "none",
           }}
         >
@@ -641,6 +700,7 @@ export function AlphaHeroToggleButton({
   label,
   className,
   children,
+  idleBackground = "rgba(0,0,0,0.32)",
 }: {
   active?: boolean;
   accent: string;
@@ -648,6 +708,7 @@ export function AlphaHeroToggleButton({
   label?: string;
   className?: string;
   children: ReactNode;
+  idleBackground?: string;
 }) {
   return (
     <button
@@ -664,7 +725,7 @@ export function AlphaHeroToggleButton({
       )}
       style={{
         borderColor: active ? accent : "rgba(255,255,255,0.25)",
-        background: active ? accent : "rgba(0,0,0,0.32)",
+        background: active ? accent : idleBackground,
         boxShadow: active ? `0 4px 16px ${accent}55` : "0 4px 14px rgba(0,0,0,0.35)",
       }}
     >
@@ -673,117 +734,347 @@ export function AlphaHeroToggleButton({
   );
 }
 
-/** Publisher / audio hero — verse-card ledger DNA with follow + like + share */
-export function AlphaHeroPublisherEngagementBar({
+/** Publisher hero — compact read-only stat chip (ledger DNA) */
+function AlphaHeroPublisherStatChip({
+  label,
+  value,
+  accent,
+  icon: Icon,
+}: {
+  label: string;
+  value: number;
+  accent: string;
+  icon: LucideIcon;
+}) {
+  return (
+    <div
+      role="status"
+      aria-label={`${label} ${value}`}
+      className={cn(
+        "inline-flex min-w-[52px] items-center justify-center rounded-xl border px-2 backdrop-blur-md",
+        PUBLISHER_TOP_CHIP_H,
+      )}
+      style={{
+        borderColor: `${accent}42`,
+        background: PUBLISHER_LEDGER_DARK_BG,
+        boxShadow: `inset 0 1px 0 rgba(255,255,255,0.06), 0 0 12px ${accent}18`,
+      }}
+    >
+      <div className="flex flex-col items-center leading-none">
+        <div className="flex items-center gap-1">
+          <Icon className="h-3 w-3 shrink-0" style={{ color: accent }} strokeWidth={2.35} />
+          <span className="font-black tabular-nums text-[11px] text-white">
+            {formatHeroCount(value)}
+          </span>
+        </div>
+        <span className="mt-0.5 text-[7.5px] font-extrabold" style={{ color: accent }}>
+          {label}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function AlphaHeroPublisherFollowChip({
+  following,
   followCount,
+  followBusy,
+  onFollow,
+}: {
+  following: boolean;
+  followCount: number;
+  followBusy?: boolean;
+  onFollow?: () => void;
+}) {
+  const blue = PUBLISHER_HERO_FOLLOW_BLUE;
+  return (
+    <button
+      type="button"
+      aria-pressed={following}
+      aria-label={
+        following
+          ? `متابَع · ${followCount.toLocaleString("ar-EG")} متابع`
+          : `متابعة · ${followCount.toLocaleString("ar-EG")} متابع`
+      }
+      disabled={followBusy}
+      onClick={() => onFollow?.()}
+      className={cn(
+        "inline-flex min-w-[72px] flex-col items-center justify-center rounded-xl border px-3 backdrop-blur-md transition active:scale-95",
+        PUBLISHER_TOP_CHIP_H,
+        followBusy ? "opacity-70" : undefined,
+      )}
+      style={{
+        borderColor: following ? `${blue}cc` : `${blue}55`,
+        background: following
+          ? `linear-gradient(180deg, ${blue} 0%, #4a8fd4 100%)`
+          : PUBLISHER_LEDGER_DARK_BG,
+        boxShadow: following
+          ? `0 0 20px ${blue}77, inset 0 1px 0 rgba(255,255,255,0.22)`
+          : `0 0 14px ${blue}44, inset 0 1px 0 rgba(255,255,255,0.08)`,
+      }}
+    >
+      <span className="font-black tabular-nums text-[12px] leading-none text-white">
+        {formatHeroCount(followCount)}
+      </span>
+      <span className="mt-0.5 text-[7px] font-extrabold text-white/80">
+        {following ? "متابَع" : "متابعة"}
+      </span>
+    </button>
+  );
+}
+
+/** Read-only content total — inside hero, above play */
+export function AlphaHeroPublisherContentBadge({ contentCount }: { contentCount: number }) {
+  return (
+    <AlphaHeroPublisherStatChip
+      label="محتوى"
+      value={contentCount}
+      accent={PUBLISHER_STAT_CONTENT}
+      icon={Layers}
+    />
+  );
+}
+
+/** Dark ledger frame — shared by engagement row + section tabs */
+export function AlphaHeroPublisherLedgerFrame({
+  accent,
+  children,
+  className,
+  engagement = false,
+}: {
+  accent: string;
+  children: ReactNode;
+  className?: string;
+  /** Darker frame for hero engagement row (like · repost · QR) */
+  engagement?: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "flex min-w-0 rounded-xl border backdrop-blur-md",
+        engagement ? "p-0" : "px-1 py-0.5",
+        className,
+      )}
+      style={{
+        borderColor: `${accent}${engagement ? "22" : "33"}`,
+        background: engagement ? PUBLISHER_ENGAGEMENT_BG : PUBLISHER_LEDGER_DARK_BG,
+        boxShadow: engagement
+          ? "inset 0 1px 0 rgba(255,255,255,0.03), inset 0 -10px 28px rgba(0,0,0,0.45)"
+          : "inset 0 1px 0 rgba(255,255,255,0.05)",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/** One engagement action — same broadcast ledger DNA as repost */
+function AlphaHeroPublisherEngagementCell({
+  glyph,
+  label,
+  sublabel,
+  value,
+  accent,
+  onClick,
+  busy,
+  valueHidden = false,
+  active = false,
+}: {
+  glyph: string;
+  label: string;
+  sublabel: string;
+  value: number;
+  accent: string;
+  onClick?: () => void;
+  busy?: boolean;
+  valueHidden?: boolean;
+  active?: boolean;
+}) {
+  return (
+    <AlphaHeroPublisherLedgerFrame accent={accent} engagement className="min-w-0 flex-1">
+      <HeroSpiritLedgerCell
+        glyph={glyph}
+        label={label}
+        sublabel={sublabel}
+        value={value}
+        valueHidden={valueHidden}
+        accent={accent}
+        active={active}
+        variant="broadcast"
+        surface="engagement"
+        onClick={busy ? undefined : onClick}
+        className={`h-full w-full min-h-[52px] ${busy ? "opacity-70" : ""}`}
+      />
+    </AlphaHeroPublisherLedgerFrame>
+  );
+}
+
+/** Section quick-jump — light ivory tabs, full-width row; scrolls to `#publisher-{id}` */
+export function AlphaHeroPublisherSectionTab({
+  label,
+  sublabel = "قسم",
+  accent,
+  onClick,
+  active = false,
+  className,
+}: {
+  label: string;
+  sublabel?: string;
+  accent: string;
+  onClick: () => void;
+  active?: boolean;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-current={active ? "true" : undefined}
+      className={cn(
+        "min-w-0 w-full rounded-xl border px-1.5 py-2 text-center transition active:scale-[0.97]",
+        active ? "ring-1 ring-offset-1 ring-offset-[#f4eee6]" : undefined,
+        className,
+      )}
+      style={{
+        borderColor: active ? `${accent}aa` : `${accent}55`,
+        background: active
+          ? `linear-gradient(180deg, ${accent}22 0%, rgba(255,255,255,0.98) 55%)`
+          : PUBLISHER_SECTION_NAV_BG,
+        boxShadow: active
+          ? `0 6px 18px -10px ${accent}66, inset 0 1px 0 rgba(255,255,255,0.9)`
+          : `0 4px 14px -10px rgba(93,50,145,0.12), inset 0 1px 0 rgba(255,255,255,0.85)`,
+        ...(active ? { ringColor: `${accent}88` } : {}),
+      }}
+    >
+      <span
+        className="block truncate text-[10px] font-extrabold leading-tight"
+        style={{ color: active ? accent : "#3a3258" }}
+      >
+        {label}
+      </span>
+      <span className="mt-0.5 block truncate text-[8px] font-bold text-[#8a84a8]">{sublabel}</span>
+    </button>
+  );
+}
+
+/** Publisher hero — follow only (top-left) + verified badge row */
+export function AlphaHeroPublisherHeroTopBar({
+  followCount,
+  following,
+  followBusy,
+  onFollow,
+  isTrusted,
+  typeLabel,
+  typeIcon: TypeIcon,
+  showFollow = true,
+  className,
+}: {
+  followCount: number;
+  following: boolean;
+  followBusy?: boolean;
+  onFollow?: () => void;
+  isTrusted?: boolean;
+  typeLabel: string;
+  typeIcon?: LucideIcon;
+  showFollow?: boolean;
+  className?: string;
+}) {
+  return (
+    <div className={cn("absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-2 px-4 pt-4", className)}>
+      <div className="shrink-0">
+        {showFollow ? (
+          <AlphaHeroPublisherFollowChip
+            following={following}
+            followCount={followCount}
+            followBusy={followBusy}
+            onFollow={onFollow}
+          />
+        ) : null}
+      </div>
+
+      <div className="flex max-w-[68%] shrink-0 flex-wrap items-center justify-end gap-1.5">
+        {isTrusted ? (
+          <span
+            className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[9px] font-extrabold text-emerald-50 backdrop-blur-md ring-1 ring-emerald-300/35"
+            style={{ background: PUBLISHER_VERIFIED_GREEN_BG }}
+          >
+            <ShieldCheck className="h-3 w-3 text-emerald-100" />
+            ناشر موثوق
+          </span>
+        ) : null}
+        <span
+          className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[9px] font-bold text-white/90 backdrop-blur-md ring-1 ring-white/15"
+          style={{ background: PUBLISHER_LEDGER_DARK_BG }}
+        >
+          {TypeIcon ? <TypeIcon className="h-3 w-3" /> : null}
+          {typeLabel}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/** Publisher / audio hero — verse-card ledger DNA with like + share (+ QR) */
+export function AlphaHeroPublisherEngagementBar({
   likeCount,
   shareCount,
-  following,
+  qrCount = 0,
   liked,
-  followBusy,
+  shared = false,
   likeBusy,
-  onFollow,
   onLike,
   onShare,
   onQr,
   className,
 }: {
-  followCount: number;
   likeCount: number;
   shareCount: number;
-  following: boolean;
+  qrCount?: number;
   liked: boolean;
-  followBusy?: boolean;
+  shared?: boolean;
   likeBusy?: boolean;
-  onFollow: () => void;
   onLike: () => void;
   onShare: () => void;
   onQr?: () => void;
   className?: string;
 }) {
   const goldAccent = ALPHA_HERO_ACCENT;
-  const followAccent = "#9d7bd8";
-  const likeAccent = "#e85d7a";
+  const likeAccent = PUBLISHER_STAT_LIKE;
+  const qrAccent = "#b8a4e8";
 
   return (
     <>
       <HeroLedgerStyles />
-      <div className={cn("space-y-2", className)}>
-        <div
-          className="rounded-xl border px-1.5 py-1"
-          style={{
-            borderColor: `${followAccent}44`,
-            background: "rgba(0,0,0,0.28)",
-            backdropFilter: "blur(8px)",
-          }}
-        >
-          <HeroSpiritLedgerCell
-            glyph="Ⲁ"
-            label={following ? "متابَع" : "متابعة"}
-            sublabel="انضم للناشر"
-            value={followCount}
-            active={following}
-            accent={followAccent}
-            variant="meditate"
-            onClick={followBusy ? undefined : onFollow}
-            leadingIcon={UserPlus}
-            leadingIconColor="#ddd6fe"
-            className={followBusy ? "opacity-70" : undefined}
-          />
-        </div>
-
-        <div
-          className="flex items-stretch gap-2 rounded-xl border px-1.5 py-1"
-          style={{
-            borderColor: `${goldAccent}33`,
-            background: "rgba(0,0,0,0.28)",
-            backdropFilter: "blur(8px)",
-          }}
-        >
-          <HeroSpiritLedgerCell
-            glyph="Ⲁ"
-            label="إعجاب"
-            sublabel="ادعم المحتوى"
-            value={likeCount}
-            active={liked}
-            accent={likeAccent}
-            variant="meditate"
-            onClick={likeBusy ? undefined : onLike}
-            leadingIcon={Heart}
-            leadingIconColor="#fda4af"
-            className={likeBusy ? "opacity-70" : undefined}
-          />
-          <div aria-hidden className="my-1.5 w-px shrink-0 bg-gradient-to-b from-transparent via-[#e7c97a]/35 to-transparent" />
-          <HeroSpiritLedgerCell
+      <div className={cn("flex items-stretch gap-1.5", className)}>
+        <AlphaHeroPublisherEngagementCell
+          glyph="Ⲱ"
+          label="إعجاب"
+          sublabel="ادعم الصفحة"
+          value={likeCount}
+          accent={liked ? goldAccent : likeAccent}
+          active={liked}
+          onClick={onLike}
+          busy={likeBusy}
+        />
+        <AlphaHeroPublisherEngagementCell
+          glyph="Ⲱ"
+          label="إعادة نشر"
+          sublabel="على صفحتي"
+          value={shareCount}
+          accent={goldAccent}
+          active={shared}
+          onClick={onShare}
+        />
+        {onQr ? (
+          <AlphaHeroPublisherEngagementCell
             glyph="Ⲱ"
-            label="انتشار"
-            sublabel="شارك الصفحة"
-            value={shareCount}
-            accent={goldAccent}
-            variant="broadcast"
-            onClick={onShare}
+            label="باركود"
+            sublabel="رمز الصفحة"
+            value={qrCount}
+            accent={qrAccent}
+            onClick={onQr}
           />
-          {onQr ? (
-            <>
-              <div aria-hidden className="my-1.5 w-px shrink-0 bg-gradient-to-b from-transparent via-[#e7c97a]/25 to-transparent" />
-              <HeroSpiritLedgerCell
-                glyph="Ⲱ"
-                label="باركود"
-                sublabel="رمز الصفحة"
-                value={0}
-                accent={goldAccent}
-                variant="meditate"
-                onClick={onQr}
-                leadingIcon={QrCode}
-                leadingIconColor={goldAccent}
-                compact
-                glyphPosition="edge"
-                glyphEdge="end"
-                valueHidden
-              />
-            </>
-          ) : null}
-        </div>
+        ) : null}
       </div>
     </>
   );
@@ -800,6 +1091,7 @@ export function AlphaHeroActionBar({
   toggleLabel,
   toggleIcon: ToggleIcon = Bookmark,
   compact,
+  hideShare,
   className,
 }: {
   badge: string;
@@ -811,6 +1103,7 @@ export function AlphaHeroActionBar({
   toggleLabel?: string;
   toggleIcon?: LucideIcon;
   compact?: boolean;
+  hideShare?: boolean;
   className?: string;
 }) {
   if (compact) {
@@ -828,7 +1121,11 @@ export function AlphaHeroActionBar({
 
   return (
     <div className={cn("absolute inset-x-0 top-0 z-20 flex items-center justify-between px-3 pt-3", className)}>
-      <AlphaHeroShareButton onClick={onShare} label={shareLabel} />
+      {hideShare ? (
+        <span className="h-9 w-9 shrink-0" aria-hidden />
+      ) : (
+        <AlphaHeroShareButton onClick={onShare} label={shareLabel} />
+      )}
       <div
         className="inline-flex items-center rounded-full border px-3 py-1 backdrop-blur-md"
         style={{ borderColor: `${accent}80`, background: "rgba(0,0,0,0.38)" }}
@@ -859,6 +1156,7 @@ export function HeroCardTopBar({
   saveLabel,
   shareLabel,
   compact,
+  hideShare,
 }: {
   badge: string;
   accent: string;
@@ -868,6 +1166,7 @@ export function HeroCardTopBar({
   saveLabel?: string;
   shareLabel?: string;
   compact?: boolean;
+  hideShare?: boolean;
 }) {
   return (
     <AlphaHeroActionBar
@@ -879,6 +1178,7 @@ export function HeroCardTopBar({
       shareLabel={shareLabel}
       toggleLabel={saveLabel ?? (saved ? "إزالة الحفظ" : "حفظ")}
       compact={compact}
+      hideShare={hideShare}
     />
   );
 }

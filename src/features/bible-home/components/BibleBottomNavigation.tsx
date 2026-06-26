@@ -1,14 +1,17 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { BookOpen, CalendarDays, Cross, Home, MoreHorizontal } from "lucide-react";
+import { CalendarDays, Cross, Home, MoreHorizontal } from "lucide-react";
+import { useEffect, useMemo } from "react";
 import { alphaOmegaLogo } from "@/assets/bible-home";
 import { bibleHomeColors } from "../tokens/colors";
 import { cn } from "@/lib/utils";
+import { activateBottomNavLayout } from "@/components/navigation/alpha-bottom-nav-layout";
+import { usePlatformModules, type PlatformModuleKey } from "@/lib/platform-modules";
 
 const TABS = [
   { id: "home", label: "الرئيسية", to: "/home", icon: Home },
-  { id: "katameros", label: "القطمارس", to: "/katameros", icon: CalendarDays },
-  { id: "bible", label: "الكتاب المقدس", raised: true as const },
-  { id: "agpeya", label: "الأجبية", to: "/agpeya", icon: Cross },
+  { id: "katameros", label: "القطمارس", to: "/katameros", icon: CalendarDays, module: "katameros" as PlatformModuleKey },
+  { id: "bible", label: "الكتاب المقدس", raised: true as const, module: "bible" as PlatformModuleKey },
+  { id: "agpeya", label: "الأجبية", to: "/agpeya", icon: Cross, module: "agpeya" as PlatformModuleKey },
   { id: "more", label: "المزيد", to: "/settings", icon: MoreHorizontal },
 ] as const;
 
@@ -22,6 +25,16 @@ export function BibleBottomNavigation({
   booksPrefix?: string;
 } = {}) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { isModuleEnabled } = usePlatformModules();
+
+  const visibleTabs = useMemo(
+    () =>
+      TABS.filter((tab) => {
+        if (!("module" in tab) || !tab.module) return true;
+        return isModuleEnabled(tab.module);
+      }),
+    [isModuleEnabled],
+  );
 
   const isActive = (to: string) => {
     if (to === biblePath) {
@@ -29,6 +42,8 @@ export function BibleBottomNavigation({
     }
     return pathname === to || (to !== "/home" && pathname.startsWith(to + "/"));
   };
+
+  useEffect(() => activateBottomNavLayout(), []);
 
   return (
     <nav
@@ -39,8 +54,11 @@ export function BibleBottomNavigation({
     >
       <div className="mx-auto w-full max-w-[var(--alpha-content-max-width)] px-3 alpha-app-dock">
         <div className="alpha-dock-bar relative rounded-[28px] px-1.5 py-2 sm:px-2 sm:py-2.5">
-          <div className="grid grid-cols-5 items-end gap-0.5 sm:gap-1">
-            {TABS.map((tab) => {
+          <div
+            className="grid items-end gap-0.5 sm:gap-1"
+            style={{ gridTemplateColumns: `repeat(${visibleTabs.length}, minmax(0, 1fr))` }}
+          >
+            {visibleTabs.map((tab) => {
               const tabTo = "to" in tab ? tab.to : biblePath;
               const active = isActive(tabTo);
               if ("raised" in tab && tab.raised) {
@@ -78,10 +96,12 @@ export function BibleBottomNavigation({
                   to={tabTo}
                   aria-label={tab.label}
                   aria-current={active ? "page" : undefined}
-                  className={cn("alpha-dock-tab", active && "alpha-dock-tab--active")}
+                  className={cn("alpha-dock-tab flex flex-col items-center justify-end py-1", active && "alpha-dock-tab--active")}
                 >
-                  <Icon className="alpha-dock-tab__icon h-[18px] w-[18px] sm:h-5 sm:w-5" strokeWidth={active ? 2.4 : 2} />
-                  <span className="alpha-dock-tab__label font-semibold">{tab.label}</span>
+                  <div className="alpha-dock-tab__icon grid h-9 w-9 place-items-center">
+                    <Icon className="h-5 w-5" strokeWidth={2.1} />
+                  </div>
+                  <span className="alpha-dock-tab__label mt-0.5 text-[10px] font-bold">{tab.label}</span>
                 </Link>
               );
             })}

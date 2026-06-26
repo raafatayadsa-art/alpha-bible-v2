@@ -19,9 +19,13 @@ const AR_MONTHS = [
   "ديسمبر",
 ] as const;
 
-const ITEM_H = 26;
-const WHEEL_H = 96;
+const ITEM_H = 36;
+const WHEEL_H = 120;
 const WHEEL_PAD = (WHEEL_H - ITEM_H) / 2;
+const WHEEL_FONT_SIZE = "17px";
+const DAY_COL_W = 54;
+const MONTH_COL_W = 110;
+const YEAR_COL_W = 76;
 const DEFAULT_MIN_YEAR = 1940;
 const SNAP_MS = 130;
 
@@ -81,7 +85,6 @@ function WheelColumn({
   const rafRef = useRef<number | null>(null);
   const snappingRef = useRef(false);
   const [focusedIdx, setFocusedIdx] = useState(0);
-  const [tickKey, setTickKey] = useState(0);
 
   const valueIdx = items.findIndex((i) => i.v === value);
 
@@ -121,7 +124,6 @@ function WheelColumn({
       const next = items[clamped]?.v;
       if (next && next !== value) {
         onChange(next);
-        setTickKey((k) => k + 1);
         hapticTick();
       }
       scrollToIndex(clamped, true);
@@ -147,11 +149,11 @@ function WheelColumn({
   };
 
   return (
-    <div className="relative min-w-0 flex-1">
+    <div className="relative shrink-0" style={{ width: "100%" }}>
       <div
         ref={ref}
         onScroll={handleScroll}
-        className="alpha-date-wheel no-scrollbar overflow-y-auto overscroll-contain scroll-smooth snap-y snap-mandatory"
+        className="alpha-date-wheel no-scrollbar overflow-y-auto overscroll-contain snap-y snap-mandatory"
         style={{
           height: WHEEL_H,
           paddingTop: WHEEL_PAD,
@@ -161,40 +163,33 @@ function WheelColumn({
       >
         {items.map((item, idx) => {
           const dist = Math.abs(idx - focusedIdx);
-          const isSelected = item.v === value;
           const isFocused = idx === focusedIdx;
-          const wheelColor = isFocused
-            ? "#1F2937"
-            : dist === 1
-              ? "#6B7280"
-              : "#9CA3AF";
-          const wheelOpacity = isFocused ? 1 : dist === 1 ? 0.75 : 0.45;
+          const wheelColor = isFocused ? "#1F2937" : dist === 1 ? "#6B7280" : "#9CA3AF";
+          const wheelOpacity = isFocused ? 1 : dist === 1 ? 0.65 : 0.38;
           return (
             <button
               key={item.v}
               type="button"
               onClick={() => {
                 onChange(item.v);
-                setTickKey((k) => k + 1);
                 hapticTick();
                 scrollToIndex(idx, true);
               }}
-              className="alpha-date-wheel-item relative z-[30] snap-center block w-full text-center transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]"
-              style={{
-                height: ITEM_H,
-                fontSize: isFocused ? "15px" : dist === 1 ? "13px" : "12px",
-                fontWeight: isFocused ? 700 : 500,
-                color: wheelColor,
-                opacity: wheelOpacity,
-                transform: isFocused ? "scale(1.06)" : dist === 1 ? "scale(0.97)" : "scale(0.92)",
-                textShadow: isFocused ? "0 1px 2px rgba(255,255,255,0.9)" : "none",
-                animation:
-                  isSelected && isFocused && tickKey > 0
-                    ? "alphaDateWheelTick 0.24s cubic-bezier(0.22,1,0.36,1) both"
-                    : undefined,
-              }}
+              className="alpha-date-wheel-item relative z-[30] block w-full snap-center"
+              style={{ height: ITEM_H }}
             >
-              {item.label}
+              <span
+                className="absolute inset-0 flex items-center justify-center overflow-hidden px-0.5 text-center leading-none"
+                style={{
+                  fontSize: WHEEL_FONT_SIZE,
+                  fontWeight: 700,
+                  fontVariantNumeric: "tabular-nums",
+                  color: wheelColor,
+                  opacity: wheelOpacity,
+                }}
+              >
+                {item.label}
+              </span>
             </button>
           );
         })}
@@ -257,11 +252,6 @@ function AlphaDatePickerSheet({
   return createPortal(
     <>
       <style>{`
-        @keyframes alphaDateWheelTick {
-          0% { transform: scale(1); }
-          50% { transform: scale(1.1); }
-          100% { transform: scale(1.06); }
-        }
         @keyframes alphaDateSheetIn {
           from { opacity: 0; transform: translateY(16px) scale(0.98); }
           to { opacity: 1; transform: translateY(0) scale(1); }
@@ -301,11 +291,17 @@ function AlphaDatePickerSheet({
           </div>
 
           <div className="relative mx-2.5 mb-3 mt-1 overflow-hidden rounded-[14px] border border-white/32 bg-white/42 backdrop-blur-sm">
-            <div className="flex px-1 pt-2">
+            <div
+              className="mx-auto grid px-1 pt-2"
+              style={{
+                width: DAY_COL_W + MONTH_COL_W + YEAR_COL_W,
+                gridTemplateColumns: `${DAY_COL_W}px ${MONTH_COL_W}px ${YEAR_COL_W}px`,
+              }}
+            >
               {(["اليوم", "الشهر", "السنة"] as const).map((label) => (
                 <p
                   key={label}
-                  className="min-w-0 flex-1 text-center text-[9.5px] font-extrabold tracking-wide text-[#8a6a3a]"
+                  className="text-center text-[10.5px] font-extrabold tracking-wide text-[#8a6a3a]"
                 >
                   {label}
                 </p>
@@ -314,19 +310,41 @@ function AlphaDatePickerSheet({
 
             <div className="relative px-0 pb-1.5">
               <div
-                className="pointer-events-none absolute inset-x-0 top-1/2 z-10 h-[26px] -translate-y-1/2 rounded-[11px] border border-white/95 bg-white/82 shadow-[0_0_18px_rgba(255,255,255,0.5),0_4px_14px_rgba(212,168,87,0.08),inset_0_1px_0_rgba(255,255,255,1)] backdrop-blur-sm"
+                className="pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 rounded-[11px] border border-white/95 bg-white/82 shadow-[0_0_18px_rgba(255,255,255,0.5),0_4px_14px_rgba(212,168,87,0.08),inset_0_1px_0_rgba(255,255,255,1)] backdrop-blur-sm"
+                style={{
+                  height: ITEM_H,
+                  left: "50%",
+                  width: DAY_COL_W + MONTH_COL_W + YEAR_COL_W,
+                  transform: "translate(-50%, -50%)",
+                }}
                 aria-hidden
               />
               <div
-                className="pointer-events-none absolute inset-x-0 top-0 z-20 h-7 bg-gradient-to-b from-white/72 to-transparent"
+                className="pointer-events-none absolute top-0 z-20 h-7 bg-gradient-to-b from-white/72 to-transparent"
+                style={{
+                  left: "50%",
+                  width: DAY_COL_W + MONTH_COL_W + YEAR_COL_W,
+                  transform: "translateX(-50%)",
+                }}
                 aria-hidden
               />
               <div
-                className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-7 bg-gradient-to-t from-white/72 to-transparent"
+                className="pointer-events-none absolute bottom-0 z-20 h-7 bg-gradient-to-t from-white/72 to-transparent"
+                style={{
+                  left: "50%",
+                  width: DAY_COL_W + MONTH_COL_W + YEAR_COL_W,
+                  transform: "translateX(-50%)",
+                }}
                 aria-hidden
               />
 
-              <div className="relative z-[25] flex">
+              <div
+                className="relative z-[25] mx-auto grid items-stretch"
+                style={{
+                  width: DAY_COL_W + MONTH_COL_W + YEAR_COL_W,
+                  gridTemplateColumns: `${DAY_COL_W}px ${MONTH_COL_W}px ${YEAR_COL_W}px`,
+                }}
+              >
                 <WheelColumn
                   items={dayItems}
                   value={String(day)}

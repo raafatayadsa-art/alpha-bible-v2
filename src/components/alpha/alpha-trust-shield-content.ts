@@ -15,8 +15,9 @@ import {
 import { conversations } from "@/components/alpha/messaging-data";
 import type { AlphaTrustShieldContext } from "@/features/alpha-connect/alpha-trust-shield-context";
 import type { AlphaConnectStatusSnapshot } from "@/features/alpha-connect/status/types";
+import { resolvedMemberChurchName } from "@/features/church/member-church-api";
 
-const DEFAULT_CHURCH_NAME = "كنيسة مارجرجس — مصر الجديدة";
+const churchNameLabel = () => resolvedMemberChurchName("—");
 
 /** Unified title prefix for every Alpha Connect shield panel */
 export const TRUST_CENTER_TITLE_PREFIX = "مركز الثقة والأمان";
@@ -108,7 +109,7 @@ function channelTrustContent(channelId: string, channel: ConnectChannel): TrustS
         rows: [
           { label: "اسم القناة", value: channel.name },
           { label: "نوع القناة", value: CHANNEL_TYPE_LABELS[channel.icon] ?? "قناة صوتية" },
-          { label: "الكنيسة التابعة", value: DEFAULT_CHURCH_NAME },
+          { label: "الكنيسة التابعة", value: churchNameLabel() },
           { label: "المسؤول", value: channel.adminName },
           { label: "عدد الأعضاء", value: String(members.length) },
           { label: "تاريخ الإنشاء", value: CHANNEL_CREATED_LABELS[channelId] ?? "١٥ يونيو ٢٠٢٦" },
@@ -272,7 +273,7 @@ function churchTrustContent(): TrustShieldContent {
       {
         title: "معلومات الكنيسة",
         rows: [
-          { label: "اسم الكنيسة", value: DEFAULT_CHURCH_NAME },
+          { label: "اسم الكنيسة", value: churchNameLabel() },
           { label: "الكاهن المسؤول", value: "أبونا بولس" },
           { label: "عدد الأعضاء", value: "248" },
           { label: "عدد الخدام", value: "32" },
@@ -393,7 +394,7 @@ export function buildTrustShieldContent(
             title: "معلومات الخدمة",
             rows: [
               { label: "اسم الخدمة", value: "خدمة الشباب" },
-              { label: "الكنيسة", value: DEFAULT_CHURCH_NAME },
+              { label: "الكنيسة", value: churchNameLabel() },
               { label: "المسؤول", value: "مينا جورج" },
               { label: "حالة التوثيق", value: "موثّقة" },
             ],

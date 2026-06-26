@@ -1,0 +1,10 @@
+=== OLD ===
+function ScriptureReader() {
+  const { book, chapter } = Route.useParams();
+  const router = useRouter();
+
+=== NEW ===
+function ScriptureReader() {
+  const { book, chapter } = Route.useParams();
+  const { verse: highlightVerseParam } = Route.useSearch();
+  const router = useRouter();

@@ -1,0 +1,50 @@
+=== OLD ===
+  useEffect(() => {
+    if (!verses.data?.length) return;
+    if (restoredRef.current) return;
+    const root = scrollRoot ?? resolveScrollRoot(mainRef.current);
+    if (!root) return;
+    restoredRef.current = true;
+
+=== NEW ===
+  useEffect(() => {
+    if (!verses.data?.length) return;
+    if (restoredRef.current) return;
+    const root = scrollRoot ?? resolveScrollRoot(mainRef.current);
+    if (!root) return;
+
+    const highlightNum = highlightVerseParam ? parseInt(highlightVerseParam, 10) : NaN;
+    if (highlightVerseParam && !Number.isNaN(highlightNum) && highlightNum > 0) {
+      restoredRef.current = true;
+      const id = verseKey(book, ch, highlightNum);
+      setPulsingVerseId(id);
+      setActiveVerse(id);
+      setReadingVerse(highlightNum);
+
+      let attempts = 0;
+      const scrollToHighlight = () => {
+        const el = verseElementsRef.current.get(highlightNum);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+          return true;
+        }
+        return false;
+      };
+      const tryScroll = () => {
+        if (scrollToHighlight() || attempts > 40) return;
+        attempts += 1;
+        requestAnimationFrame(tryScroll);
+      };
+      requestAnimationFrame(tryScroll);
+
+      const pulseTimer = window.setTimeout(() => setPulsingVerseId(null), VERSE_PULSE_DURATION_MS);
+      void navigate({
+        to: "/$book/$chapter",
+        params: { book, chapter: String(ch) },
+        replace: true,
+      });
+
+      return () => window.clearTimeout(pulseTimer);
+    }
+
+    restoredRef.current = true;

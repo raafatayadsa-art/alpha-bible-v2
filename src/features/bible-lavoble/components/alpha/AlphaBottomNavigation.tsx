@@ -1,5 +1,7 @@
 import { Home, Hand, BookOpen, Library, Settings } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { useEffect } from "react";
+import { activateBottomNavLayout } from "@/components/navigation/alpha-bottom-nav-layout";
 
 export interface BottomNavItem {
   id: string;
@@ -24,6 +26,8 @@ export function AlphaBottomNavigation({
   activeId = "bible",
   onChange,
 }: AlphaBottomNavigationProps) {
+  useEffect(() => activateBottomNavLayout(), []);
+
   return (
     <nav
       dir="rtl"

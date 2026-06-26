@@ -27,14 +27,14 @@ export const bibleV2QuickTools: BibleV2QuickToolDef[] = [
     label: "المحفوظات",
     icon: Star,
     tone: "gold",
-    action: { kind: "navigate", to: "/bible/saved", search: { from: "bible-2" } },
+    action: { kind: "navigate", to: "/bible/saved", search: { from: "bible" } },
   },
   {
     id: "notes",
     label: "ملاحظاتي",
     icon: FilePen,
     tone: "navy",
-    action: { kind: "navigate", to: "/bible/notes", search: { from: "bible-2" } },
+    action: { kind: "navigate", to: "/bible/notes", search: { from: "bible" } },
   },
   {
     id: "bookmarks",
@@ -44,10 +44,10 @@ export const bibleV2QuickTools: BibleV2QuickToolDef[] = [
     action: { kind: "soon" },
   },
   {
-    id: "reading-plan",
-    label: "خطة القراءة",
+    id: "journey",
+    label: "رحلتي",
     icon: BarChart3,
     tone: "gold",
-    action: { kind: "soon" },
+    action: { kind: "navigate", to: "/bible/journey", search: { from: "bible" } },
   },
 ];

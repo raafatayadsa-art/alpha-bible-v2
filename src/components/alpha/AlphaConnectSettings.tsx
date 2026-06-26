@@ -31,6 +31,11 @@ import {
   SECURITY_PIN_LENGTH,
   verifySecurityPin,
 } from "./alpha-connect-security";
+import {
+  ALPHA_BOTTOM_SHEET_HOST_CLASS,
+  ALPHA_BOTTOM_SHEET_SCROLL_CLASS,
+  ALPHA_DOCK_FIXED_FOOTER_CLASS,
+} from "@/components/navigation/alpha-bottom-nav-layout";
 import { normalizeRetentionPolicy } from "@/features/alpha-connect/retention";
 import {
   ConnectCenterPopup,
@@ -48,6 +53,7 @@ type CodePopup = "create" | "reset-verify" | "reset-confirm" | null;
 
 export type AudioOutput = "earpiece" | "speaker" | "bluetooth";
 export type WhoCanCall = "all" | "friends" | "church" | "none";
+export type WhoCanDiscoverMe = "church" | "connections" | "none";
 export type EphemeralDelete = "on_read" | "5s" | "10s" | "30s" | "1m" | "5m" | "30m" | "1d";
 export type CallQuality = "auto" | "economy" | "high";
 
@@ -64,6 +70,8 @@ export type AlphaConnectSettingsState = {
   soundEnd: boolean;
   backgroundMode: boolean;
   whoCanCall: WhoCanCall;
+  nearbyDiscoverable: boolean;
+  whoCanDiscoverMe: WhoCanDiscoverMe;
   showOnlineStatus: boolean;
   showLastSeen: boolean;
   allowVoiceMessages: boolean;
@@ -98,6 +106,8 @@ export const DEFAULT_ALPHA_CONNECT_SETTINGS: AlphaConnectSettingsState = {
   soundEnd: false,
   backgroundMode: true,
   whoCanCall: "church",
+  nearbyDiscoverable: false,
+  whoCanDiscoverMe: "church",
   showOnlineStatus: true,
   showLastSeen: false,
   allowVoiceMessages: true,
@@ -153,6 +163,12 @@ const WHO_CAN_CALL_LABELS: Record<WhoCanCall, string> = {
   all: "الجميع",
   friends: "الأصدقاء فقط",
   church: "أعضاء الكنيسة فقط",
+  none: "لا أحد",
+};
+
+const WHO_CAN_DISCOVER_LABELS: Record<WhoCanDiscoverMe, string> = {
+  church: "أعضاء كنيستي فقط",
+  connections: "جهات الاتصال المعتمدة",
   none: "لا أحد",
 };
 
@@ -339,7 +355,7 @@ export function AlphaConnectSettings({
     <div dir="rtl" className="connect-settings-screen relative mx-auto w-full max-w-[var(--alpha-content-narrow-width)] min-h-0">
       <ConnectSettingsHeader onBack={onBack} trustShield={trustShield} />
 
-      <div className="space-y-3 px-5 pb-[var(--alpha-connect-nav-clearance,calc(72px+max(16px,env(safe-area-inset-bottom))))] pt-1">
+      <div className="connect-settings-body space-y-3 px-5 pt-1">
         <ConnectSettingsLivePanel
           callQuality={draft.callQuality}
           onQualityPick={() =>
@@ -516,6 +532,26 @@ export function AlphaConnectSettings({
             onChange={(showOnlineStatus) => patch({ showOnlineStatus })}
           />
           <SettingsSwitchRow
+            label="الظهور للأعضاء القريبين"
+            checked={draft.nearbyDiscoverable}
+            onChange={(nearbyDiscoverable) => patch({ nearbyDiscoverable })}
+          />
+          <SettingsSelectRow
+            label="من يستطيع اكتشاف حسابي"
+            value={WHO_CAN_DISCOVER_LABELS[draft.whoCanDiscoverMe]}
+            onClick={() =>
+              openSelect(
+                "من يستطيع اكتشاف حسابي",
+                (Object.keys(WHO_CAN_DISCOVER_LABELS) as WhoCanDiscoverMe[]).map((id) => ({
+                  id,
+                  label: WHO_CAN_DISCOVER_LABELS[id],
+                })),
+                draft.whoCanDiscoverMe,
+                (id) => patch({ whoCanDiscoverMe: id as WhoCanDiscoverMe }),
+              )
+            }
+          />
+          <SettingsSwitchRow
             label="إظهار آخر ظهور"
             checked={draft.showLastSeen}
             onChange={(showLastSeen) => patch({ showLastSeen })}
@@ -669,7 +705,7 @@ export function AlphaConnectSettings({
       </div>
 
       {/* Fixed save */}
-      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center pb-[max(env(safe-area-inset-bottom),16px)]">
+      <div className={`${ALPHA_DOCK_FIXED_FOOTER_CLASS} pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center pb-[max(env(safe-area-inset-bottom),16px)]`}>
         <div className="pointer-events-auto w-[calc(100%-32px)] max-w-[400px]">
           <button
             type="button"
@@ -1178,7 +1214,10 @@ function SelectSheet({
   onClose: () => void;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={onClose}>
+    <div
+      className={`${ALPHA_BOTTOM_SHEET_HOST_CLASS} fixed inset-0 z-[60] flex items-end justify-center`}
+      onClick={onClose}
+    >
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
       <div
         dir="rtl"
@@ -1187,7 +1226,7 @@ function SelectSheet({
       >
         <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-white/20" />
         <p className="mb-2 px-4 text-center text-sm font-semibold">{title}</p>
-        <div className="max-h-[50vh] overflow-y-auto px-2">
+        <div className={`${ALPHA_BOTTOM_SHEET_SCROLL_CLASS} max-h-[50vh] overflow-y-auto px-2`}>
           {options.map((option) => {
             const selected = active === option.id;
             return (

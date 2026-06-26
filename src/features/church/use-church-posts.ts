@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import type { ChurchPost } from "@/data/church-posts";
 import { isExpired, isPinned } from "./post-store";
+import { filterPublicFeedPosts } from "./trip-organizer/trip-organizer-access";
+import { subscribeTripApprovalChanged } from "./trip-organizer/trip-approval-workflow";
 import {
   CHURCH_POSTS_CHANGED,
   fetchChurchPostById,
@@ -13,10 +15,17 @@ function sortActivePosts(posts: ChurchPost[]): ChurchPost[] {
   const now = Date.now();
   return posts
     .filter((p) => !isExpired(p, now))
-    .sort((a, b) => Number(isPinned(b, now)) - Number(isPinned(a, now)));
+    .sort((a, b) => {
+      const pinDiff = Number(isPinned(b, now)) - Number(isPinned(a, now));
+      if (pinDiff !== 0) return pinDiff;
+      return (b.createdAt ?? 0) - (a.createdAt ?? 0);
+    });
 }
 
-export function useChurchPosts(churchId: string | null | undefined, opts?: { archived?: boolean }) {
+export function useChurchPosts(
+  churchId: string | null | undefined,
+  opts?: { archived?: boolean; includePendingTrips?: boolean },
+) {
   const [posts, setPosts] = useState<ChurchPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +40,8 @@ export function useChurchPosts(churchId: string | null | undefined, opts?: { arc
     setError(null);
     try {
       const rows = await fetchChurchPosts(churchId, { archived: opts?.archived });
-      setPosts(opts?.archived ? rows : sortActivePosts(rows));
+      const visible = opts?.includePendingTrips ? rows : filterPublicFeedPosts(rows);
+      setPosts(opts?.archived ? visible : sortActivePosts(visible));
     } catch (e) {
       console.error("useChurchPosts", e);
       setError("تعذّر تحميل المنشورات");
@@ -39,13 +49,17 @@ export function useChurchPosts(churchId: string | null | undefined, opts?: { arc
     } finally {
       setLoading(false);
     }
-  }, [churchId, opts?.archived]);
+  }, [churchId, opts?.archived, opts?.includePendingTrips]);
 
   useEffect(() => {
     void refresh();
     const onChange = () => void refresh();
     window.addEventListener(CHURCH_POSTS_CHANGED, onChange);
-    return () => window.removeEventListener(CHURCH_POSTS_CHANGED, onChange);
+    const unsubTrip = subscribeTripApprovalChanged(onChange);
+    return () => {
+      window.removeEventListener(CHURCH_POSTS_CHANGED, onChange);
+      unsubTrip();
+    };
   }, [refresh]);
 
   return { posts, loading, error, refresh };

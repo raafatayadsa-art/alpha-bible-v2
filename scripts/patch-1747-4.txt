@@ -1,0 +1,29 @@
+=== OLD ===
+  const onToggleSave = useCallback(() => {
+    onToggleSaveVerse({
+      book,
+      bookName,
+      chapter,
+      verse: verseNum,
+      text,
+    });
+  }, [onToggleSaveVerse, book, bookName, chapter, verseNum, text]);
+
+  const onOpenRef = useCallback(() => {
+
+=== NEW ===
+  const onToggleSave = useCallback(() => {
+    onToggleSaveVerse({
+      book,
+      bookName,
+      chapter,
+      verse: verseNum,
+      text,
+    });
+  }, [onToggleSaveVerse, book, bookName, chapter, verseNum, text]);
+
+  const onOpenJournal = useCallback(() => {
+    onAddJournalNote({ book, bookName, chapter, verse: verseNum, text });
+  }, [onAddJournalNote, book, bookName, chapter, verseNum, text]);
+
+  const onOpenRef = useCallback(() => {

@@ -3,7 +3,6 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
   Bookmark,
-  Share2,
   Calendar,
   MapPin,
   Sparkles,
@@ -20,11 +19,21 @@ import {
   Image as ImageIcon,
   FileText,
   Check,
+  ImagePlus,
 } from "lucide-react";
 import { notify, notifyError } from "@/lib/i18n/notify";
 import { synaxariumSaintQueryOptions, synaxariumSaintsQueryOptions } from "@/features/synaxarium";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { GlassSurface, BackButton } from "@/components/bible/primitives";
+import {
+  ALPHA_HERO_ACCENT,
+  HeroSpiritLedgerRow,
+  readHeroMap,
+  readHeroSet,
+  seedHeroCount,
+  writeHeroMap,
+  writeHeroSet,
+} from "@/components/home/hero-card-chrome";
 import {
   CopticCross,
   CopticWatermark,
@@ -45,6 +54,11 @@ import {
   DisplayButton,
   type PresentationContent,
 } from "@/components/presentation/PresentationMode";
+import {
+  SaintGalleryUploadSheet,
+  useApprovedSaintGallery,
+} from "@/features/saint-gallery";
+import { SaintGalleryAlbum } from "@/features/saint-gallery/components/SaintGalleryAlbum";
 
 export const Route = createFileRoute("/synaxarium/$saintId")({
   ssr: false,
@@ -80,6 +94,13 @@ const PHASE_ACCENT: Record<string, "purple" | "gold" | "green" | "blue"> = {
 };
 
 const FAVORITES_KEY = "alpha:synaxarium:favorites";
+const SAINT_LIKE_KEY = "alpha.synaxarium.hero.likes";
+const SAINT_SHARE_KEY = "alpha.synaxarium.hero.shares";
+const SAINT_LIKED_KEY = "alpha.synaxarium.hero.liked";
+
+function saintEngagementDayId(saintId: string) {
+  return `${saintId}-${new Date().toISOString().slice(0, 10)}`;
+}
 
 function readFavorites(): string[] {
   try {
@@ -106,6 +127,12 @@ function SaintDetails() {
   const [saved, setSaved] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [presentOpen, setPresentOpen] = useState(false);
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const [uploadToast, setUploadToast] = useState<string | null>(null);
+  const [meditations, setMeditations] = useState(0);
+  const [broadcasts, setBroadcasts] = useState(0);
+  const [meditated, setMeditated] = useState(false);
+  const { data: galleryImages = [] } = useApprovedSaintGallery(saintId);
 
   const presentationContent: PresentationContent = useMemo(() => {
     if (!saint) return { title: "", subtitle: "", sections: [] };
@@ -147,6 +174,17 @@ function SaintDetails() {
   useEffect(() => {
     if (!saint) return;
     setSaved(readFavorites().includes(saint.id));
+  }, [saint]);
+
+  useEffect(() => {
+    if (!saint) return;
+    const eid = saintEngagementDayId(saint.id);
+    const likeMap = readHeroMap(SAINT_LIKE_KEY);
+    const shareMap = readHeroMap(SAINT_SHARE_KEY);
+    const likedSet = readHeroSet(SAINT_LIKED_KEY);
+    setMeditations((likeMap[eid] ?? 0) + seedHeroCount(saint.id, 7));
+    setBroadcasts((shareMap[eid] ?? 0) + seedHeroCount(saint.id, 13));
+    setMeditated(likedSet.has(eid));
   }, [saint]);
 
   const pageUrl = () =>
@@ -210,6 +248,36 @@ function SaintDetails() {
     writeFavorites(next);
     setSaved(next.includes(saint.id));
     notify(next.includes(saint.id) ? "savedToFavorites" : "removedFromFavorites");
+  };
+
+  const toggleMeditation = () => {
+    const eid = saintEngagementDayId(saint.id);
+    const likeMap = readHeroMap(SAINT_LIKE_KEY);
+    const likedSet = readHeroSet(SAINT_LIKED_KEY);
+    const base = seedHeroCount(saint.id, 7);
+    if (meditated) {
+      likeMap[eid] = Math.max(0, (likeMap[eid] ?? 0) - 1);
+      likedSet.delete(eid);
+      setMeditated(false);
+      setMeditations(base + (likeMap[eid] ?? 0));
+    } else {
+      likeMap[eid] = (likeMap[eid] ?? 0) + 1;
+      likedSet.add(eid);
+      setMeditated(true);
+      setMeditations(base + likeMap[eid]);
+    }
+    writeHeroMap(SAINT_LIKE_KEY, likeMap);
+    writeHeroSet(SAINT_LIKED_KEY, likedSet);
+  };
+
+  const openShareLedger = () => {
+    const eid = saintEngagementDayId(saint.id);
+    const shareMap = readHeroMap(SAINT_SHARE_KEY);
+    const base = seedHeroCount(saint.id, 13);
+    shareMap[eid] = (shareMap[eid] ?? 0) + 1;
+    writeHeroMap(SAINT_SHARE_KEY, shareMap);
+    setBroadcasts(base + shareMap[eid]);
+    setShareOpen(true);
   };
 
   const handleNativeShare = async () => {
@@ -334,6 +402,11 @@ function SaintDetails() {
     notify("comingSoonItem", { title: item.title });
   };
 
+  const heroImage =
+    galleryImages.find((img) => img.isFeatured)?.publicUrl ??
+    galleryImages[0]?.publicUrl ??
+    saint.image;
+
   return (
     <div
       dir="rtl"
@@ -359,14 +432,6 @@ function SaintDetails() {
           <DisplayButton onClick={() => setPresentOpen(true)} />
           <button
             type="button"
-            aria-label="مشاركة"
-            onClick={() => setShareOpen(true)}
-            className="grid h-9 w-9 place-items-center rounded-full bg-white/70 border border-[#efe2c4] text-[#3a2a18] active:scale-90 transition-transform"
-          >
-            <Share2 className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
             aria-label="حفظ"
             onClick={toggleSave}
             className={`grid h-9 w-9 place-items-center rounded-full border active:scale-90 transition-all duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
@@ -390,20 +455,26 @@ function SaintDetails() {
             <div className="relative h-[260px] overflow-hidden">
               <div
                 className="absolute inset-0 bg-cover bg-center scale-105"
-                style={{ backgroundImage: `url(${saint.image})` }}
+                style={{ backgroundImage: `url(${heroImage})` }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#fbf3e1] via-[#fbf3e1]/30 to-transparent" />
-              <span className="absolute top-3 right-3 text-[28px] font-bold text-white/70 drop-shadow-[0_2px_6px_rgba(0,0,0,0.4)] leading-none">
+              <span className="absolute top-3 right-3 text-[28px] font-bold text-white/70 drop-shadow-[0_2px_6px_rgba(0,0,0,0.4)] leading-none pointer-events-none">
                 Ⲁ
               </span>
-              <span className="absolute top-3 left-3 text-[28px] font-bold text-white/70 drop-shadow-[0_2px_6px_rgba(0,0,0,0.4)] leading-none">
+              <span className="absolute top-3 left-3 text-[28px] font-bold text-white/70 drop-shadow-[0_2px_6px_rgba(0,0,0,0.4)] leading-none pointer-events-none">
                 Ⲱ
               </span>
-              <div className="absolute top-4 inset-x-0 flex justify-center">
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-black/35 backdrop-blur-md px-3 py-1 text-[11px] font-bold text-white border border-white/20">
-                  <Calendar className="h-3 w-3" />
-                  {saint.copticDate}
-                </div>
+              <div className="absolute inset-x-3 bottom-3 z-10">
+                <HeroSpiritLedgerRow
+                  accent={ALPHA_HERO_ACCENT}
+                  meditations={meditations}
+                  broadcasts={broadcasts}
+                  meditated={meditated}
+                  meditateSublabel="وقف مع القديس"
+                  onMeditate={toggleMeditation}
+                  onBroadcast={openShareLedger}
+                  className="mt-0"
+                />
               </div>
             </div>
             <div className="px-5 pt-2 pb-5 text-center">
@@ -411,10 +482,27 @@ function SaintDetails() {
                 {saint.name}
               </h2>
               <p className="text-[13px] font-bold text-[#b8893a] mt-1.5">{saint.title}</p>
-              <p className="text-[11.5px] text-[#6a543a] mt-1">{saint.gregorianDate}</p>
+              <p className="text-[11.5px] text-[#6a543a] mt-1">{saint.copticDate}</p>
+              <p className="text-[11px] text-[#6a543a]/80 mt-0.5">{saint.gregorianDate}</p>
             </div>
           </div>
         </GlassSurface>
+
+        {/* COMMUNITY GALLERY */}
+        <section className="mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-[13px] font-extrabold text-[#3a2a18]">ألبوم القديس</h3>
+            <button
+              type="button"
+              onClick={() => setUploadOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-l from-[#6a4ab5] to-[#8c6fd1] px-3 h-8 text-[11px] font-bold text-white active:scale-95 transition-transform"
+            >
+              <ImagePlus className="h-3.5 w-3.5" />
+              إضافة صورة
+            </button>
+          </div>
+          <SaintGalleryAlbum images={galleryImages} />
+        </section>
 
         {/* QUICK INFO CARDS */}
         <div className="mt-4 grid grid-cols-2 gap-2.5">
@@ -556,28 +644,7 @@ function SaintDetails() {
         </section>
 
         {/* BOTTOM ACTIONS */}
-        <section className="mt-6 space-y-2.5">
-          <div className="grid grid-cols-2 gap-2.5">
-            <button
-              type="button"
-              onClick={handleNativeShare}
-              className="h-12 inline-flex items-center justify-center gap-2 rounded-2xl bg-white/85 border border-[#efe2c4] text-[#3a2a18] text-[13px] font-bold shadow-[0_8px_18px_-12px_rgba(120,80,30,0.45)] active:scale-[0.97] transition-transform"
-            >
-              <Share2 className="h-4 w-4" /> مشاركة السيرة
-            </button>
-            <button
-              type="button"
-              onClick={toggleSave}
-              className={`h-12 inline-flex items-center justify-center gap-2 rounded-2xl border text-[13px] font-bold active:scale-[0.97] transition-all duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
-                saved
-                  ? "bg-[#6a4ab5] border-[#6a4ab5] text-white shadow-[0_10px_22px_-12px_rgba(106,74,181,0.7)]"
-                  : "bg-white/85 border-[#efe2c4] text-[#3a2a18] shadow-[0_8px_18px_-12px_rgba(120,80,30,0.45)]"
-              }`}
-            >
-              <Bookmark className={`h-4 w-4 ${saved ? "fill-current" : ""}`} />
-              {saved ? "محفوظ" : "حفظ"}
-            </button>
-          </div>
+        <section className="mt-6">
           <Link
             to="/synaxarium"
             className="h-14 w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-l from-[#6a4ab5] to-[#8c6fd1] text-white text-[14px] font-extrabold shadow-[0_14px_30px_-14px_rgba(106,74,181,0.7)] active:scale-[0.98] transition-transform"
@@ -618,6 +685,23 @@ function SaintDetails() {
           </div>
         </DrawerContent>
       </Drawer>
+
+      <SaintGalleryUploadSheet
+        open={uploadOpen}
+        onOpenChange={setUploadOpen}
+        saintId={saint.id}
+        saintName={saint.name}
+        onSubmitted={() => {
+          setUploadToast("🟡 تم رفع الصورة — قيد المراجعة");
+          setTimeout(() => setUploadToast(null), 2800);
+        }}
+      />
+
+      {uploadToast ? (
+        <p className="fixed bottom-28 inset-x-0 z-50 text-center text-[12px] font-bold text-[#6a4ab5] animate-in fade-in">
+          {uploadToast}
+        </p>
+      ) : null}
 
       <PresentationMode
         open={presentOpen}

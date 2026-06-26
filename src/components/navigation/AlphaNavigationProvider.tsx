@@ -26,10 +26,11 @@ function getSmartFallback(pathname: string): string {
   if (
     pathname === "/messages" ||
     pathname.startsWith("/messages/") ||
+    pathname === "/profile/messages" ||
     pathname.startsWith("/alpha-connect") ||
     pathname === "/personal-call"
   ) {
-    return "/church";
+    return "/alpha-connect";
   }
   return "/home";
 }

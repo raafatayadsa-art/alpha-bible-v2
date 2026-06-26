@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="72" height="88" viewBox="0 0 72 88" fill="none">
+  <ellipse cx="36" cy="82" rx="22" ry="5" fill="#D4AF37" fill-opacity="0.35"/>
+  <path d="M36 8 L52 22 V58 H20 V22 Z" fill="url(#wall)" stroke="#D4AF37" stroke-width="1.2"/>
+  <path d="M36 4 L58 24 H14 Z" fill="url(#roof)" stroke="#B8893A" stroke-width="1"/>
+  <rect x="30" y="38" width="12" height="20" rx="1" fill="#2A1848" stroke="#D4AF37" stroke-width="0.8"/>
+  <path d="M33 38 V32 H39 V38" stroke="#D4AF37" stroke-width="0.8" fill="none"/>
+  <circle cx="36" cy="18" r="5.5" fill="#5D3291" stroke="#F0D78C" stroke-width="1.2"/>
+  <path d="M36 12.5 V23.5 M31 18 H41" stroke="#F0D78C" stroke-width="1.4" stroke-linecap="round"/>
+  <rect x="24" y="28" width="5" height="6" rx="0.5" fill="#F5E6B8" fill-opacity="0.85"/>
+  <rect x="43" y="28" width="5" height="6" rx="0.5" fill="#F5E6B8" fill-opacity="0.65"/>
+  <rect x="24" y="48" width="5" height="6" rx="0.5" fill="#F5E6B8" fill-opacity="0.65"/>
+  <rect x="43" y="48" width="5" height="6" rx="0.5" fill="#F5E6B8" fill-opacity="0.85"/>
+  <defs>
+    <linearGradient id="wall" x1="20" y1="22" x2="52" y2="58" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8A6EC1"/>
+      <stop offset="1" stop-color="#5D3291"/>
+    </linearGradient>
+    <linearGradient id="roof" x1="36" y1="4" x2="36" y2="24" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4A3080"/>
+      <stop offset="1" stop-color="#3A2560"/>
+    </linearGradient>
+  </defs>
+</svg>

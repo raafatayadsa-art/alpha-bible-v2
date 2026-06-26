@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import type { AlphaControlTone } from "@/components/controls/AlphaControlBar";
 import { AlphaReadingControlBar } from "@/components/controls/AlphaReadingControlBar";
 import {
   cycleLineHeight,
@@ -26,6 +27,8 @@ export function AutoScrollControls({
   lineHeight,
   setLineHeight,
   lineHeightSteps = [...DEFAULT_LINE_HEIGHT_STEPS],
+  tone = "default",
+  showAutoscroll = true,
 }: {
   spiritualMode: boolean;
   onToggleSpiritual: () => void;
@@ -41,6 +44,7 @@ export function AutoScrollControls({
   lineHeight?: number;
   setLineHeight?: (n: number) => void;
   lineHeightSteps?: number[];
+  tone?: AlphaControlTone;
 }) {
   const { playing, togglePlay, speedLabel, cycleSpeed } = useReadingAutoscroll(scrollContainer);
 
@@ -64,6 +68,7 @@ export function AutoScrollControls({
         compact={!isComfort}
         className={isComfort ? "gap-1.5 px-2.5 py-1.5" : undefined}
         dark={spiritualMode}
+        tone={tone}
         playing={playing}
         onTogglePlay={togglePlay}
         speedLabel={speedLabel}
@@ -92,6 +97,7 @@ export function AutoScrollControls({
         fontMin={fontMin}
         fontMax={fontMax}
         onToggleTheme={onToggleSpiritual}
+        showAutoscroll={showAutoscroll}
       />
     </div>
   );

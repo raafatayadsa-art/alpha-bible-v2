@@ -1,9 +1,35 @@
 import type { LucideIcon } from "lucide-react";
 import { Play, Pause } from "lucide-react";
+import { createContext, useContext } from "react";
 import { cn } from "@/lib/utils";
 
+export type AlphaControlTone = "default" | "kholagy";
+
+const AlphaControlToneContext = createContext<AlphaControlTone>("default");
+
+function useControlTone(): AlphaControlTone {
+  return useContext(AlphaControlToneContext);
+}
+
 /** Visual tokens for the Standard Alpha Control Bar (Presentation Mode DNA). */
-export function useAlphaControlTheme(dark: boolean) {
+export function useAlphaControlTheme(dark: boolean, toneOverride?: AlphaControlTone) {
+  const tone = toneOverride ?? useControlTone();
+
+  if (tone === "kholagy") {
+    return {
+      barBg: dark
+        ? "bg-[#1a2248]/92 border-[#c4b0e8]/48 shadow-[0_12px_40px_-12px_rgba(138,110,193,0.55)]"
+        : "bg-[#f6f0ff]/88 border-[#c4b0e8]/55 shadow-[0_18px_50px_-22px_rgba(90,61,146,0.28)]",
+      ctrlBtn: dark
+        ? "bg-white/[0.08] border-[#c4b0e8]/38 text-[#f3ecff] backdrop-blur hover:bg-white/[0.12]"
+        : "bg-white/72 border-[#c4b0e8]/50 text-[#3a2560] backdrop-blur hover:bg-white/88",
+      textShadow: dark
+        ? ({ textShadow: "0 1px 2px rgba(0,0,0,0.55)" } as const)
+        : ({ textShadow: "0 1px 1px rgba(90,61,146,0.15)" } as const),
+      divider: dark ? "bg-[#c4b0e8]/42" : "bg-[#8a6ec1]/22",
+    };
+  }
+
   return {
     barBg: dark
       ? "bg-[#0e2a22]/55 border-[#5aa78a]/30 shadow-[0_18px_50px_-22px_rgba(0,30,20,0.65)]"
@@ -35,27 +61,31 @@ export function AlphaControlMark({ dark, className }: { dark?: boolean; classNam
 
 export function AlphaControlBarShell({
   dark,
+  tone = "default",
   children,
   className,
   compact,
 }: {
   dark?: boolean;
+  tone?: AlphaControlTone;
   children: React.ReactNode;
   className?: string;
   compact?: boolean;
 }) {
-  const theme = useAlphaControlTheme(Boolean(dark));
+  const theme = useAlphaControlTheme(Boolean(dark), tone);
   return (
-    <div
-      className={cn(
-        "flex items-center rounded-full border backdrop-blur-2xl",
-        compact ? "gap-0.5 px-1 py-0.5" : "gap-1 px-1.5 py-1",
-        theme.barBg,
-        className,
-      )}
-    >
-      {children}
-    </div>
+    <AlphaControlToneContext.Provider value={tone}>
+      <div
+        className={cn(
+          "flex items-center rounded-full border backdrop-blur-2xl",
+          compact ? "gap-0.5 px-1 py-0.5" : "gap-1 px-1.5 py-1",
+          theme.barBg,
+          className,
+        )}
+      >
+        {children}
+      </div>
+    </AlphaControlToneContext.Provider>
   );
 }
 
@@ -77,19 +107,30 @@ export function AlphaControlPlayButton({
   dark?: boolean;
   size?: "md" | "sm";
 }) {
+  const tone = useControlTone();
   const h = size === "sm" ? "h-8 w-8" : "h-10 w-10";
   const icon = size === "sm" ? "h-3.5 w-3.5" : "h-4 w-4";
+  const playGradient =
+    tone === "kholagy"
+      ? "bg-gradient-to-br from-[#9b7fd4] to-[#5a3d92]"
+      : "bg-gradient-to-br from-[#5aa78a] to-[#1f5a42]";
+  const playGlow = playing
+    ? tone === "kholagy"
+      ? "shadow-[0_0_16px_rgba(138,110,193,0.85),0_0_30px_rgba(90,61,146,0.45)] ring-1 ring-[#c4b0e8]/60"
+      : "shadow-[0_0_16px_rgba(90,167,138,0.85),0_0_30px_rgba(47,110,84,0.45)] ring-1 ring-[#bfe5d3]/60"
+    : tone === "kholagy"
+      ? "shadow-[0_6px_14px_-6px_rgba(90,61,146,0.55)] ring-1 ring-[#c4b0e8]/35"
+      : "shadow-[0_6px_14px_-6px_rgba(20,80,55,0.6)] ring-1 ring-[#bfe5d3]/35";
   return (
     <button
       type="button"
       aria-label={playing ? "إيقاف التمرير" : "تشغيل التمرير"}
       onClick={onToggle}
       className={cn(
-        "grid place-items-center rounded-full text-white bg-gradient-to-br from-[#5aa78a] to-[#1f5a42] border border-white/25 active:scale-95 transition-all",
+        "grid place-items-center rounded-full text-white border border-white/25 active:scale-95 transition-all",
+        playGradient,
         h,
-        playing
-          ? "shadow-[0_0_16px_rgba(90,167,138,0.85),0_0_30px_rgba(47,110,84,0.45)] ring-1 ring-[#bfe5d3]/60"
-          : "shadow-[0_6px_14px_-6px_rgba(20,80,55,0.6)] ring-1 ring-[#bfe5d3]/35",
+        playGlow,
       )}
     >
       {playing ? (

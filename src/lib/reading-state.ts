@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { recordJourneyReading } from "@/features/bible-journey/journey-storage";
 
 /* ---------- Types ---------- */
 
@@ -183,4 +184,12 @@ export function updateSession(s: ReadingSession) {
   );
   const next = [s, ...filtered].slice(0, 6);
   write(KEYS.recent, next);
+
+  recordJourneyReading({
+    book: s.book,
+    chapter: s.chapter,
+    progressPercent: s.progressPercent,
+    verse: s.verse,
+    lastOpenedAt: s.lastOpenedAt,
+  });
 }

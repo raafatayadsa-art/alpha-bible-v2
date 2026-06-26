@@ -1,0 +1,8 @@
+=== OLD ===
+            isActive={activeVerse === id}
+            saved={isSaved(id)}
+
+=== NEW ===
+            isActive={activeVerse === id}
+            isPulsing={pulsingVerseId === id}
+            saved={isSaved(id)}

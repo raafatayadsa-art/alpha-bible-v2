@@ -1,46 +1,44 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { AlphaMessagingSystem } from "@/components/alpha/AlphaMessagingSystem";
-import { useAlphaPresenceBootstrap, usePresenceStoreVersion } from "@/features/alpha-connect/useAlphaPresence";
+import {
+  buildAlphaConnectChatSearch,
+  buildAlphaConnectSearch,
+  parseAlphaConnectContactRole,
+} from "@/features/alpha-connect/alpha-connect-nav";
 
+/** Legacy /messages → Alpha Connect messages tab (temporary redirect). */
 export const Route = createFileRoute("/messages")({
   ssr: false,
   validateSearch: (search: Record<string, unknown>) => ({
     contactId: typeof search.contactId === "string" ? search.contactId : undefined,
     name: typeof search.name === "string" ? search.name : undefined,
-    role:
-      search.role === "priest" || search.role === "servant" || search.role === "admin"
-        ? search.role
-        : undefined,
+    role: parseAlphaConnectContactRole(search.role),
     phone: typeof search.phone === "string" ? search.phone : undefined,
-    from: typeof search.from === "string" ? search.from : undefined,
-    screen: search.screen === "settings" ? "settings" as const : undefined,
+    screen: search.screen === "settings" ? ("settings" as const) : undefined,
   }),
   beforeLoad: ({ search }) => {
     if (search.contactId) {
       throw redirect({
-        to: "/messages/chat/$contactId",
-        params: { contactId: search.contactId },
-        search: {
+        to: "/alpha-connect",
+        search: buildAlphaConnectChatSearch({
+          contactId: search.contactId,
           name: search.name,
           role: search.role,
           phone: search.phone,
-          from: search.from,
-        },
+        }),
       });
     }
+
+    if (search.screen === "settings") {
+      throw redirect({
+        to: "/alpha-connect",
+        search: buildAlphaConnectSearch({ tab: "settings" }),
+      });
+    }
+
+    throw redirect({
+      to: "/alpha-connect",
+      search: buildAlphaConnectSearch({ tab: "messages" }),
+    });
   },
-  component: MessagesPage,
+  component: () => null,
 });
-
-function MessagesPage() {
-  useAlphaPresenceBootstrap();
-  usePresenceStoreVersion();
-  const { from, screen } = Route.useSearch();
-
-  return (
-    <AlphaMessagingSystem
-      returnTo={from}
-      initialScreen={screen}
-    />
-  );
-}

@@ -77,16 +77,17 @@ export function formatRelativeTime(ts: number): string {
   return new Date(ts).toLocaleDateString("ar-EG", { dateStyle: "medium" });
 }
 
-async function notifyRequester(item: ApprovalItem, kind: NotifyKind, body: string) {
+async function notifyRequester(item: ApprovalItem, kind: NotifyKind, body: string, titleOverride?: string) {
   const recipientId = item.submittedBy ?? item.churchId ?? item.id;
   const title =
-    kind === "approved"
+    titleOverride ??
+    (kind === "approved"
       ? "تم اعتماد طلبك"
       : kind === "rejected"
         ? "تم رفض طلبك"
         : kind === "needs_info"
           ? "مطلوب معلومات إضافية"
-          : "طلبك قيد المراجعة";
+          : "طلبك قيد المراجعة");
   await insertApprovalNotificationDb(item.id, recipientId, title, body, kind);
 }
 
@@ -95,7 +96,7 @@ async function applyPatch(
   next: Partial<ApprovalItem>,
   auditAction: string,
   auditReason: string,
-  notify?: { kind: NotifyKind; body: string },
+  notify?: { kind: NotifyKind; body: string; title?: string },
 ): Promise<boolean> {
   if (!isOwnerSessionActive()) return false;
 
@@ -103,6 +104,17 @@ async function applyPatch(
   if (!item) return false;
 
   const merged: ApprovalItem = enrichApprovalItem({ ...item, ...next });
+  const linked = (await fetchApprovalById(id)) ?? item;
+
+  const syncOk = await syncApprovalSourceStatus(
+    linked.sourceTable,
+    linked.sourceId,
+    merged.status,
+    id,
+    linked.kind,
+  );
+  if (!syncOk) return false;
+
   const ok = await patchApprovalDb(id, {
     status: merged.status,
     reviewedBy: merged.reviewedBy,
@@ -112,17 +124,8 @@ async function applyPatch(
   });
   if (!ok) return false;
 
-  const linked = (await fetchApprovalById(id)) ?? item;
-  await syncApprovalSourceStatus(
-    linked.sourceTable,
-    linked.sourceId,
-    merged.status,
-    id,
-    linked.kind,
-  );
-
   await insertAuditDb(auditAction, auditReason);
-  if (notify) await notifyRequester(merged, notify.kind, notify.body);
+  if (notify) await notifyRequester(merged, notify.kind, notify.body, notify.title);
 
   const refreshed = await fetchApprovalById(id);
   if (refreshed) {
@@ -189,7 +192,11 @@ export function useApprovalsCenter() {
 
   const summary = useMemo(
     () => ({
-      churches: items.filter((i) => i.kind === "church_setup" && normalizeApprovalStatus(i.status) === "pending").length,
+      churches: items.filter(
+        (i) =>
+          (i.kind === "church_setup" || i.kind === "church_claim") &&
+          normalizeApprovalStatus(i.status) === "pending",
+      ).length,
       priests: items.filter((i) => i.kind === "priest_verification" && normalizeApprovalStatus(i.status) === "pending").length,
       servants: items.filter((i) => i.kind === "servant_verification" && normalizeApprovalStatus(i.status) === "pending").length,
       saints: items.filter((i) => i.kind === "saint_image" && normalizeApprovalStatus(i.status) === "pending").length,
@@ -226,12 +233,17 @@ export function useApprovalsCenter() {
     if (!item || !canTakeApprovalDecision(item.status)) return false;
     const reviewer = await getCurrentPlatformAdmin();
     const now = Date.now();
+    const notifyBody =
+      item.kind === "saint_image"
+        ? "تمت إضافة الصورة إلى مكتبة Alpha الرسمية. سيتم حفظ مساهمتك بشكل دائم."
+        : `تم اعتماد طلب ${item.requestNo} بنجاح.`;
+    const notifyTitle = item.kind === "saint_image" ? "🎉 تم اعتماد صورتك" : undefined;
     return applyPatch(
       id,
       { status: "approved", reviewedBy: reviewer, reviewedAt: now, rejectionReason: undefined, adminNotes: undefined },
       `اعتماد — ${item.title}`,
       `Approved by ${reviewer} at ${new Date(now).toLocaleString("ar-EG")}`,
-      { kind: "approved", body: `تم اعتماد طلب ${item.requestNo} بنجاح.` },
+      { kind: "approved", body: notifyBody, title: notifyTitle },
     );
   }, []);
 

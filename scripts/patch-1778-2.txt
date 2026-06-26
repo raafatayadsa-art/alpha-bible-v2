@@ -1,0 +1,53 @@
+=== OLD ===
+          )}
+        </p>
+        <div className="flex shrink-0 flex-col items-center gap-1">
+          <button
+            type="button"
+            aria-label="ملاحظة أو تأمل على هذه الآية"
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenJournal();
+            }}
+            className={cn(
+              "grid h-7 w-7 place-items-center rounded-full border transition-all active:scale-90",
+              spiritualMode
+                ? "bg-[#6eb5f0]/15 border-[#6eb5f0]/35 text-[#8fd4ff] opacity-80 group-hover:opacity-100"
+                : "bg-[#e8f4ff] border-[#9ec8ef] text-[#4a7eb8] opacity-80 group-hover:opacity-100",
+            )}
+          >
+            <FilePen className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            aria-label={saved ? "إزالة من المحفوظات" : "حفظ الآية"}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleSave();
+            }}
+            className={cn(
+              "grid h-7 w-7 place-items-center rounded-full border transition-all active:scale-90",
+              saved
+                ? spiritualMode
+                  ? "bg-[#e7c97a]/20 border-[#e7c97a]/45 text-[#f0d78c]"
+                  : "bg-gradient-to-br from-[#fff1c7] to-[#e7c07a] border-transparent text-[#7a4a26]"
+                : spiritualMode
+                  ? "bg-white/5 border-white/10 text-[#c79356] opacity-70 group-hover:opacity-100"
+                  : "bg-white/70 border-[#efe2c4] text-[#b8893a] opacity-70 group-hover:opacity-100",
+            )}
+          >
+            {saved ? <BookmarkCheck className="h-3.5 w-3.5" /> : <Bookmark className="h-3.5 w-3.5" />}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+=== NEW ===
+          )}
+        </p>
+      </div>
+    </div>
+  );
+});

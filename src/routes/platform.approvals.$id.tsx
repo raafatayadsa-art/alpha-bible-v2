@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ApprovalDetailsScreen } from "@/features/platform-admin/ApprovalDetailsScreen";
-import { PlatformAccessGate } from "@/features/platform-admin/PlatformAccessGate";
 
 export const Route = createFileRoute("/platform/approvals/$id")({
   ssr: false,
@@ -11,9 +10,5 @@ export const Route = createFileRoute("/platform/approvals/$id")({
 });
 
 function PlatformApprovalDetailsRoute() {
-  return (
-    <PlatformAccessGate>
-      <ApprovalDetailsScreen />
-    </PlatformAccessGate>
-  );
+  return <ApprovalDetailsScreen />;
 }

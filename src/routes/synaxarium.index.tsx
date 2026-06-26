@@ -3,6 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { BookOpen, ChevronLeft, Crown, Mountain, Flame, Sparkles, Users, Search } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { synaxariumSaintsQueryOptions, todaySynaxariumSaintQueryOptions, type Saint } from "@/features/synaxarium";
+import { useApprovedSaintGallery } from "@/features/saint-gallery";
+import { SaintDynamicHeroCard } from "@/features/saint-gallery/components/SaintDynamicHeroCard";
+import { SaintGalleryAlbum } from "@/features/saint-gallery/components/SaintGalleryAlbum";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { GlassSurface } from "@/components/bible/primitives";
 import { CopticCross, CopticWatermark, CopticDivider, CopticTitle } from "@/components/coptic";
@@ -83,6 +86,8 @@ function SynaxariumHome() {
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const topRef = useRef<HTMLDivElement | null>(null);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [albumOpen, setAlbumOpen] = useState(false);
+  const { data: todayGallery = [] } = useApprovedSaintGallery(today?.id);
 
   useEffect(() => {
     if (!today) {
@@ -211,57 +216,29 @@ function SynaxariumHome() {
 
         {/* Today hero — Saint of the day */}
         {today ? (
-        <Link
-          to="/synaxarium/$saintId"
-          params={{ saintId: today.id }}
-          className="block mt-3 active:scale-[0.99] transition-transform"
-        >
-          <GlassSurface className="overflow-hidden p-0 bg-white border-[#ead9b1] shadow-[0_18px_40px_-22px_rgba(120,80,30,0.55)]">
-            <div className="relative h-[230px] overflow-hidden">
-              <img
-                src={today.image}
-                alt={today.name}
-                loading="eager"
-                decoding="async"
-                draggable={false}
-                className="absolute inset-y-0 right-0 h-full w-[68%] object-cover object-center select-none"
-              />
-              <div
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  background:
-                    "linear-gradient(to left, rgba(255,255,255,0) 30%, rgba(255,251,240,0.35) 50%, rgba(255,250,238,0.85) 60%, #ffffff 70%)",
-                }}
-              />
-              <div className="absolute inset-x-0 top-0 h-4 bg-gradient-to-b from-white/40 to-transparent pointer-events-none" />
-              <div className="absolute inset-x-0 bottom-0 h-4 bg-gradient-to-t from-white/40 to-transparent pointer-events-none" />
+          <div className="mt-3">
+            <SaintDynamicHeroCard
+              saint={today}
+              onOpenSaint={() => navigate({ to: "/synaxarium/$saintId", params: { saintId: today.id } })}
+              onOpenAlbum={() => setAlbumOpen(true)}
+            />
+          </div>
+        ) : null}
 
-              <div className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-white/90 backdrop-blur px-2.5 py-1 text-[11px] font-bold text-[#3a2a18] border border-[#ead9b1] shadow-[0_4px_10px_-8px_rgba(120,80,30,0.5)]">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#6a4ab5]" />
-                قديس اليوم
-              </div>
-
-              <div className="absolute inset-y-0 left-0 right-[42%] p-6 pl-7 flex flex-col justify-center">
-                <div className="inline-flex items-center gap-1 text-[10.5px] font-bold text-[#b8893a]">
-                  <CopticCross size={10} />
-                  <span>{today.copticDate}</span>
-                  <span className="text-[#b8893a]/60">· Ⲁ Ⲱ</span>
-                </div>
-                <h2 className="font-arabic-serif text-[20px] font-extrabold text-[#3a2a18] leading-tight text-right mt-1.5 drop-shadow-[0_1px_0_rgba(255,255,255,0.8)] line-clamp-2">
-                  {today.name}
-                </h2>
-                <p className="text-[11.5px] text-[#6a543a] mt-1 text-right line-clamp-1">{today.title}</p>
-                <p className="text-[12px] text-[#3a2a18] mt-2.5 leading-relaxed line-clamp-3 text-right">
-                  {today.summary}
-                </p>
-                <span className="mt-3 self-end inline-flex items-center gap-2 rounded-full bg-gradient-to-l from-[#6a4ab5] to-[#8c6fd1] text-white px-3.5 h-9 text-[11.5px] font-bold shadow-[0_10px_18px_-10px_rgba(106,74,181,0.6)]">
-                  <BookOpen className="h-3.5 w-3.5" />
-                  اقرأ السيرة
-                </span>
-              </div>
+        {today && albumOpen ? (
+          <section className="mt-4 rounded-2xl border border-[#ead9b1] bg-white/90 p-3">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-[13px] font-extrabold text-[#3a2a18]">ألبوم {today.name}</h3>
+              <button
+                type="button"
+                onClick={() => setAlbumOpen(false)}
+                className="text-[11px] font-bold text-[#6a543a]"
+              >
+                إغلاق
+              </button>
             </div>
-          </GlassSurface>
-        </Link>
+            <SaintGalleryAlbum images={todayGallery} />
+          </section>
         ) : null}
 
         {/* Timeline list */}

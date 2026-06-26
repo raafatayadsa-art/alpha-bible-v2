@@ -1,0 +1,8 @@
+=== OLD ===
+              activeVerse={activeVerse}
+              spiritualMode={spiritualMode}
+
+=== NEW ===
+              activeVerse={activeVerse}
+              pulsingVerseId={pulsingVerseId}
+              spiritualMode={spiritualMode}

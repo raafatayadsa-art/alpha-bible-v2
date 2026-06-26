@@ -6,7 +6,7 @@
   // redirect, so `wrangler deploy` from the repo root picks up the build output.
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "alpha-bible",
-  "main": "./dist/server/index.mjs",
+  "main": "./dist/server/server.js",
   "compatibility_date": "2025-05-05",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {

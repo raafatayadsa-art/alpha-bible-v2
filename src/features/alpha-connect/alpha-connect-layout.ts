@@ -7,12 +7,16 @@ export const CONNECT_NAV_DOCK_HEIGHT_PX = 72;
 
 /** Total clearance: dock + safe area — content must end above this. */
 export const CONNECT_NAV_CLEARANCE_CSS =
-  "calc(var(--alpha-connect-nav-dock-height, 72px) + max(16px, env(safe-area-inset-bottom)))";
+  "var(--alpha-bottom-nav-clearance, calc(140px + env(safe-area-inset-bottom, 0px)))";
 
 export function connectContentBottomPaddingClass(): string {
   return "pb-[var(--alpha-connect-nav-clearance)]";
 }
 
-export function connectSheetBottomInsetClass(): string {
-  return "mb-[var(--alpha-connect-nav-clearance)]";
+export function connectBottomSheetHostClass(): string {
+  return "alpha-bottom-sheet-host fixed inset-0 flex items-end justify-center";
+}
+
+export function connectDockFixedFooterClass(): string {
+  return "alpha-dock-fixed-footer";
 }

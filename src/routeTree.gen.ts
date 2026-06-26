@@ -14,10 +14,14 @@ import { Route as SearchRouteImport } from './routes/search'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as PrayerRequestsRouteImport } from './routes/prayer-requests'
+import { Route as PlatformRouteImport } from './routes/platform'
 import { Route as PersonalCallRouteImport } from './routes/personal-call'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MessagesRouteImport } from './routes/messages'
+import { Route as MeditationsRouteImport } from './routes/meditations'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as LibraryRouteImport } from './routes/library'
+import { Route as KidsRouteImport } from './routes/kids'
 import { Route as KatamerosTestRouteImport } from './routes/katameros-test'
 import { Route as IntroRouteImport } from './routes/intro'
 import { Route as HomeRouteImport } from './routes/home'
@@ -37,33 +41,46 @@ import { Route as AlphaConnectRouteImport } from './routes/alpha-connect'
 import { Route as BookRouteImport } from './routes/$book'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SynaxariumIndexRouteImport } from './routes/synaxarium.index'
+import { Route as PublisherIndexRouteImport } from './routes/publisher.index'
 import { Route as ProfileIndexRouteImport } from './routes/profile.index'
 import { Route as PlatformIndexRouteImport } from './routes/platform.index'
+import { Route as KholagyIndexRouteImport } from './routes/kholagy.index'
 import { Route as KatamerosIndexRouteImport } from './routes/katameros.index'
 import { Route as FeastsIndexRouteImport } from './routes/feasts.index'
+import { Route as BibleIndexRouteImport } from './routes/bible.index'
 import { Route as AgpeyaIndexRouteImport } from './routes/agpeya.index'
 import { Route as BookIndexRouteImport } from './routes/$book.index'
 import { Route as SynaxariumSaintIdRouteImport } from './routes/synaxarium.$saintId'
 import { Route as SettingsTrustRouteImport } from './routes/settings.trust'
+import { Route as PublisherApplyRouteImport } from './routes/publisher.apply'
+import { Route as PublisherPublisherIdRouteImport } from './routes/publisher.$publisherId'
 import { Route as ProfileServiceRouteImport } from './routes/profile.service'
 import { Route as ProfileSecurityRouteImport } from './routes/profile.security'
 import { Route as ProfilePersonalRouteImport } from './routes/profile.personal'
 import { Route as ProfileMessagesRouteImport } from './routes/profile.messages'
 import { Route as ProfileMembershipRouteImport } from './routes/profile.membership'
+import { Route as ProfileEditRouteImport } from './routes/profile.edit'
+import { Route as ProfileContributionsRouteImport } from './routes/profile.contributions'
 import { Route as ProfileChurchRouteImport } from './routes/profile.church'
 import { Route as ProfileAppearanceRouteImport } from './routes/profile.appearance'
 import { Route as PlatformSettingsRouteImport } from './routes/platform.settings'
 import { Route as PlatformScanRouteImport } from './routes/platform.scan'
 import { Route as PlatformReportsRouteImport } from './routes/platform.reports'
+import { Route as PlatformPublisherCenterRouteImport } from './routes/platform.publisher-center'
 import { Route as PlatformPrivacyRouteImport } from './routes/platform.privacy'
 import { Route as PlatformOwnerSecurityRouteImport } from './routes/platform.owner-security'
+import { Route as PlatformMonasteriesRouteImport } from './routes/platform.monasteries'
 import { Route as PlatformModulesRouteImport } from './routes/platform.modules'
 import { Route as PlatformLibraryRouteImport } from './routes/platform.library'
 import { Route as PlatformEmergencyRouteImport } from './routes/platform.emergency'
+import { Route as PlatformContentReviewRouteImport } from './routes/platform.content-review'
+import { Route as PlatformChurchesRouteImport } from './routes/platform.churches'
+import { Route as PlatformChurchLocationsRouteImport } from './routes/platform.church-locations'
 import { Route as PlatformAuditRouteImport } from './routes/platform.audit'
 import { Route as PlatformApprovalsRouteImport } from './routes/platform.approvals'
 import { Route as PlatformAnalyticsRouteImport } from './routes/platform.analytics'
 import { Route as PlatformAiRouteImport } from './routes/platform.ai'
+import { Route as KholagyGroupIdRouteImport } from './routes/kholagy.$groupId'
 import { Route as FeastsEventIdRouteImport } from './routes/feasts.$eventId'
 import { Route as DevKatamerosCurvePreviewRouteImport } from './routes/dev.katameros-curve-preview'
 import { Route as DevBackgroundPreviewRouteImport } from './routes/dev.background-preview'
@@ -80,17 +97,29 @@ import { Route as BibleQuestionsRouteImport } from './routes/bible.questions'
 import { Route as BiblePsalmsRouteImport } from './routes/bible.psalms'
 import { Route as BiblePlacesRouteImport } from './routes/bible.places'
 import { Route as BibleNotesRouteImport } from './routes/bible.notes'
+import { Route as BibleJourneyRouteImport } from './routes/bible.journey'
 import { Route as BibleCharactersRouteImport } from './routes/bible.characters'
+import { Route as Audiov2PublisherIdRouteImport } from './routes/audiov2.$publisherId'
+import { Route as AlphaConnectNearbyRouteImport } from './routes/alpha-connect.nearby'
 import { Route as AgpeyaSavedRouteImport } from './routes/agpeya.saved'
 import { Route as AgpeyaPrayerIdRouteImport } from './routes/agpeya.$prayerId'
 import { Route as BookChapterRouteImport } from './routes/$book.$chapter'
+import { Route as PublisherWorkspacePublisherIdRouteImport } from './routes/publisher.workspace.$publisherId'
+import { Route as PublisherPreviewPublisherIdRouteImport } from './routes/publisher.preview.$publisherId'
 import { Route as ProfileChurchSetupRouteImport } from './routes/profile.church.setup'
 import { Route as PlatformApprovalsIdRouteImport } from './routes/platform.approvals.$id'
 import { Route as MessagesChatContactIdRouteImport } from './routes/messages.chat.$contactId'
+import { Route as KholagyLiturgyLiturgyKeyRouteImport } from './routes/kholagy.liturgy.$liturgyKey'
+import { Route as KholagyCategoryCategoryRouteImport } from './routes/kholagy.category.$category'
+import { Route as ChurchPostsTypeRouteImport } from './routes/church.posts.$type'
 import { Route as ChurchPostIdRouteImport } from './routes/church.post.$id'
 import { Route as ChurchDirectoryPlaceIdRouteImport } from './routes/church.directory.$placeId'
 import { Route as ChurchChatContactIdRouteImport } from './routes/church.chat.$contactId'
+import { Route as Audiov2PreviewPublisherIdRouteImport } from './routes/audiov2.preview.$publisherId'
+import { Route as PublisherPublisherIdAlbumContentIdRouteImport } from './routes/publisher.$publisherId.album.$contentId'
 import { Route as PlatformScanTrustTrustIdRouteImport } from './routes/platform.scan.trust.$trustId'
+import { Route as KholagyLiturgyLiturgyKeySectionIdRouteImport } from './routes/kholagy.liturgy_.$liturgyKey.$sectionId'
+import { Route as ChurchDirectoryPlaceIdPostsTypeRouteImport } from './routes/church.directory.$placeId.posts.$type'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
@@ -117,6 +146,11 @@ const PrayerRequestsRoute = PrayerRequestsRouteImport.update({
   path: '/prayer-requests',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlatformRoute = PlatformRouteImport.update({
+  id: '/platform',
+  path: '/platform',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PersonalCallRoute = PersonalCallRouteImport.update({
   id: '/personal-call',
   path: '/personal-call',
@@ -132,9 +166,24 @@ const MessagesRoute = MessagesRouteImport.update({
   path: '/messages',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MeditationsRoute = MeditationsRouteImport.update({
+  id: '/meditations',
+  path: '/meditations',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LibraryRoute = LibraryRouteImport.update({
+  id: '/library',
+  path: '/library',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KidsRoute = KidsRouteImport.update({
+  id: '/kids',
+  path: '/kids',
   getParentRoute: () => rootRouteImport,
 } as any)
 const KatamerosTestRoute = KatamerosTestRouteImport.update({
@@ -232,14 +281,24 @@ const SynaxariumIndexRoute = SynaxariumIndexRouteImport.update({
   path: '/synaxarium/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PublisherIndexRoute = PublisherIndexRouteImport.update({
+  id: '/publisher/',
+  path: '/publisher/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfileIndexRoute = ProfileIndexRouteImport.update({
   id: '/profile/',
   path: '/profile/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlatformIndexRoute = PlatformIndexRouteImport.update({
-  id: '/platform/',
-  path: '/platform/',
+  id: '/',
+  path: '/',
+  getParentRoute: () => PlatformRoute,
+} as any)
+const KholagyIndexRoute = KholagyIndexRouteImport.update({
+  id: '/kholagy/',
+  path: '/kholagy/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const KatamerosIndexRoute = KatamerosIndexRouteImport.update({
@@ -251,6 +310,11 @@ const FeastsIndexRoute = FeastsIndexRouteImport.update({
   id: '/feasts/',
   path: '/feasts/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const BibleIndexRoute = BibleIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BibleRoute,
 } as any)
 const AgpeyaIndexRoute = AgpeyaIndexRouteImport.update({
   id: '/agpeya/',
@@ -271,6 +335,16 @@ const SettingsTrustRoute = SettingsTrustRouteImport.update({
   id: '/trust',
   path: '/trust',
   getParentRoute: () => SettingsRoute,
+} as any)
+const PublisherApplyRoute = PublisherApplyRouteImport.update({
+  id: '/publisher/apply',
+  path: '/publisher/apply',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PublisherPublisherIdRoute = PublisherPublisherIdRouteImport.update({
+  id: '/publisher/$publisherId',
+  path: '/publisher/$publisherId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileServiceRoute = ProfileServiceRouteImport.update({
   id: '/profile/service',
@@ -297,6 +371,16 @@ const ProfileMembershipRoute = ProfileMembershipRouteImport.update({
   path: '/profile/membership',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileEditRoute = ProfileEditRouteImport.update({
+  id: '/profile/edit',
+  path: '/profile/edit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileContributionsRoute = ProfileContributionsRouteImport.update({
+  id: '/profile/contributions',
+  path: '/profile/contributions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfileChurchRoute = ProfileChurchRouteImport.update({
   id: '/profile/church',
   path: '/profile/church',
@@ -308,63 +392,93 @@ const ProfileAppearanceRoute = ProfileAppearanceRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlatformSettingsRoute = PlatformSettingsRouteImport.update({
-  id: '/platform/settings',
-  path: '/platform/settings',
-  getParentRoute: () => rootRouteImport,
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => PlatformRoute,
 } as any)
 const PlatformScanRoute = PlatformScanRouteImport.update({
-  id: '/platform/scan',
-  path: '/platform/scan',
-  getParentRoute: () => rootRouteImport,
+  id: '/scan',
+  path: '/scan',
+  getParentRoute: () => PlatformRoute,
 } as any)
 const PlatformReportsRoute = PlatformReportsRouteImport.update({
-  id: '/platform/reports',
-  path: '/platform/reports',
-  getParentRoute: () => rootRouteImport,
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => PlatformRoute,
+} as any)
+const PlatformPublisherCenterRoute = PlatformPublisherCenterRouteImport.update({
+  id: '/publisher-center',
+  path: '/publisher-center',
+  getParentRoute: () => PlatformRoute,
 } as any)
 const PlatformPrivacyRoute = PlatformPrivacyRouteImport.update({
-  id: '/platform/privacy',
-  path: '/platform/privacy',
-  getParentRoute: () => rootRouteImport,
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => PlatformRoute,
 } as any)
 const PlatformOwnerSecurityRoute = PlatformOwnerSecurityRouteImport.update({
-  id: '/platform/owner-security',
-  path: '/platform/owner-security',
-  getParentRoute: () => rootRouteImport,
+  id: '/owner-security',
+  path: '/owner-security',
+  getParentRoute: () => PlatformRoute,
+} as any)
+const PlatformMonasteriesRoute = PlatformMonasteriesRouteImport.update({
+  id: '/monasteries',
+  path: '/monasteries',
+  getParentRoute: () => PlatformRoute,
 } as any)
 const PlatformModulesRoute = PlatformModulesRouteImport.update({
-  id: '/platform/modules',
-  path: '/platform/modules',
-  getParentRoute: () => rootRouteImport,
+  id: '/modules',
+  path: '/modules',
+  getParentRoute: () => PlatformRoute,
 } as any)
 const PlatformLibraryRoute = PlatformLibraryRouteImport.update({
-  id: '/platform/library',
-  path: '/platform/library',
-  getParentRoute: () => rootRouteImport,
+  id: '/library',
+  path: '/library',
+  getParentRoute: () => PlatformRoute,
 } as any)
 const PlatformEmergencyRoute = PlatformEmergencyRouteImport.update({
-  id: '/platform/emergency',
-  path: '/platform/emergency',
-  getParentRoute: () => rootRouteImport,
+  id: '/emergency',
+  path: '/emergency',
+  getParentRoute: () => PlatformRoute,
+} as any)
+const PlatformContentReviewRoute = PlatformContentReviewRouteImport.update({
+  id: '/content-review',
+  path: '/content-review',
+  getParentRoute: () => PlatformRoute,
+} as any)
+const PlatformChurchesRoute = PlatformChurchesRouteImport.update({
+  id: '/churches',
+  path: '/churches',
+  getParentRoute: () => PlatformRoute,
+} as any)
+const PlatformChurchLocationsRoute = PlatformChurchLocationsRouteImport.update({
+  id: '/church-locations',
+  path: '/church-locations',
+  getParentRoute: () => PlatformRoute,
 } as any)
 const PlatformAuditRoute = PlatformAuditRouteImport.update({
-  id: '/platform/audit',
-  path: '/platform/audit',
-  getParentRoute: () => rootRouteImport,
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => PlatformRoute,
 } as any)
 const PlatformApprovalsRoute = PlatformApprovalsRouteImport.update({
-  id: '/platform/approvals',
-  path: '/platform/approvals',
-  getParentRoute: () => rootRouteImport,
+  id: '/approvals',
+  path: '/approvals',
+  getParentRoute: () => PlatformRoute,
 } as any)
 const PlatformAnalyticsRoute = PlatformAnalyticsRouteImport.update({
-  id: '/platform/analytics',
-  path: '/platform/analytics',
-  getParentRoute: () => rootRouteImport,
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => PlatformRoute,
 } as any)
 const PlatformAiRoute = PlatformAiRouteImport.update({
-  id: '/platform/ai',
-  path: '/platform/ai',
+  id: '/ai',
+  path: '/ai',
+  getParentRoute: () => PlatformRoute,
+} as any)
+const KholagyGroupIdRoute = KholagyGroupIdRouteImport.update({
+  id: '/kholagy/$groupId',
+  path: '/kholagy/$groupId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeastsEventIdRoute = FeastsEventIdRouteImport.update({
@@ -448,10 +562,25 @@ const BibleNotesRoute = BibleNotesRouteImport.update({
   path: '/notes',
   getParentRoute: () => BibleRoute,
 } as any)
+const BibleJourneyRoute = BibleJourneyRouteImport.update({
+  id: '/journey',
+  path: '/journey',
+  getParentRoute: () => BibleRoute,
+} as any)
 const BibleCharactersRoute = BibleCharactersRouteImport.update({
   id: '/characters',
   path: '/characters',
   getParentRoute: () => BibleRoute,
+} as any)
+const Audiov2PublisherIdRoute = Audiov2PublisherIdRouteImport.update({
+  id: '/audiov2/$publisherId',
+  path: '/audiov2/$publisherId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AlphaConnectNearbyRoute = AlphaConnectNearbyRouteImport.update({
+  id: '/nearby',
+  path: '/nearby',
+  getParentRoute: () => AlphaConnectRoute,
 } as any)
 const AgpeyaSavedRoute = AgpeyaSavedRouteImport.update({
   id: '/agpeya/saved',
@@ -468,6 +597,18 @@ const BookChapterRoute = BookChapterRouteImport.update({
   path: '/$chapter',
   getParentRoute: () => BookRoute,
 } as any)
+const PublisherWorkspacePublisherIdRoute =
+  PublisherWorkspacePublisherIdRouteImport.update({
+    id: '/publisher/workspace/$publisherId',
+    path: '/publisher/workspace/$publisherId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const PublisherPreviewPublisherIdRoute =
+  PublisherPreviewPublisherIdRouteImport.update({
+    id: '/publisher/preview/$publisherId',
+    path: '/publisher/preview/$publisherId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ProfileChurchSetupRoute = ProfileChurchSetupRouteImport.update({
   id: '/setup',
   path: '/setup',
@@ -482,6 +623,22 @@ const MessagesChatContactIdRoute = MessagesChatContactIdRouteImport.update({
   id: '/chat/$contactId',
   path: '/chat/$contactId',
   getParentRoute: () => MessagesRoute,
+} as any)
+const KholagyLiturgyLiturgyKeyRoute =
+  KholagyLiturgyLiturgyKeyRouteImport.update({
+    id: '/kholagy/liturgy/$liturgyKey',
+    path: '/kholagy/liturgy/$liturgyKey',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const KholagyCategoryCategoryRoute = KholagyCategoryCategoryRouteImport.update({
+  id: '/kholagy/category/$category',
+  path: '/kholagy/category/$category',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChurchPostsTypeRoute = ChurchPostsTypeRouteImport.update({
+  id: '/posts/$type',
+  path: '/posts/$type',
+  getParentRoute: () => ChurchRoute,
 } as any)
 const ChurchPostIdRoute = ChurchPostIdRouteImport.update({
   id: '/post/$id',
@@ -498,17 +655,41 @@ const ChurchChatContactIdRoute = ChurchChatContactIdRouteImport.update({
   path: '/chat/$contactId',
   getParentRoute: () => ChurchRoute,
 } as any)
+const Audiov2PreviewPublisherIdRoute =
+  Audiov2PreviewPublisherIdRouteImport.update({
+    id: '/audiov2/preview/$publisherId',
+    path: '/audiov2/preview/$publisherId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const PublisherPublisherIdAlbumContentIdRoute =
+  PublisherPublisherIdAlbumContentIdRouteImport.update({
+    id: '/album/$contentId',
+    path: '/album/$contentId',
+    getParentRoute: () => PublisherPublisherIdRoute,
+  } as any)
 const PlatformScanTrustTrustIdRoute =
   PlatformScanTrustTrustIdRouteImport.update({
     id: '/trust/$trustId',
     path: '/trust/$trustId',
     getParentRoute: () => PlatformScanRoute,
   } as any)
+const KholagyLiturgyLiturgyKeySectionIdRoute =
+  KholagyLiturgyLiturgyKeySectionIdRouteImport.update({
+    id: '/kholagy/liturgy_/$liturgyKey/$sectionId',
+    path: '/kholagy/liturgy/$liturgyKey/$sectionId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ChurchDirectoryPlaceIdPostsTypeRoute =
+  ChurchDirectoryPlaceIdPostsTypeRouteImport.update({
+    id: '/posts/$type',
+    path: '/posts/$type',
+    getParentRoute: () => ChurchDirectoryPlaceIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$book': typeof BookRouteWithChildren
-  '/alpha-connect': typeof AlphaConnectRoute
+  '/alpha-connect': typeof AlphaConnectRouteWithChildren
   '/audio': typeof AudioRoute
   '/bible': typeof BibleRouteWithChildren
   '/bible-2': typeof Bible2Route
@@ -524,10 +705,14 @@ export interface FileRoutesByFullPath {
   '/home': typeof HomeRoute
   '/intro': typeof IntroRoute
   '/katameros-test': typeof KatamerosTestRoute
+  '/kids': typeof KidsRoute
+  '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
+  '/meditations': typeof MeditationsRoute
   '/messages': typeof MessagesRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/personal-call': typeof PersonalCallRoute
+  '/platform': typeof PlatformRouteWithChildren
   '/prayer-requests': typeof PrayerRequestsRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -536,7 +721,10 @@ export interface FileRoutesByFullPath {
   '/$book/$chapter': typeof BookChapterRoute
   '/agpeya/$prayerId': typeof AgpeyaPrayerIdRoute
   '/agpeya/saved': typeof AgpeyaSavedRoute
+  '/alpha-connect/nearby': typeof AlphaConnectNearbyRoute
+  '/audiov2/$publisherId': typeof Audiov2PublisherIdRoute
   '/bible/characters': typeof BibleCharactersRoute
+  '/bible/journey': typeof BibleJourneyRoute
   '/bible/notes': typeof BibleNotesRoute
   '/bible/places': typeof BiblePlacesRoute
   '/bible/psalms': typeof BiblePsalmsRoute
@@ -553,47 +741,68 @@ export interface FileRoutesByFullPath {
   '/dev/background-preview': typeof DevBackgroundPreviewRoute
   '/dev/katameros-curve-preview': typeof DevKatamerosCurvePreviewRoute
   '/feasts/$eventId': typeof FeastsEventIdRoute
+  '/kholagy/$groupId': typeof KholagyGroupIdRoute
   '/platform/ai': typeof PlatformAiRoute
   '/platform/analytics': typeof PlatformAnalyticsRoute
   '/platform/approvals': typeof PlatformApprovalsRouteWithChildren
   '/platform/audit': typeof PlatformAuditRoute
+  '/platform/church-locations': typeof PlatformChurchLocationsRoute
+  '/platform/churches': typeof PlatformChurchesRoute
+  '/platform/content-review': typeof PlatformContentReviewRoute
   '/platform/emergency': typeof PlatformEmergencyRoute
   '/platform/library': typeof PlatformLibraryRoute
   '/platform/modules': typeof PlatformModulesRoute
+  '/platform/monasteries': typeof PlatformMonasteriesRoute
   '/platform/owner-security': typeof PlatformOwnerSecurityRoute
   '/platform/privacy': typeof PlatformPrivacyRoute
+  '/platform/publisher-center': typeof PlatformPublisherCenterRoute
   '/platform/reports': typeof PlatformReportsRoute
   '/platform/scan': typeof PlatformScanRouteWithChildren
   '/platform/settings': typeof PlatformSettingsRoute
   '/profile/appearance': typeof ProfileAppearanceRoute
   '/profile/church': typeof ProfileChurchRouteWithChildren
+  '/profile/contributions': typeof ProfileContributionsRoute
+  '/profile/edit': typeof ProfileEditRoute
   '/profile/membership': typeof ProfileMembershipRoute
   '/profile/messages': typeof ProfileMessagesRoute
   '/profile/personal': typeof ProfilePersonalRoute
   '/profile/security': typeof ProfileSecurityRoute
   '/profile/service': typeof ProfileServiceRoute
+  '/publisher/$publisherId': typeof PublisherPublisherIdRouteWithChildren
+  '/publisher/apply': typeof PublisherApplyRoute
   '/settings/trust': typeof SettingsTrustRoute
   '/synaxarium/$saintId': typeof SynaxariumSaintIdRoute
   '/$book/': typeof BookIndexRoute
   '/agpeya/': typeof AgpeyaIndexRoute
+  '/bible/': typeof BibleIndexRoute
   '/feasts/': typeof FeastsIndexRoute
   '/katameros/': typeof KatamerosIndexRoute
+  '/kholagy/': typeof KholagyIndexRoute
   '/platform/': typeof PlatformIndexRoute
   '/profile/': typeof ProfileIndexRoute
+  '/publisher/': typeof PublisherIndexRoute
   '/synaxarium/': typeof SynaxariumIndexRoute
+  '/audiov2/preview/$publisherId': typeof Audiov2PreviewPublisherIdRoute
   '/church/chat/$contactId': typeof ChurchChatContactIdRoute
-  '/church/directory/$placeId': typeof ChurchDirectoryPlaceIdRoute
+  '/church/directory/$placeId': typeof ChurchDirectoryPlaceIdRouteWithChildren
   '/church/post/$id': typeof ChurchPostIdRoute
+  '/church/posts/$type': typeof ChurchPostsTypeRoute
+  '/kholagy/category/$category': typeof KholagyCategoryCategoryRoute
+  '/kholagy/liturgy/$liturgyKey': typeof KholagyLiturgyLiturgyKeyRoute
   '/messages/chat/$contactId': typeof MessagesChatContactIdRoute
   '/platform/approvals/$id': typeof PlatformApprovalsIdRoute
   '/profile/church/setup': typeof ProfileChurchSetupRoute
+  '/publisher/preview/$publisherId': typeof PublisherPreviewPublisherIdRoute
+  '/publisher/workspace/$publisherId': typeof PublisherWorkspacePublisherIdRoute
+  '/kholagy/liturgy/$liturgyKey/$sectionId': typeof KholagyLiturgyLiturgyKeySectionIdRoute
   '/platform/scan/trust/$trustId': typeof PlatformScanTrustTrustIdRoute
+  '/publisher/$publisherId/album/$contentId': typeof PublisherPublisherIdAlbumContentIdRoute
+  '/church/directory/$placeId/posts/$type': typeof ChurchDirectoryPlaceIdPostsTypeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/alpha-connect': typeof AlphaConnectRoute
+  '/alpha-connect': typeof AlphaConnectRouteWithChildren
   '/audio': typeof AudioRoute
-  '/bible': typeof BibleRouteWithChildren
   '/bible-2': typeof Bible2Route
   '/bible-lovable': typeof BibleLovableRoute
   '/books': typeof BooksRoute
@@ -607,7 +816,10 @@ export interface FileRoutesByTo {
   '/home': typeof HomeRoute
   '/intro': typeof IntroRoute
   '/katameros-test': typeof KatamerosTestRoute
+  '/kids': typeof KidsRoute
+  '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
+  '/meditations': typeof MeditationsRoute
   '/messages': typeof MessagesRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/personal-call': typeof PersonalCallRoute
@@ -619,7 +831,10 @@ export interface FileRoutesByTo {
   '/$book/$chapter': typeof BookChapterRoute
   '/agpeya/$prayerId': typeof AgpeyaPrayerIdRoute
   '/agpeya/saved': typeof AgpeyaSavedRoute
+  '/alpha-connect/nearby': typeof AlphaConnectNearbyRoute
+  '/audiov2/$publisherId': typeof Audiov2PublisherIdRoute
   '/bible/characters': typeof BibleCharactersRoute
+  '/bible/journey': typeof BibleJourneyRoute
   '/bible/notes': typeof BibleNotesRoute
   '/bible/places': typeof BiblePlacesRoute
   '/bible/psalms': typeof BiblePsalmsRoute
@@ -636,47 +851,69 @@ export interface FileRoutesByTo {
   '/dev/background-preview': typeof DevBackgroundPreviewRoute
   '/dev/katameros-curve-preview': typeof DevKatamerosCurvePreviewRoute
   '/feasts/$eventId': typeof FeastsEventIdRoute
+  '/kholagy/$groupId': typeof KholagyGroupIdRoute
   '/platform/ai': typeof PlatformAiRoute
   '/platform/analytics': typeof PlatformAnalyticsRoute
   '/platform/approvals': typeof PlatformApprovalsRouteWithChildren
   '/platform/audit': typeof PlatformAuditRoute
+  '/platform/church-locations': typeof PlatformChurchLocationsRoute
+  '/platform/churches': typeof PlatformChurchesRoute
+  '/platform/content-review': typeof PlatformContentReviewRoute
   '/platform/emergency': typeof PlatformEmergencyRoute
   '/platform/library': typeof PlatformLibraryRoute
   '/platform/modules': typeof PlatformModulesRoute
+  '/platform/monasteries': typeof PlatformMonasteriesRoute
   '/platform/owner-security': typeof PlatformOwnerSecurityRoute
   '/platform/privacy': typeof PlatformPrivacyRoute
+  '/platform/publisher-center': typeof PlatformPublisherCenterRoute
   '/platform/reports': typeof PlatformReportsRoute
   '/platform/scan': typeof PlatformScanRouteWithChildren
   '/platform/settings': typeof PlatformSettingsRoute
   '/profile/appearance': typeof ProfileAppearanceRoute
   '/profile/church': typeof ProfileChurchRouteWithChildren
+  '/profile/contributions': typeof ProfileContributionsRoute
+  '/profile/edit': typeof ProfileEditRoute
   '/profile/membership': typeof ProfileMembershipRoute
   '/profile/messages': typeof ProfileMessagesRoute
   '/profile/personal': typeof ProfilePersonalRoute
   '/profile/security': typeof ProfileSecurityRoute
   '/profile/service': typeof ProfileServiceRoute
+  '/publisher/$publisherId': typeof PublisherPublisherIdRouteWithChildren
+  '/publisher/apply': typeof PublisherApplyRoute
   '/settings/trust': typeof SettingsTrustRoute
   '/synaxarium/$saintId': typeof SynaxariumSaintIdRoute
   '/$book': typeof BookIndexRoute
   '/agpeya': typeof AgpeyaIndexRoute
+  '/bible': typeof BibleIndexRoute
   '/feasts': typeof FeastsIndexRoute
   '/katameros': typeof KatamerosIndexRoute
+  '/kholagy': typeof KholagyIndexRoute
   '/platform': typeof PlatformIndexRoute
   '/profile': typeof ProfileIndexRoute
+  '/publisher': typeof PublisherIndexRoute
   '/synaxarium': typeof SynaxariumIndexRoute
+  '/audiov2/preview/$publisherId': typeof Audiov2PreviewPublisherIdRoute
   '/church/chat/$contactId': typeof ChurchChatContactIdRoute
-  '/church/directory/$placeId': typeof ChurchDirectoryPlaceIdRoute
+  '/church/directory/$placeId': typeof ChurchDirectoryPlaceIdRouteWithChildren
   '/church/post/$id': typeof ChurchPostIdRoute
+  '/church/posts/$type': typeof ChurchPostsTypeRoute
+  '/kholagy/category/$category': typeof KholagyCategoryCategoryRoute
+  '/kholagy/liturgy/$liturgyKey': typeof KholagyLiturgyLiturgyKeyRoute
   '/messages/chat/$contactId': typeof MessagesChatContactIdRoute
   '/platform/approvals/$id': typeof PlatformApprovalsIdRoute
   '/profile/church/setup': typeof ProfileChurchSetupRoute
+  '/publisher/preview/$publisherId': typeof PublisherPreviewPublisherIdRoute
+  '/publisher/workspace/$publisherId': typeof PublisherWorkspacePublisherIdRoute
+  '/kholagy/liturgy/$liturgyKey/$sectionId': typeof KholagyLiturgyLiturgyKeySectionIdRoute
   '/platform/scan/trust/$trustId': typeof PlatformScanTrustTrustIdRoute
+  '/publisher/$publisherId/album/$contentId': typeof PublisherPublisherIdAlbumContentIdRoute
+  '/church/directory/$placeId/posts/$type': typeof ChurchDirectoryPlaceIdPostsTypeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$book': typeof BookRouteWithChildren
-  '/alpha-connect': typeof AlphaConnectRoute
+  '/alpha-connect': typeof AlphaConnectRouteWithChildren
   '/audio': typeof AudioRoute
   '/bible': typeof BibleRouteWithChildren
   '/bible-2': typeof Bible2Route
@@ -692,10 +929,14 @@ export interface FileRoutesById {
   '/home': typeof HomeRoute
   '/intro': typeof IntroRoute
   '/katameros-test': typeof KatamerosTestRoute
+  '/kids': typeof KidsRoute
+  '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
+  '/meditations': typeof MeditationsRoute
   '/messages': typeof MessagesRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/personal-call': typeof PersonalCallRoute
+  '/platform': typeof PlatformRouteWithChildren
   '/prayer-requests': typeof PrayerRequestsRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -704,7 +945,10 @@ export interface FileRoutesById {
   '/$book/$chapter': typeof BookChapterRoute
   '/agpeya/$prayerId': typeof AgpeyaPrayerIdRoute
   '/agpeya/saved': typeof AgpeyaSavedRoute
+  '/alpha-connect/nearby': typeof AlphaConnectNearbyRoute
+  '/audiov2/$publisherId': typeof Audiov2PublisherIdRoute
   '/bible/characters': typeof BibleCharactersRoute
+  '/bible/journey': typeof BibleJourneyRoute
   '/bible/notes': typeof BibleNotesRoute
   '/bible/places': typeof BiblePlacesRoute
   '/bible/psalms': typeof BiblePsalmsRoute
@@ -721,41 +965,63 @@ export interface FileRoutesById {
   '/dev/background-preview': typeof DevBackgroundPreviewRoute
   '/dev/katameros-curve-preview': typeof DevKatamerosCurvePreviewRoute
   '/feasts/$eventId': typeof FeastsEventIdRoute
+  '/kholagy/$groupId': typeof KholagyGroupIdRoute
   '/platform/ai': typeof PlatformAiRoute
   '/platform/analytics': typeof PlatformAnalyticsRoute
   '/platform/approvals': typeof PlatformApprovalsRouteWithChildren
   '/platform/audit': typeof PlatformAuditRoute
+  '/platform/church-locations': typeof PlatformChurchLocationsRoute
+  '/platform/churches': typeof PlatformChurchesRoute
+  '/platform/content-review': typeof PlatformContentReviewRoute
   '/platform/emergency': typeof PlatformEmergencyRoute
   '/platform/library': typeof PlatformLibraryRoute
   '/platform/modules': typeof PlatformModulesRoute
+  '/platform/monasteries': typeof PlatformMonasteriesRoute
   '/platform/owner-security': typeof PlatformOwnerSecurityRoute
   '/platform/privacy': typeof PlatformPrivacyRoute
+  '/platform/publisher-center': typeof PlatformPublisherCenterRoute
   '/platform/reports': typeof PlatformReportsRoute
   '/platform/scan': typeof PlatformScanRouteWithChildren
   '/platform/settings': typeof PlatformSettingsRoute
   '/profile/appearance': typeof ProfileAppearanceRoute
   '/profile/church': typeof ProfileChurchRouteWithChildren
+  '/profile/contributions': typeof ProfileContributionsRoute
+  '/profile/edit': typeof ProfileEditRoute
   '/profile/membership': typeof ProfileMembershipRoute
   '/profile/messages': typeof ProfileMessagesRoute
   '/profile/personal': typeof ProfilePersonalRoute
   '/profile/security': typeof ProfileSecurityRoute
   '/profile/service': typeof ProfileServiceRoute
+  '/publisher/$publisherId': typeof PublisherPublisherIdRouteWithChildren
+  '/publisher/apply': typeof PublisherApplyRoute
   '/settings/trust': typeof SettingsTrustRoute
   '/synaxarium/$saintId': typeof SynaxariumSaintIdRoute
   '/$book/': typeof BookIndexRoute
   '/agpeya/': typeof AgpeyaIndexRoute
+  '/bible/': typeof BibleIndexRoute
   '/feasts/': typeof FeastsIndexRoute
   '/katameros/': typeof KatamerosIndexRoute
+  '/kholagy/': typeof KholagyIndexRoute
   '/platform/': typeof PlatformIndexRoute
   '/profile/': typeof ProfileIndexRoute
+  '/publisher/': typeof PublisherIndexRoute
   '/synaxarium/': typeof SynaxariumIndexRoute
+  '/audiov2/preview/$publisherId': typeof Audiov2PreviewPublisherIdRoute
   '/church/chat/$contactId': typeof ChurchChatContactIdRoute
-  '/church/directory/$placeId': typeof ChurchDirectoryPlaceIdRoute
+  '/church/directory/$placeId': typeof ChurchDirectoryPlaceIdRouteWithChildren
   '/church/post/$id': typeof ChurchPostIdRoute
+  '/church/posts/$type': typeof ChurchPostsTypeRoute
+  '/kholagy/category/$category': typeof KholagyCategoryCategoryRoute
+  '/kholagy/liturgy/$liturgyKey': typeof KholagyLiturgyLiturgyKeyRoute
   '/messages/chat/$contactId': typeof MessagesChatContactIdRoute
   '/platform/approvals/$id': typeof PlatformApprovalsIdRoute
   '/profile/church/setup': typeof ProfileChurchSetupRoute
+  '/publisher/preview/$publisherId': typeof PublisherPreviewPublisherIdRoute
+  '/publisher/workspace/$publisherId': typeof PublisherWorkspacePublisherIdRoute
+  '/kholagy/liturgy_/$liturgyKey/$sectionId': typeof KholagyLiturgyLiturgyKeySectionIdRoute
   '/platform/scan/trust/$trustId': typeof PlatformScanTrustTrustIdRoute
+  '/publisher/$publisherId/album/$contentId': typeof PublisherPublisherIdAlbumContentIdRoute
+  '/church/directory/$placeId/posts/$type': typeof ChurchDirectoryPlaceIdPostsTypeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -778,10 +1044,14 @@ export interface FileRouteTypes {
     | '/home'
     | '/intro'
     | '/katameros-test'
+    | '/kids'
+    | '/library'
     | '/login'
+    | '/meditations'
     | '/messages'
     | '/onboarding'
     | '/personal-call'
+    | '/platform'
     | '/prayer-requests'
     | '/register'
     | '/reset-password'
@@ -790,7 +1060,10 @@ export interface FileRouteTypes {
     | '/$book/$chapter'
     | '/agpeya/$prayerId'
     | '/agpeya/saved'
+    | '/alpha-connect/nearby'
+    | '/audiov2/$publisherId'
     | '/bible/characters'
+    | '/bible/journey'
     | '/bible/notes'
     | '/bible/places'
     | '/bible/psalms'
@@ -807,47 +1080,68 @@ export interface FileRouteTypes {
     | '/dev/background-preview'
     | '/dev/katameros-curve-preview'
     | '/feasts/$eventId'
+    | '/kholagy/$groupId'
     | '/platform/ai'
     | '/platform/analytics'
     | '/platform/approvals'
     | '/platform/audit'
+    | '/platform/church-locations'
+    | '/platform/churches'
+    | '/platform/content-review'
     | '/platform/emergency'
     | '/platform/library'
     | '/platform/modules'
+    | '/platform/monasteries'
     | '/platform/owner-security'
     | '/platform/privacy'
+    | '/platform/publisher-center'
     | '/platform/reports'
     | '/platform/scan'
     | '/platform/settings'
     | '/profile/appearance'
     | '/profile/church'
+    | '/profile/contributions'
+    | '/profile/edit'
     | '/profile/membership'
     | '/profile/messages'
     | '/profile/personal'
     | '/profile/security'
     | '/profile/service'
+    | '/publisher/$publisherId'
+    | '/publisher/apply'
     | '/settings/trust'
     | '/synaxarium/$saintId'
     | '/$book/'
     | '/agpeya/'
+    | '/bible/'
     | '/feasts/'
     | '/katameros/'
+    | '/kholagy/'
     | '/platform/'
     | '/profile/'
+    | '/publisher/'
     | '/synaxarium/'
+    | '/audiov2/preview/$publisherId'
     | '/church/chat/$contactId'
     | '/church/directory/$placeId'
     | '/church/post/$id'
+    | '/church/posts/$type'
+    | '/kholagy/category/$category'
+    | '/kholagy/liturgy/$liturgyKey'
     | '/messages/chat/$contactId'
     | '/platform/approvals/$id'
     | '/profile/church/setup'
+    | '/publisher/preview/$publisherId'
+    | '/publisher/workspace/$publisherId'
+    | '/kholagy/liturgy/$liturgyKey/$sectionId'
     | '/platform/scan/trust/$trustId'
+    | '/publisher/$publisherId/album/$contentId'
+    | '/church/directory/$placeId/posts/$type'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/alpha-connect'
     | '/audio'
-    | '/bible'
     | '/bible-2'
     | '/bible-lovable'
     | '/books'
@@ -861,7 +1155,10 @@ export interface FileRouteTypes {
     | '/home'
     | '/intro'
     | '/katameros-test'
+    | '/kids'
+    | '/library'
     | '/login'
+    | '/meditations'
     | '/messages'
     | '/onboarding'
     | '/personal-call'
@@ -873,7 +1170,10 @@ export interface FileRouteTypes {
     | '/$book/$chapter'
     | '/agpeya/$prayerId'
     | '/agpeya/saved'
+    | '/alpha-connect/nearby'
+    | '/audiov2/$publisherId'
     | '/bible/characters'
+    | '/bible/journey'
     | '/bible/notes'
     | '/bible/places'
     | '/bible/psalms'
@@ -890,41 +1190,63 @@ export interface FileRouteTypes {
     | '/dev/background-preview'
     | '/dev/katameros-curve-preview'
     | '/feasts/$eventId'
+    | '/kholagy/$groupId'
     | '/platform/ai'
     | '/platform/analytics'
     | '/platform/approvals'
     | '/platform/audit'
+    | '/platform/church-locations'
+    | '/platform/churches'
+    | '/platform/content-review'
     | '/platform/emergency'
     | '/platform/library'
     | '/platform/modules'
+    | '/platform/monasteries'
     | '/platform/owner-security'
     | '/platform/privacy'
+    | '/platform/publisher-center'
     | '/platform/reports'
     | '/platform/scan'
     | '/platform/settings'
     | '/profile/appearance'
     | '/profile/church'
+    | '/profile/contributions'
+    | '/profile/edit'
     | '/profile/membership'
     | '/profile/messages'
     | '/profile/personal'
     | '/profile/security'
     | '/profile/service'
+    | '/publisher/$publisherId'
+    | '/publisher/apply'
     | '/settings/trust'
     | '/synaxarium/$saintId'
     | '/$book'
     | '/agpeya'
+    | '/bible'
     | '/feasts'
     | '/katameros'
+    | '/kholagy'
     | '/platform'
     | '/profile'
+    | '/publisher'
     | '/synaxarium'
+    | '/audiov2/preview/$publisherId'
     | '/church/chat/$contactId'
     | '/church/directory/$placeId'
     | '/church/post/$id'
+    | '/church/posts/$type'
+    | '/kholagy/category/$category'
+    | '/kholagy/liturgy/$liturgyKey'
     | '/messages/chat/$contactId'
     | '/platform/approvals/$id'
     | '/profile/church/setup'
+    | '/publisher/preview/$publisherId'
+    | '/publisher/workspace/$publisherId'
+    | '/kholagy/liturgy/$liturgyKey/$sectionId'
     | '/platform/scan/trust/$trustId'
+    | '/publisher/$publisherId/album/$contentId'
+    | '/church/directory/$placeId/posts/$type'
   id:
     | '__root__'
     | '/'
@@ -945,10 +1267,14 @@ export interface FileRouteTypes {
     | '/home'
     | '/intro'
     | '/katameros-test'
+    | '/kids'
+    | '/library'
     | '/login'
+    | '/meditations'
     | '/messages'
     | '/onboarding'
     | '/personal-call'
+    | '/platform'
     | '/prayer-requests'
     | '/register'
     | '/reset-password'
@@ -957,7 +1283,10 @@ export interface FileRouteTypes {
     | '/$book/$chapter'
     | '/agpeya/$prayerId'
     | '/agpeya/saved'
+    | '/alpha-connect/nearby'
+    | '/audiov2/$publisherId'
     | '/bible/characters'
+    | '/bible/journey'
     | '/bible/notes'
     | '/bible/places'
     | '/bible/psalms'
@@ -974,47 +1303,69 @@ export interface FileRouteTypes {
     | '/dev/background-preview'
     | '/dev/katameros-curve-preview'
     | '/feasts/$eventId'
+    | '/kholagy/$groupId'
     | '/platform/ai'
     | '/platform/analytics'
     | '/platform/approvals'
     | '/platform/audit'
+    | '/platform/church-locations'
+    | '/platform/churches'
+    | '/platform/content-review'
     | '/platform/emergency'
     | '/platform/library'
     | '/platform/modules'
+    | '/platform/monasteries'
     | '/platform/owner-security'
     | '/platform/privacy'
+    | '/platform/publisher-center'
     | '/platform/reports'
     | '/platform/scan'
     | '/platform/settings'
     | '/profile/appearance'
     | '/profile/church'
+    | '/profile/contributions'
+    | '/profile/edit'
     | '/profile/membership'
     | '/profile/messages'
     | '/profile/personal'
     | '/profile/security'
     | '/profile/service'
+    | '/publisher/$publisherId'
+    | '/publisher/apply'
     | '/settings/trust'
     | '/synaxarium/$saintId'
     | '/$book/'
     | '/agpeya/'
+    | '/bible/'
     | '/feasts/'
     | '/katameros/'
+    | '/kholagy/'
     | '/platform/'
     | '/profile/'
+    | '/publisher/'
     | '/synaxarium/'
+    | '/audiov2/preview/$publisherId'
     | '/church/chat/$contactId'
     | '/church/directory/$placeId'
     | '/church/post/$id'
+    | '/church/posts/$type'
+    | '/kholagy/category/$category'
+    | '/kholagy/liturgy/$liturgyKey'
     | '/messages/chat/$contactId'
     | '/platform/approvals/$id'
     | '/profile/church/setup'
+    | '/publisher/preview/$publisherId'
+    | '/publisher/workspace/$publisherId'
+    | '/kholagy/liturgy_/$liturgyKey/$sectionId'
     | '/platform/scan/trust/$trustId'
+    | '/publisher/$publisherId/album/$contentId'
+    | '/church/directory/$placeId/posts/$type'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BookRoute: typeof BookRouteWithChildren
-  AlphaConnectRoute: typeof AlphaConnectRoute
+  AlphaConnectRoute: typeof AlphaConnectRouteWithChildren
   AudioRoute: typeof AudioRoute
   BibleRoute: typeof BibleRouteWithChildren
   Bible2Route: typeof Bible2Route
@@ -1030,10 +1381,14 @@ export interface RootRouteChildren {
   HomeRoute: typeof HomeRoute
   IntroRoute: typeof IntroRoute
   KatamerosTestRoute: typeof KatamerosTestRoute
+  KidsRoute: typeof KidsRoute
+  LibraryRoute: typeof LibraryRoute
   LoginRoute: typeof LoginRoute
+  MeditationsRoute: typeof MeditationsRoute
   MessagesRoute: typeof MessagesRouteWithChildren
   OnboardingRoute: typeof OnboardingRoute
   PersonalCallRoute: typeof PersonalCallRoute
+  PlatformRoute: typeof PlatformRouteWithChildren
   PrayerRequestsRoute: typeof PrayerRequestsRoute
   RegisterRoute: typeof RegisterRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -1041,36 +1396,37 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRouteWithChildren
   AgpeyaPrayerIdRoute: typeof AgpeyaPrayerIdRoute
   AgpeyaSavedRoute: typeof AgpeyaSavedRoute
+  Audiov2PublisherIdRoute: typeof Audiov2PublisherIdRoute
   DevAuthRoute: typeof DevAuthRoute
   DevBackgroundPreviewRoute: typeof DevBackgroundPreviewRoute
   DevKatamerosCurvePreviewRoute: typeof DevKatamerosCurvePreviewRoute
   FeastsEventIdRoute: typeof FeastsEventIdRoute
-  PlatformAiRoute: typeof PlatformAiRoute
-  PlatformAnalyticsRoute: typeof PlatformAnalyticsRoute
-  PlatformApprovalsRoute: typeof PlatformApprovalsRouteWithChildren
-  PlatformAuditRoute: typeof PlatformAuditRoute
-  PlatformEmergencyRoute: typeof PlatformEmergencyRoute
-  PlatformLibraryRoute: typeof PlatformLibraryRoute
-  PlatformModulesRoute: typeof PlatformModulesRoute
-  PlatformOwnerSecurityRoute: typeof PlatformOwnerSecurityRoute
-  PlatformPrivacyRoute: typeof PlatformPrivacyRoute
-  PlatformReportsRoute: typeof PlatformReportsRoute
-  PlatformScanRoute: typeof PlatformScanRouteWithChildren
-  PlatformSettingsRoute: typeof PlatformSettingsRoute
+  KholagyGroupIdRoute: typeof KholagyGroupIdRoute
   ProfileAppearanceRoute: typeof ProfileAppearanceRoute
   ProfileChurchRoute: typeof ProfileChurchRouteWithChildren
+  ProfileContributionsRoute: typeof ProfileContributionsRoute
+  ProfileEditRoute: typeof ProfileEditRoute
   ProfileMembershipRoute: typeof ProfileMembershipRoute
   ProfileMessagesRoute: typeof ProfileMessagesRoute
   ProfilePersonalRoute: typeof ProfilePersonalRoute
   ProfileSecurityRoute: typeof ProfileSecurityRoute
   ProfileServiceRoute: typeof ProfileServiceRoute
+  PublisherPublisherIdRoute: typeof PublisherPublisherIdRouteWithChildren
+  PublisherApplyRoute: typeof PublisherApplyRoute
   SynaxariumSaintIdRoute: typeof SynaxariumSaintIdRoute
   AgpeyaIndexRoute: typeof AgpeyaIndexRoute
   FeastsIndexRoute: typeof FeastsIndexRoute
   KatamerosIndexRoute: typeof KatamerosIndexRoute
-  PlatformIndexRoute: typeof PlatformIndexRoute
+  KholagyIndexRoute: typeof KholagyIndexRoute
   ProfileIndexRoute: typeof ProfileIndexRoute
+  PublisherIndexRoute: typeof PublisherIndexRoute
   SynaxariumIndexRoute: typeof SynaxariumIndexRoute
+  Audiov2PreviewPublisherIdRoute: typeof Audiov2PreviewPublisherIdRoute
+  KholagyCategoryCategoryRoute: typeof KholagyCategoryCategoryRoute
+  KholagyLiturgyLiturgyKeyRoute: typeof KholagyLiturgyLiturgyKeyRoute
+  PublisherPreviewPublisherIdRoute: typeof PublisherPreviewPublisherIdRoute
+  PublisherWorkspacePublisherIdRoute: typeof PublisherWorkspacePublisherIdRoute
+  KholagyLiturgyLiturgyKeySectionIdRoute: typeof KholagyLiturgyLiturgyKeySectionIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1110,6 +1466,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrayerRequestsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/platform': {
+      id: '/platform'
+      path: '/platform'
+      fullPath: '/platform'
+      preLoaderRoute: typeof PlatformRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/personal-call': {
       id: '/personal-call'
       path: '/personal-call'
@@ -1131,11 +1494,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MessagesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/meditations': {
+      id: '/meditations'
+      path: '/meditations'
+      fullPath: '/meditations'
+      preLoaderRoute: typeof MeditationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/library': {
+      id: '/library'
+      path: '/library'
+      fullPath: '/library'
+      preLoaderRoute: typeof LibraryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/kids': {
+      id: '/kids'
+      path: '/kids'
+      fullPath: '/kids'
+      preLoaderRoute: typeof KidsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/katameros-test': {
@@ -1271,6 +1655,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SynaxariumIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/publisher/': {
+      id: '/publisher/'
+      path: '/publisher'
+      fullPath: '/publisher/'
+      preLoaderRoute: typeof PublisherIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile/': {
       id: '/profile/'
       path: '/profile'
@@ -1280,9 +1671,16 @@ declare module '@tanstack/react-router' {
     }
     '/platform/': {
       id: '/platform/'
-      path: '/platform'
+      path: '/'
       fullPath: '/platform/'
       preLoaderRoute: typeof PlatformIndexRouteImport
+      parentRoute: typeof PlatformRoute
+    }
+    '/kholagy/': {
+      id: '/kholagy/'
+      path: '/kholagy'
+      fullPath: '/kholagy/'
+      preLoaderRoute: typeof KholagyIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/katameros/': {
@@ -1298,6 +1696,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/feasts/'
       preLoaderRoute: typeof FeastsIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/bible/': {
+      id: '/bible/'
+      path: '/'
+      fullPath: '/bible/'
+      preLoaderRoute: typeof BibleIndexRouteImport
+      parentRoute: typeof BibleRoute
     }
     '/agpeya/': {
       id: '/agpeya/'
@@ -1326,6 +1731,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings/trust'
       preLoaderRoute: typeof SettingsTrustRouteImport
       parentRoute: typeof SettingsRoute
+    }
+    '/publisher/apply': {
+      id: '/publisher/apply'
+      path: '/publisher/apply'
+      fullPath: '/publisher/apply'
+      preLoaderRoute: typeof PublisherApplyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/publisher/$publisherId': {
+      id: '/publisher/$publisherId'
+      path: '/publisher/$publisherId'
+      fullPath: '/publisher/$publisherId'
+      preLoaderRoute: typeof PublisherPublisherIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/profile/service': {
       id: '/profile/service'
@@ -1362,6 +1781,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileMembershipRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profile/edit': {
+      id: '/profile/edit'
+      path: '/profile/edit'
+      fullPath: '/profile/edit'
+      preLoaderRoute: typeof ProfileEditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile/contributions': {
+      id: '/profile/contributions'
+      path: '/profile/contributions'
+      fullPath: '/profile/contributions'
+      preLoaderRoute: typeof ProfileContributionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile/church': {
       id: '/profile/church'
       path: '/profile/church'
@@ -1378,86 +1811,128 @@ declare module '@tanstack/react-router' {
     }
     '/platform/settings': {
       id: '/platform/settings'
-      path: '/platform/settings'
+      path: '/settings'
       fullPath: '/platform/settings'
       preLoaderRoute: typeof PlatformSettingsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof PlatformRoute
     }
     '/platform/scan': {
       id: '/platform/scan'
-      path: '/platform/scan'
+      path: '/scan'
       fullPath: '/platform/scan'
       preLoaderRoute: typeof PlatformScanRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof PlatformRoute
     }
     '/platform/reports': {
       id: '/platform/reports'
-      path: '/platform/reports'
+      path: '/reports'
       fullPath: '/platform/reports'
       preLoaderRoute: typeof PlatformReportsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof PlatformRoute
+    }
+    '/platform/publisher-center': {
+      id: '/platform/publisher-center'
+      path: '/publisher-center'
+      fullPath: '/platform/publisher-center'
+      preLoaderRoute: typeof PlatformPublisherCenterRouteImport
+      parentRoute: typeof PlatformRoute
     }
     '/platform/privacy': {
       id: '/platform/privacy'
-      path: '/platform/privacy'
+      path: '/privacy'
       fullPath: '/platform/privacy'
       preLoaderRoute: typeof PlatformPrivacyRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof PlatformRoute
     }
     '/platform/owner-security': {
       id: '/platform/owner-security'
-      path: '/platform/owner-security'
+      path: '/owner-security'
       fullPath: '/platform/owner-security'
       preLoaderRoute: typeof PlatformOwnerSecurityRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof PlatformRoute
+    }
+    '/platform/monasteries': {
+      id: '/platform/monasteries'
+      path: '/monasteries'
+      fullPath: '/platform/monasteries'
+      preLoaderRoute: typeof PlatformMonasteriesRouteImport
+      parentRoute: typeof PlatformRoute
     }
     '/platform/modules': {
       id: '/platform/modules'
-      path: '/platform/modules'
+      path: '/modules'
       fullPath: '/platform/modules'
       preLoaderRoute: typeof PlatformModulesRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof PlatformRoute
     }
     '/platform/library': {
       id: '/platform/library'
-      path: '/platform/library'
+      path: '/library'
       fullPath: '/platform/library'
       preLoaderRoute: typeof PlatformLibraryRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof PlatformRoute
     }
     '/platform/emergency': {
       id: '/platform/emergency'
-      path: '/platform/emergency'
+      path: '/emergency'
       fullPath: '/platform/emergency'
       preLoaderRoute: typeof PlatformEmergencyRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof PlatformRoute
+    }
+    '/platform/content-review': {
+      id: '/platform/content-review'
+      path: '/content-review'
+      fullPath: '/platform/content-review'
+      preLoaderRoute: typeof PlatformContentReviewRouteImport
+      parentRoute: typeof PlatformRoute
+    }
+    '/platform/churches': {
+      id: '/platform/churches'
+      path: '/churches'
+      fullPath: '/platform/churches'
+      preLoaderRoute: typeof PlatformChurchesRouteImport
+      parentRoute: typeof PlatformRoute
+    }
+    '/platform/church-locations': {
+      id: '/platform/church-locations'
+      path: '/church-locations'
+      fullPath: '/platform/church-locations'
+      preLoaderRoute: typeof PlatformChurchLocationsRouteImport
+      parentRoute: typeof PlatformRoute
     }
     '/platform/audit': {
       id: '/platform/audit'
-      path: '/platform/audit'
+      path: '/audit'
       fullPath: '/platform/audit'
       preLoaderRoute: typeof PlatformAuditRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof PlatformRoute
     }
     '/platform/approvals': {
       id: '/platform/approvals'
-      path: '/platform/approvals'
+      path: '/approvals'
       fullPath: '/platform/approvals'
       preLoaderRoute: typeof PlatformApprovalsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof PlatformRoute
     }
     '/platform/analytics': {
       id: '/platform/analytics'
-      path: '/platform/analytics'
+      path: '/analytics'
       fullPath: '/platform/analytics'
       preLoaderRoute: typeof PlatformAnalyticsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof PlatformRoute
     }
     '/platform/ai': {
       id: '/platform/ai'
-      path: '/platform/ai'
+      path: '/ai'
       fullPath: '/platform/ai'
       preLoaderRoute: typeof PlatformAiRouteImport
+      parentRoute: typeof PlatformRoute
+    }
+    '/kholagy/$groupId': {
+      id: '/kholagy/$groupId'
+      path: '/kholagy/$groupId'
+      fullPath: '/kholagy/$groupId'
+      preLoaderRoute: typeof KholagyGroupIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/feasts/$eventId': {
@@ -1572,12 +2047,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BibleNotesRouteImport
       parentRoute: typeof BibleRoute
     }
+    '/bible/journey': {
+      id: '/bible/journey'
+      path: '/journey'
+      fullPath: '/bible/journey'
+      preLoaderRoute: typeof BibleJourneyRouteImport
+      parentRoute: typeof BibleRoute
+    }
     '/bible/characters': {
       id: '/bible/characters'
       path: '/characters'
       fullPath: '/bible/characters'
       preLoaderRoute: typeof BibleCharactersRouteImport
       parentRoute: typeof BibleRoute
+    }
+    '/audiov2/$publisherId': {
+      id: '/audiov2/$publisherId'
+      path: '/audiov2/$publisherId'
+      fullPath: '/audiov2/$publisherId'
+      preLoaderRoute: typeof Audiov2PublisherIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/alpha-connect/nearby': {
+      id: '/alpha-connect/nearby'
+      path: '/nearby'
+      fullPath: '/alpha-connect/nearby'
+      preLoaderRoute: typeof AlphaConnectNearbyRouteImport
+      parentRoute: typeof AlphaConnectRoute
     }
     '/agpeya/saved': {
       id: '/agpeya/saved'
@@ -1600,6 +2096,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BookChapterRouteImport
       parentRoute: typeof BookRoute
     }
+    '/publisher/workspace/$publisherId': {
+      id: '/publisher/workspace/$publisherId'
+      path: '/publisher/workspace/$publisherId'
+      fullPath: '/publisher/workspace/$publisherId'
+      preLoaderRoute: typeof PublisherWorkspacePublisherIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/publisher/preview/$publisherId': {
+      id: '/publisher/preview/$publisherId'
+      path: '/publisher/preview/$publisherId'
+      fullPath: '/publisher/preview/$publisherId'
+      preLoaderRoute: typeof PublisherPreviewPublisherIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile/church/setup': {
       id: '/profile/church/setup'
       path: '/setup'
@@ -1620,6 +2130,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/messages/chat/$contactId'
       preLoaderRoute: typeof MessagesChatContactIdRouteImport
       parentRoute: typeof MessagesRoute
+    }
+    '/kholagy/liturgy/$liturgyKey': {
+      id: '/kholagy/liturgy/$liturgyKey'
+      path: '/kholagy/liturgy/$liturgyKey'
+      fullPath: '/kholagy/liturgy/$liturgyKey'
+      preLoaderRoute: typeof KholagyLiturgyLiturgyKeyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/kholagy/category/$category': {
+      id: '/kholagy/category/$category'
+      path: '/kholagy/category/$category'
+      fullPath: '/kholagy/category/$category'
+      preLoaderRoute: typeof KholagyCategoryCategoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/church/posts/$type': {
+      id: '/church/posts/$type'
+      path: '/posts/$type'
+      fullPath: '/church/posts/$type'
+      preLoaderRoute: typeof ChurchPostsTypeRouteImport
+      parentRoute: typeof ChurchRoute
     }
     '/church/post/$id': {
       id: '/church/post/$id'
@@ -1642,12 +2173,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChurchChatContactIdRouteImport
       parentRoute: typeof ChurchRoute
     }
+    '/audiov2/preview/$publisherId': {
+      id: '/audiov2/preview/$publisherId'
+      path: '/audiov2/preview/$publisherId'
+      fullPath: '/audiov2/preview/$publisherId'
+      preLoaderRoute: typeof Audiov2PreviewPublisherIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/publisher/$publisherId/album/$contentId': {
+      id: '/publisher/$publisherId/album/$contentId'
+      path: '/album/$contentId'
+      fullPath: '/publisher/$publisherId/album/$contentId'
+      preLoaderRoute: typeof PublisherPublisherIdAlbumContentIdRouteImport
+      parentRoute: typeof PublisherPublisherIdRoute
+    }
     '/platform/scan/trust/$trustId': {
       id: '/platform/scan/trust/$trustId'
       path: '/trust/$trustId'
       fullPath: '/platform/scan/trust/$trustId'
       preLoaderRoute: typeof PlatformScanTrustTrustIdRouteImport
       parentRoute: typeof PlatformScanRoute
+    }
+    '/kholagy/liturgy_/$liturgyKey/$sectionId': {
+      id: '/kholagy/liturgy_/$liturgyKey/$sectionId'
+      path: '/kholagy/liturgy/$liturgyKey/$sectionId'
+      fullPath: '/kholagy/liturgy/$liturgyKey/$sectionId'
+      preLoaderRoute: typeof KholagyLiturgyLiturgyKeySectionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/church/directory/$placeId/posts/$type': {
+      id: '/church/directory/$placeId/posts/$type'
+      path: '/posts/$type'
+      fullPath: '/church/directory/$placeId/posts/$type'
+      preLoaderRoute: typeof ChurchDirectoryPlaceIdPostsTypeRouteImport
+      parentRoute: typeof ChurchDirectoryPlaceIdRoute
     }
   }
 }
@@ -1664,8 +2223,21 @@ const BookRouteChildren: BookRouteChildren = {
 
 const BookRouteWithChildren = BookRoute._addFileChildren(BookRouteChildren)
 
+interface AlphaConnectRouteChildren {
+  AlphaConnectNearbyRoute: typeof AlphaConnectNearbyRoute
+}
+
+const AlphaConnectRouteChildren: AlphaConnectRouteChildren = {
+  AlphaConnectNearbyRoute: AlphaConnectNearbyRoute,
+}
+
+const AlphaConnectRouteWithChildren = AlphaConnectRoute._addFileChildren(
+  AlphaConnectRouteChildren,
+)
+
 interface BibleRouteChildren {
   BibleCharactersRoute: typeof BibleCharactersRoute
+  BibleJourneyRoute: typeof BibleJourneyRoute
   BibleNotesRoute: typeof BibleNotesRoute
   BiblePlacesRoute: typeof BiblePlacesRoute
   BiblePsalmsRoute: typeof BiblePsalmsRoute
@@ -1674,10 +2246,12 @@ interface BibleRouteChildren {
   BibleSearchRoute: typeof BibleSearchRoute
   BibleTimelineRoute: typeof BibleTimelineRoute
   BibleTodayRoute: typeof BibleTodayRoute
+  BibleIndexRoute: typeof BibleIndexRoute
 }
 
 const BibleRouteChildren: BibleRouteChildren = {
   BibleCharactersRoute: BibleCharactersRoute,
+  BibleJourneyRoute: BibleJourneyRoute,
   BibleNotesRoute: BibleNotesRoute,
   BiblePlacesRoute: BiblePlacesRoute,
   BiblePsalmsRoute: BiblePsalmsRoute,
@@ -1686,16 +2260,31 @@ const BibleRouteChildren: BibleRouteChildren = {
   BibleSearchRoute: BibleSearchRoute,
   BibleTimelineRoute: BibleTimelineRoute,
   BibleTodayRoute: BibleTodayRoute,
+  BibleIndexRoute: BibleIndexRoute,
 }
 
 const BibleRouteWithChildren = BibleRoute._addFileChildren(BibleRouteChildren)
 
+interface ChurchDirectoryPlaceIdRouteChildren {
+  ChurchDirectoryPlaceIdPostsTypeRoute: typeof ChurchDirectoryPlaceIdPostsTypeRoute
+}
+
+const ChurchDirectoryPlaceIdRouteChildren: ChurchDirectoryPlaceIdRouteChildren =
+  {
+    ChurchDirectoryPlaceIdPostsTypeRoute: ChurchDirectoryPlaceIdPostsTypeRoute,
+  }
+
+const ChurchDirectoryPlaceIdRouteWithChildren =
+  ChurchDirectoryPlaceIdRoute._addFileChildren(
+    ChurchDirectoryPlaceIdRouteChildren,
+  )
+
 interface ChurchDirectoryRouteChildren {
-  ChurchDirectoryPlaceIdRoute: typeof ChurchDirectoryPlaceIdRoute
+  ChurchDirectoryPlaceIdRoute: typeof ChurchDirectoryPlaceIdRouteWithChildren
 }
 
 const ChurchDirectoryRouteChildren: ChurchDirectoryRouteChildren = {
-  ChurchDirectoryPlaceIdRoute: ChurchDirectoryPlaceIdRoute,
+  ChurchDirectoryPlaceIdRoute: ChurchDirectoryPlaceIdRouteWithChildren,
 }
 
 const ChurchDirectoryRouteWithChildren = ChurchDirectoryRoute._addFileChildren(
@@ -1709,6 +2298,7 @@ interface ChurchRouteChildren {
   ChurchServiceRoute: typeof ChurchServiceRoute
   ChurchChatContactIdRoute: typeof ChurchChatContactIdRoute
   ChurchPostIdRoute: typeof ChurchPostIdRoute
+  ChurchPostsTypeRoute: typeof ChurchPostsTypeRoute
 }
 
 const ChurchRouteChildren: ChurchRouteChildren = {
@@ -1718,6 +2308,7 @@ const ChurchRouteChildren: ChurchRouteChildren = {
   ChurchServiceRoute: ChurchServiceRoute,
   ChurchChatContactIdRoute: ChurchChatContactIdRoute,
   ChurchPostIdRoute: ChurchPostIdRoute,
+  ChurchPostsTypeRoute: ChurchPostsTypeRoute,
 }
 
 const ChurchRouteWithChildren =
@@ -1733,18 +2324,6 @@ const MessagesRouteChildren: MessagesRouteChildren = {
 
 const MessagesRouteWithChildren = MessagesRoute._addFileChildren(
   MessagesRouteChildren,
-)
-
-interface SettingsRouteChildren {
-  SettingsTrustRoute: typeof SettingsTrustRoute
-}
-
-const SettingsRouteChildren: SettingsRouteChildren = {
-  SettingsTrustRoute: SettingsTrustRoute,
-}
-
-const SettingsRouteWithChildren = SettingsRoute._addFileChildren(
-  SettingsRouteChildren,
 )
 
 interface PlatformApprovalsRouteChildren {
@@ -1770,6 +2349,64 @@ const PlatformScanRouteWithChildren = PlatformScanRoute._addFileChildren(
   PlatformScanRouteChildren,
 )
 
+interface PlatformRouteChildren {
+  PlatformAiRoute: typeof PlatformAiRoute
+  PlatformAnalyticsRoute: typeof PlatformAnalyticsRoute
+  PlatformApprovalsRoute: typeof PlatformApprovalsRouteWithChildren
+  PlatformAuditRoute: typeof PlatformAuditRoute
+  PlatformChurchLocationsRoute: typeof PlatformChurchLocationsRoute
+  PlatformChurchesRoute: typeof PlatformChurchesRoute
+  PlatformContentReviewRoute: typeof PlatformContentReviewRoute
+  PlatformEmergencyRoute: typeof PlatformEmergencyRoute
+  PlatformLibraryRoute: typeof PlatformLibraryRoute
+  PlatformModulesRoute: typeof PlatformModulesRoute
+  PlatformMonasteriesRoute: typeof PlatformMonasteriesRoute
+  PlatformOwnerSecurityRoute: typeof PlatformOwnerSecurityRoute
+  PlatformPrivacyRoute: typeof PlatformPrivacyRoute
+  PlatformPublisherCenterRoute: typeof PlatformPublisherCenterRoute
+  PlatformReportsRoute: typeof PlatformReportsRoute
+  PlatformScanRoute: typeof PlatformScanRouteWithChildren
+  PlatformSettingsRoute: typeof PlatformSettingsRoute
+  PlatformIndexRoute: typeof PlatformIndexRoute
+}
+
+const PlatformRouteChildren: PlatformRouteChildren = {
+  PlatformAiRoute: PlatformAiRoute,
+  PlatformAnalyticsRoute: PlatformAnalyticsRoute,
+  PlatformApprovalsRoute: PlatformApprovalsRouteWithChildren,
+  PlatformAuditRoute: PlatformAuditRoute,
+  PlatformChurchLocationsRoute: PlatformChurchLocationsRoute,
+  PlatformChurchesRoute: PlatformChurchesRoute,
+  PlatformContentReviewRoute: PlatformContentReviewRoute,
+  PlatformEmergencyRoute: PlatformEmergencyRoute,
+  PlatformLibraryRoute: PlatformLibraryRoute,
+  PlatformModulesRoute: PlatformModulesRoute,
+  PlatformMonasteriesRoute: PlatformMonasteriesRoute,
+  PlatformOwnerSecurityRoute: PlatformOwnerSecurityRoute,
+  PlatformPrivacyRoute: PlatformPrivacyRoute,
+  PlatformPublisherCenterRoute: PlatformPublisherCenterRoute,
+  PlatformReportsRoute: PlatformReportsRoute,
+  PlatformScanRoute: PlatformScanRouteWithChildren,
+  PlatformSettingsRoute: PlatformSettingsRoute,
+  PlatformIndexRoute: PlatformIndexRoute,
+}
+
+const PlatformRouteWithChildren = PlatformRoute._addFileChildren(
+  PlatformRouteChildren,
+)
+
+interface SettingsRouteChildren {
+  SettingsTrustRoute: typeof SettingsTrustRoute
+}
+
+const SettingsRouteChildren: SettingsRouteChildren = {
+  SettingsTrustRoute: SettingsTrustRoute,
+}
+
+const SettingsRouteWithChildren = SettingsRoute._addFileChildren(
+  SettingsRouteChildren,
+)
+
 interface ProfileChurchRouteChildren {
   ProfileChurchSetupRoute: typeof ProfileChurchSetupRoute
 }
@@ -1782,10 +2419,22 @@ const ProfileChurchRouteWithChildren = ProfileChurchRoute._addFileChildren(
   ProfileChurchRouteChildren,
 )
 
+interface PublisherPublisherIdRouteChildren {
+  PublisherPublisherIdAlbumContentIdRoute: typeof PublisherPublisherIdAlbumContentIdRoute
+}
+
+const PublisherPublisherIdRouteChildren: PublisherPublisherIdRouteChildren = {
+  PublisherPublisherIdAlbumContentIdRoute:
+    PublisherPublisherIdAlbumContentIdRoute,
+}
+
+const PublisherPublisherIdRouteWithChildren =
+  PublisherPublisherIdRoute._addFileChildren(PublisherPublisherIdRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BookRoute: BookRouteWithChildren,
-  AlphaConnectRoute: AlphaConnectRoute,
+  AlphaConnectRoute: AlphaConnectRouteWithChildren,
   AudioRoute: AudioRoute,
   BibleRoute: BibleRouteWithChildren,
   Bible2Route: Bible2Route,
@@ -1801,10 +2450,14 @@ const rootRouteChildren: RootRouteChildren = {
   HomeRoute: HomeRoute,
   IntroRoute: IntroRoute,
   KatamerosTestRoute: KatamerosTestRoute,
+  KidsRoute: KidsRoute,
+  LibraryRoute: LibraryRoute,
   LoginRoute: LoginRoute,
+  MeditationsRoute: MeditationsRoute,
   MessagesRoute: MessagesRouteWithChildren,
   OnboardingRoute: OnboardingRoute,
   PersonalCallRoute: PersonalCallRoute,
+  PlatformRoute: PlatformRouteWithChildren,
   PrayerRequestsRoute: PrayerRequestsRoute,
   RegisterRoute: RegisterRoute,
   ResetPasswordRoute: ResetPasswordRoute,
@@ -1812,36 +2465,38 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRouteWithChildren,
   AgpeyaPrayerIdRoute: AgpeyaPrayerIdRoute,
   AgpeyaSavedRoute: AgpeyaSavedRoute,
+  Audiov2PublisherIdRoute: Audiov2PublisherIdRoute,
   DevAuthRoute: DevAuthRoute,
   DevBackgroundPreviewRoute: DevBackgroundPreviewRoute,
   DevKatamerosCurvePreviewRoute: DevKatamerosCurvePreviewRoute,
   FeastsEventIdRoute: FeastsEventIdRoute,
-  PlatformAiRoute: PlatformAiRoute,
-  PlatformAnalyticsRoute: PlatformAnalyticsRoute,
-  PlatformApprovalsRoute: PlatformApprovalsRouteWithChildren,
-  PlatformAuditRoute: PlatformAuditRoute,
-  PlatformEmergencyRoute: PlatformEmergencyRoute,
-  PlatformLibraryRoute: PlatformLibraryRoute,
-  PlatformModulesRoute: PlatformModulesRoute,
-  PlatformOwnerSecurityRoute: PlatformOwnerSecurityRoute,
-  PlatformPrivacyRoute: PlatformPrivacyRoute,
-  PlatformReportsRoute: PlatformReportsRoute,
-  PlatformScanRoute: PlatformScanRouteWithChildren,
-  PlatformSettingsRoute: PlatformSettingsRoute,
+  KholagyGroupIdRoute: KholagyGroupIdRoute,
   ProfileAppearanceRoute: ProfileAppearanceRoute,
   ProfileChurchRoute: ProfileChurchRouteWithChildren,
+  ProfileContributionsRoute: ProfileContributionsRoute,
+  ProfileEditRoute: ProfileEditRoute,
   ProfileMembershipRoute: ProfileMembershipRoute,
   ProfileMessagesRoute: ProfileMessagesRoute,
   ProfilePersonalRoute: ProfilePersonalRoute,
   ProfileSecurityRoute: ProfileSecurityRoute,
   ProfileServiceRoute: ProfileServiceRoute,
+  PublisherPublisherIdRoute: PublisherPublisherIdRouteWithChildren,
+  PublisherApplyRoute: PublisherApplyRoute,
   SynaxariumSaintIdRoute: SynaxariumSaintIdRoute,
   AgpeyaIndexRoute: AgpeyaIndexRoute,
   FeastsIndexRoute: FeastsIndexRoute,
   KatamerosIndexRoute: KatamerosIndexRoute,
-  PlatformIndexRoute: PlatformIndexRoute,
+  KholagyIndexRoute: KholagyIndexRoute,
   ProfileIndexRoute: ProfileIndexRoute,
+  PublisherIndexRoute: PublisherIndexRoute,
   SynaxariumIndexRoute: SynaxariumIndexRoute,
+  Audiov2PreviewPublisherIdRoute: Audiov2PreviewPublisherIdRoute,
+  KholagyCategoryCategoryRoute: KholagyCategoryCategoryRoute,
+  KholagyLiturgyLiturgyKeyRoute: KholagyLiturgyLiturgyKeyRoute,
+  PublisherPreviewPublisherIdRoute: PublisherPreviewPublisherIdRoute,
+  PublisherWorkspacePublisherIdRoute: PublisherWorkspacePublisherIdRoute,
+  KholagyLiturgyLiturgyKeySectionIdRoute:
+    KholagyLiturgyLiturgyKeySectionIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

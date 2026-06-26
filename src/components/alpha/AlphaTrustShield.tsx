@@ -159,7 +159,7 @@ function ConnectTrustCenterSheet({
   return createPortal(
     <div
       className={cn(
-        "alpha-connect-theme connect-trust-center-sheet-root fixed inset-0 flex items-end justify-center",
+        "alpha-connect-theme connect-trust-center-sheet-root alpha-bottom-sheet-host fixed inset-0 flex items-end justify-center",
         connectTheme === "classic" && "alpha-connect-theme--classic",
       )}
       style={{ zIndex }}

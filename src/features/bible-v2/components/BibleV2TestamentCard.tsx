@@ -23,7 +23,7 @@ export function BibleV2TestamentCard({ data }: { data: BibleV2TestamentData }) {
     : "0 24px 48px -16px rgba(20,30,60,0.38), 0 10px 22px -10px rgba(61,90,154,0.24)";
   return (
     <Link
-      to="/books-v2"
+      to="/books"
       search={{ testament: data.id }}
       dir="rtl"
       aria-label={data.title}

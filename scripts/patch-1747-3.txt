@@ -1,0 +1,58 @@
+=== OLD ===
+  onVerseActive,
+  onToggleSaveVerse,
+  onSelectWord,
+  matchedSet,
+  dictIndex,
+  seenChapterWords,
+  showRef,
+  onOpenCrossRef,
+}: {
+  verseId: string;
+  verseNum: number;
+  book: string;
+  bookName: string;
+  chapter: number;
+  text: string;
+  isActive: boolean;
+  saved: boolean;
+  spiritualMode: boolean;
+  surfaceClass: string;
+  registerVerseElement: (num: number, el: HTMLElement | null) => void;
+  onVerseActive: (id: string) => void;
+  onToggleSaveVerse: (v: Parameters<ReturnType<typeof useSavedVerses>["toggle"]>[0]) => void;
+  onSelectWord: (word: string, entry?: DictionaryEntry) => void;
+
+=== NEW ===
+  onVerseActive,
+  onToggleSaveVerse,
+  onAddJournalNote,
+  onSelectWord,
+  matchedSet,
+  dictIndex,
+  seenChapterWords,
+  showRef,
+  onOpenCrossRef,
+}: {
+  verseId: string;
+  verseNum: number;
+  book: string;
+  bookName: string;
+  chapter: number;
+  text: string;
+  isActive: boolean;
+  saved: boolean;
+  spiritualMode: boolean;
+  surfaceClass: string;
+  registerVerseElement: (num: number, el: HTMLElement | null) => void;
+  onVerseActive: (id: string) => void;
+  onToggleSaveVerse: (v: Parameters<ReturnType<typeof useSavedVerses>["toggle"]>[0]) => void;
+  onAddJournalNote: (v: {
+    book: string;
+    bookName: string;
+    chapter: number;
+    verse: number;
+    text: string;
+    kind?: "note" | "meditation";
+  }) => void;
+  onSelectWord: (word: string, entry?: DictionaryEntry) => void;

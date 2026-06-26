@@ -40,11 +40,14 @@ import {
 import { OwnerAccessPinSheet } from "@/features/platform-admin/OwnerAccessPinSheet";
 import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { useLocale } from "@/lib/i18n/use-locale";
+import { usePlatformModules } from "@/lib/platform-modules";
+import { useResolvedTheme } from "@/lib/alpha-theme";
 
-function sectionVisible(query: string, keywords: string[]): boolean {
+function sectionVisible(query: string, keywords: unknown): boolean {
   if (!query.trim()) return true;
   const q = query.trim().toLowerCase();
-  return keywords.some((k) => k.toLowerCase().includes(q));
+  const list = Array.isArray(keywords) ? keywords : [];
+  return list.some((k) => String(k).toLowerCase().includes(q));
 }
 
 export function AlphaControlCenter() {
@@ -55,9 +58,13 @@ export function AlphaControlCenter() {
   const [search, setSearch] = useState("");
   const [openSection, setOpenSection] = useState<string | null>(null);
   const [ownerPinOpen, setOwnerPinOpen] = useState(false);
+  const [ownerPinTarget, setOwnerPinTarget] = useState("/platform");
   const score = computeSecurityScore(state);
   const scoreLabelKey = securityLabelKey(score);
-  const isDark = state.themeMode === "dark";
+  const isDark = useResolvedTheme() === "dark";
+  const { isModuleEnabled } = usePlatformModules();
+  const communityOn = isModuleEnabled("community");
+  const messagingOn = isModuleEnabled("messaging");
 
   const syncLabel = useMemo(
     () =>
@@ -199,18 +206,32 @@ export function AlphaControlCenter() {
               <ToggleRow label={t("rows.notifyPrayer.label")} subtitle={t("rows.notifyPrayer.subtitle")} checked={state.notifyPrayer} onChange={p("notifyPrayer")} />
               <ToggleRow label={t("rows.notifySaint.label")} subtitle={t("rows.notifySaint.subtitle")} checked={state.notifySaint} onChange={p("notifySaint")} />
               <ToggleRow label={t("rows.notifyKatameros.label")} subtitle={t("rows.notifyKatameros.subtitle")} checked={state.notifyKatameros} onChange={p("notifyKatameros")} />
-              
+
+              {communityOn ? (
+                <>
               <SectionLabel>{t("labels.church")}</SectionLabel>
               <ToggleRow label={t("rows.notifyMeetings.label")} subtitle={t("rows.notifyMeetings.subtitle")} checked={state.notifyMeetings} onChange={p("notifyMeetings")} />
               <ToggleRow label={t("rows.notifyEvents.label")} subtitle={t("rows.notifyEvents.subtitle")} checked={state.notifyTrips} onChange={p("notifyTrips")} />
               <ToggleRow label={t("rows.notifyServices.label")} subtitle={t("rows.notifyServices.subtitle")} checked={state.notifyPrayerRequests} onChange={p("notifyPrayerRequests")} />
               <ToggleRow label={t("rows.notifyDonations.label")} subtitle={t("rows.notifyDonations.subtitle")} checked={state.notifyComments} onChange={p("notifyComments")} />
-              
+                </>
+              ) : null}
+
+              {communityOn || messagingOn ? (
+                <>
               <SectionLabel>{t("labels.community")}</SectionLabel>
-              <ToggleRow label={t("rows.notifyMessages.label")} subtitle={t("rows.notifyMessages.subtitle")} checked={state.notifyReplies} onChange={p("notifyReplies")} />
+              {messagingOn ? (
+                <ToggleRow label={t("rows.notifyMessages.label")} subtitle={t("rows.notifyMessages.subtitle")} checked={state.notifyReplies} onChange={p("notifyReplies")} />
+              ) : null}
+              {communityOn ? (
+                <>
               <ToggleRow label={t("rows.notifyPrayerRequests.label")} subtitle={t("rows.notifyPrayerRequests.subtitle")} checked={state.notifyMentions} onChange={p("notifyMentions")} />
               <ToggleRow label={t("rows.notifyCommunity.label")} subtitle={t("rows.notifyCommunity.subtitle")} checked={state.notifyMentions} onChange={p("notifyMentions")} />
               <ToggleRow label={t("rows.notifyInteractions.label")} subtitle={t("rows.notifyInteractions.subtitle")} checked={state.notifyMentions} onChange={p("notifyMentions")} />
+                </>
+              ) : null}
+                </>
+              ) : null}
             </PremiumSectionCard>
           )}
 
@@ -262,10 +283,13 @@ export function AlphaControlCenter() {
               onToggle={handleToggle}
             >
               <SectionLabel>{t("labels.visibilityAndData")}</SectionLabel>
+              <ActionRow
+                label={t("rows.profileVisibility.label")}
+                subtitle={t("rows.profileVisibility.subtitle")}
+                onClick={() => void navigate({ to: "/profile/edit" })}
+              />
               <ToggleRow label={t("rows.hidePhone.label")} subtitle={t("rows.hidePhone.subtitle")} checked={state.hidePhone} onChange={p("hidePhone")} />
               <ToggleRow label={t("rows.hideEmail.label")} subtitle={t("rows.hideEmail.subtitle")} checked={state.hideEmail} onChange={p("hideEmail")} />
-              <ToggleRow label={t("rows.hideChurch.label")} subtitle={t("rows.hideChurch.subtitle")} checked={state.hideChurch} onChange={p("hideChurch")} />
-              <ToggleRow label={t("rows.hideBirthdate.label")} subtitle={t("rows.hideBirthdate.subtitle")} checked={state.hideBirthdate} onChange={p("hideBirthdate")} />
 
               <SectionLabel>{t("labels.privateMessages")}</SectionLabel>
               <SelectRow label={t("rows.whoCanMessage.label")} value={state.whoCanMessage} options={visibilityOptions} onChange={(v) => p("whoCanMessage")(v as SettingsState["whoCanMessage"])} />
@@ -309,7 +333,7 @@ export function AlphaControlCenter() {
           )}
 
           {/* 7. كنيستي */}
-          {sectionVisible(search, t("sections.myChurch.keywords", { returnObjects: true }) as string[]) && (
+          {communityOn && sectionVisible(search, t("sections.myChurch.keywords", { returnObjects: true }) as string[]) && (
             <PremiumSectionCard
               id="myChurch"
               title={t("sections.myChurch.title")}
@@ -319,11 +343,19 @@ export function AlphaControlCenter() {
               isOpen={sectionOpen("myChurch")}
               onToggle={handleToggle}
             >
-              <ActionRow label={t("rows.currentChurch.label")} subtitle={t("rows.currentChurch.subtitle")} />
-              <ActionRow label={t("rows.membershipStatus.label")} subtitle={t("rows.membershipStatus.subtitle")} />
+              <SectionLabel>{t("labels.membershipAndChurch")}</SectionLabel>
+              <ActionRow
+                label={t("rows.profileChurchData.label")}
+                subtitle={t("rows.profileChurchData.subtitle")}
+                onClick={() => void navigate({ to: "/profile/edit" })}
+              />
+              <ActionRow
+                label={t("rows.churchManagement.label")}
+                subtitle={t("rows.churchManagement.subtitle")}
+                onClick={() => void navigate({ to: "/profile/church" })}
+              />
               <ActionRow label={t("rows.joinRequests.label")} subtitle={t("rows.joinRequests.subtitle")} />
               <ActionRow label={t("rows.transferRequests.label")} subtitle={t("rows.transferRequests.subtitle")} />
-              <ActionRow label={t("rows.rolesAndServices.label")} subtitle={t("rows.rolesAndServices.subtitle")} />
             </PremiumSectionCard>
           )}
 
@@ -397,11 +429,28 @@ export function AlphaControlCenter() {
               <ActionRow label={t("rows.appInfo.label")} subtitle={t("rows.appInfo.subtitle")} />
               <ActionRow label={t("rows.openSourceLicenses.label")} subtitle={t("rows.openSourceLicenses.subtitle")} />
               
+              <button
+                type="button"
+                onClick={() => {
+                  setOwnerPinTarget("/platform/publisher-center");
+                  setOwnerPinOpen(true);
+                }}
+                className="mx-4 mb-2 flex w-[calc(100%-2rem)] flex-col items-center gap-0.5 rounded-2xl border-2 border-[var(--gold)]/45 bg-gradient-to-l from-[var(--gold)]/12 to-white px-4 py-3 active:scale-[0.98]"
+              >
+                <span className="text-[11px] font-extrabold text-[#5a4218]">النشر المباشر للناشرين</span>
+                <span className="text-center text-[10px] font-bold text-[#8a6a3a]">
+                  اختر الناشرين الموثوقين — محتوى جديد بدون تحقق يدوي
+                </span>
+              </button>
+
               {/* TEMP DEV ACCESS ONLY - REMOVE BEFORE PRODUCTION */}
               <button
                 type="button"
-                onClick={() => setOwnerPinOpen(true)}
-                className="mt-4 mx-4 mb-2 flex w-[calc(100%-2rem)] flex-col items-center gap-0.5 rounded-2xl border-2 border-dashed border-[#b85450]/50 bg-[#b85450]/10 px-4 py-3 active:scale-[0.98]"
+                onClick={() => {
+                  setOwnerPinTarget("/platform");
+                  setOwnerPinOpen(true);
+                }}
+                className="mt-2 mx-4 mb-2 flex w-[calc(100%-2rem)] flex-col items-center gap-0.5 rounded-2xl border-2 border-dashed border-[#b85450]/50 bg-[#b85450]/10 px-4 py-3 active:scale-[0.98]"
               >
                 <span className="text-[11px] font-extrabold text-[#8b3a36]">{t("devAccess.title")}</span>
                 <span className="text-[10px] font-bold text-[#8b3a36]/80">{t("devAccess.subtitle")}</span>
@@ -454,7 +503,7 @@ export function AlphaControlCenter() {
         onClose={() => setOwnerPinOpen(false)}
         onSuccess={() => {
           setOwnerPinOpen(false);
-          navigate({ to: "/platform" });
+          void navigate({ to: ownerPinTarget });
         }}
       />
 

@@ -1,0 +1,15 @@
+=== OLD ===
+      className={cn(
+        "group relative w-full min-w-0 cursor-pointer rounded-2xl border px-3.5 py-3 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        surfaceClass,
+        isActive &&
+          (spiritualMode
+
+=== NEW ===
+      className={cn(
+        "group relative w-full min-w-0 cursor-pointer rounded-2xl border px-3.5 py-3 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        surfaceClass,
+        isPulsing && (spiritualMode ? "verse-saved-pulse--spirit z-[2]" : "verse-saved-pulse--light z-[2]"),
+        isActive &&
+          !isPulsing &&
+          (spiritualMode

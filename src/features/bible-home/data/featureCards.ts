@@ -4,6 +4,7 @@ import {
   BookOpen,
   Clock,
   Lightbulb,
+  Map,
   MapPin,
   NotebookPen,
   Search,
@@ -24,6 +25,7 @@ export type FeatureCardData = {
 /** RTL visual order: row 1 R→L, row 2 R→L per reference image */
 export const featureCardsData: FeatureCardData[] = [
   { id: "search", title: "البحث في الكتاب", icon: Search, action: "search" },
+  { id: "journey", title: "رحلتي مع الكتاب", icon: Map, action: "navigate", route: "/bible/journey" },
   { id: "psalms", title: "المزامير", icon: BookOpen, action: "navigate", route: "/bible/psalms" },
   { id: "saved", title: "الآيات المحفوظة", icon: Bookmark, action: "navigate", route: "/bible/saved" },
   { id: "notes", title: "ملاحظات وتأملات", icon: NotebookPen, action: "navigate", route: "/bible/notes" },

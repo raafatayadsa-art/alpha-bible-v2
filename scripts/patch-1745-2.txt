@@ -1,0 +1,15 @@
+=== OLD ===
+  onToggleSaveVerse: (v: Parameters<ReturnType<typeof useSavedVerses>["toggle"]>[0]) => void;
+  onSelectWord: (word: string, entry?: DictionaryEntry) => void;
+
+=== NEW ===
+  onToggleSaveVerse: (v: Parameters<ReturnType<typeof useSavedVerses>["toggle"]>[0]) => void;
+  onAddJournalNote: (v: {
+    book: string;
+    bookName: string;
+    chapter: number;
+    verse: number;
+    text: string;
+    kind?: "note" | "meditation";
+  }) => void;
+  onSelectWord: (word: string, entry?: DictionaryEntry) => void;

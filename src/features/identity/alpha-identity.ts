@@ -6,7 +6,7 @@
 export const ALPHA_ID_PREFIX = "ALPHA";
 export const ALPHA_QR_SCHEME = "alpha";
 
-export type AlphaDeepLinkKind = "member" | "id" | "group" | "church" | "conference" | "channel";
+export type AlphaDeepLinkKind = "member" | "id" | "group" | "church" | "conference" | "channel" | "publisher";
 
 export type AlphaDeepLink = {
   kind: AlphaDeepLinkKind;
@@ -71,6 +71,10 @@ export function buildChannelQrPayload(channelCode: string): string {
   return `${ALPHA_QR_SCHEME}://channel/${channelCode}`;
 }
 
+export function buildPublisherQrPayload(publisherId: string): string {
+  return `${ALPHA_QR_SCHEME}://publisher/${publisherId}`;
+}
+
 export function deriveChannelCode(channelId: string): string {
   return deriveGroupCode(channelId);
 }
@@ -95,7 +99,7 @@ export function parseAlphaDeepLink(raw: string): AlphaDeepLink | null {
       const kind = url.hostname as AlphaDeepLinkKind;
       const code = url.pathname.replace(/^\//, "") || url.host;
       if (!code) return null;
-      if (["member", "id", "group", "church", "conference", "channel"].includes(kind)) {
+      if (["member", "id", "group", "church", "conference", "channel", "publisher"].includes(kind)) {
         return { kind, code: decodeURIComponent(code) };
       }
     }

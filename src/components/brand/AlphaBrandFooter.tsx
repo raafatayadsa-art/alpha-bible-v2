@@ -5,14 +5,20 @@ export const ALPHA_VERSION_LINE = "ⲁⲗⲫⲁ · Alpha Coptic · إصدار 1.
 
 type AlphaBrandFooterProps = {
   className?: string;
+  /** Larger slogan for publisher / hero screens. */
+  size?: "default" | "prominent";
 };
 
 /** Official slogan + version line — luxury footer for branded screens. */
-export function AlphaBrandFooter({ className }: AlphaBrandFooterProps) {
+export function AlphaBrandFooter({ className, size = "default" }: AlphaBrandFooterProps) {
+  const prominent = size === "prominent";
   return (
-    <footer className={cn("mt-8 flex flex-col items-center text-center", className)}>
+    <footer className={cn("flex flex-col items-center text-center", prominent ? "py-6" : "mt-8", className)}>
       <p
-        className="whitespace-nowrap text-[7.5px] font-bold uppercase tracking-[0.1em] leading-none"
+        className={cn(
+          "whitespace-nowrap font-bold uppercase leading-none",
+          prominent ? "text-[9.5px] tracking-[0.14em]" : "text-[7.5px] tracking-[0.1em]",
+        )}
         style={{
           background: "linear-gradient(90deg, #9a7a42 0%, #d4a857 38%, #e8c878 62%, #9a7a42 100%)",
           WebkitBackgroundClip: "text",
@@ -25,7 +31,10 @@ export function AlphaBrandFooter({ className }: AlphaBrandFooterProps) {
         {ALPHA_OFFICIAL_SLOGAN}
       </p>
       <p
-        className="mt-2 text-[9.5px] font-semibold tracking-wide"
+        className={cn(
+          "font-semibold tracking-wide",
+          prominent ? "mt-2.5 text-[11px]" : "mt-2 text-[9.5px]",
+        )}
         style={{ color: "rgba(184,137,58,0.65)" }}
       >
         {ALPHA_VERSION_LINE}

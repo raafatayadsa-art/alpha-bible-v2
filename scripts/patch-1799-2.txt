@@ -1,0 +1,22 @@
+=== OLD ===
+          )}
+        </p>
+      </div>
+    </div>
+  );
+});
+
+/**
+ * Memoized highlight layer.
+
+=== NEW ===
+          )}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+/**
+ * Memoized highlight layer.

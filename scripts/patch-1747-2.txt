@@ -1,0 +1,8 @@
+=== OLD ===
+            onToggleSaveVerse={onToggleSaveVerse}
+            onSelectWord={onSelectWord}
+
+=== NEW ===
+            onToggleSaveVerse={onToggleSaveVerse}
+            onAddJournalNote={onAddJournalNote}
+            onSelectWord={onSelectWord}

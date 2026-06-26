@@ -4,6 +4,7 @@ import { getConnectChannelOnlineCount } from "@/components/alpha/connect-channel
 import { getAuthUserSync } from "@/features/auth/auth-context";
 import { getCurrentUser } from "@/features/church/current-user";
 import { getConnectMissedCallsCount } from "./connect-call-log";
+import { getConnectHomePreviewUnread } from "./connect-home-preview";
 import { useAlphaConnectConversationList } from "./useAlphaConnectConversationList";
 
 export type AlphaConnectHomeActivity = {
@@ -61,7 +62,8 @@ export function useAlphaConnectHomeActivity(): AlphaConnectHomeActivity {
   const { conversations, loading } = useAlphaConnectConversationList(Boolean(authUser?.id));
 
   return useMemo(() => {
-    const unreadMessages = conversations.reduce((total, conv) => total + (conv.unread ?? 0), 0);
+    const unreadFromList = conversations.reduce((total, conv) => total + (conv.unread ?? 0), 0);
+    const unreadMessages = Math.max(unreadFromList, getConnectHomePreviewUnread());
     const missedCalls = getConnectMissedCallsCount();
     const channels = connectListChannelsForViewer(viewerId);
     const activeChannels = channels.filter((channel) => getConnectChannelOnlineCount(channel.id) > 0).length;

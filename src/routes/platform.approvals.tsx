@@ -1,6 +1,5 @@
 import { createFileRoute, Outlet, useRouterState } from "@tanstack/react-router";
 import { ApprovalsCenterScreen } from "@/features/platform-admin";
-import { PlatformAccessGate } from "@/features/platform-admin/PlatformAccessGate";
 
 export const Route = createFileRoute("/platform/approvals")({
   ssr: false,
@@ -15,9 +14,5 @@ function PlatformApprovalsRoute() {
     select: (s) => s.location.pathname.replace(/\/+$/, "") === "/platform/approvals",
   });
 
-  return (
-    <PlatformAccessGate>
-      {isList ? <ApprovalsCenterScreen /> : <Outlet />}
-    </PlatformAccessGate>
-  );
+  return isList ? <ApprovalsCenterScreen /> : <Outlet />;
 }

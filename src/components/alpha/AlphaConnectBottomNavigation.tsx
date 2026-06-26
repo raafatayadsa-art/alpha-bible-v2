@@ -1,7 +1,9 @@
 import { MessageCircle, Phone, Settings, Users } from "lucide-react";
+import { useEffect } from "react";
 import { AlphaConnectLogo } from "./AlphaConnectLogo";
 import { cn } from "@/lib/utils";
 import { ALPHA_TW } from "./alpha-responsive";
+import { activateBottomNavLayout } from "@/components/navigation/alpha-bottom-nav-layout";
 import {
   type AlphaConnectNavTab,
   alphaConnectModeToNavTab,
@@ -39,6 +41,11 @@ export function AlphaConnectBottomNavigation({
   onTabPress,
 }: AlphaConnectBottomNavigationProps) {
   const activeTab = alphaConnectModeToNavTab(mode, settingsOpen);
+
+  useEffect(() => {
+    if (!visible) return;
+    return activateBottomNavLayout();
+  }, [visible]);
 
   return (
     <div

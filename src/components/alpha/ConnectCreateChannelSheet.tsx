@@ -8,6 +8,7 @@ import {
   type ConnectChannelIcon,
 } from "./connect-channels-registry";
 import { ConnectChannelIconView } from "./ConnectChannelIconView";
+import { connectBottomSheetHostClass } from "@/features/alpha-connect/alpha-connect-layout";
 
 export function ConnectCreateChannelSheet({
   open,
@@ -50,7 +51,7 @@ export function ConnectCreateChannelSheet({
   };
 
   return (
-    <div className="connect-create-channel-sheet fixed inset-0 z-[70] flex items-end justify-center" onClick={handleClose}>
+    <div className={`connect-create-channel-sheet ${connectBottomSheetHostClass()} z-[70]`} onClick={handleClose}>
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
       <div
         dir="rtl"

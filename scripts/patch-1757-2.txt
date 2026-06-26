@@ -1,0 +1,5 @@
+=== OLD ===
+  }, [verses.data, book, bookName, ch, scrollRoot, chapterNavState, navigate]);
+
+=== NEW ===
+  }, [verses.data, book, bookName, ch, scrollRoot, chapterNavState, navigate, highlightVerseParam]);

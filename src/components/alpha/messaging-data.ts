@@ -2,6 +2,11 @@ import type { AlphaConnectConversationSummary } from "@/features/alpha-connect/t
 import { formatMessageRelativeTime } from "@/features/alpha-connect/retention";
 import type { ShieldRole } from "./AlphaShield";
 
+/**
+ * Alpha Connect contact directory + DB merge helpers.
+ * Not legacy mock messaging — real threads come from `messages-api` / Supabase.
+ */
+
 export type Conversation = {
   id: string;
   name: string;

@@ -61,6 +61,10 @@ function subscribe(l: () => void) {
   };
 }
 
+export function subscribeChurchPostStore(listener: () => void) {
+  return subscribe(listener);
+}
+
 const cache = new Map<string, unknown>();
 function read<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
@@ -289,6 +293,11 @@ export function computeDefaultExpiry(
 }
 
 /* ------------------------------- attendance ---------------------------------- */
+export function listAttendedPostIds(): string[] {
+  const map = read<Attendance>(ATT_KEY, {});
+  return Object.keys(map).filter((id) => map[id]);
+}
+
 export function toggleAttendance(postId: string): boolean {
   const map = read<Attendance>(ATT_KEY, {});
   const next = !map[postId];
@@ -448,11 +457,8 @@ export function useIsChurchAdmin(): boolean {
   return r === "priest" || r === "admin";
 }
 export function useCanManagePosts(): boolean {
-  return useSyncExternalStore(
-    subscribe,
-    () => canManageChurchPosts(getAlphaRoleSync()),
-    () => false,
-  );
+  // TESTING MODE: always allow priest/servant management
+  return useSyncExternalStore(subscribe, () => true, () => true);
 }
 
 /* --------------------------------- helpers ----------------------------------- */

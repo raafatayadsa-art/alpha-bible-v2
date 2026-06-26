@@ -16,7 +16,7 @@ export function BooksV2TestamentTabs({ active }: { active: "old" | "new" }) {
         return (
           <Link
             key={tab.key}
-            to="/books-v2"
+            to="/books"
             search={{ testament: tab.key }}
             className={cn(
               "flex flex-1 items-center justify-center gap-2 rounded-[20px] border px-3 py-3 text-[12px] font-bold transition",

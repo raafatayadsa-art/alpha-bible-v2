@@ -8,13 +8,14 @@ import {
 import { connectEffectiveAlphaRole } from "./connect-alpha-access";
 import type { ConnectChannel } from "./connect-channels-registry";
 import { getCurrentUser } from "@/features/church/current-user";
+import { resolvedMemberChurchName } from "@/features/church/member-church-api";
 import {
   PRESENCE_LABELS,
   getPresenceStatus,
   resolvePresenceDotForUser,
 } from "@/features/alpha-connect/presence";
 
-const DEFAULT_CHURCH_NAME = "كنيسة مارجرجس — مصر الجديدة";
+const DEFAULT_CHURCH_NAME = "—";
 
 const SHIELD_TYPE_LABELS: Record<ShieldRole, string> = {
   official: "Alpha الرسمي",
@@ -99,7 +100,7 @@ export function buildShieldCenterSnapshot(
     shieldRole,
     shieldType: SHIELD_TYPE_LABELS[shieldRole],
     churchRank: churchRankFor(viewerMember),
-    churchName: DEFAULT_CHURCH_NAME,
+    churchName: resolvedMemberChurchName(DEFAULT_CHURCH_NAME),
     currentChannel: channel.name,
     joinedOn: MEMBER_JOIN_LABELS[viewerUserId] ?? "١٥ يونيو ٢٠٢٦",
     connectionStatus: connectionStatusFor(viewerUserId, viewerUserId),

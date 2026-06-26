@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Shield, X } from "lucide-react";
 import alphaLogo from "@/assets/alpha-logo.png";
 import { cn } from "@/lib/utils";
@@ -36,11 +36,9 @@ export function OwnerAccessPinSheet({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  if (!open) return null;
-
   const pin = digits.join("");
 
-  const submit = () => {
+  const submit = useCallback(() => {
     if (pin.length !== 6) return;
     if (isLockedOut) {
       setError(`محاولات كثيرة — انتظر ${Math.ceil(lockoutRemainingSec / 60)} د`);
@@ -61,7 +59,12 @@ export function OwnerAccessPinSheet({
     }
     setError("الرمز غير صحيح");
     setDigits([]);
-  };
+  }, [pin, isLockedOut, lockoutRemainingSec, verifyPin, onSuccess, onClose]);
+
+  useEffect(() => {
+    if (!open || isLockedOut || digits.length !== 6) return;
+    submit();
+  }, [open, isLockedOut, digits.length, submit]);
 
   const appendDigit = (d: string) => {
     if (isLockedOut || digits.length >= 6) return;
@@ -73,6 +76,8 @@ export function OwnerAccessPinSheet({
     setError("");
     setDigits((prev) => prev.slice(0, -1));
   };
+
+  if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center">

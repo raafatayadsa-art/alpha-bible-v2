@@ -13,6 +13,7 @@ export * from "./DictionaryLookupSheet";
 export * from "./DictionarySearchDialog";
 export * from "./DictionaryResultsSheet";
 export * from "./AutoScrollControls";
+export * from "./ReaderArticleProgress";
 export * from "./BottomDock";
 export * from "./Skeletons";
 export * from "./ChapterReadingScrollRail";

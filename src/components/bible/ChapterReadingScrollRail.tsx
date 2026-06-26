@@ -19,11 +19,13 @@ export function ChapterReadingScrollRail({
   contentRef,
   articleRef,
   spiritualMode,
+  tone = "default",
 }: {
   scrollRoot: HTMLElement | null;
   contentRef: React.RefObject<HTMLElement | null>;
   articleRef?: React.RefObject<HTMLElement | null>;
   spiritualMode: boolean;
+  tone?: "default" | "kholagy";
 }) {
   const dragRef = useRef(false);
   const [layout, setLayout] = useState<RailLayout | null>(null);
@@ -118,6 +120,28 @@ export function ChapterReadingScrollRail({
 
   if (!layout) return null;
 
+  const isKholagyDark = tone === "kholagy" && spiritualMode;
+
+  const trackClass =
+    tone === "kholagy"
+      ? spiritualMode
+        ? "bg-[#c4b0e8]/26 ring-1 ring-[#c4b0e8]/42 shadow-[0_0_14px_rgba(138,110,193,0.28)]"
+        : "bg-[#c4b0e8]/28"
+      : spiritualMode
+        ? "bg-white/16"
+        : "bg-[#7a5cb0]/14";
+
+  const thumbClass =
+    tone === "kholagy"
+      ? spiritualMode
+        ? "bg-gradient-to-b from-[#fff6dc] via-[#f0d78c] to-[#e7c075] shadow-[0_0_20px_rgba(240,215,140,0.9),0_0_8px_rgba(231,192,117,0.75)] ring-1 ring-[#f0d78c]/55"
+        : "bg-gradient-to-b from-[#b8a0e8] via-[#8a6ec1] to-[#5a3d92] shadow-[0_0_14px_rgba(122,92,176,0.45)]"
+      : spiritualMode
+        ? "bg-gradient-to-b from-[#f0d78c] via-[#d4af37] to-[#b8893a] shadow-[0_0_16px_rgba(212,175,55,0.55)]"
+        : "bg-gradient-to-b from-[#9b7fd4] via-[#7a5cb0] to-[#5a3d92] shadow-[0_0_14px_rgba(122,92,176,0.55)]";
+
+  const railWidth = isKholagyDark ? 6 : 5;
+
   return (
     <div
       role="scrollbar"
@@ -127,10 +151,17 @@ export function ChapterReadingScrollRail({
       aria-valuenow={Math.round(layout.pct)}
       aria-label="مؤشر التمرير"
       className={cn(
-        "pointer-events-auto fixed z-30 touch-none transition-opacity duration-300",
-        active ? "opacity-100" : "opacity-90",
+        "pointer-events-auto fixed z-[45] touch-none transition-opacity duration-300",
+        isKholagyDark || active ? "opacity-100" : "opacity-90",
       )}
-      style={{ left: layout.left, top: layout.top, height: layout.height, width: 5 }}
+      style={{
+        left: layout.left,
+        top: layout.top,
+        height: layout.height,
+        width: Math.max(railWidth, 28),
+        marginLeft: -10,
+        paddingLeft: 10,
+      }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
@@ -138,16 +169,16 @@ export function ChapterReadingScrollRail({
     >
       <div
         className={cn(
-          "relative mx-auto h-full w-[5px] rounded-full",
-          spiritualMode ? "bg-white/16" : "bg-[#7a5cb0]/14",
+          "relative mx-auto h-full rounded-full",
+          isKholagyDark ? "w-[6px]" : "w-[5px]",
+          trackClass,
         )}
       >
         <div
           className={cn(
-            "absolute inset-x-[-1px] rounded-full transition-[top,height] duration-150",
-            spiritualMode
-              ? "bg-gradient-to-b from-[#f0d78c] via-[#d4af37] to-[#b8893a] shadow-[0_0_16px_rgba(212,175,55,0.55)]"
-              : "bg-gradient-to-b from-[#9b7fd4] via-[#7a5cb0] to-[#5a3d92] shadow-[0_0_14px_rgba(122,92,176,0.55)]",
+            "absolute rounded-full transition-[top,height] duration-150",
+            isKholagyDark ? "inset-x-[-2px]" : "inset-x-[-1px]",
+            thumbClass,
           )}
           style={{ top: layout.thumbTop, height: layout.thumbHeight }}
         />

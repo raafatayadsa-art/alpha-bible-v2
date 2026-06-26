@@ -134,6 +134,14 @@ function getCardRequestTitle(item: ApprovalItem): string {
   switch (item.kind) {
     case "church_setup":
       return "New Church Approval Request";
+    case "church_claim":
+      return "Church Claim Request";
+    case "publisher_setup":
+      return "Publisher Page Request";
+    case "publisher_publication":
+      return "Publisher Publication Request";
+    case "content_review":
+      return "Content Review";
     case "priest_verification":
       return "Priest Approval Request";
     case "servant_verification":
@@ -148,14 +156,14 @@ function getCardRequestTitle(item: ApprovalItem): string {
 }
 
 function getCardPrimaryName(item: ApprovalItem): string {
-  if (item.kind === "church_setup") return item.churchName ?? getSubmitterName(item);
+  if (item.kind === "church_setup" || item.kind === "church_claim") return item.churchName ?? getSubmitterName(item);
   if (item.kind === "saint_image") return item.saintName ?? getSubmitterName(item);
   if (item.kind === "critical_report") return item.submittedBy ?? "—";
   return getSubmitterName(item);
 }
 
 function getCardSecondaryLine(item: ApprovalItem): string {
-  if (item.kind === "church_setup") return item.diocese ?? getChurchLabel(item);
+  if (item.kind === "church_setup" || item.kind === "church_claim") return item.diocese ?? getChurchLabel(item);
   if (item.kind === "saint_image") return item.contributorName ?? "Alpha Library";
   if (item.kind === "critical_report") return item.reportType ?? "Report";
   return getChurchLabel(item);

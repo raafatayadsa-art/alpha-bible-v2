@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
 import {
   ArrowLeft,
@@ -33,6 +33,7 @@ import {
   EyeOff,
   Search,
   Eye,
+  MapPin,
 } from "lucide-react";
 import { ConnectExpandableSearchBar } from "@/components/alpha/ConnectExpandableSearchBar";
 import { ConnectConfirmDialog, ConnectConversationDeleteDialog, ConnectTopToast } from "@/components/alpha/connect-code-ui";
@@ -179,20 +180,27 @@ import {
   buildAlphaConnectSearch,
   emptyAlphaConnectSearch,
   parseAlphaConnectNavTab,
+  parseAlphaConnectContactRole,
   type AlphaConnectNavTab,
   type AlphaConnectRouteSearch,
 } from "@/features/alpha-connect/alpha-connect-nav";
 import { CONNECT_CALL_LOG_ENTRIES as CALL_LOG_ENTRIES } from "@/features/alpha-connect/connect-call-log";
 import {
   CONNECT_ACTIVITY_PREVIEW_LIMIT,
-  connectContentBottomPaddingClass,
+  connectBottomSheetHostClass,
 } from "@/features/alpha-connect/alpha-connect-layout";
+import { TripChannelTabs } from "@/features/alpha-connect/components/TripChannelTabs";
+import { TripOperationsPanel } from "@/features/alpha-connect/components/TripOperationsPanel";
 
 export const Route = createFileRoute("/alpha-connect")({
   ssr: false,
   validateSearch: (search: Record<string, unknown>): AlphaConnectRouteSearch => ({
     chat: typeof search.chat === "string" ? search.chat : undefined,
     tab: parseAlphaConnectNavTab(search.tab) ?? undefined,
+    channel: typeof search.channel === "string" ? search.channel : undefined,
+    name: typeof search.name === "string" ? search.name : undefined,
+    role: parseAlphaConnectContactRole(search.role),
+    phone: typeof search.phone === "string" ? search.phone : undefined,
   }),
   head: () => ({
     meta: [
@@ -205,9 +213,6 @@ export const Route = createFileRoute("/alpha-connect")({
 
 type Mode = AlphaConnectMode;
 type MessagesTab = AlphaConnectMessagesTab;
-
-const GROUP_VOICE_CHANNEL_ID = "margrgis-conference-2027";
-const GROUP_VOICE_TITLE = "مؤتمر مارجرجس 2027";
 
 const VOICE_MESSAGE_ENTRIES: {
   id: string;
@@ -388,8 +393,9 @@ function AlphaConnect() {
   const [connectToast, setConnectToast] = useState<string | null>(null);
   const [messagesListKey, setMessagesListKey] = useState(0);
   const appliedConnectTabRef = useRef<AlphaConnectNavTab | null>(null);
+  const appliedConnectChannelRef = useRef<string | null>(null);
   const navigate = useNavigate();
-  const { chat: chatContactId, tab: connectTab } = Route.useSearch();
+  const { chat: chatContactId, tab: connectTab, channel: connectChannelId, name: chatContactName, role: chatContactRole, phone: chatContactPhone } = Route.useSearch();
   const { conversations: connectDbConversations } = useAlphaConnectConversationList(true);
   const connectUnreadTotal = useMemo(
     () => connectDbConversations.reduce((total, conv) => total + (conv.unread ?? 0), 0),
@@ -415,7 +421,7 @@ function AlphaConnect() {
   }, []);
 
   const navigateConnectSearch = useCallback(
-    (search: { tab?: AlphaConnectNavTab; chat?: string }) => {
+    (search: Partial<AlphaConnectRouteSearch>) => {
       void navigate({
         to: "/alpha-connect",
         search: buildAlphaConnectSearch(search),
@@ -498,7 +504,7 @@ function AlphaConnect() {
       setOpenChatConv(contact);
       void navigate({
         to: "/alpha-connect",
-        search: { chat: contact.id },
+        search: buildAlphaConnectSearch({ tab: "messages", chat: contact.id }),
       });
     },
     [navigate, setMode, setMessagesTab],
@@ -507,12 +513,29 @@ function AlphaConnect() {
   useEffect(() => {
     if (!chatContactId) return;
     if (openChatConv?.id === chatContactId) return;
-    const conv = resolveConnectConversation(chatContactId, connectDbConversations);
+    let conv = resolveConnectConversation(chatContactId, connectDbConversations);
+    if (!conv && chatContactName) {
+      conv = conversationFromContact({
+        id: chatContactId,
+        name: chatContactName,
+        role: chatContactRole ?? "admin",
+        phone: chatContactPhone,
+      });
+    }
     if (!conv) return;
     setMode("messages");
     setMessagesTab("conversations");
     setOpenChatConv(conv);
-  }, [chatContactId, connectDbConversations, openChatConv?.id, setMode, setMessagesTab]);
+  }, [
+    chatContactId,
+    chatContactName,
+    chatContactRole,
+    chatContactPhone,
+    connectDbConversations,
+    openChatConv?.id,
+    setMode,
+    setMessagesTab,
+  ]);
 
   useEffect(() => {
     if (!openChatConv) setMessagesListKey((k) => k + 1);
@@ -709,7 +732,7 @@ function AlphaConnect() {
       void audio.refreshDevices();
     }
   }, [mode, activeChannelId, audio.refreshDevices]);
-  const groupCode = deriveGroupCode(GROUP_VOICE_CHANNEL_ID);
+  const groupCode = deriveGroupCode(activeChannelId);
   const messagesVoice = useAlphaConnectVoiceChannel({
     scope: "personal",
     enabled: mode === "messages" && messagesTab === "voice",
@@ -717,7 +740,7 @@ function AlphaConnect() {
   const groupVoice = useAlphaConnectVoiceChannel({
     scope: "group",
     groupCode,
-    groupTitle: GROUP_VOICE_TITLE,
+    groupTitle: activeChannel.name,
     enabled: mode === "groups",
   });
 
@@ -771,9 +794,7 @@ function AlphaConnect() {
     }
   }, [mode, openChatConv, chatContactId, navigate]);
 
-  const contentBottomPadding = openChatConv
-    ? "pb-[max(env(safe-area-inset-bottom),8px)]"
-    : connectContentBottomPaddingClass();
+  const contentBottomPadding = openChatConv ? "pb-[max(env(safe-area-inset-bottom),8px)]" : "";
   const securityLocked = isSecurityLockEnabled(connectSettings) && !securityUnlocked;
   const chatOpen = !!openChatConv;
   const connectFrameClass = getAlphaConnectFrameClass(connectSettings.theme);
@@ -815,6 +836,18 @@ function AlphaConnect() {
     appliedConnectTabRef.current = connectTab;
     handleConnectNavTab(connectTab, "url");
   }, [connectTab, handleConnectNavTab, mode, settingsOpen]);
+
+  useEffect(() => {
+    if (!connectChannelId) {
+      appliedConnectChannelRef.current = null;
+      return;
+    }
+    if (appliedConnectChannelRef.current === connectChannelId) return;
+    appliedConnectChannelRef.current = connectChannelId;
+    setActiveChannelId(connectChannelId);
+    setMode("groups");
+    setChannelsDrawerOpen(false);
+  }, [connectChannelId, setMode]);
 
   if (securityLocked) {
     return (
@@ -914,9 +947,6 @@ function AlphaConnect() {
           onOpenParticipants={openParticipantsDrawer}
           trustShield={trustShieldControl}
         />
-        {!showConnectBottomNav ? (
-          <ModeSwitcher mode={mode} setMode={setMode} immersive={chatOpen} />
-        ) : null}
 
         {chatOpen && openChatConv ? (
           <div className="connect-chat-immersive flex min-h-0 flex-1 flex-col overflow-hidden -mx-5 px-0">
@@ -932,6 +962,7 @@ function AlphaConnect() {
         ) : mode === "individual" ? (
           <>
             <IndividualProfileCard />
+            <NearbyMembersEntry />
             <StatusStrip />
             <CallLogCard onRedial={redialContact} onMessage={openContactMessage} />
             <ConnectScrollAction>
@@ -963,6 +994,15 @@ function AlphaConnect() {
               adminName={activeChannel.adminName}
               memberCount={channelMembers.length}
               channelStatus={activeChannelStatus}
+            />
+            <TripChannelTabs
+              activeChannelId={activeChannelId}
+              currentUserId={currentUserId}
+              onSelectChannel={setActiveChannelId}
+            />
+            <TripOperationsPanel
+              activeChannelId={activeChannelId}
+              onAlertSent={showChannelToast}
             />
             <ConnectChannelPttFrame>
               <VoiceControl
@@ -1209,41 +1249,23 @@ function Header({
   );
 }
 
-function ModeSwitcher({
-  mode,
-  setMode,
-  immersive = false,
-}: {
-  mode: Mode;
-  setMode: (m: Mode) => void;
-  immersive?: boolean;
-}) {
-  const tabs: { id: Mode; label: string }[] = [
-    { id: "individual", label: "إتصال" },
-    { id: "messages", label: "الرسائل" },
-    { id: "groups", label: "القنوات" },
-  ];
-  const activeIndex = tabs.findIndex((t) => t.id === mode);
-
+function NearbyMembersEntry() {
   return (
-    <div className={`connect-mode-tabs glass relative flex h-11 rounded-full p-1 ${immersive ? "connect-tabs-rise mb-2 shrink-0" : "mb-3"}`}>
-      <div
-        className="connect-mode-tabs-indicator absolute bottom-1 top-1 w-[calc(33.333%-3px)] rounded-full transition-all duration-300"
-        style={{ right: `calc(${activeIndex * 33.333}% + ${activeIndex === 0 ? 4 : 2}px)` }}
-      />
-      {tabs.map((t) => (
-        <button
-          key={t.id}
-          type="button"
-          onClick={() => setMode(t.id)}
-          className={`connect-mode-tabs-btn relative flex-1 rounded-full text-[13px] font-medium transition-colors ${
-            mode === t.id ? "connect-mode-tabs-btn--active" : "connect-mode-tabs-btn--idle"
-          }`}
-        >
-          {t.label}
-      </button>
-      ))}
-    </div>
+    <Link
+      to="/alpha-connect/nearby"
+      className="glass-strong mb-4 flex items-center gap-3 rounded-2xl px-3.5 py-3 active:scale-[0.99] transition-transform"
+    >
+      <span className="grid h-11 w-11 place-items-center rounded-xl bg-neon-green/15 text-neon-green border border-neon-green/25">
+        <MapPin className="h-5 w-5" />
+      </span>
+      <span className="flex-1 min-w-0 text-right">
+        <span className="block text-[13px] font-extrabold">الأعضاء القريبون</span>
+        <span className="block text-[10px] text-muted-foreground mt-0.5">
+          اكتشاف آمن · Alpha ID · بدون QR
+        </span>
+      </span>
+      <ChevronLeft className="h-4 w-4 text-muted-foreground shrink-0" />
+    </Link>
   );
 }
 
@@ -2235,7 +2257,7 @@ function ConnectCallPickerSheet({
   onSelect: (contact: Conversation) => void;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={onClose}>
+    <div className={`${connectBottomSheetHostClass()} z-50`} onClick={onClose}>
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
       <div
         dir="rtl"

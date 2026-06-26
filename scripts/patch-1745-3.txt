@@ -1,0 +1,12 @@
+=== OLD ===
+  onToggleSaveVerse,
+  onSelectWord,
+  onOpenCrossRef,
+}: ChapterVerseListProps) {
+
+=== NEW ===
+  onToggleSaveVerse,
+  onAddJournalNote,
+  onSelectWord,
+  onOpenCrossRef,
+}: ChapterVerseListProps) {

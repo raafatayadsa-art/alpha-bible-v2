@@ -2,6 +2,9 @@ import { getTodayFeast, type FeastEvent } from "@/features/feasts";
 import type { KatamerosDay } from "@/features/katameros";
 import type { Saint } from "@/features/synaxarium";
 import { parseVerseReference } from "@/lib/bible-labels";
+import { chapterVerseHighlightSearch } from "@/lib/chapter-verse-highlight";
+import { resolveBibleRouteBookParam } from "@/lib/bible-book-names";
+import { parseEnglishVerseReference } from "@/lib/daily-verse";
 import artReadings from "@/assets/home/art-readings.jpg";
 import artSaint from "@/assets/home/art-saint.jpg";
 import artFeast from "@/assets/home/art-feast.jpg";
@@ -13,7 +16,7 @@ export type HeroCardRoute =
   | { to: "/synaxarium" }
   | { to: "/synaxarium/$saintId"; params: { saintId: string } }
   | { to: "/feasts/$eventId"; params: { eventId: string } }
-  | { to: "/$book/$chapter"; params: { book: string; chapter: string } };
+  | { to: "/$book/$chapter"; params: { book: string; chapter: string }; search?: { verse?: string } };
 
 const FEAST_ACCENT_HEX: Record<FeastEvent["accent"], string> = {
   purple: "#6a4ab5",
@@ -52,21 +55,48 @@ export const HERO_CARD_FALLBACKS: Record<1 | 2 | 3, HeroDailyCardData> = {
   },
 };
 
+function resolveVerseReaderLink(reference: string): HeroCardRoute | null {
+  const arabic = parseVerseReference(reference);
+  if (arabic) {
+    return {
+      to: "/$book/$chapter",
+      params: {
+        book: resolveBibleRouteBookParam(arabic.book),
+        chapter: String(arabic.chapter),
+      },
+      search: chapterVerseHighlightSearch(arabic.verse),
+    };
+  }
+
+  const english = parseEnglishVerseReference(reference);
+  if (english) {
+    return {
+      to: "/$book/$chapter",
+      params: {
+        book: resolveBibleRouteBookParam(english.bookId),
+        chapter: String(english.chapter),
+      },
+      search: chapterVerseHighlightSearch(english.verse),
+    };
+  }
+
+  return null;
+}
+
 export function resolveHeroVerseLink(reference: string, fallback: HeroCardRoute = { to: "/bible" }): HeroCardRoute {
-  const parsed = parseVerseReference(reference);
-  if (!parsed) return fallback;
-  return {
-    to: "/$book/$chapter",
-    params: { book: parsed.book, chapter: String(parsed.chapter) },
-  };
+  return resolveVerseReaderLink(reference) ?? fallback;
 }
 
 export function navigateHeroCard(
-  navigate: (opts: { to: string; params?: Record<string, string> }) => void | Promise<void>,
+  navigate: (opts: { to: string; params?: Record<string, string>; search?: Record<string, string> }) => void | Promise<void>,
   link: HeroCardRoute,
 ) {
-  if ("params" in link && link.params) {
-    void navigate({ to: link.to, params: link.params });
+  if (link.to === "/$book/$chapter" && "params" in link && link.params) {
+    void navigate({
+      to: "/$book/$chapter",
+      params: link.params,
+      search: link.search ?? {},
+    });
     return;
   }
   void navigate({ to: link.to });
@@ -94,6 +124,8 @@ export function buildKatamerosHeroCard(day: KatamerosDay | null | undefined): He
     subtitle,
     accent: day.accentHex?.trim() || base.accent,
     link: { to: "/katameros" },
+    dateCoptic: day.copticDate,
+    dateGregorian: day.gregorianDate,
   };
 }
 

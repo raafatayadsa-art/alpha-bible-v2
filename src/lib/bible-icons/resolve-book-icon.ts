@@ -55,8 +55,17 @@ const ARABIC_ALIAS_TO_ID: Record<string, BibleBookId> = {
   "2 اخبار": "2Chronicles",
   "عزرا": "Ezra",
   "نحميا": "Nehemiah",
+  "طوبيا": "Tobit",
+  "سفر طوبيا": "Tobit",
+  "يهوديت": "Judith",
+  "سفر يهوديت": "Judith",
   "أستير": "Esther",
   "استير": "Esther",
+  "المكابيين الاول": "1Maccabees",
+  "المكابيين الأول": "1Maccabees",
+  "مكابيين الاول": "1Maccabees",
+  "المكابيين الثاني": "2Maccabees",
+  "مكابيين الثاني": "2Maccabees",
   "أيوب": "Job",
   "ايوب": "Job",
   "المزامير": "Psalms",
@@ -68,12 +77,19 @@ const ARABIC_ALIAS_TO_ID: Record<string, BibleBookId> = {
   "جامعة": "Ecclesiastes",
   "نشيد الانشاد": "SongOfSolomon",
   "نشيد الأنشاد": "SongOfSolomon",
+  "الحكمة": "Wisdom",
+  "سفر الحكمة": "Wisdom",
+  "يشوع بن سيراخ": "Sirach",
+  "سفر يشوع بن سيراخ": "Sirach",
+  "سيراخ": "Sirach",
   "إشعياء": "Isaiah",
   "اشعياء": "Isaiah",
   "إرميا": "Jeremiah",
   "ارميا": "Jeremiah",
   "مراثي ارميا": "Lamentations",
   "مراثي إرميا": "Lamentations",
+  "باروخ": "Baruch",
+  "سفر باروخ": "Baruch",
   "حزقيال": "Ezekiel",
   "دانيال": "Daniel",
   "هوشع": "Hosea",
@@ -145,8 +161,11 @@ const ARABIC_ALIAS_TO_ID: Record<string, BibleBookId> = {
 function lookupArabicAlias(raw: string): BibleBookId | undefined {
   const n = normArabic(raw);
   if (ARABIC_ALIAS_TO_ID[n]) return ARABIC_ALIAS_TO_ID[n];
-  for (const [alias, id] of Object.entries(ARABIC_ALIAS_TO_ID)) {
-    if (n.includes(normArabic(alias)) || normArabic(alias).includes(n)) return id;
+  // Longer aliases first — avoid "يشوع" matching "يشوع بن سيراخ"
+  const entries = Object.entries(ARABIC_ALIAS_TO_ID).sort((a, b) => b[0].length - a[0].length);
+  for (const [alias, id] of entries) {
+    const na = normArabic(alias);
+    if (n.includes(na) || na.includes(n)) return id;
   }
   for (const row of BIBLE_BOOK_ICON_BY_ID.values()) {
     const bn = normArabic(row.bookName);

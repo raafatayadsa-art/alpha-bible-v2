@@ -1,6 +1,9 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { joinTripPublicChannel } from "@/features/alpha-connect/provision-trip-channels";
+import { processWaitlistAfterCancellation } from "./trip-reservations/trip-waitlist";
 import { currentUserName, getCurrentUser } from "./current-user";
+import { resolvedMemberChurchName } from "./member-church-api";
 
 export type RegistrationKind = "attendance" | "trip" | "event" | "reservation";
 export type RegistrationStatus = "registered" | "confirmed" | "cancelled";
@@ -22,7 +25,7 @@ export type PostRegistration = {
 
 const CACHE_KEY = "alpha:church:post-registrations";
 const PROFILE_KEY = "alpha:church:member-profile";
-const DEFAULT_CHURCH = "كنيسة الشهيد مار جرجس";
+const DEFAULT_CHURCH = "—";
 
 type MemberProfile = { id: string; name: string; churchName: string };
 
@@ -134,7 +137,7 @@ export function getMemberProfile(): MemberProfile {
       if (parsed.id === user.id) return parsed;
     }
   } catch { /* ignore */ }
-  return { id: user.id, name: user.name || currentUserName(), churchName: DEFAULT_CHURCH };
+  return { id: user.id, name: user.name || currentUserName(), churchName: resolvedMemberChurchName(DEFAULT_CHURCH) };
 }
 
 export function saveMemberProfile(patch: Partial<MemberProfile>) {
@@ -169,6 +172,11 @@ export async function syncRegistrationsFromDb(postId?: string) {
 function upsertLocal(row: PostRegistration) {
   const list = readCache().filter((r) => r.id !== row.id);
   writeCache([row, ...list]);
+}
+
+function afterTripRegistration(postId: string, kind: RegistrationKind) {
+  if (kind !== "trip") return;
+  joinTripPublicChannel(postId);
 }
 
 export async function registerForPost(opts: {
@@ -217,6 +225,7 @@ export async function registerForPost(opts: {
     if (!error && data) {
       const row = rowFromDb(data as Record<string, unknown>);
       upsertLocal(row);
+      afterTripRegistration(opts.postId, opts.kind);
       return { ok: true, row };
     }
 
@@ -228,6 +237,7 @@ export async function registerForPost(opts: {
       updatedAt: new Date().toISOString(),
     };
     upsertLocal(row);
+    afterTripRegistration(opts.postId, opts.kind);
     return { ok: true, row };
   }
 
@@ -240,6 +250,7 @@ export async function registerForPost(opts: {
   if (!error && data) {
     const row = rowFromDb(data as Record<string, unknown>);
     upsertLocal(row);
+    afterTripRegistration(opts.postId, opts.kind);
     return { ok: true, row };
   }
 
@@ -257,10 +268,16 @@ export async function registerForPost(opts: {
     updatedAt: new Date().toISOString(),
   };
   upsertLocal(localRow);
+  afterTripRegistration(opts.postId, opts.kind);
   return { ok: true, row: localRow };
 }
 
 export async function cancelRegistration(id: string) {
+  const row = readCache().find((r) => r.id === id);
+  const freedSeats = row?.seats ?? 1;
+  const postId = row?.postId;
+  const kind = row?.kind;
+
   const { error } = await supabase
     .from("post_registrations")
     .update({ status: "cancelled", updated_at: new Date().toISOString() })
@@ -270,6 +287,10 @@ export async function cancelRegistration(id: string) {
     r.id === id ? { ...r, status: "cancelled" as const, updatedAt: new Date().toISOString() } : r,
   );
   writeCache(list);
+
+  if (postId && kind === "trip") {
+    processWaitlistAfterCancellation(postId, freedSeats);
+  }
   return !error;
 }
 
@@ -284,6 +305,17 @@ export async function confirmRegistration(id: string) {
   );
   writeCache(list);
   return !error;
+}
+
+export function subscribePostRegistrations(listener: () => void) {
+  return subscribe(listener);
+}
+
+export function listMyRegistrations(userId?: string): PostRegistration[] {
+  const uid = userId ?? getMemberProfile().id;
+  return readCache()
+    .filter((r) => r.userId === uid && r.status !== "cancelled")
+    .sort((a, b) => new Date(b.registeredAt).getTime() - new Date(a.registeredAt).getTime());
 }
 
 export function getRegistrationsForPost(postId: string, kind?: RegistrationKind) {

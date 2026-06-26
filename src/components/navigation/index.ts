@@ -1,4 +1,5 @@
 export * from "./alpha-screen-kind";
+export * from "./alpha-bottom-nav-layout";
 export * from "./AlphaNavigationProvider";
 export * from "./AlphaEdgeGestures";
 export * from "./AlphaNotificationButton";

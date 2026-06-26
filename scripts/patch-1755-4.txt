@@ -1,0 +1,8 @@
+=== OLD ===
+  const [activeVerse, setActiveVerse] = useState<string | null>(null);
+  const [readingVerse, setReadingVerse] = useState(1);
+
+=== NEW ===
+  const [activeVerse, setActiveVerse] = useState<string | null>(null);
+  const [pulsingVerseId, setPulsingVerseId] = useState<string | null>(null);
+  const [readingVerse, setReadingVerse] = useState(1);

@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ScanCenterScreen } from "@/features/platform-admin/ScanCenterScreen";
-import { PlatformAccessGate } from "@/features/platform-admin/PlatformAccessGate";
 
 export const Route = createFileRoute("/platform/scan")({
   ssr: false,
@@ -11,9 +10,5 @@ export const Route = createFileRoute("/platform/scan")({
 });
 
 function PlatformScanRoute() {
-  return (
-    <PlatformAccessGate>
-      <ScanCenterScreen />
-    </PlatformAccessGate>
-  );
+  return <ScanCenterScreen />;
 }

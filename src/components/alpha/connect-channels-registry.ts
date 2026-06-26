@@ -14,6 +14,7 @@ import {
   saveChannelState,
 } from "./connect-channel-state";
 import { countPresenceVisibleMembers } from "@/features/alpha-connect/presence";
+import { canAccessOrganizerChannel } from "@/features/alpha-connect/trip-channel-access";
 
 export type ConnectChannelStatus = "active" | "suspended";
 
@@ -26,6 +27,9 @@ export type ConnectChannelIcon =
   | "video"
   | "handshake";
 
+/** ALPHA-083 — trip-linked channel kinds */
+export type ConnectChannelKind = "standard" | "trip_public" | "trip_organizer";
+
 export type ConnectChannel = {
   id: string;
   name: string;
@@ -36,6 +40,10 @@ export type ConnectChannel = {
   favorite?: boolean;
   icon: ConnectChannelIcon;
   status?: ConnectChannelStatus;
+  kind?: ConnectChannelKind;
+  linkedPostId?: string;
+  /** Read-only archive after trip ends */
+  archived?: boolean;
 };
 
 export function normalizeConnectChannelTopic(raw: string): string {
@@ -171,6 +179,9 @@ export function canDeleteConnectChannel(channelId: string, userId: string): bool
 
 export function listConnectChannelsForUser(userId: string): ConnectChannel[] {
   return readChannels().filter((channel) => {
+    if (channel.kind === "trip_organizer" && channel.linkedPostId) {
+      if (!canAccessOrganizerChannel(channel.linkedPostId, userId)) return false;
+    }
     const status = channel.status ?? "active";
     if (status === "active") return true;
     const role = getChannelMemberRole(channel.id, userId);
@@ -362,6 +373,18 @@ export function createConnectChannel(input: {
   });
 
   return channel;
+}
+
+export function patchConnectChannel(
+  channelId: string,
+  patch: Partial<Pick<ConnectChannel, "kind" | "linkedPostId" | "archived" | "name" | "topic" | "status">>,
+): ConnectChannel | null {
+  const channels = readChannels();
+  const index = channels.findIndex((channel) => channel.id === channelId);
+  if (index < 0) return null;
+  channels[index] = { ...channels[index]!, ...patch };
+  writeChannels(channels);
+  return channels[index]!;
 }
 
 export function getConnectChannelOnlineCount(channelId: string): number {

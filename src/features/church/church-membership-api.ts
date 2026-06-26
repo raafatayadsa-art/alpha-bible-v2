@@ -57,7 +57,7 @@ export async function getActiveMembershipChurchId(): Promise<string | null> {
     .from("churches")
     .select("id")
     .eq("id", churchId)
-    .eq("status", "approved")
+    .eq("is_active", true)
     .maybeSingle();
 
   return church?.id != null ? churchId : null;
@@ -78,7 +78,7 @@ export async function joinChurch(churchId: string): Promise<JoinChurchResult> {
     .from("churches")
     .select("id")
     .eq("id", churchId)
-    .eq("status", "approved")
+    .eq("is_active", true)
     .maybeSingle();
 
   if (churchError || !church?.id) {

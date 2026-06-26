@@ -29,6 +29,20 @@ export type ChurchPostDetails = {
   returnDate?: string;
   seats?: number;
   places?: string;
+  /** Trip price label e.g. "200 جنيه" */
+  price?: string;
+  /** Trip program / itinerary summary */
+  program?: string;
+  /** ALPHA-084 — trip approval workflow */
+  approvalStatus?: "pending" | "changes_requested" | "approved" | "rejected";
+  organizerUserId?: string;
+  organizerName?: string;
+  churchName?: string;
+  approvedByUserId?: string;
+  approvedByName?: string;
+  approvalNote?: string;
+  submittedAt?: string;
+  reviewedAt?: string;
 };
 
 export type ChurchPost = {
@@ -51,6 +65,10 @@ export type ChurchPost = {
   /** Prayer requests: marked completed / closed. */
   closed?: boolean;
   details?: ChurchPostDetails;
+  /** Optional extra images — shown in Facebook-style gallery below post text. */
+  images?: string[];
+  /** Epoch ms from `created_at` — used for feed ordering. */
+  createdAt?: number;
 };
 
 export const POST_TYPE_META: Record<PostType, { label: string; tone: string }> = {

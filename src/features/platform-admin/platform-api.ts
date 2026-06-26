@@ -1,7 +1,9 @@
 import { supabase } from "@/integrations/supabase/client";
+import { ensureAudioPublisherPublished } from "@/features/publisher/publisher-discovery-api";
 import { fetchAuthUser, getAuthUserSync } from "@/features/auth";
 import type { ApprovalItem, ApprovalKind, ApprovalPriority, ApprovalStatus } from "./types";
 import type { AuditLogEntry, EmergencyFlags, ModuleState, PlatformModuleKey } from "./platform-store";
+import { mergeOwnerModuleStates } from "@/lib/platform-modules";
 import type { ScanAuditMeta, TrustProfile } from "./scan-store";
 
 let dbReadyCache: boolean | null = null;
@@ -317,6 +319,20 @@ export async function fetchPlatformHealth(): Promise<PlatformHealth> {
 }
 
 export async function fetchDashboardStats(): Promise<DashboardStats | null> {
+  const { data: live, error: liveErr } = await supabase.rpc("platform_live_dashboard_stats");
+  if (!liveErr && live && typeof live === "object") {
+    const row = live as Record<string, number>;
+    return {
+      users: row.users ?? 0,
+      churches: row.churches ?? 0,
+      priests: row.priests ?? 0,
+      servants: row.servants ?? 0,
+      messages: row.messages ?? 0,
+      requests: row.requests ?? 0,
+      reports: row.reports ?? 0,
+    };
+  }
+
   if (!(await checkPlatformDbReady())) return null;
   const { data, error } = await supabase.from("platform_dashboard_stats").select("*").eq("id", 1).maybeSingle();
   if (error || !data) return null;
@@ -357,13 +373,213 @@ export async function fetchApprovalById(id: string): Promise<ApprovalItem | null
   return item;
 }
 
+async function syncChurchClaimApproval(
+  status: ApprovalStatus,
+  approvalId?: string,
+  claimId?: string | null,
+): Promise<void> {
+  let payload: Record<string, unknown> = {};
+  let resolvedClaimId = claimId ?? undefined;
+
+  if (approvalId) {
+    const { data: approval, error } = await supabase
+      .from("platform_approvals")
+      .select("payload, kind, type")
+      .eq("id", approvalId)
+      .maybeSingle();
+    if (error) {
+      console.error("supabase error", error);
+      return;
+    }
+    if (approval) {
+      payload = (approval.payload ?? {}) as Record<string, unknown>;
+      const kind = approval.kind ?? approval.type;
+      if (kind !== "church_claim") return;
+    }
+  }
+
+  if (!resolvedClaimId && typeof payload.claimId === "string") {
+    resolvedClaimId = payload.claimId;
+  }
+
+  const churchIdRaw = payload.churchId;
+  const churchId =
+    typeof churchIdRaw === "number"
+      ? churchIdRaw
+      : typeof churchIdRaw === "string" && churchIdRaw.trim()
+        ? Number(churchIdRaw)
+        : null;
+
+  const claimStatus =
+    status === "approved"
+      ? "approved"
+      : status === "rejected"
+        ? "rejected"
+        : status === "needs_info" || status === "needs_changes"
+          ? "pending"
+          : "pending";
+
+  if (resolvedClaimId) {
+    const { error: claimError } = await supabase
+      .from("church_claim_requests")
+      .update({ status: claimStatus, updated_at: new Date().toISOString() })
+      .eq("id", resolvedClaimId);
+    if (claimError) console.error("supabase error", claimError);
+  }
+
+  if (!churchId || Number.isNaN(churchId)) return;
+
+  if (status === "approved") {
+    const { error: churchError } = await supabase
+      .from("churches")
+      .update({
+        page_status: "verified",
+        is_verified: true,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", churchId);
+    if (churchError) console.error("supabase error", churchError);
+
+    const ownerRaw = payload.submittedBy;
+    const ownerId = typeof ownerRaw === "string" && ownerRaw.trim() ? ownerRaw : null;
+    const { error: pubError } = await supabase.rpc("ensure_church_publisher", {
+      p_church_id: churchId,
+      p_owner_id: ownerId,
+    });
+    if (pubError) console.error("supabase error", pubError);
+    return;
+  }
+
+  if (status === "rejected") {
+    const { error: churchError } = await supabase
+      .from("churches")
+      .update({
+        page_status: "inactive",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", churchId);
+    if (churchError) console.error("supabase error", churchError);
+  }
+}
+
+async function loadApprovalPayload(approvalId?: string): Promise<Record<string, unknown>> {
+  if (!approvalId) return {};
+  const { data: approval, error } = await supabase
+    .from("platform_approvals")
+    .select("payload, kind, type, source_id, source_table")
+    .eq("id", approvalId)
+    .maybeSingle();
+  if (error || !approval) return {};
+  const payload = (approval.payload ?? {}) as Record<string, unknown>;
+  if (!payload.publisherId && !payload.publisher_id && approval.source_table === "publishers" && approval.source_id) {
+    payload.publisherId = approval.source_id;
+  }
+  return payload;
+}
+
+async function runPublisherApprovalSync(approvalId: string, status: ApprovalStatus): Promise<boolean> {
+  const { data, error } = await supabase.rpc("apply_publisher_approval_sync", {
+    p_approval_id: approvalId,
+    p_status: status,
+  });
+
+  if (error) {
+    console.error("[apply_publisher_approval_sync]", error.message);
+    return false;
+  }
+
+  const result = data as { ok?: boolean; reason?: string; publisherId?: string } | null;
+  if (!result?.ok) {
+    console.error("[apply_publisher_approval_sync]", result?.reason ?? "unknown");
+    return false;
+  }
+
+  if (status === "approved" && result.publisherId) {
+    await ensureAudioPublisherPublished(result.publisherId);
+  } else if (status === "approved") {
+    const payload = await loadApprovalPayload(approvalId);
+    const publisherId =
+      typeof payload.publisherId === "string"
+        ? payload.publisherId
+        : typeof payload.publisher_id === "string"
+          ? payload.publisher_id
+          : null;
+    if (publisherId) await ensureAudioPublisherPublished(publisherId);
+  }
+
+  return true;
+}
+
+async function syncPublisherSetupApproval(status: ApprovalStatus, approvalId?: string): Promise<boolean> {
+  if (!approvalId) return false;
+  return runPublisherApprovalSync(approvalId, status);
+}
+
+async function syncPublisherPublicationApproval(status: ApprovalStatus, approvalId?: string): Promise<boolean> {
+  if (!approvalId) return false;
+  return runPublisherApprovalSync(approvalId, status);
+}
+
+async function syncContentReviewApproval(status: ApprovalStatus, approvalId?: string): Promise<void> {
+  const payload = await loadApprovalPayload(approvalId);
+  const contentId = typeof payload.contentId === "string" ? payload.contentId : null;
+  if (!contentId) return;
+
+  const mapped =
+    status === "approved"
+      ? "approved"
+      : status === "rejected"
+        ? "rejected"
+        : status === "needs_changes" || status === "needs_info"
+          ? "needs_changes"
+          : "pending_review";
+
+  const { data: item } = await supabase
+    .from("publisher_content_items")
+    .select("publisher_id")
+    .eq("id", contentId)
+    .maybeSingle();
+
+  await supabase
+    .from("publisher_content_items")
+    .update({
+      status: mapped,
+      reviewed_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", contentId);
+
+  if (mapped === "approved" && item?.publisher_id) {
+    await supabase.rpc("refresh_publisher_readiness", { p_id: item.publisher_id });
+    await ensureAudioPublisherPublished(item.publisher_id);
+  }
+}
+
 export async function syncApprovalSourceStatus(
   sourceTable: string | null | undefined,
   sourceId: string | null | undefined,
   status: ApprovalStatus,
   approvalId?: string,
   approvalKind?: string,
-): Promise<void> {
+): Promise<boolean> {
+  if (approvalKind === "church_claim" || sourceTable === "church_claim_requests") {
+    await syncChurchClaimApproval(status, approvalId, sourceId);
+    return true;
+  }
+
+  if (approvalKind === "publisher_setup") {
+    return syncPublisherSetupApproval(status, approvalId);
+  }
+
+  if (approvalKind === "publisher_publication") {
+    return syncPublisherPublicationApproval(status, approvalId);
+  }
+
+  if (approvalKind === "content_review") {
+    await syncContentReviewApproval(status, approvalId);
+    return true;
+  }
+
   let setupRequestId =
     sourceTable === "church_setup_requests" && sourceId ? sourceId : null;
 
@@ -392,7 +608,51 @@ export async function syncApprovalSourceStatus(
     return;
   }
 
-  if (!setupRequestId) return;
+  let galleryImageId =
+    sourceTable === "saint_gallery_images" && sourceId ? sourceId : null;
+
+  if (!galleryImageId && approvalId) {
+    const { data: approval } = await supabase
+      .from("platform_approvals")
+      .select("source_table, source_id, kind, type")
+      .eq("id", approvalId)
+      .maybeSingle();
+
+    if (approval?.source_table === "saint_gallery_images" && approval.source_id) {
+      galleryImageId = approval.source_id;
+    } else if (
+      (approval?.kind === "saint_image" || approval?.type === "saint_image") &&
+      approval.source_id
+    ) {
+      galleryImageId = approval.source_id;
+    }
+  }
+
+  if (galleryImageId) {
+    const { approveSaintGalleryImage, patchSaintGalleryStatus } = await import(
+      "@/features/saint-gallery/gallery-api"
+    );
+    const reviewer = await getCurrentPlatformAdmin();
+    const mappedStatus =
+      status === "approved"
+        ? "approved"
+        : status === "rejected"
+          ? "rejected"
+          : status === "needs_info" || status === "needs_changes"
+            ? "needs_changes"
+            : status === "under_review"
+              ? "under_review"
+              : "pending";
+
+    if (mappedStatus === "approved") {
+      await approveSaintGalleryImage(galleryImageId, reviewer);
+    } else {
+      await patchSaintGalleryStatus(galleryImageId, mappedStatus, reviewer);
+    }
+    return true;
+  }
+
+  if (!setupRequestId) return true;
 
   const mapped =
     status === "approved"
@@ -416,6 +676,7 @@ export async function syncApprovalSourceStatus(
     const fallbackUserId = await getAuthUserId();
     await provisionChurchFromSetupRequest(setupRequestId, fallbackUserId);
   }
+  return true;
 }
 
 export type ApprovalPatch = {
@@ -484,21 +745,45 @@ export async function fetchModules(): Promise<ModuleState[] | null> {
   if (!(await checkPlatformDbReady())) return null;
   const { data, error } = await supabase.from("platform_modules").select("*").order("key");
   if (error || !data) return null;
-  return data.map((r) => ({
-    key: r.key as PlatformModuleKey,
-    label: r.label,
-    labelAr: r.label_ar,
-    enabled: r.enabled,
-  }));
+  return mergeOwnerModuleStates(
+    data.map((r) => ({
+      key: r.key as PlatformModuleKey,
+      label: r.label,
+      labelAr: r.label_ar,
+      enabled: r.enabled === true,
+    })),
+  );
 }
 
 export async function toggleModuleDb(key: PlatformModuleKey, enabled: boolean): Promise<boolean> {
   if (!(await checkPlatformDbReady())) return false;
-  const { error } = await supabase
+
+  const { data: rpcRows, error: rpcErr } = await supabase.rpc("platform_toggle_module", {
+    p_key: key,
+    p_enabled: enabled,
+  });
+
+  if (!rpcErr && rpcRows != null) {
+    const row = (Array.isArray(rpcRows) ? rpcRows[0] : rpcRows) as { enabled?: boolean } | undefined;
+    if (row && row.enabled === enabled) return true;
+  }
+
+  if (rpcErr) {
+    console.warn("[platform-modules] RPC toggle failed", rpcErr.message);
+  }
+
+  const { data, error } = await supabase
     .from("platform_modules")
     .update({ enabled, updated_at: new Date().toISOString() })
-    .eq("key", key);
-  return !error;
+    .eq("key", key)
+    .select("key, enabled")
+    .maybeSingle();
+
+  if (error) {
+    console.warn("[platform-modules] direct update failed", error.message);
+  }
+
+  return !error && data?.enabled === enabled;
 }
 
 export async function fetchEmergency(): Promise<EmergencyFlags | null> {

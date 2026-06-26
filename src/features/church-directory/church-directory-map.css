@@ -1,0 +1,87 @@
+.church-directory-map.maplibregl-map {
+  font-family: inherit;
+  background: #0c1024;
+}
+
+.church-directory-map .maplibregl-canvas {
+  outline: none;
+}
+
+.church-directory-map .maplibregl-ctrl-bottom-right,
+.church-directory-map .maplibregl-ctrl-bottom-left {
+  display: none;
+}
+
+/* Reserved for future HTML overlay markers (globe / custom pins) */
+.alpha-church-marker-wrap {
+  background: transparent !important;
+  border: none !important;
+}
+
+.alpha-church-marker {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+}
+
+.alpha-church-marker::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.45) 0%, transparent 70%);
+  animation: alpha-halo 2.4s ease-in-out infinite;
+}
+
+.alpha-church-marker::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border-radius: 999px;
+  box-shadow: 0 0 0 3px rgba(93, 50, 145, 0.35), 0 10px 22px -8px rgba(93, 50, 145, 0.55);
+}
+
+.alpha-church-marker-inner {
+  position: relative;
+  z-index: 1;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(160deg, #7b4cb8, #5d3291);
+  color: #f5f2ed;
+  border: 2px solid rgba(212, 175, 55, 0.65);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.alpha-church-marker.is-selected .alpha-church-marker-inner {
+  transform: scale(1.12);
+  border-color: #d4af37;
+  box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+@keyframes alpha-halo {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes alpha-pulse {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(2.8);
+    opacity: 0;
+  }
+}

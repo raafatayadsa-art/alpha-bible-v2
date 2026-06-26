@@ -103,6 +103,7 @@
     "devicesAndSessions": "الأجهزة والجلسات",
     "securityGuarantees": "ضمانات الأمان",
     "visibilityAndData": "الظهور والبيانات",
+    "membershipAndChurch": "العضوية والكنيسة",
     "dataManagement": "إدارة البيانات",
     "blocking": "الحظر",
     "bible": "الكتاب المقدس"
@@ -144,8 +145,9 @@
 
     "hidePhone": { "label": "إظهار أو إخفاء رقم الهاتف", "subtitle": "التحكم في ظهور رقمك" },
     "hideEmail": { "label": "إظهار أو إخفاء البريد الإلكتروني", "subtitle": "التحكم في ظهور بريدك" },
-    "hideChurch": { "label": "إظهار أو إخفاء الكنيسة", "subtitle": "التحكم في ظهور كنيستك" },
-    "hideBirthdate": { "label": "إظهار أو إخفاء تاريخ الميلاد", "subtitle": "التحكم في ظهور تاريخ ميلادك" },
+    "profileVisibility": { "label": "خصوصية الملف الشخصي", "subtitle": "النبذة، الإنجازات، وظهور الملف — من تحرير الملف" },
+    "profileChurchData": { "label": "بيانات الكنيسة والعضوية", "subtitle": "الكنيسة، الرتبة، وطلب النقل — من تحرير الملف" },
+    "churchManagement": { "label": "إدارة الكنيسة", "subtitle": "لوحة الخادم أو الإدارة" },
     "whoCanMessage": { "label": "من يمكنه مراسلتي", "subtitle": "تحديد من يرسل لك رسائل" },
     "receivePrivateMessages": { "label": "استقبال الرسائل الخاصة", "subtitle": "تفعيل أو تعطيل الرسائل" },
     "autoDeleteMessages": { "label": "الحذف التلقائي للرسائل", "subtitle": "حذف الرسائل بعد مدة" },

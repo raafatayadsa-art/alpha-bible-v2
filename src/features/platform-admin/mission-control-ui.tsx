@@ -1,5 +1,5 @@
-import { type ReactNode, useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { Link, useNavigate, useRouter } from "@tanstack/react-router";
 import {
   AlertTriangle,
   BarChart3,
@@ -7,17 +7,21 @@ import {
   BookOpen,
   Box,
   ChevronLeft,
+  Church,
+  FileText,
   ClipboardList,
   Cpu,
   LayoutDashboard,
   Lock,
+  MapPin,
+  Mountain,
   Scan,
   Settings,
   Shield,
   Siren,
   User,
+  Home,
 } from "lucide-react";
-import alphaLogo from "@/assets/alpha-logo.png";
 import { cn } from "@/lib/utils";
 import { MC } from "./platform-store";
 
@@ -70,63 +74,34 @@ function LiveDot({ color = MC.green, pulse = false }: { color?: string; pulse?: 
   );
 }
 
-export function MissionHeader() {
+export function MissionHeader({ alertCount = 0 }: { alertCount?: number }) {
   const navigate = useNavigate();
 
   return (
     <header className="mb-2 pt-[max(env(safe-area-inset-top),6px)]">
       <div className="flex items-center justify-between gap-2">
-        <div className="flex min-w-0 items-center gap-2">
-          <img src={alphaLogo} alt="" className="h-12 w-12 shrink-0 object-contain" />
-          <div className="min-w-0 text-right">
-            <h1 className="truncate text-[13px] font-extrabold tracking-[0.08em]" style={{ color: MC.white }}>
-              A.C.C
-            </h1>
-            <p className="text-[8px] font-semibold tracking-wide" style={{ color: MC.gold }}>
-              Owner Access
-            </p>
-          </div>
-        </div>
-        <div className="flex shrink-0 items-center gap-1.5">
-          <div className="mr-0.5 flex flex-col items-center gap-0">
-            <div
-              className="flex h-7 w-7 items-center justify-center rounded-full border text-[9px] font-bold"
-              style={{ borderColor: MC.panelBorder, background: "rgba(139,122,184,0.2)", color: MC.white }}
+        <button
+          type="button"
+          aria-label="Notifications"
+          onClick={() => navigate({ to: "/platform/approvals" })}
+          className="relative grid h-10 w-10 place-items-center rounded-[12px] border active:scale-95"
+          style={{
+            borderColor: `${MC.gold}33`,
+            background: "rgba(15,22,40,0.92)",
+            boxShadow: `0 0 14px rgba(143,212,255,0.12)`,
+          }}
+        >
+          <Bell className="h-[18px] w-[18px]" style={{ color: "#8fd4ff" }} strokeWidth={2} />
+          {alertCount > 0 ? (
+            <span
+              className="absolute -left-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full px-0.5 font-mono text-[8px] font-bold tabular-nums"
+              style={{ background: MC.red, color: MC.white }}
             >
-              JS
-            </div>
-            <p className="max-w-[52px] truncate text-[7px] font-bold" style={{ color: MC.white }}>
-              جون سامي
-            </p>
-          </div>
-          <button
-            type="button"
-            aria-label="Scan Center"
-            onClick={() => navigate({ to: "/platform/scan" })}
-            className="grid h-8 w-8 place-items-center rounded-[10px] border active:scale-95"
-            style={{ borderColor: MC.panelBorder, background: "rgba(15,22,40,0.9)", boxShadow: luxuryShadow(MC.purple) }}
-          >
-            <Scan className="h-3.5 w-3.5" style={{ color: MC.purple }} strokeWidth={2} />
-          </button>
-          <button
-            type="button"
-            aria-label="Notifications"
-            onClick={() => navigate({ to: "/platform/approvals" })}
-            className="grid h-8 w-8 place-items-center rounded-[10px] border active:scale-95"
-            style={{ borderColor: MC.panelBorder, background: "rgba(15,22,40,0.9)" }}
-          >
-            <Bell className="h-3.5 w-3.5" style={{ color: MC.white }} strokeWidth={2} />
-          </button>
-          <button
-            type="button"
-            aria-label="Settings"
-            onClick={() => navigate({ to: "/platform/settings" })}
-            className="grid h-8 w-8 place-items-center rounded-[10px] border active:scale-95"
-            style={{ borderColor: MC.panelBorder, background: "rgba(15,22,40,0.9)" }}
-          >
-            <Settings className="h-3.5 w-3.5" style={{ color: MC.white }} strokeWidth={2} />
-          </button>
-        </div>
+              {alertCount > 99 ? "99+" : alertCount}
+            </span>
+          ) : null}
+        </button>
+        <p className="text-[10px] font-bold text-slate-500">Owner Access</p>
       </div>
     </header>
   );
@@ -399,65 +374,109 @@ export function OwnerToolbar({
   badges?: { approvals?: number; alerts?: number };
 }) {
   const navigate = useNavigate();
-  const sideItems: { id: OwnerToolbarActive; label: string; icon: typeof LayoutDashboard; to: string; badgeKey?: "approvals" | "alerts" }[] = [
-    { id: "home", label: "لوحة التحكم", icon: LayoutDashboard, to: "/platform" },
-    { id: "approvals", label: "الموافقات", icon: Shield, to: "/platform/approvals", badgeKey: "approvals" },
-    { id: "alerts", label: "التنبيهات", icon: Bell, to: "/platform/approvals", badgeKey: "alerts" },
-    { id: "settings", label: "الإعدادات", icon: Settings, to: "/platform/settings" },
-  ];
 
-  const left = sideItems.slice(0, 2);
-  const right = sideItems.slice(2);
-
-  function SideBtn(item: (typeof sideItems)[number]) {
-    const Icon = item.icon;
-    const on = active === item.id;
-    const badge = item.badgeKey ? badges[item.badgeKey] : undefined;
+  function SideBtn({
+    id,
+    label,
+    icon: Icon,
+    to,
+    badge,
+  }: {
+    id: OwnerToolbarActive;
+    label: string;
+    icon: typeof LayoutDashboard;
+    to: string;
+    badge?: number;
+  }) {
+    const on = active === id;
     return (
       <button
-        key={item.id}
         type="button"
-        onClick={() => navigate({ to: item.to as "/" })}
+        onClick={() => navigate({ to: to as "/" })}
         className="relative flex flex-1 flex-col items-center gap-0.5 py-1"
       >
         {badge != null && badge > 0 && (
-          <span className="absolute -top-0.5 left-1/2 z-10 grid h-4 min-w-4 -translate-x-1/2 place-items-center rounded-full px-0.5 text-[7px] font-bold" style={{ background: MC.red, color: MC.white }}>
+          <span
+            className="absolute -top-0.5 left-1/2 z-10 grid h-4 min-w-4 -translate-x-1/2 place-items-center rounded-full px-0.5 font-mono text-[7px] font-bold tabular-nums"
+            style={{ background: MC.red, color: MC.white }}
+          >
             {badge > 99 ? "99+" : badge}
           </span>
         )}
         <Icon className="h-5 w-5" style={{ color: on ? MC.gold : MC.muted }} strokeWidth={2} />
         <span className="text-[8px] font-bold" style={{ color: on ? MC.gold : MC.muted }}>
-          {item.label}
+          {label}
         </span>
-        {on && <span className="absolute -bottom-0.5 h-0.5 w-6 rounded-full" style={{ background: MC.gold, boxShadow: `0 0 8px ${MC.gold}` }} />}
+        {on ? (
+          <span className="absolute -bottom-0.5 h-0.5 w-6 rounded-full" style={{ background: MC.gold, boxShadow: `0 0 8px ${MC.gold}` }} />
+        ) : null}
       </button>
     );
   }
+
+  const settingsOn = active === "settings";
+  const scanOn = active === "scan";
 
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-40 border-t backdrop-blur-xl"
       style={{ borderColor: MC.panelBorder, background: "rgba(8, 12, 24, 0.96)" }}
     >
-      <div className="relative mx-auto flex max-w-lg items-end justify-around px-1 pb-[max(env(safe-area-inset-bottom),10px)] pt-2">
-        {left.map(SideBtn)}
+      <div
+        dir="ltr"
+        className="mx-auto grid max-w-lg grid-cols-5 items-end gap-0.5 px-3 pb-[max(env(safe-area-inset-bottom),10px)] pt-2"
+      >
+        <SideBtn id="home" label="لوحة التحكم" icon={LayoutDashboard} to="/platform" />
+
+        <button
+          type="button"
+          aria-label="Settings"
+          onClick={() => navigate({ to: "/platform/settings" })}
+          className="relative flex flex-col items-center gap-0.5 py-1"
+        >
+          <Settings className="h-5 w-5" style={{ color: settingsOn ? MC.gold : MC.muted }} strokeWidth={2} />
+          <span className="text-[8px] font-bold" style={{ color: settingsOn ? MC.gold : MC.muted }}>
+            الإعدادات
+          </span>
+          {settingsOn ? (
+            <span className="absolute -bottom-0.5 h-0.5 w-6 rounded-full" style={{ background: MC.gold, boxShadow: `0 0 8px ${MC.gold}` }} />
+          ) : null}
+        </button>
+
         <button
           type="button"
           aria-label="Scan Center"
           onClick={() => navigate({ to: "/platform/scan" })}
-          className="relative -mt-6 grid h-14 w-14 place-items-center rounded-full border active:scale-95"
-          style={{
-            borderColor: `${MC.purple}66`,
-            background: "linear-gradient(180deg, rgba(139,122,184,0.35) 0%, rgba(15,22,40,0.98) 100%)",
-            boxShadow: `0 8px 32px -8px rgba(0,0,0,0.6), 0 0 28px -6px ${MC.purple}88`,
-          }}
+          className="relative flex flex-col items-center gap-0.5 py-1"
         >
-          <Scan className="h-6 w-6" style={{ color: MC.white }} strokeWidth={2.2} />
-          {active === "scan" && (
-            <span className="absolute -bottom-1 h-1 w-8 rounded-full" style={{ background: MC.purple, boxShadow: `0 0 10px ${MC.purple}` }} />
-          )}
+          <Scan className="h-5 w-5" style={{ color: scanOn ? MC.purple : MC.muted }} strokeWidth={2} />
+          <span className="text-[8px] font-bold" style={{ color: scanOn ? MC.purple : MC.muted }}>
+            Scan
+          </span>
+          {scanOn ? (
+            <span className="absolute -bottom-0.5 h-0.5 w-6 rounded-full" style={{ background: MC.purple, boxShadow: `0 0 8px ${MC.purple}` }} />
+          ) : null}
         </button>
-        {right.map(SideBtn)}
+
+        <SideBtn
+          id="approvals"
+          label="الموافقات"
+          icon={Shield}
+          to="/platform/approvals"
+          badge={badges.approvals}
+        />
+
+        <button
+          type="button"
+          aria-label="Alpha"
+          onClick={() => navigate({ to: "/home" })}
+          className="relative flex flex-col items-center gap-0.5 py-1"
+        >
+          <Home className="h-5 w-5" style={{ color: MC.muted }} strokeWidth={2} />
+          <span className="text-[8px] font-bold" style={{ color: MC.muted }}>
+            Alpha
+          </span>
+        </button>
       </div>
     </nav>
   );
@@ -497,6 +516,24 @@ export function MissionControlShell({
   );
 }
 
+/** Reads TanStack Router's navigation index from browser history state. */
+function getHistoryIdx(): number {
+  if (typeof window === "undefined") return 0;
+  return ((window.history.state as Record<string, unknown>)?.idx as number) ?? 0;
+}
+
+/** Navigate back in Alpha Control — preserves browser history when possible. */
+export function usePlatformBack(fallbackTo = "/platform") {
+  const router = useRouter();
+  return useCallback(() => {
+    if (getHistoryIdx() > 0) {
+      router.history.back();
+      return;
+    }
+    router.navigate({ to: fallbackTo });
+  }, [router, fallbackTo]);
+}
+
 export function MissionSubShell({
   title,
   titleEn,
@@ -508,13 +545,14 @@ export function MissionSubShell({
   children: ReactNode;
   navActive?: "dashboard" | "quick" | "alerts" | "profile";
 }) {
-  const navigate = useNavigate();
+  const goBack = usePlatformBack("/platform");
   return (
     <MissionControlShell showNav navActive={navActive}>
       <div className="mb-3 flex items-center gap-2 pt-[max(env(safe-area-inset-top),8px)]">
         <button
           type="button"
-          onClick={() => navigate({ to: "/platform" })}
+          aria-label="رجوع"
+          onClick={goBack}
           className="grid h-10 w-10 place-items-center rounded border"
           style={{ borderColor: MC.panelBorder, background: MC.panel }}
         >
@@ -626,17 +664,31 @@ export function CyberToggle({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5" style={{ borderColor: MC.panelBorder }}>
+    <div
+      dir="rtl"
+      className="flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5"
+      style={{ borderColor: MC.panelBorder, background: "rgba(0,0,0,0.22)" }}
+    >
+      <span className="min-w-0 flex-1 text-right text-[12px] font-bold leading-snug text-slate-200">{label}</span>
       <button
         type="button"
         role="switch"
         aria-checked={checked}
+        aria-label={label}
         onClick={() => onChange(!checked)}
-        className={cn("relative h-7 w-12 shrink-0 rounded-full border transition", checked ? "border-emerald-500/60 bg-emerald-500/30" : "border-slate-700 bg-slate-800")}
+        dir="ltr"
+        className={cn(
+          "relative h-7 w-12 shrink-0 rounded-full border transition active:scale-95",
+          checked ? "border-emerald-500/60 bg-emerald-500/30" : "border-slate-600 bg-slate-800",
+        )}
       >
-        <span className={cn("absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition", checked ? "right-0.5" : "right-[22px]")} />
+        <span
+          className={cn(
+            "absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-[left]",
+            checked ? "left-[22px]" : "left-0.5",
+          )}
+        />
       </button>
-      <span className="text-[12px] font-bold text-slate-200">{label}</span>
     </div>
   );
 }
@@ -651,4 +703,8 @@ export const COMMAND_ICONS = {
   audit: ClipboardList,
   settings: Settings,
   library: BookOpen,
+  churchLocations: MapPin,
+  churches: Church,
+  monasteries: Mountain,
+  contentReview: FileText,
 };

@@ -11,6 +11,9 @@ export default defineConfig(({ mode }) => ({
     open: "/home",
     host: true,
   },
+  optimizeDeps: {
+    include: ["maplibre-gl"],
+  },
   tanstackStart: {
     server: { entry: "server" },
   },

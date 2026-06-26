@@ -54,13 +54,9 @@ export function articleScrollProgress(root: HTMLElement, article: HTMLElement): 
   const scrollTop = isDoc ? window.scrollY : root.scrollTop;
   const viewportH = isDoc ? window.innerHeight : root.clientHeight;
 
-  let top = 0;
-  let el: HTMLElement | null = article;
-  while (el && el !== root) {
-    top += el.offsetTop;
-    el = el.offsetParent as HTMLElement | null;
-  }
-
+  const rootRect = isDoc ? { top: 0 } : root.getBoundingClientRect();
+  const articleRect = article.getBoundingClientRect();
+  const top = scrollTop + (articleRect.top - rootRect.top);
   const height = article.offsetHeight;
   const start = top;
   const end = top + height - viewportH * 0.35;

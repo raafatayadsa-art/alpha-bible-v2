@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { X, Send, ShieldCheck, CalendarDays } from "lucide-react";
+import { X, Send, ShieldCheck, CalendarDays, Clock, Users } from "lucide-react";
 import {
   addCondolence,
   addCongrats,
@@ -9,9 +9,26 @@ import {
   registerForPost,
   cancelRegistration,
   usePostRegistrations,
+  getMemberProfile,
   type RegistrationKind,
 } from "./post-registrations";
 import { currentUserName } from "./current-user";
+import {
+  joinTripWaitlist,
+  leaveWaitlist,
+  myWaitlistEntry,
+  waitlistPosition,
+  subscribeTripWaitlist,
+  countWaiting,
+} from "./trip-reservations/trip-waitlist";
+import {
+  getFamilyProfile,
+  saveFamilyBookingMeta,
+  totalSeatsForFamilySelection,
+  type FamilyBookingMode,
+} from "./trip-reservations/family-booking";
+import { saveEmergencyContact } from "./trip-reservations/emergency-contact";
+import { initTripWallet } from "./trip-reservations/trip-wallet";
 
 function PopupShell({
   title, subtitle, onClose, children, footer, compact = false,
@@ -252,19 +269,44 @@ export function ReservePopup({
 }) {
   const { count, mine } = usePostRegistrations(postId, "trip");
   const remaining = totalSeats != null ? Math.max(0, totalSeats - count) : undefined;
+  const isFull = totalSeats != null && remaining === 0;
   const [seats, setSeats] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [bookingMode, setBookingMode] = useState<FamilyBookingMode>("solo");
+  const [includeSelf, setIncludeSelf] = useState(true);
+  const [selectedFamily, setSelectedFamily] = useState<string[]>([]);
+  const [emergencyName, setEmergencyName] = useState("");
+  const [emergencyPhone, setEmergencyPhone] = useState("");
+  const [emergencyRelation, setEmergencyRelation] = useState("");
+  const familyProfile = getFamilyProfile();
+  const [, setWaitlistTick] = useState(0);
+  const waitlistEntry = myWaitlistEntry(postId);
+  const waitlistPos = waitlistEntry ? waitlistPosition(waitlistEntry) : null;
+
+  useEffect(() => subscribeTripWaitlist(() => setWaitlistTick((n) => n + 1)), [postId]);
+
+  const familySeats =
+    bookingMode === "family"
+      ? totalSeatsForFamilySelection(bookingMode, selectedFamily, includeSelf)
+      : seats;
   const maxAllowed = remaining != null ? Math.max(0, remaining) : 10;
+  const effectiveSeats = bookingMode === "family" ? familySeats : seats;
+
+  function toggleFamilyMember(id: string) {
+    setSelectedFamily((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  }
 
   return (
     <PopupShell
       compact
-      title="حجز الرحلة"
+      title={isFull ? "قائمة الانتظار" : "حجز الرحلة"}
       subtitle={
-        totalSeats != null
-          ? `المتاح: ${(remaining ?? 0).toLocaleString("ar-EG")} من ${totalSeats.toLocaleString("ar-EG")}`
-          : `محجوز: ${count.toLocaleString("ar-EG")}`
+        isFull
+          ? `${countWaiting(postId).toLocaleString("ar-EG")} في الانتظار`
+          : totalSeats != null
+            ? `المتاح: ${(remaining ?? 0).toLocaleString("ar-EG")} من ${totalSeats.toLocaleString("ar-EG")}`
+            : `محجوز: ${count.toLocaleString("ar-EG")}`
       }
       onClose={onClose}
       footer={
@@ -273,7 +315,7 @@ export function ReservePopup({
           onClick={onClose}
           className="w-full rounded-full bg-white/90 border border-[#efe2c4] py-2 text-[12px] font-extrabold text-[#6a543a] active:scale-[0.98]"
         >
-          إلغاء
+          إغلاق
         </button>
       }
     >
@@ -290,57 +332,185 @@ export function ReservePopup({
             ) : null}
           </div>
         ) : null}
-        <div className="rounded-xl bg-white/90 border border-[#efe2c4] p-2.5 text-right">
-          <p className="text-[10px] font-extrabold text-[#7a5a30] mb-1.5">عدد الأماكن</p>
-          <div className="flex items-center justify-between gap-2">
-            <button
-              type="button"
-              onClick={() => setSeats((s) => Math.max(1, s - 1))}
-              className="h-7 w-7 rounded-full bg-[#fbf3e1] border border-[#efe2c4] text-[#3a2a18] text-sm font-extrabold active:scale-90"
-              aria-label="نقص"
-            >
-              −
-            </button>
-            <span className="font-arabic-serif text-[18px] font-extrabold text-[#3a2a18] tabular-nums">
-              {seats.toLocaleString("ar-EG")}
-            </span>
-            <button
-              type="button"
-              onClick={() => setSeats((s) => Math.min(maxAllowed, s + 1))}
-              className="h-7 w-7 rounded-full bg-[#fbf3e1] border border-[#efe2c4] text-[#3a2a18] text-sm font-extrabold active:scale-90"
-              aria-label="زيادة"
-            >
-              +
-            </button>
+
+        {!isFull ? (
+          <>
+            <div className="rounded-xl bg-white/90 border border-[#efe2c4] p-2.5 text-right">
+              <p className="text-[10px] font-extrabold text-[#7a5a30] mb-1.5 inline-flex items-center gap-1">
+                <Users className="h-3 w-3" /> نوع الحجز
+              </p>
+              <div className="flex gap-2">
+                {(["solo", "family"] as const).map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setBookingMode(m)}
+                    className={
+                      "flex-1 rounded-xl py-1.5 text-[10px] font-extrabold border " +
+                      (bookingMode === m
+                        ? "bg-[#1f8a5a] text-white border-[#1f8a5a]"
+                        : "bg-white border-[#efe2c4] text-[#5a4030]")
+                    }
+                  >
+                    {m === "solo" ? "نفسي فقط" : "حجز عائلي"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {bookingMode === "family" ? (
+              <div className="rounded-xl bg-white/90 border border-[#efe2c4] p-2.5 text-right space-y-1.5">
+                <p className="text-[10px] font-extrabold text-[#7a5a30]">{familyProfile.householdName}</p>
+                <label className="flex items-center justify-between gap-2 text-[11px] font-bold text-[#3a2a18]">
+                  <input type="checkbox" checked={includeSelf} onChange={(e) => setIncludeSelf(e.target.checked)} />
+                  <span>أنا ({getMemberProfile().name || "المستخدم"})</span>
+                </label>
+                {familyProfile.members
+                  .filter((m) => m.name.trim())
+                  .map((m) => (
+                    <label key={m.id} className="flex items-center justify-between gap-2 text-[11px] text-[#5a4030]">
+                      <input
+                        type="checkbox"
+                        checked={selectedFamily.includes(m.id)}
+                        onChange={() => toggleFamilyMember(m.id)}
+                      />
+                      <span>{m.name} · {m.relation}</span>
+                    </label>
+                  ))}
+                <p className="text-[10px] font-bold text-[#1f8a5a]">إجمالي الأماكن: {familySeats.toLocaleString("ar-EG")}</p>
+              </div>
+            ) : (
+              <div className="rounded-xl bg-white/90 border border-[#efe2c4] p-2.5 text-right">
+                <p className="text-[10px] font-extrabold text-[#7a5a30] mb-1.5">عدد الأماكن</p>
+                <div className="flex items-center justify-between gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSeats((s) => Math.max(1, s - 1))}
+                    className="h-7 w-7 rounded-full bg-[#fbf3e1] border border-[#efe2c4] text-[#3a2a18] text-sm font-extrabold active:scale-90"
+                    aria-label="نقص"
+                  >
+                    −
+                  </button>
+                  <span className="font-arabic-serif text-[18px] font-extrabold text-[#3a2a18] tabular-nums">
+                    {seats.toLocaleString("ar-EG")}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setSeats((s) => Math.min(maxAllowed, s + 1))}
+                    className="h-7 w-7 rounded-full bg-[#fbf3e1] border border-[#efe2c4] text-[#3a2a18] text-sm font-extrabold active:scale-90"
+                    aria-label="زيادة"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {mine && mine.seats > 0 ? (
+              <p className="text-[10px] text-[#7a5a30] text-right">حجزت {mine.seats.toLocaleString("ar-EG")} مكان</p>
+            ) : null}
+            {error ? <p className="text-[10px] font-bold text-[#a8344f] text-right">{error}</p> : null}
+
+            <div className="rounded-xl bg-white/90 border border-[#efe2c4] p-2.5 text-right space-y-1.5">
+              <p className="text-[10px] font-extrabold text-[#7a5a30]">جهة اتصال للطوارئ</p>
+              <input value={emergencyName} onChange={(e) => setEmergencyName(e.target.value)} placeholder="الاسم" className="w-full rounded-lg border border-[#efe2c4] px-2 py-1.5 text-[11px]" />
+              <input value={emergencyPhone} onChange={(e) => setEmergencyPhone(e.target.value)} placeholder="رقم الهاتف" className="w-full rounded-lg border border-[#efe2c4] px-2 py-1.5 text-[11px]" />
+              <input value={emergencyRelation} onChange={(e) => setEmergencyRelation(e.target.value)} placeholder="صلة القرابة" className="w-full rounded-lg border border-[#efe2c4] px-2 py-1.5 text-[11px]" />
+            </div>
+
+            <SubmitBtn
+              compact
+              disabled={effectiveSeats < 1 || maxAllowed < effectiveSeats || busy}
+              label="تأكيد الحجز"
+              onClick={async () => {
+                setBusy(true);
+                setError(null);
+                if (totalSeats != null && count + effectiveSeats > totalSeats) {
+                  setError("لا توجد أماكن كافية");
+                  setBusy(false);
+                  return;
+                }
+                const profile = getMemberProfile();
+                const res = await registerForPost({
+                  postId,
+                  kind: "trip",
+                  seats: effectiveSeats,
+                  userName: senderName(),
+                });
+                if (res.ok && res.row) {
+                  const members =
+                    bookingMode === "family"
+                      ? [
+                          ...(includeSelf
+                            ? [{ id: "self", name: profile.name || senderName(), relation: "أنا" }]
+                            : []),
+                          ...familyProfile.members.filter((m) => selectedFamily.includes(m.id)),
+                        ]
+                      : [{ id: "self", name: profile.name || senderName(), relation: "أنا" }];
+                  saveFamilyBookingMeta({
+                    registrationId: res.row.id,
+                    postId,
+                    mode: bookingMode,
+                    householdName: familyProfile.householdName,
+                    members,
+                    bookedAt: new Date().toISOString(),
+                  });
+                  if (emergencyName.trim() && emergencyPhone.trim()) {
+                    saveEmergencyContact({
+                      registrationId: res.row.id,
+                      name: emergencyName.trim(),
+                      phone: emergencyPhone.trim(),
+                      relation: emergencyRelation.trim() || "قريب",
+                    });
+                  }
+                  initTripWallet({ registrationId: res.row.id, amountDue: effectiveSeats * 200 });
+                }
+                setBusy(false);
+                if (!res.ok) setError(res.error ?? "تعذّر الحجز");
+                else onClose();
+              }}
+            />
+          </>
+        ) : (
+          <div className="rounded-xl bg-[#fff8e8] border border-[#e7c97a] p-3 text-right space-y-2">
+            <p className="text-[11px] font-extrabold text-[#8a6a1e] inline-flex items-center gap-1">
+              <Clock className="h-3.5 w-3.5" /> اكتمل العدد — يمكنك الانضمام لقائمة الانتظار
+            </p>
+            {waitlistEntry ? (
+              <p className="text-[10px] text-[#6a543a]">
+                أنت في القائمة · المركز {waitlistPos}
+                {waitlistEntry.status === "offered" ? " · لديك عرض نشط!" : ""}
+              </p>
+            ) : null}
+            {error ? <p className="text-[10px] font-bold text-[#a8344f]">{error}</p> : null}
+            {waitlistEntry ? (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => {
+                  leaveWaitlist(postId);
+                  setWaitlistTick((n) => n + 1);
+                }}
+                className="w-full rounded-full border border-[#efe2c4] bg-white py-2 text-[11px] font-extrabold text-[#9a3030]"
+              >
+                مغادرة قائمة الانتظار
+              </button>
+            ) : (
+              <SubmitBtn
+                compact
+                disabled={busy}
+                label="انضمام لقائمة الانتظار"
+                onClick={() => {
+                  setBusy(true);
+                  const res = joinTripWaitlist(postId, seats);
+                  setBusy(false);
+                  if (!res.ok) setError(res.error ?? "تعذّر الانضمام");
+                  else setWaitlistTick((n) => n + 1);
+                }}
+              />
+            )}
           </div>
-          {mine && mine.seats > 0 ? (
-            <p className="mt-1.5 text-[10px] text-[#7a5a30]">حجزت {mine.seats.toLocaleString("ar-EG")} مكان</p>
-          ) : null}
-          {error ? <p className="mt-1.5 text-[10px] font-bold text-[#a8344f]">{error}</p> : null}
-        </div>
-        <SubmitBtn
-          compact
-          disabled={seats < 1 || maxAllowed < 1 || busy}
-          label="تأكيد الحجز"
-          onClick={async () => {
-            setBusy(true);
-            setError(null);
-            if (totalSeats != null && count + seats > totalSeats) {
-              setError("لا توجد أماكن كافية");
-              setBusy(false);
-              return;
-            }
-            const res = await registerForPost({
-              postId,
-              kind: "trip",
-              seats,
-              userName: senderName(),
-            });
-            setBusy(false);
-            if (!res.ok) setError(res.error ?? "تعذّر الحجز");
-            else onClose();
-          }}
-        />
+        )}
       </div>
     </PopupShell>
   );

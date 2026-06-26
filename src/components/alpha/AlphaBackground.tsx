@@ -1,6 +1,5 @@
 import { cn } from "@/lib/utils";
 import {
-  ALPHA_BACKGROUND_BASE,
   getAlphaBackgroundCss,
   type AlphaBackgroundVariant,
 } from "./alpha-background";
@@ -9,6 +8,7 @@ import {
   isAlphaTopDebugActive,
   useAlphaTopDebugTarget,
 } from "./alpha-top-debug";
+import { useResolvedTheme } from "@/lib/alpha-theme";
 
 type AlphaBackgroundProps = {
   variant: AlphaBackgroundVariant;
@@ -26,7 +26,8 @@ export function AlphaBackground({
   scope = "fixed",
   className,
 }: AlphaBackgroundProps) {
-  const gradient = getAlphaBackgroundCss(variant);
+  const { isDark } = useResolvedTheme();
+  const gradient = isDark ? undefined : getAlphaBackgroundCss(variant);
   const topDebug = useAlphaTopDebugTarget();
   const fixedBgActive = scope === "fixed" && isAlphaTopDebugActive(6, topDebug);
 
@@ -42,7 +43,7 @@ export function AlphaBackground({
         className,
       )}
       style={{
-        backgroundColor: ALPHA_BACKGROUND_BASE,
+        backgroundColor: "var(--alpha-bg-base)",
         backgroundImage: gradient,
         ...alphaTopDebugBorderStyle(fixedBgActive),
       }}

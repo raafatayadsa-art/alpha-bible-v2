@@ -1,0 +1,2825 @@
+{
+  "startedAt": "2026-06-22T05:01:10.434Z",
+  "finishedAt": "2026-06-22T05:03:34.701Z",
+  "mode": "dry-run",
+  "options": {
+    "limit": 25,
+    "delayMs": 1100,
+    "apply": false
+  },
+  "baseline": {
+    "total": 1241,
+    "withCoords": 1200,
+    "missingCoords": 41,
+    "note": "Live DB snapshot at run time via Supabase SQL"
+  },
+  "summary": {
+    "processed": 25,
+    "success": 0,
+    "failed": 0,
+    "manualReview": 25,
+    "applied": 0
+  },
+  "successes": [],
+  "failures": [],
+  "manualReviews": [
+    {
+      "status": "manual_review",
+      "lat": 27.1832822,
+      "lng": 31.1853836,
+      "reason": "ambiguous_results",
+      "query": {
+        "strategy": "gov_country",
+        "q": "أسيوط، Egypt"
+      },
+      "result": {
+        "place_id": 51831335,
+        "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+        "osm_type": "way",
+        "osm_id": 94168759,
+        "lat": "27.1832822",
+        "lon": "31.1853836",
+        "category": "place",
+        "type": "city",
+        "place_rank": 16,
+        "importance": 0.5416913739136605,
+        "addresstype": "city",
+        "name": "أسيوط",
+        "display_name": "أسيوط, مصر",
+        "address": {
+          "city": "أسيوط",
+          "state": "أسيوط",
+          "ISO3166-2-lvl4": "EG-AST",
+          "country": "مصر",
+          "country_code": "eg"
+        },
+        "boundingbox": [
+          "27.1572498",
+          "27.2165756",
+          "31.1474028",
+          "31.2117827"
+        ]
+      },
+      "candidates": [
+        {
+          "place_id": 51831335,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "way",
+          "osm_id": 94168759,
+          "lat": "27.1832822",
+          "lon": "31.1853836",
+          "category": "place",
+          "type": "city",
+          "place_rank": 16,
+          "importance": 0.5416913739136605,
+          "addresstype": "city",
+          "name": "أسيوط",
+          "display_name": "أسيوط, مصر",
+          "address": {
+            "city": "أسيوط",
+            "state": "أسيوط",
+            "ISO3166-2-lvl4": "EG-AST",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "27.1572498",
+            "27.2165756",
+            "31.1474028",
+            "31.2117827"
+          ]
+        },
+        {
+          "place_id": 51140630,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "relation",
+          "osm_id": 3726184,
+          "lat": "27.2065132",
+          "lon": "31.5500282",
+          "category": "boundary",
+          "type": "administrative",
+          "place_rank": 8,
+          "importance": 0.5109976247046868,
+          "addresstype": "state",
+          "name": "أسيوط",
+          "display_name": "أسيوط, مصر",
+          "address": {
+            "state": "أسيوط",
+            "ISO3166-2-lvl4": "EG-AST",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "26.7702348",
+            "27.9097640",
+            "30.4556858",
+            "32.7536203"
+          ]
+        }
+      ],
+      "score": 0.7916913739136605,
+      "churchId": 1,
+      "churchName": "كنيسة ماربقطر \nشو الشهيد، دير \nشو، مصر",
+      "queriesTried": [
+        {
+          "strategy": "name_full",
+          "q": "كنيسة ماربقطر شو الشهيد، دير شو، مصر"
+        },
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة ماربقطر شو الشهيد، دير شو، مصر، أسيوط، Egypt"
+        },
+        {
+          "strategy": "city_gov_country",
+          "q": "دير شو، أسيوط، Egypt"
+        },
+        {
+          "strategy": "gov_country",
+          "q": "أسيوط، Egypt"
+        }
+      ]
+    },
+    {
+      "status": "manual_review",
+      "lat": 27.1832822,
+      "lng": 31.1853836,
+      "reason": "ambiguous_results",
+      "query": {
+        "strategy": "gov_country",
+        "q": "أسيوط، Egypt"
+      },
+      "result": {
+        "place_id": 51831335,
+        "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+        "osm_type": "way",
+        "osm_id": 94168759,
+        "lat": "27.1832822",
+        "lon": "31.1853836",
+        "category": "place",
+        "type": "city",
+        "place_rank": 16,
+        "importance": 0.5416913739136605,
+        "addresstype": "city",
+        "name": "أسيوط",
+        "display_name": "أسيوط, مصر",
+        "address": {
+          "city": "أسيوط",
+          "state": "أسيوط",
+          "ISO3166-2-lvl4": "EG-AST",
+          "country": "مصر",
+          "country_code": "eg"
+        },
+        "boundingbox": [
+          "27.1572498",
+          "27.2165756",
+          "31.1474028",
+          "31.2117827"
+        ]
+      },
+      "candidates": [
+        {
+          "place_id": 51831335,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "way",
+          "osm_id": 94168759,
+          "lat": "27.1832822",
+          "lon": "31.1853836",
+          "category": "place",
+          "type": "city",
+          "place_rank": 16,
+          "importance": 0.5416913739136605,
+          "addresstype": "city",
+          "name": "أسيوط",
+          "display_name": "أسيوط, مصر",
+          "address": {
+            "city": "أسيوط",
+            "state": "أسيوط",
+            "ISO3166-2-lvl4": "EG-AST",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "27.1572498",
+            "27.2165756",
+            "31.1474028",
+            "31.2117827"
+          ]
+        },
+        {
+          "place_id": 51140630,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "relation",
+          "osm_id": 3726184,
+          "lat": "27.2065132",
+          "lon": "31.5500282",
+          "category": "boundary",
+          "type": "administrative",
+          "place_rank": 8,
+          "importance": 0.5109976247046868,
+          "addresstype": "state",
+          "name": "أسيوط",
+          "display_name": "أسيوط, مصر",
+          "address": {
+            "state": "أسيوط",
+            "ISO3166-2-lvl4": "EG-AST",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "26.7702348",
+            "27.9097640",
+            "30.4556858",
+            "32.7536203"
+          ]
+        }
+      ],
+      "score": 0.7916913739136605,
+      "churchId": 2,
+      "churchName": "كنيسة الشهيد الأمير تادروس، \nدير بصرة، مصر",
+      "queriesTried": [
+        {
+          "strategy": "name_full",
+          "q": "كنيسة الشهيد الأمير تادروس، دير بصرة، مصر"
+        },
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الشهيد الأمير تادروس، دير بصرة، مصر، أسيوط، Egypt"
+        },
+        {
+          "strategy": "city_gov_country",
+          "q": "دير بصرة، أسيوط، Egypt"
+        },
+        {
+          "strategy": "gov_country",
+          "q": "أسيوط، Egypt"
+        }
+      ]
+    },
+    {
+      "status": "manual_review",
+      "lat": 27.1832822,
+      "lng": 31.1853836,
+      "reason": "ambiguous_results",
+      "query": {
+        "strategy": "gov_country",
+        "q": "أسيوط، Egypt"
+      },
+      "result": {
+        "place_id": 51831335,
+        "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+        "osm_type": "way",
+        "osm_id": 94168759,
+        "lat": "27.1832822",
+        "lon": "31.1853836",
+        "category": "place",
+        "type": "city",
+        "place_rank": 16,
+        "importance": 0.5416913739136605,
+        "addresstype": "city",
+        "name": "أسيوط",
+        "display_name": "أسيوط, مصر",
+        "address": {
+          "city": "أسيوط",
+          "state": "أسيوط",
+          "ISO3166-2-lvl4": "EG-AST",
+          "country": "مصر",
+          "country_code": "eg"
+        },
+        "boundingbox": [
+          "27.1572498",
+          "27.2165756",
+          "31.1474028",
+          "31.2117827"
+        ]
+      },
+      "candidates": [
+        {
+          "place_id": 51831335,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "way",
+          "osm_id": 94168759,
+          "lat": "27.1832822",
+          "lon": "31.1853836",
+          "category": "place",
+          "type": "city",
+          "place_rank": 16,
+          "importance": 0.5416913739136605,
+          "addresstype": "city",
+          "name": "أسيوط",
+          "display_name": "أسيوط, مصر",
+          "address": {
+            "city": "أسيوط",
+            "state": "أسيوط",
+            "ISO3166-2-lvl4": "EG-AST",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "27.1572498",
+            "27.2165756",
+            "31.1474028",
+            "31.2117827"
+          ]
+        },
+        {
+          "place_id": 51140630,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "relation",
+          "osm_id": 3726184,
+          "lat": "27.2065132",
+          "lon": "31.5500282",
+          "category": "boundary",
+          "type": "administrative",
+          "place_rank": 8,
+          "importance": 0.5109976247046868,
+          "addresstype": "state",
+          "name": "أسيوط",
+          "display_name": "أسيوط, مصر",
+          "address": {
+            "state": "أسيوط",
+            "ISO3166-2-lvl4": "EG-AST",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "26.7702348",
+            "27.9097640",
+            "30.4556858",
+            "32.7536203"
+          ]
+        }
+      ],
+      "score": 0.7916913739136605,
+      "churchId": 4,
+      "churchName": "كنيسة القديسة العذراء مريم، \nشقلقيل، مصر",
+      "queriesTried": [
+        {
+          "strategy": "name_full",
+          "q": "كنيسة القديسة العذراء مريم، شقلقيل، مصر"
+        },
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة القديسة العذراء مريم، شقلقيل، مصر، أسيوط، Egypt"
+        },
+        {
+          "strategy": "city_gov_country",
+          "q": "شقلقيل، أسيوط، Egypt"
+        },
+        {
+          "strategy": "gov_country",
+          "q": "أسيوط، Egypt"
+        }
+      ]
+    },
+    {
+      "status": "manual_review",
+      "lat": 27.1832822,
+      "lng": 31.1853836,
+      "reason": "ambiguous_results",
+      "query": {
+        "strategy": "gov_country",
+        "q": "أسيوط، Egypt"
+      },
+      "result": {
+        "place_id": 51831335,
+        "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+        "osm_type": "way",
+        "osm_id": 94168759,
+        "lat": "27.1832822",
+        "lon": "31.1853836",
+        "category": "place",
+        "type": "city",
+        "place_rank": 16,
+        "importance": 0.5416913739136605,
+        "addresstype": "city",
+        "name": "أسيوط",
+        "display_name": "أسيوط, مصر",
+        "address": {
+          "city": "أسيوط",
+          "state": "أسيوط",
+          "ISO3166-2-lvl4": "EG-AST",
+          "country": "مصر",
+          "country_code": "eg"
+        },
+        "boundingbox": [
+          "27.1572498",
+          "27.2165756",
+          "31.1474028",
+          "31.2117827"
+        ]
+      },
+      "candidates": [
+        {
+          "place_id": 51831335,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "way",
+          "osm_id": 94168759,
+          "lat": "27.1832822",
+          "lon": "31.1853836",
+          "category": "place",
+          "type": "city",
+          "place_rank": 16,
+          "importance": 0.5416913739136605,
+          "addresstype": "city",
+          "name": "أسيوط",
+          "display_name": "أسيوط, مصر",
+          "address": {
+            "city": "أسيوط",
+            "state": "أسيوط",
+            "ISO3166-2-lvl4": "EG-AST",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "27.1572498",
+            "27.2165756",
+            "31.1474028",
+            "31.2117827"
+          ]
+        },
+        {
+          "place_id": 51140630,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "relation",
+          "osm_id": 3726184,
+          "lat": "27.2065132",
+          "lon": "31.5500282",
+          "category": "boundary",
+          "type": "administrative",
+          "place_rank": 8,
+          "importance": 0.5109976247046868,
+          "addresstype": "state",
+          "name": "أسيوط",
+          "display_name": "أسيوط, مصر",
+          "address": {
+            "state": "أسيوط",
+            "ISO3166-2-lvl4": "EG-AST",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "26.7702348",
+            "27.9097640",
+            "30.4556858",
+            "32.7536203"
+          ]
+        }
+      ],
+      "score": 0.7916913739136605,
+      "churchId": 5,
+      "churchName": "كنيسة العذراء مريم، المعابدة \nالغربية، مصر",
+      "queriesTried": [
+        {
+          "strategy": "name_full",
+          "q": "كنيسة العذراء مريم، المعابدة الغربية، مصر"
+        },
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة العذراء مريم، المعابدة الغربية، مصر، أسيوط، Egypt"
+        },
+        {
+          "strategy": "city_gov_country",
+          "q": "المعابدة الغربية، أسيوط، Egypt"
+        },
+        {
+          "strategy": "gov_country",
+          "q": "أسيوط، Egypt"
+        }
+      ]
+    },
+    {
+      "status": "manual_review",
+      "lat": 27.1832822,
+      "lng": 31.1853836,
+      "reason": "ambiguous_results",
+      "query": {
+        "strategy": "gov_country",
+        "q": "أسيوط، Egypt"
+      },
+      "result": {
+        "place_id": 51831335,
+        "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+        "osm_type": "way",
+        "osm_id": 94168759,
+        "lat": "27.1832822",
+        "lon": "31.1853836",
+        "category": "place",
+        "type": "city",
+        "place_rank": 16,
+        "importance": 0.5416913739136605,
+        "addresstype": "city",
+        "name": "أسيوط",
+        "display_name": "أسيوط, مصر",
+        "address": {
+          "city": "أسيوط",
+          "state": "أسيوط",
+          "ISO3166-2-lvl4": "EG-AST",
+          "country": "مصر",
+          "country_code": "eg"
+        },
+        "boundingbox": [
+          "27.1572498",
+          "27.2165756",
+          "31.1474028",
+          "31.2117827"
+        ]
+      },
+      "candidates": [
+        {
+          "place_id": 51831335,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "way",
+          "osm_id": 94168759,
+          "lat": "27.1832822",
+          "lon": "31.1853836",
+          "category": "place",
+          "type": "city",
+          "place_rank": 16,
+          "importance": 0.5416913739136605,
+          "addresstype": "city",
+          "name": "أسيوط",
+          "display_name": "أسيوط, مصر",
+          "address": {
+            "city": "أسيوط",
+            "state": "أسيوط",
+            "ISO3166-2-lvl4": "EG-AST",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "27.1572498",
+            "27.2165756",
+            "31.1474028",
+            "31.2117827"
+          ]
+        },
+        {
+          "place_id": 51140630,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "relation",
+          "osm_id": 3726184,
+          "lat": "27.2065132",
+          "lon": "31.5500282",
+          "category": "boundary",
+          "type": "administrative",
+          "place_rank": 8,
+          "importance": 0.5109976247046868,
+          "addresstype": "state",
+          "name": "أسيوط",
+          "display_name": "أسيوط, مصر",
+          "address": {
+            "state": "أسيوط",
+            "ISO3166-2-lvl4": "EG-AST",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "26.7702348",
+            "27.9097640",
+            "30.4556858",
+            "32.7536203"
+          ]
+        }
+      ],
+      "score": 0.7916913739136605,
+      "churchId": 7,
+      "churchName": "كنيسة العذراء مريم القديسة، \nبني عليج، مصر",
+      "queriesTried": [
+        {
+          "strategy": "name_full",
+          "q": "كنيسة العذراء مريم القديسة، بني عليج، مصر"
+        },
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة العذراء مريم القديسة، بني عليج، مصر، أسيوط، Egypt"
+        },
+        {
+          "strategy": "city_gov_country",
+          "q": "بني عليج، أسيوط، Egypt"
+        },
+        {
+          "strategy": "gov_country",
+          "q": "أسيوط، Egypt"
+        }
+      ]
+    },
+    {
+      "status": "manual_review",
+      "lat": 27.1832822,
+      "lng": 31.1853836,
+      "reason": "ambiguous_results",
+      "query": {
+        "strategy": "gov_country",
+        "q": "أسيوط، Egypt"
+      },
+      "result": {
+        "place_id": 51831335,
+        "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+        "osm_type": "way",
+        "osm_id": 94168759,
+        "lat": "27.1832822",
+        "lon": "31.1853836",
+        "category": "place",
+        "type": "city",
+        "place_rank": 16,
+        "importance": 0.5416913739136605,
+        "addresstype": "city",
+        "name": "أسيوط",
+        "display_name": "أسيوط, مصر",
+        "address": {
+          "city": "أسيوط",
+          "state": "أسيوط",
+          "ISO3166-2-lvl4": "EG-AST",
+          "country": "مصر",
+          "country_code": "eg"
+        },
+        "boundingbox": [
+          "27.1572498",
+          "27.2165756",
+          "31.1474028",
+          "31.2117827"
+        ]
+      },
+      "candidates": [
+        {
+          "place_id": 51831335,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "way",
+          "osm_id": 94168759,
+          "lat": "27.1832822",
+          "lon": "31.1853836",
+          "category": "place",
+          "type": "city",
+          "place_rank": 16,
+          "importance": 0.5416913739136605,
+          "addresstype": "city",
+          "name": "أسيوط",
+          "display_name": "أسيوط, مصر",
+          "address": {
+            "city": "أسيوط",
+            "state": "أسيوط",
+            "ISO3166-2-lvl4": "EG-AST",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "27.1572498",
+            "27.2165756",
+            "31.1474028",
+            "31.2117827"
+          ]
+        },
+        {
+          "place_id": 51140630,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "relation",
+          "osm_id": 3726184,
+          "lat": "27.2065132",
+          "lon": "31.5500282",
+          "category": "boundary",
+          "type": "administrative",
+          "place_rank": 8,
+          "importance": 0.5109976247046868,
+          "addresstype": "state",
+          "name": "أسيوط",
+          "display_name": "أسيوط, مصر",
+          "address": {
+            "state": "أسيوط",
+            "ISO3166-2-lvl4": "EG-AST",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "26.7702348",
+            "27.9097640",
+            "30.4556858",
+            "32.7536203"
+          ]
+        }
+      ],
+      "score": 0.7916913739136605,
+      "churchId": 10,
+      "churchName": "كنيسة الشهيد مارمرقس، مدينة \nالفتح، مصر",
+      "queriesTried": [
+        {
+          "strategy": "name_full",
+          "q": "كنيسة الشهيد مارمرقس، مدينة الفتح، مصر"
+        },
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الشهيد مارمرقس، مدينة الفتح، مصر، أسيوط، Egypt"
+        },
+        {
+          "strategy": "city_gov_country",
+          "q": "مدينة الفتح، أسيوط، Egypt"
+        },
+        {
+          "strategy": "gov_country",
+          "q": "أسيوط، Egypt"
+        }
+      ]
+    },
+    {
+      "status": "manual_review",
+      "lat": 27.1832822,
+      "lng": 31.1853836,
+      "reason": "ambiguous_results",
+      "query": {
+        "strategy": "gov_country",
+        "q": "أسيوط، Egypt"
+      },
+      "result": {
+        "place_id": 51831335,
+        "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+        "osm_type": "way",
+        "osm_id": 94168759,
+        "lat": "27.1832822",
+        "lon": "31.1853836",
+        "category": "place",
+        "type": "city",
+        "place_rank": 16,
+        "importance": 0.5416913739136605,
+        "addresstype": "city",
+        "name": "أسيوط",
+        "display_name": "أسيوط, مصر",
+        "address": {
+          "city": "أسيوط",
+          "state": "أسيوط",
+          "ISO3166-2-lvl4": "EG-AST",
+          "country": "مصر",
+          "country_code": "eg"
+        },
+        "boundingbox": [
+          "27.1572498",
+          "27.2165756",
+          "31.1474028",
+          "31.2117827"
+        ]
+      },
+      "candidates": [
+        {
+          "place_id": 51831335,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "way",
+          "osm_id": 94168759,
+          "lat": "27.1832822",
+          "lon": "31.1853836",
+          "category": "place",
+          "type": "city",
+          "place_rank": 16,
+          "importance": 0.5416913739136605,
+          "addresstype": "city",
+          "name": "أسيوط",
+          "display_name": "أسيوط, مصر",
+          "address": {
+            "city": "أسيوط",
+            "state": "أسيوط",
+            "ISO3166-2-lvl4": "EG-AST",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "27.1572498",
+            "27.2165756",
+            "31.1474028",
+            "31.2117827"
+          ]
+        },
+        {
+          "place_id": 51140630,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "relation",
+          "osm_id": 3726184,
+          "lat": "27.2065132",
+          "lon": "31.5500282",
+          "category": "boundary",
+          "type": "administrative",
+          "place_rank": 8,
+          "importance": 0.5109976247046868,
+          "addresstype": "state",
+          "name": "أسيوط",
+          "display_name": "أسيوط, مصر",
+          "address": {
+            "state": "أسيوط",
+            "ISO3166-2-lvl4": "EG-AST",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "26.7702348",
+            "27.9097640",
+            "30.4556858",
+            "32.7536203"
+          ]
+        }
+      ],
+      "score": 0.7916913739136605,
+      "churchId": 12,
+      "churchName": "كنيسة الشهيد مارجرجس، \nالمعابدة الغربية، مصر",
+      "queriesTried": [
+        {
+          "strategy": "name_full",
+          "q": "كنيسة الشهيد مارجرجس، المعابدة الغربية، مصر"
+        },
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الشهيد مارجرجس، المعابدة الغربية، مصر، أسيوط، Egypt"
+        },
+        {
+          "strategy": "city_gov_country",
+          "q": "المعابدة الغربية، أسيوط، Egypt"
+        },
+        {
+          "strategy": "gov_country",
+          "q": "أسيوط، Egypt"
+        }
+      ]
+    },
+    {
+      "status": "manual_review",
+      "lat": 26.7624629,
+      "lng": 32.0909936,
+      "reason": "ambiguous_results",
+      "query": {
+        "strategy": "gov_country",
+        "q": "سوهاج، Egypt"
+      },
+      "result": {
+        "place_id": 47555585,
+        "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+        "osm_type": "relation",
+        "osm_id": 3726186,
+        "lat": "26.7624629",
+        "lon": "32.0909936",
+        "category": "boundary",
+        "type": "administrative",
+        "place_rank": 8,
+        "importance": 0.509069296337056,
+        "addresstype": "state",
+        "name": "سوهاج",
+        "display_name": "سوهاج, مصر",
+        "address": {
+          "state": "سوهاج",
+          "ISO3166-2-lvl4": "EG-SHG",
+          "country": "مصر",
+          "country_code": "eg"
+        },
+        "boundingbox": [
+          "26.1918127",
+          "27.3742778",
+          "31.3426926",
+          "32.7986863"
+        ]
+      },
+      "candidates": [
+        {
+          "place_id": 47555585,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "relation",
+          "osm_id": 3726186,
+          "lat": "26.7624629",
+          "lon": "32.0909936",
+          "category": "boundary",
+          "type": "administrative",
+          "place_rank": 8,
+          "importance": 0.509069296337056,
+          "addresstype": "state",
+          "name": "سوهاج",
+          "display_name": "سوهاج, مصر",
+          "address": {
+            "state": "سوهاج",
+            "ISO3166-2-lvl4": "EG-SHG",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "26.1918127",
+            "27.3742778",
+            "31.3426926",
+            "32.7986863"
+          ]
+        },
+        {
+          "place_id": 52307986,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "node",
+          "osm_id": 1636218447,
+          "lat": "26.5477480",
+          "lon": "31.6992630",
+          "category": "place",
+          "type": "city",
+          "place_rank": 16,
+          "importance": 0.49030230481498827,
+          "addresstype": "city",
+          "name": "سوهاج",
+          "display_name": "سوهاج, 82629, مصر",
+          "address": {
+            "city": "سوهاج",
+            "state": "سوهاج",
+            "ISO3166-2-lvl4": "EG-SHG",
+            "postcode": "82629",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "26.3877480",
+            "26.7077480",
+            "31.5392630",
+            "31.8592630"
+          ]
+        }
+      ],
+      "score": 0.759069296337056,
+      "churchId": 53,
+      "churchName": "كنيسة الشهيد مارجرجس، ساقلتة، مصر",
+      "queriesTried": [
+        {
+          "strategy": "name_full",
+          "q": "كنيسة الشهيد مارجرجس، ساقلتة، مصر"
+        },
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الشهيد مارجرجس، ساقلتة، مصر، سوهاج، Egypt"
+        },
+        {
+          "strategy": "city_gov_country",
+          "q": "ساقلتة، سوهاج، Egypt"
+        },
+        {
+          "strategy": "gov_country",
+          "q": "سوهاج، Egypt"
+        }
+      ]
+    },
+    {
+      "status": "manual_review",
+      "lat": 27.1832822,
+      "lng": 31.1853836,
+      "reason": "ambiguous_results",
+      "query": {
+        "strategy": "gov_country",
+        "q": "أسيوط، Egypt"
+      },
+      "result": {
+        "place_id": 51831335,
+        "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+        "osm_type": "way",
+        "osm_id": 94168759,
+        "lat": "27.1832822",
+        "lon": "31.1853836",
+        "category": "place",
+        "type": "city",
+        "place_rank": 16,
+        "importance": 0.5416913739136605,
+        "addresstype": "city",
+        "name": "أسيوط",
+        "display_name": "أسيوط, مصر",
+        "address": {
+          "city": "أسيوط",
+          "state": "أسيوط",
+          "ISO3166-2-lvl4": "EG-AST",
+          "country": "مصر",
+          "country_code": "eg"
+        },
+        "boundingbox": [
+          "27.1572498",
+          "27.2165756",
+          "31.1474028",
+          "31.2117827"
+        ]
+      },
+      "candidates": [
+        {
+          "place_id": 51831335,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "way",
+          "osm_id": 94168759,
+          "lat": "27.1832822",
+          "lon": "31.1853836",
+          "category": "place",
+          "type": "city",
+          "place_rank": 16,
+          "importance": 0.5416913739136605,
+          "addresstype": "city",
+          "name": "أسيوط",
+          "display_name": "أسيوط, مصر",
+          "address": {
+            "city": "أسيوط",
+            "state": "أسيوط",
+            "ISO3166-2-lvl4": "EG-AST",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "27.1572498",
+            "27.2165756",
+            "31.1474028",
+            "31.2117827"
+          ]
+        },
+        {
+          "place_id": 51140630,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "relation",
+          "osm_id": 3726184,
+          "lat": "27.2065132",
+          "lon": "31.5500282",
+          "category": "boundary",
+          "type": "administrative",
+          "place_rank": 8,
+          "importance": 0.5109976247046868,
+          "addresstype": "state",
+          "name": "أسيوط",
+          "display_name": "أسيوط, مصر",
+          "address": {
+            "state": "أسيوط",
+            "ISO3166-2-lvl4": "EG-AST",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "26.7702348",
+            "27.9097640",
+            "30.4556858",
+            "32.7536203"
+          ]
+        }
+      ],
+      "score": 0.7916913739136605,
+      "churchId": 89,
+      "churchName": "كنيسة الشهيد ماربقطر، موشا، مصر",
+      "queriesTried": [
+        {
+          "strategy": "name_full",
+          "q": "كنيسة الشهيد ماربقطر، موشا، مصر"
+        },
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الشهيد ماربقطر، موشا، مصر، أسيوط، Egypt"
+        },
+        {
+          "strategy": "city_gov_country",
+          "q": "موشا، أسيوط، Egypt"
+        },
+        {
+          "strategy": "gov_country",
+          "q": "أسيوط، Egypt"
+        }
+      ]
+    },
+    {
+      "status": "manual_review",
+      "lat": 27.1832822,
+      "lng": 31.1853836,
+      "reason": "ambiguous_results",
+      "query": {
+        "strategy": "gov_country",
+        "q": "أسيوط، Egypt"
+      },
+      "result": {
+        "place_id": 51831335,
+        "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+        "osm_type": "way",
+        "osm_id": 94168759,
+        "lat": "27.1832822",
+        "lon": "31.1853836",
+        "category": "place",
+        "type": "city",
+        "place_rank": 16,
+        "importance": 0.5416913739136605,
+        "addresstype": "city",
+        "name": "أسيوط",
+        "display_name": "أسيوط, مصر",
+        "address": {
+          "city": "أسيوط",
+          "state": "أسيوط",
+          "ISO3166-2-lvl4": "EG-AST",
+          "country": "مصر",
+          "country_code": "eg"
+        },
+        "boundingbox": [
+          "27.1572498",
+          "27.2165756",
+          "31.1474028",
+          "31.2117827"
+        ]
+      },
+      "candidates": [
+        {
+          "place_id": 51831335,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "way",
+          "osm_id": 94168759,
+          "lat": "27.1832822",
+          "lon": "31.1853836",
+          "category": "place",
+          "type": "city",
+          "place_rank": 16,
+          "importance": 0.5416913739136605,
+          "addresstype": "city",
+          "name": "أسيوط",
+          "display_name": "أسيوط, مصر",
+          "address": {
+            "city": "أسيوط",
+            "state": "أسيوط",
+            "ISO3166-2-lvl4": "EG-AST",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "27.1572498",
+            "27.2165756",
+            "31.1474028",
+            "31.2117827"
+          ]
+        },
+        {
+          "place_id": 51140630,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "relation",
+          "osm_id": 3726184,
+          "lat": "27.2065132",
+          "lon": "31.5500282",
+          "category": "boundary",
+          "type": "administrative",
+          "place_rank": 8,
+          "importance": 0.5109976247046868,
+          "addresstype": "state",
+          "name": "أسيوط",
+          "display_name": "أسيوط, مصر",
+          "address": {
+            "state": "أسيوط",
+            "ISO3166-2-lvl4": "EG-AST",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "26.7702348",
+            "27.9097640",
+            "30.4556858",
+            "32.7536203"
+          ]
+        }
+      ],
+      "score": 0.7916913739136605,
+      "churchId": 90,
+      "churchName": "كنيسة الأمير تادرس الشطبي، \nشطب، مصر",
+      "queriesTried": [
+        {
+          "strategy": "name_full",
+          "q": "كنيسة الأمير تادرس الشطبي، شطب، مصر"
+        },
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الأمير تادرس الشطبي، شطب، مصر، أسيوط، Egypt"
+        },
+        {
+          "strategy": "city_gov_country",
+          "q": "شطب، أسيوط، Egypt"
+        },
+        {
+          "strategy": "gov_country",
+          "q": "أسيوط، Egypt"
+        }
+      ]
+    },
+    {
+      "status": "manual_review",
+      "lat": 27.1832822,
+      "lng": 31.1853836,
+      "reason": "ambiguous_results",
+      "query": {
+        "strategy": "gov_country",
+        "q": "أسيوط، Egypt"
+      },
+      "result": {
+        "place_id": 51831335,
+        "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+        "osm_type": "way",
+        "osm_id": 94168759,
+        "lat": "27.1832822",
+        "lon": "31.1853836",
+        "category": "place",
+        "type": "city",
+        "place_rank": 16,
+        "importance": 0.5416913739136605,
+        "addresstype": "city",
+        "name": "أسيوط",
+        "display_name": "أسيوط, مصر",
+        "address": {
+          "city": "أسيوط",
+          "state": "أسيوط",
+          "ISO3166-2-lvl4": "EG-AST",
+          "country": "مصر",
+          "country_code": "eg"
+        },
+        "boundingbox": [
+          "27.1572498",
+          "27.2165756",
+          "31.1474028",
+          "31.2117827"
+        ]
+      },
+      "candidates": [
+        {
+          "place_id": 51831335,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "way",
+          "osm_id": 94168759,
+          "lat": "27.1832822",
+          "lon": "31.1853836",
+          "category": "place",
+          "type": "city",
+          "place_rank": 16,
+          "importance": 0.5416913739136605,
+          "addresstype": "city",
+          "name": "أسيوط",
+          "display_name": "أسيوط, مصر",
+          "address": {
+            "city": "أسيوط",
+            "state": "أسيوط",
+            "ISO3166-2-lvl4": "EG-AST",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "27.1572498",
+            "27.2165756",
+            "31.1474028",
+            "31.2117827"
+          ]
+        },
+        {
+          "place_id": 51140630,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "relation",
+          "osm_id": 3726184,
+          "lat": "27.2065132",
+          "lon": "31.5500282",
+          "category": "boundary",
+          "type": "administrative",
+          "place_rank": 8,
+          "importance": 0.5109976247046868,
+          "addresstype": "state",
+          "name": "أسيوط",
+          "display_name": "أسيوط, مصر",
+          "address": {
+            "state": "أسيوط",
+            "ISO3166-2-lvl4": "EG-AST",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "26.7702348",
+            "27.9097640",
+            "30.4556858",
+            "32.7536203"
+          ]
+        }
+      ],
+      "score": 0.7916913739136605,
+      "churchId": 91,
+      "churchName": "كنيسة الأمير تادرس \nالمشرقي، دير ريفا، مصر",
+      "queriesTried": [
+        {
+          "strategy": "name_full",
+          "q": "كنيسة الأمير تادرس المشرقي، دير ريفا، مصر"
+        },
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الأمير تادرس المشرقي، دير ريفا، مصر، أسيوط، Egypt"
+        },
+        {
+          "strategy": "city_gov_country",
+          "q": "دير ريفا، أسيوط، Egypt"
+        },
+        {
+          "strategy": "gov_country",
+          "q": "أسيوط، Egypt"
+        }
+      ]
+    },
+    {
+      "status": "manual_review",
+      "lat": 27.1832822,
+      "lng": 31.1853836,
+      "reason": "ambiguous_results",
+      "query": {
+        "strategy": "gov_country",
+        "q": "أسيوط، Egypt"
+      },
+      "result": {
+        "place_id": 51831335,
+        "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+        "osm_type": "way",
+        "osm_id": 94168759,
+        "lat": "27.1832822",
+        "lon": "31.1853836",
+        "category": "place",
+        "type": "city",
+        "place_rank": 16,
+        "importance": 0.5416913739136605,
+        "addresstype": "city",
+        "name": "أسيوط",
+        "display_name": "أسيوط, مصر",
+        "address": {
+          "city": "أسيوط",
+          "state": "أسيوط",
+          "ISO3166-2-lvl4": "EG-AST",
+          "country": "مصر",
+          "country_code": "eg"
+        },
+        "boundingbox": [
+          "27.1572498",
+          "27.2165756",
+          "31.1474028",
+          "31.2117827"
+        ]
+      },
+      "candidates": [
+        {
+          "place_id": 51831335,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "way",
+          "osm_id": 94168759,
+          "lat": "27.1832822",
+          "lon": "31.1853836",
+          "category": "place",
+          "type": "city",
+          "place_rank": 16,
+          "importance": 0.5416913739136605,
+          "addresstype": "city",
+          "name": "أسيوط",
+          "display_name": "أسيوط, مصر",
+          "address": {
+            "city": "أسيوط",
+            "state": "أسيوط",
+            "ISO3166-2-lvl4": "EG-AST",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "27.1572498",
+            "27.2165756",
+            "31.1474028",
+            "31.2117827"
+          ]
+        },
+        {
+          "place_id": 51140630,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "relation",
+          "osm_id": 3726184,
+          "lat": "27.2065132",
+          "lon": "31.5500282",
+          "category": "boundary",
+          "type": "administrative",
+          "place_rank": 8,
+          "importance": 0.5109976247046868,
+          "addresstype": "state",
+          "name": "أسيوط",
+          "display_name": "أسيوط, مصر",
+          "address": {
+            "state": "أسيوط",
+            "ISO3166-2-lvl4": "EG-AST",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "26.7702348",
+            "27.9097640",
+            "30.4556858",
+            "32.7536203"
+          ]
+        }
+      ],
+      "score": 0.7916913739136605,
+      "churchId": 94,
+      "churchName": "كنيسة الملاك ميخائيل، منشاة \nالعقال البحري، مصر",
+      "queriesTried": [
+        {
+          "strategy": "name_full",
+          "q": "كنيسة الملاك ميخائيل، منشاة العقال البحري، مصر"
+        },
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الملاك ميخائيل، منشاة العقال البحري، مصر، أسيوط، Egypt"
+        },
+        {
+          "strategy": "city_gov_country",
+          "q": "منشاة العقال البحري، أسيوط، Egypt"
+        },
+        {
+          "strategy": "gov_country",
+          "q": "أسيوط، Egypt"
+        }
+      ]
+    },
+    {
+      "status": "manual_review",
+      "lat": 27.1832822,
+      "lng": 31.1853836,
+      "reason": "ambiguous_results",
+      "query": {
+        "strategy": "gov_country",
+        "q": "أسيوط، Egypt"
+      },
+      "result": {
+        "place_id": 51831335,
+        "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+        "osm_type": "way",
+        "osm_id": 94168759,
+        "lat": "27.1832822",
+        "lon": "31.1853836",
+        "category": "place",
+        "type": "city",
+        "place_rank": 16,
+        "importance": 0.5416913739136605,
+        "addresstype": "city",
+        "name": "أسيوط",
+        "display_name": "أسيوط, مصر",
+        "address": {
+          "city": "أسيوط",
+          "state": "أسيوط",
+          "ISO3166-2-lvl4": "EG-AST",
+          "country": "مصر",
+          "country_code": "eg"
+        },
+        "boundingbox": [
+          "27.1572498",
+          "27.2165756",
+          "31.1474028",
+          "31.2117827"
+        ]
+      },
+      "candidates": [
+        {
+          "place_id": 51831335,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "way",
+          "osm_id": 94168759,
+          "lat": "27.1832822",
+          "lon": "31.1853836",
+          "category": "place",
+          "type": "city",
+          "place_rank": 16,
+          "importance": 0.5416913739136605,
+          "addresstype": "city",
+          "name": "أسيوط",
+          "display_name": "أسيوط, مصر",
+          "address": {
+            "city": "أسيوط",
+            "state": "أسيوط",
+            "ISO3166-2-lvl4": "EG-AST",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "27.1572498",
+            "27.2165756",
+            "31.1474028",
+            "31.2117827"
+          ]
+        },
+        {
+          "place_id": 51140630,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "relation",
+          "osm_id": 3726184,
+          "lat": "27.2065132",
+          "lon": "31.5500282",
+          "category": "boundary",
+          "type": "administrative",
+          "place_rank": 8,
+          "importance": 0.5109976247046868,
+          "addresstype": "state",
+          "name": "أسيوط",
+          "display_name": "أسيوط, مصر",
+          "address": {
+            "state": "أسيوط",
+            "ISO3166-2-lvl4": "EG-AST",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "26.7702348",
+            "27.9097640",
+            "30.4556858",
+            "32.7536203"
+          ]
+        }
+      ],
+      "score": 0.7916913739136605,
+      "churchId": 100,
+      "churchName": "كنيسة الأنبا قلته الطبيب، \nريفا، مصر",
+      "queriesTried": [
+        {
+          "strategy": "name_full",
+          "q": "كنيسة الأنبا قلته الطبيب، ريفا، مصر"
+        },
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الأنبا قلته الطبيب، ريفا، مصر، أسيوط، Egypt"
+        },
+        {
+          "strategy": "city_gov_country",
+          "q": "ريفا، أسيوط، Egypt"
+        },
+        {
+          "strategy": "gov_country",
+          "q": "أسيوط، Egypt"
+        }
+      ]
+    },
+    {
+      "status": "manual_review",
+      "lat": 30.7915206,
+      "lng": 30.3465488,
+      "reason": "fallback_centroid",
+      "query": {
+        "strategy": "gov_country",
+        "q": "البحيرة، Egypt"
+      },
+      "result": {
+        "place_id": 49280789,
+        "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+        "osm_type": "relation",
+        "osm_id": 3824513,
+        "lat": "30.7915206",
+        "lon": "30.3465488",
+        "category": "boundary",
+        "type": "administrative",
+        "place_rank": 8,
+        "importance": 0.5233293219858013,
+        "addresstype": "state",
+        "name": "البحيرة",
+        "display_name": "البحيرة, مصر",
+        "address": {
+          "state": "البحيرة",
+          "ISO3166-2-lvl4": "EG-BH",
+          "country": "مصر",
+          "country_code": "eg"
+        },
+        "boundingbox": [
+          "29.9202949",
+          "31.6625903",
+          "29.6168674",
+          "30.8512831"
+        ]
+      },
+      "candidates": [
+        {
+          "place_id": 49280789,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "relation",
+          "osm_id": 3824513,
+          "lat": "30.7915206",
+          "lon": "30.3465488",
+          "category": "boundary",
+          "type": "administrative",
+          "place_rank": 8,
+          "importance": 0.5233293219858013,
+          "addresstype": "state",
+          "name": "البحيرة",
+          "display_name": "البحيرة, مصر",
+          "address": {
+            "state": "البحيرة",
+            "ISO3166-2-lvl4": "EG-BH",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "29.9202949",
+            "31.6625903",
+            "29.6168674",
+            "30.8512831"
+          ]
+        }
+      ],
+      "score": 0.7733293219858013,
+      "churchId": 247,
+      "churchName": "كنيسة الشهيد مار مرقس، رشيد، \nبالبحيرة، مصر",
+      "queriesTried": [
+        {
+          "strategy": "name_full",
+          "q": "كنيسة الشهيد مار مرقس، رشيد، بالبحيرة، مصر"
+        },
+        {
+          "strategy": "city_gov_country",
+          "q": "بالبحيرة، البحيرة، Egypt"
+        },
+        {
+          "strategy": "gov_country",
+          "q": "البحيرة، Egypt"
+        }
+      ]
+    },
+    {
+      "status": "manual_review",
+      "lat": 30.7915206,
+      "lng": 30.3465488,
+      "reason": "fallback_centroid",
+      "query": {
+        "strategy": "gov_country",
+        "q": "البحيرة، Egypt"
+      },
+      "result": {
+        "place_id": 49280789,
+        "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+        "osm_type": "relation",
+        "osm_id": 3824513,
+        "lat": "30.7915206",
+        "lon": "30.3465488",
+        "category": "boundary",
+        "type": "administrative",
+        "place_rank": 8,
+        "importance": 0.5233293219858013,
+        "addresstype": "state",
+        "name": "البحيرة",
+        "display_name": "البحيرة, مصر",
+        "address": {
+          "state": "البحيرة",
+          "ISO3166-2-lvl4": "EG-BH",
+          "country": "مصر",
+          "country_code": "eg"
+        },
+        "boundingbox": [
+          "29.9202949",
+          "31.6625903",
+          "29.6168674",
+          "30.8512831"
+        ]
+      },
+      "candidates": [
+        {
+          "place_id": 49280789,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "relation",
+          "osm_id": 3824513,
+          "lat": "30.7915206",
+          "lon": "30.3465488",
+          "category": "boundary",
+          "type": "administrative",
+          "place_rank": 8,
+          "importance": 0.5233293219858013,
+          "addresstype": "state",
+          "name": "البحيرة",
+          "display_name": "البحيرة, مصر",
+          "address": {
+            "state": "البحيرة",
+            "ISO3166-2-lvl4": "EG-BH",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "29.9202949",
+            "31.6625903",
+            "29.6168674",
+            "30.8512831"
+          ]
+        }
+      ],
+      "score": 0.7733293219858013,
+      "churchId": 277,
+      "churchName": "كنيسة الشهيد مارجرجس، مصراتة، \nليبيا",
+      "queriesTried": [
+        {
+          "strategy": "name_full",
+          "q": "كنيسة الشهيد مارجرجس، مصراتة، ليبيا، Egypt"
+        },
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الشهيد مارجرجس، مصراتة، ليبيا، البحيرة، Egypt"
+        },
+        {
+          "strategy": "city_gov_country",
+          "q": "مصراتة، البحيرة، Egypt"
+        },
+        {
+          "strategy": "gov_country",
+          "q": "البحيرة، Egypt"
+        }
+      ]
+    },
+    {
+      "status": "manual_review",
+      "lat": 30.6332775,
+      "lng": 31.7893739,
+      "reason": "fallback_centroid",
+      "query": {
+        "strategy": "gov_country",
+        "q": "الشرقية، Egypt"
+      },
+      "result": {
+        "place_id": 49759047,
+        "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+        "osm_type": "relation",
+        "osm_id": 4103407,
+        "lat": "30.6332775",
+        "lon": "31.7893739",
+        "category": "boundary",
+        "type": "administrative",
+        "place_rank": 8,
+        "importance": 0.525616767572948,
+        "addresstype": "state",
+        "name": "الشرقية",
+        "display_name": "الشرقية, مصر",
+        "address": {
+          "state": "الشرقية",
+          "ISO3166-2-lvl4": "EG-SHR",
+          "country": "مصر",
+          "country_code": "eg"
+        },
+        "boundingbox": [
+          "30.1979663",
+          "31.0622437",
+          "31.2789568",
+          "32.2255444"
+        ]
+      },
+      "candidates": [
+        {
+          "place_id": 49759047,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "relation",
+          "osm_id": 4103407,
+          "lat": "30.6332775",
+          "lon": "31.7893739",
+          "category": "boundary",
+          "type": "administrative",
+          "place_rank": 8,
+          "importance": 0.525616767572948,
+          "addresstype": "state",
+          "name": "الشرقية",
+          "display_name": "الشرقية, مصر",
+          "address": {
+            "state": "الشرقية",
+            "ISO3166-2-lvl4": "EG-SHR",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "30.1979663",
+            "31.0622437",
+            "31.2789568",
+            "32.2255444"
+          ]
+        }
+      ],
+      "score": 0.775616767572948,
+      "churchId": 409,
+      "churchName": "كنيسة الأنبا بشاي والأنبا \nبطرس، الزقازيق، بالشرقية، مصر",
+      "queriesTried": [
+        {
+          "strategy": "name_full",
+          "q": "كنيسة الأنبا بشاي والأنبا بطرس، الزقازيق، بالشرقية، مصر"
+        },
+        {
+          "strategy": "city_gov_country",
+          "q": "بالشرقية، الشرقية، Egypt"
+        },
+        {
+          "strategy": "gov_country",
+          "q": "الشرقية، Egypt"
+        }
+      ]
+    },
+    {
+      "status": "manual_review",
+      "lat": 29.3074076,
+      "lng": 30.8399651,
+      "reason": "ambiguous_results",
+      "query": {
+        "strategy": "gov_country",
+        "q": "الفيوم، Egypt"
+      },
+      "result": {
+        "place_id": 51799047,
+        "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+        "osm_type": "node",
+        "osm_id": 768555545,
+        "lat": "29.3074076",
+        "lon": "30.8399651",
+        "category": "place",
+        "type": "city",
+        "place_rank": 16,
+        "importance": 0.5278063046867991,
+        "addresstype": "city",
+        "name": "الفيوم",
+        "display_name": "الفيوم, 63523, مصر",
+        "address": {
+          "city": "الفيوم",
+          "state": "الفيوم",
+          "ISO3166-2-lvl4": "EG-FYM",
+          "postcode": "63523",
+          "country": "مصر",
+          "country_code": "eg"
+        },
+        "boundingbox": [
+          "29.1474076",
+          "29.4674076",
+          "30.6799651",
+          "30.9999651"
+        ]
+      },
+      "candidates": [
+        {
+          "place_id": 51799047,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "node",
+          "osm_id": 768555545,
+          "lat": "29.3074076",
+          "lon": "30.8399651",
+          "category": "place",
+          "type": "city",
+          "place_rank": 16,
+          "importance": 0.5278063046867991,
+          "addresstype": "city",
+          "name": "الفيوم",
+          "display_name": "الفيوم, 63523, مصر",
+          "address": {
+            "city": "الفيوم",
+            "state": "الفيوم",
+            "ISO3166-2-lvl4": "EG-FYM",
+            "postcode": "63523",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "29.1474076",
+            "29.4674076",
+            "30.6799651",
+            "30.9999651"
+          ]
+        },
+        {
+          "place_id": 51786067,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "relation",
+          "osm_id": 3726124,
+          "lat": "29.3407370",
+          "lon": "30.6201045",
+          "category": "boundary",
+          "type": "administrative",
+          "place_rank": 8,
+          "importance": 0.5114776063379526,
+          "addresstype": "state",
+          "name": "الفيوم",
+          "display_name": "الفيوم, مصر",
+          "address": {
+            "state": "الفيوم",
+            "ISO3166-2-lvl4": "EG-FYM",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "28.9614586",
+            "29.7162700",
+            "29.8505511",
+            "31.1229907"
+          ]
+        }
+      ],
+      "score": 0.7778063046867991,
+      "churchId": 465,
+      "churchName": "كنيسة مارجرجس الروماني، \nالفيوم (المطرانية)، مصر",
+      "queriesTried": [
+        {
+          "strategy": "name_full",
+          "q": "كنيسة مارجرجس الروماني، الفيوم (المطرانية)، مصر"
+        },
+        {
+          "strategy": "city_gov_country",
+          "q": "الفيوم (المطرانية)، الفيوم، Egypt"
+        },
+        {
+          "strategy": "gov_country",
+          "q": "الفيوم، Egypt"
+        }
+      ]
+    },
+    {
+      "status": "manual_review",
+      "lat": 30.8391947,
+      "lng": 31.0016072,
+      "reason": "ambiguous_results",
+      "query": {
+        "strategy": "gov_country",
+        "q": "الغربية، Egypt"
+      },
+      "result": {
+        "place_id": 49246316,
+        "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+        "osm_type": "relation",
+        "osm_id": 3584607,
+        "lat": "30.8391947",
+        "lon": "31.0016072",
+        "category": "boundary",
+        "type": "administrative",
+        "place_rank": 8,
+        "importance": 0.5172711613654304,
+        "addresstype": "state",
+        "name": "الغربية",
+        "display_name": "الغربية, مصر",
+        "address": {
+          "state": "الغربية",
+          "ISO3166-2-lvl4": "EG-GH",
+          "country": "مصر",
+          "country_code": "eg"
+        },
+        "boundingbox": [
+          "30.5746206",
+          "31.1038078",
+          "30.7467198",
+          "31.3013265"
+        ]
+      },
+      "candidates": [
+        {
+          "place_id": 49246316,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "relation",
+          "osm_id": 3584607,
+          "lat": "30.8391947",
+          "lon": "31.0016072",
+          "category": "boundary",
+          "type": "administrative",
+          "place_rank": 8,
+          "importance": 0.5172711613654304,
+          "addresstype": "state",
+          "name": "الغربية",
+          "display_name": "الغربية, مصر",
+          "address": {
+            "state": "الغربية",
+            "ISO3166-2-lvl4": "EG-GH",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "30.5746206",
+            "31.1038078",
+            "30.7467198",
+            "31.3013265"
+          ]
+        },
+        {
+          "place_id": 47871475,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "node",
+          "osm_id": 2373178216,
+          "lat": "29.4165427",
+          "lon": "32.1490967",
+          "category": "place",
+          "type": "state",
+          "place_rank": 8,
+          "importance": 0.4997865360045999,
+          "addresstype": "state",
+          "name": "الغربية",
+          "display_name": "الغربية, مصر",
+          "address": {
+            "state": "الغربية",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "26.8165427",
+            "32.0165427",
+            "29.5490967",
+            "34.7490967"
+          ]
+        }
+      ],
+      "score": 0.7672711613654304,
+      "churchId": 529,
+      "churchName": "كنيسة القديس مارجرجس، كفر \nششتا، بزفتى، بالغربية، مصر",
+      "queriesTried": [
+        {
+          "strategy": "name_full",
+          "q": "كنيسة القديس مارجرجس، كفر ششتا، بزفتى، بالغربية، مصر"
+        },
+        {
+          "strategy": "city_gov_country",
+          "q": "بالغربية، الغربية، Egypt"
+        },
+        {
+          "strategy": "gov_country",
+          "q": "الغربية، Egypt"
+        }
+      ]
+    },
+    {
+      "status": "manual_review",
+      "lat": 29.0729812,
+      "lng": 31.0982562,
+      "reason": "fallback_centroid",
+      "query": {
+        "strategy": "gov_country",
+        "q": "بني سويف، Egypt"
+      },
+      "result": {
+        "place_id": 51573330,
+        "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+        "osm_type": "node",
+        "osm_id": 768586066,
+        "lat": "29.0729812",
+        "lon": "31.0982562",
+        "category": "place",
+        "type": "city",
+        "place_rank": 16,
+        "importance": 0.4854658749924824,
+        "addresstype": "city",
+        "name": "بني سويف",
+        "display_name": "بني سويف, بنى سويف, 62513, مصر",
+        "address": {
+          "city": "بني سويف",
+          "state": "بنى سويف",
+          "ISO3166-2-lvl4": "EG-BNS",
+          "postcode": "62513",
+          "country": "مصر",
+          "country_code": "eg"
+        },
+        "boundingbox": [
+          "28.9129812",
+          "29.2329812",
+          "30.9382562",
+          "31.2582562"
+        ]
+      },
+      "candidates": [
+        {
+          "place_id": 51573330,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "node",
+          "osm_id": 768586066,
+          "lat": "29.0729812",
+          "lon": "31.0982562",
+          "category": "place",
+          "type": "city",
+          "place_rank": 16,
+          "importance": 0.4854658749924824,
+          "addresstype": "city",
+          "name": "بني سويف",
+          "display_name": "بني سويف, بنى سويف, 62513, مصر",
+          "address": {
+            "city": "بني سويف",
+            "state": "بنى سويف",
+            "ISO3166-2-lvl4": "EG-BNS",
+            "postcode": "62513",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "28.9129812",
+            "29.2329812",
+            "30.9382562",
+            "31.2582562"
+          ]
+        },
+        {
+          "place_id": 51696556,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "relation",
+          "osm_id": 3726170,
+          "lat": "28.8382688",
+          "lon": "30.8544768",
+          "category": "boundary",
+          "type": "administrative",
+          "place_rank": 8,
+          "importance": 0.5027970550398619,
+          "addresstype": "state",
+          "name": "بنى سويف",
+          "display_name": "بنى سويف, مصر",
+          "address": {
+            "state": "بنى سويف",
+            "ISO3166-2-lvl4": "EG-BNS",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "28.2690955",
+            "29.4361592",
+            "29.7796533",
+            "31.9711097"
+          ]
+        }
+      ],
+      "score": 0.5854658749924824,
+      "churchId": 684,
+      "churchName": "كنيسة الشهيد مارجرجس \nالروماني، نزلة الفشن، مصر",
+      "queriesTried": [
+        {
+          "strategy": "name_full",
+          "q": "كنيسة الشهيد مارجرجس الروماني، نزلة الفشن، مصر"
+        },
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الشهيد مارجرجس الروماني، نزلة الفشن، مصر، بني سويف، Egypt"
+        },
+        {
+          "strategy": "city_gov_country",
+          "q": "نزلة الفشن، بني سويف، Egypt"
+        },
+        {
+          "strategy": "gov_country",
+          "q": "بني سويف، Egypt"
+        }
+      ]
+    },
+    {
+      "status": "manual_review",
+      "lat": 28.2125404,
+      "lng": 30.9123741,
+      "reason": "ambiguous_results",
+      "query": {
+        "strategy": "gov_country",
+        "q": "المنيا، Egypt"
+      },
+      "result": {
+        "place_id": 51577534,
+        "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+        "osm_type": "relation",
+        "osm_id": 3726175,
+        "lat": "28.2125404",
+        "lon": "30.9123741",
+        "category": "boundary",
+        "type": "administrative",
+        "place_rank": 8,
+        "importance": 0.5214628559760609,
+        "addresstype": "state",
+        "name": "المنيا",
+        "display_name": "المنيا, مصر",
+        "address": {
+          "state": "المنيا",
+          "ISO3166-2-lvl4": "EG-MN",
+          "country": "مصر",
+          "country_code": "eg"
+        },
+        "boundingbox": [
+          "27.6116619",
+          "28.8026312",
+          "28.6250620",
+          "32.6539287"
+        ]
+      },
+      "candidates": [
+        {
+          "place_id": 51577534,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "relation",
+          "osm_id": 3726175,
+          "lat": "28.2125404",
+          "lon": "30.9123741",
+          "category": "boundary",
+          "type": "administrative",
+          "place_rank": 8,
+          "importance": 0.5214628559760609,
+          "addresstype": "state",
+          "name": "المنيا",
+          "display_name": "المنيا, مصر",
+          "address": {
+            "state": "المنيا",
+            "ISO3166-2-lvl4": "EG-MN",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "27.6116619",
+            "28.8026312",
+            "28.6250620",
+            "32.6539287"
+          ]
+        },
+        {
+          "place_id": 51666703,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "node",
+          "osm_id": 768032316,
+          "lat": "28.0893325",
+          "lon": "30.7570623",
+          "category": "place",
+          "type": "city",
+          "place_rank": 16,
+          "importance": 0.5140308622086913,
+          "addresstype": "city",
+          "name": "المنيا",
+          "display_name": "المنيا, 61511, مصر",
+          "address": {
+            "city": "المنيا",
+            "state": "المنيا",
+            "ISO3166-2-lvl4": "EG-MN",
+            "postcode": "61511",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "27.9293325",
+            "28.2493325",
+            "30.5970623",
+            "30.9170623"
+          ]
+        }
+      ],
+      "score": 0.7714628559760609,
+      "churchId": 874,
+      "churchName": "كنيسة الملاك، بني غنى، \nسمالوط",
+      "queriesTried": [
+        {
+          "strategy": "name_full",
+          "q": "كنيسة الملاك، بني غنى، سمالوط، Egypt"
+        },
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الملاك، بني غنى، سمالوط، المنيا، Egypt"
+        },
+        {
+          "strategy": "city_gov_country",
+          "q": "بني غنى، المنيا، Egypt"
+        },
+        {
+          "strategy": "gov_country",
+          "q": "المنيا، Egypt"
+        }
+      ]
+    },
+    {
+      "status": "manual_review",
+      "lat": 28.2125404,
+      "lng": 30.9123741,
+      "reason": "ambiguous_results",
+      "query": {
+        "strategy": "gov_country",
+        "q": "المنيا، Egypt"
+      },
+      "result": {
+        "place_id": 51577534,
+        "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+        "osm_type": "relation",
+        "osm_id": 3726175,
+        "lat": "28.2125404",
+        "lon": "30.9123741",
+        "category": "boundary",
+        "type": "administrative",
+        "place_rank": 8,
+        "importance": 0.5214628559760609,
+        "addresstype": "state",
+        "name": "المنيا",
+        "display_name": "المنيا, مصر",
+        "address": {
+          "state": "المنيا",
+          "ISO3166-2-lvl4": "EG-MN",
+          "country": "مصر",
+          "country_code": "eg"
+        },
+        "boundingbox": [
+          "27.6116619",
+          "28.8026312",
+          "28.6250620",
+          "32.6539287"
+        ]
+      },
+      "candidates": [
+        {
+          "place_id": 51577534,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "relation",
+          "osm_id": 3726175,
+          "lat": "28.2125404",
+          "lon": "30.9123741",
+          "category": "boundary",
+          "type": "administrative",
+          "place_rank": 8,
+          "importance": 0.5214628559760609,
+          "addresstype": "state",
+          "name": "المنيا",
+          "display_name": "المنيا, مصر",
+          "address": {
+            "state": "المنيا",
+            "ISO3166-2-lvl4": "EG-MN",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "27.6116619",
+            "28.8026312",
+            "28.6250620",
+            "32.6539287"
+          ]
+        },
+        {
+          "place_id": 51666703,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "node",
+          "osm_id": 768032316,
+          "lat": "28.0893325",
+          "lon": "30.7570623",
+          "category": "place",
+          "type": "city",
+          "place_rank": 16,
+          "importance": 0.5140308622086913,
+          "addresstype": "city",
+          "name": "المنيا",
+          "display_name": "المنيا, 61511, مصر",
+          "address": {
+            "city": "المنيا",
+            "state": "المنيا",
+            "ISO3166-2-lvl4": "EG-MN",
+            "postcode": "61511",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "27.9293325",
+            "28.2493325",
+            "30.5970623",
+            "30.9170623"
+          ]
+        }
+      ],
+      "score": 0.7714628559760609,
+      "churchId": 875,
+      "churchName": "كنيسة الأنبا بيشوي، عزبة \nبشرى، سمالوط",
+      "queriesTried": [
+        {
+          "strategy": "name_full",
+          "q": "كنيسة الأنبا بيشوي، عزبة بشرى، سمالوط، Egypt"
+        },
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الأنبا بيشوي، عزبة بشرى، سمالوط، المنيا، Egypt"
+        },
+        {
+          "strategy": "city_gov_country",
+          "q": "عزبة بشرى، المنيا، Egypt"
+        },
+        {
+          "strategy": "gov_country",
+          "q": "المنيا، Egypt"
+        }
+      ]
+    },
+    {
+      "status": "manual_review",
+      "lat": 28.2125404,
+      "lng": 30.9123741,
+      "reason": "ambiguous_results",
+      "query": {
+        "strategy": "gov_country",
+        "q": "المنيا، Egypt"
+      },
+      "result": {
+        "place_id": 51577534,
+        "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+        "osm_type": "relation",
+        "osm_id": 3726175,
+        "lat": "28.2125404",
+        "lon": "30.9123741",
+        "category": "boundary",
+        "type": "administrative",
+        "place_rank": 8,
+        "importance": 0.5214628559760609,
+        "addresstype": "state",
+        "name": "المنيا",
+        "display_name": "المنيا, مصر",
+        "address": {
+          "state": "المنيا",
+          "ISO3166-2-lvl4": "EG-MN",
+          "country": "مصر",
+          "country_code": "eg"
+        },
+        "boundingbox": [
+          "27.6116619",
+          "28.8026312",
+          "28.6250620",
+          "32.6539287"
+        ]
+      },
+      "candidates": [
+        {
+          "place_id": 51577534,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "relation",
+          "osm_id": 3726175,
+          "lat": "28.2125404",
+          "lon": "30.9123741",
+          "category": "boundary",
+          "type": "administrative",
+          "place_rank": 8,
+          "importance": 0.5214628559760609,
+          "addresstype": "state",
+          "name": "المنيا",
+          "display_name": "المنيا, مصر",
+          "address": {
+            "state": "المنيا",
+            "ISO3166-2-lvl4": "EG-MN",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "27.6116619",
+            "28.8026312",
+            "28.6250620",
+            "32.6539287"
+          ]
+        },
+        {
+          "place_id": 51666703,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "node",
+          "osm_id": 768032316,
+          "lat": "28.0893325",
+          "lon": "30.7570623",
+          "category": "place",
+          "type": "city",
+          "place_rank": 16,
+          "importance": 0.5140308622086913,
+          "addresstype": "city",
+          "name": "المنيا",
+          "display_name": "المنيا, 61511, مصر",
+          "address": {
+            "city": "المنيا",
+            "state": "المنيا",
+            "ISO3166-2-lvl4": "EG-MN",
+            "postcode": "61511",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "27.9293325",
+            "28.2493325",
+            "30.5970623",
+            "30.9170623"
+          ]
+        }
+      ],
+      "score": 0.7714628559760609,
+      "churchId": 877,
+      "churchName": "كنيسة الشهيد مارمينا، طحا \nالعمدة، سمالوط",
+      "queriesTried": [
+        {
+          "strategy": "name_full",
+          "q": "كنيسة الشهيد مارمينا، طحا العمدة، سمالوط، Egypt"
+        },
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الشهيد مارمينا، طحا العمدة، سمالوط، المنيا، Egypt"
+        },
+        {
+          "strategy": "city_gov_country",
+          "q": "طحا العمدة، المنيا، Egypt"
+        },
+        {
+          "strategy": "gov_country",
+          "q": "المنيا، Egypt"
+        }
+      ]
+    },
+    {
+      "status": "manual_review",
+      "lat": 28.2125404,
+      "lng": 30.9123741,
+      "reason": "ambiguous_results",
+      "query": {
+        "strategy": "gov_country",
+        "q": "المنيا، Egypt"
+      },
+      "result": {
+        "place_id": 51577534,
+        "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+        "osm_type": "relation",
+        "osm_id": 3726175,
+        "lat": "28.2125404",
+        "lon": "30.9123741",
+        "category": "boundary",
+        "type": "administrative",
+        "place_rank": 8,
+        "importance": 0.5214628559760609,
+        "addresstype": "state",
+        "name": "المنيا",
+        "display_name": "المنيا, مصر",
+        "address": {
+          "state": "المنيا",
+          "ISO3166-2-lvl4": "EG-MN",
+          "country": "مصر",
+          "country_code": "eg"
+        },
+        "boundingbox": [
+          "27.6116619",
+          "28.8026312",
+          "28.6250620",
+          "32.6539287"
+        ]
+      },
+      "candidates": [
+        {
+          "place_id": 51577534,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "relation",
+          "osm_id": 3726175,
+          "lat": "28.2125404",
+          "lon": "30.9123741",
+          "category": "boundary",
+          "type": "administrative",
+          "place_rank": 8,
+          "importance": 0.5214628559760609,
+          "addresstype": "state",
+          "name": "المنيا",
+          "display_name": "المنيا, مصر",
+          "address": {
+            "state": "المنيا",
+            "ISO3166-2-lvl4": "EG-MN",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "27.6116619",
+            "28.8026312",
+            "28.6250620",
+            "32.6539287"
+          ]
+        },
+        {
+          "place_id": 51666703,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "node",
+          "osm_id": 768032316,
+          "lat": "28.0893325",
+          "lon": "30.7570623",
+          "category": "place",
+          "type": "city",
+          "place_rank": 16,
+          "importance": 0.5140308622086913,
+          "addresstype": "city",
+          "name": "المنيا",
+          "display_name": "المنيا, 61511, مصر",
+          "address": {
+            "city": "المنيا",
+            "state": "المنيا",
+            "ISO3166-2-lvl4": "EG-MN",
+            "postcode": "61511",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "27.9293325",
+            "28.2493325",
+            "30.5970623",
+            "30.9170623"
+          ]
+        }
+      ],
+      "score": 0.7714628559760609,
+      "churchId": 878,
+      "churchName": "كنيسة الملاك ميخائيل، \nالعوايسة، سمالوط",
+      "queriesTried": [
+        {
+          "strategy": "name_full",
+          "q": "كنيسة الملاك ميخائيل، العوايسة، سمالوط، Egypt"
+        },
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الملاك ميخائيل، العوايسة، سمالوط، المنيا، Egypt"
+        },
+        {
+          "strategy": "city_gov_country",
+          "q": "العوايسة، المنيا، Egypt"
+        },
+        {
+          "strategy": "gov_country",
+          "q": "المنيا، Egypt"
+        }
+      ]
+    },
+    {
+      "status": "manual_review",
+      "lat": 28.2125404,
+      "lng": 30.9123741,
+      "reason": "ambiguous_results",
+      "query": {
+        "strategy": "gov_country",
+        "q": "المنيا، Egypt"
+      },
+      "result": {
+        "place_id": 51577534,
+        "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+        "osm_type": "relation",
+        "osm_id": 3726175,
+        "lat": "28.2125404",
+        "lon": "30.9123741",
+        "category": "boundary",
+        "type": "administrative",
+        "place_rank": 8,
+        "importance": 0.5214628559760609,
+        "addresstype": "state",
+        "name": "المنيا",
+        "display_name": "المنيا, مصر",
+        "address": {
+          "state": "المنيا",
+          "ISO3166-2-lvl4": "EG-MN",
+          "country": "مصر",
+          "country_code": "eg"
+        },
+        "boundingbox": [
+          "27.6116619",
+          "28.8026312",
+          "28.6250620",
+          "32.6539287"
+        ]
+      },
+      "candidates": [
+        {
+          "place_id": 51577534,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "relation",
+          "osm_id": 3726175,
+          "lat": "28.2125404",
+          "lon": "30.9123741",
+          "category": "boundary",
+          "type": "administrative",
+          "place_rank": 8,
+          "importance": 0.5214628559760609,
+          "addresstype": "state",
+          "name": "المنيا",
+          "display_name": "المنيا, مصر",
+          "address": {
+            "state": "المنيا",
+            "ISO3166-2-lvl4": "EG-MN",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "27.6116619",
+            "28.8026312",
+            "28.6250620",
+            "32.6539287"
+          ]
+        },
+        {
+          "place_id": 51666703,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "node",
+          "osm_id": 768032316,
+          "lat": "28.0893325",
+          "lon": "30.7570623",
+          "category": "place",
+          "type": "city",
+          "place_rank": 16,
+          "importance": 0.5140308622086913,
+          "addresstype": "city",
+          "name": "المنيا",
+          "display_name": "المنيا, 61511, مصر",
+          "address": {
+            "city": "المنيا",
+            "state": "المنيا",
+            "ISO3166-2-lvl4": "EG-MN",
+            "postcode": "61511",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "27.9293325",
+            "28.2493325",
+            "30.5970623",
+            "30.9170623"
+          ]
+        }
+      ],
+      "score": 0.7714628559760609,
+      "churchId": 879,
+      "churchName": "كنيسة الملاك ميخائيل والآباء \nالرسل، قلوصنا، سمالوط",
+      "queriesTried": [
+        {
+          "strategy": "name_full",
+          "q": "كنيسة الملاك ميخائيل والآباء الرسل، قلوصنا، سمالوط، Egypt"
+        },
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة الملاك ميخائيل والآباء الرسل، قلوصنا، سمالوط، المنيا، Egypt"
+        },
+        {
+          "strategy": "city_gov_country",
+          "q": "قلوصنا، المنيا، Egypt"
+        },
+        {
+          "strategy": "gov_country",
+          "q": "المنيا، Egypt"
+        }
+      ]
+    },
+    {
+      "status": "manual_review",
+      "lat": 28.2125404,
+      "lng": 30.9123741,
+      "reason": "ambiguous_results",
+      "query": {
+        "strategy": "gov_country",
+        "q": "المنيا، Egypt"
+      },
+      "result": {
+        "place_id": 51577534,
+        "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+        "osm_type": "relation",
+        "osm_id": 3726175,
+        "lat": "28.2125404",
+        "lon": "30.9123741",
+        "category": "boundary",
+        "type": "administrative",
+        "place_rank": 8,
+        "importance": 0.5214628559760609,
+        "addresstype": "state",
+        "name": "المنيا",
+        "display_name": "المنيا, مصر",
+        "address": {
+          "state": "المنيا",
+          "ISO3166-2-lvl4": "EG-MN",
+          "country": "مصر",
+          "country_code": "eg"
+        },
+        "boundingbox": [
+          "27.6116619",
+          "28.8026312",
+          "28.6250620",
+          "32.6539287"
+        ]
+      },
+      "candidates": [
+        {
+          "place_id": 51577534,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "relation",
+          "osm_id": 3726175,
+          "lat": "28.2125404",
+          "lon": "30.9123741",
+          "category": "boundary",
+          "type": "administrative",
+          "place_rank": 8,
+          "importance": 0.5214628559760609,
+          "addresstype": "state",
+          "name": "المنيا",
+          "display_name": "المنيا, مصر",
+          "address": {
+            "state": "المنيا",
+            "ISO3166-2-lvl4": "EG-MN",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "27.6116619",
+            "28.8026312",
+            "28.6250620",
+            "32.6539287"
+          ]
+        },
+        {
+          "place_id": 51666703,
+          "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+          "osm_type": "node",
+          "osm_id": 768032316,
+          "lat": "28.0893325",
+          "lon": "30.7570623",
+          "category": "place",
+          "type": "city",
+          "place_rank": 16,
+          "importance": 0.5140308622086913,
+          "addresstype": "city",
+          "name": "المنيا",
+          "display_name": "المنيا, 61511, مصر",
+          "address": {
+            "city": "المنيا",
+            "state": "المنيا",
+            "ISO3166-2-lvl4": "EG-MN",
+            "postcode": "61511",
+            "country": "مصر",
+            "country_code": "eg"
+          },
+          "boundingbox": [
+            "27.9293325",
+            "28.2493325",
+            "30.5970623",
+            "30.9170623"
+          ]
+        }
+      ],
+      "score": 0.7714628559760609,
+      "churchId": 880,
+      "churchName": "كنيسة العذراء مريم، قرى \nالمهاجرين، سمالوط",
+      "queriesTried": [
+        {
+          "strategy": "name_full",
+          "q": "كنيسة العذراء مريم، قرى المهاجرين، سمالوط، Egypt"
+        },
+        {
+          "strategy": "name_city_gov",
+          "q": "كنيسة العذراء مريم، قرى المهاجرين، سمالوط، المنيا، Egypt"
+        },
+        {
+          "strategy": "city_gov_country",
+          "q": "قرى المهاجرين، المنيا، Egypt"
+        },
+        {
+          "strategy": "gov_country",
+          "q": "المنيا، Egypt"
+        }
+      ]
+    }
+  ]
+}

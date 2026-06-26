@@ -1,42 +1,44 @@
 import { supabase } from "@/integrations/supabase/client";
 import cardChurch from "@/assets/home/card-church.jpg";
+import {
+  CHURCHES_DIRECTORY_SELECT,
+  isChurchDirectoryVerified,
+  mapChurchesTableRow,
+  type ChurchesTableRow,
+} from "./churches-table";
 
 export type DirectoryChurch = {
   id: string;
   name: string;
+  englishName: string | null;
   diocese: string | null;
   governorate: string | null;
   city: string | null;
+  country: string | null;
   address: string | null;
   phone: string | null;
   whatsapp: string | null;
+  email: string | null;
   coverImageUrl: string | null;
   priestName: string | null;
+  priestsFull: string | null;
+  patronSaint: string | null;
+  patronFeasts: string | null;
+  churchUrl: string | null;
+  websiteUrl: string | null;
+  facebookUrl: string | null;
+  youtubeUrl: string | null;
+  churchCode: string | null;
+  description: string | null;
+  isVerified: boolean;
   locationLat: number | null;
   locationLng: number | null;
   memberCount: number;
   servantCount: number;
 };
 
-type ChurchRow = {
-  id: string;
-  name: string;
-  diocese: string | null;
-  governorate: string | null;
-  city: string | null;
-  address: string | null;
-  phone: string | null;
-  whatsapp: string | null;
-  cover_image_url: string | null;
-  location_lat: number | null;
-  location_lng: number | null;
-  member_count: number;
-  servant_count: number;
-  status: string;
-};
-
 type RoleRow = {
-  church_id: string;
+  church_id: string | number;
   role_name?: string;
   display_name?: string;
   is_primary_priest: boolean;
@@ -44,22 +46,36 @@ type RoleRow = {
   role_type?: string;
 };
 
-function mapChurchRow(row: ChurchRow, priestName: string | null): DirectoryChurch {
+function mapDirectoryChurch(row: ChurchesTableRow, priestOverride: string | null): DirectoryChurch {
+  const core = mapChurchesTableRow(row);
   return {
-    id: String(row.id),
-    name: row.name,
-    diocese: row.diocese,
-    governorate: row.governorate,
-    city: row.city,
-    address: row.address,
-    phone: row.phone,
-    whatsapp: row.whatsapp,
-    coverImageUrl: row.cover_image_url,
-    priestName,
-    locationLat: row.location_lat != null ? Number(row.location_lat) : null,
-    locationLng: row.location_lng != null ? Number(row.location_lng) : null,
-    memberCount: row.member_count ?? 0,
-    servantCount: row.servant_count ?? 0,
+    id: core.id,
+    name: core.name,
+    englishName: row.english_name?.trim() || null,
+    diocese: core.diocese,
+    governorate: core.governorate,
+    city: core.city,
+    country: row.country?.trim() || null,
+    address: core.address,
+    phone: core.phone,
+    whatsapp: core.whatsapp,
+    email: row.email?.trim() || null,
+    coverImageUrl: core.coverImageUrl,
+    priestName: priestOverride ?? core.priestName,
+    priestsFull: row.priests?.trim() || null,
+    patronSaint: row.patron_saint?.trim() || null,
+    patronFeasts: row.patron_feasts?.trim() || null,
+    churchUrl: row.church_url?.trim() || null,
+    websiteUrl: row.website_url?.trim() || null,
+    facebookUrl: row.facebook_url?.trim() || null,
+    youtubeUrl: row.youtube_url?.trim() || null,
+    churchCode: row.church_code?.trim() || null,
+    description: row.description?.trim() || null,
+    isVerified: isChurchDirectoryVerified(row),
+    locationLat: core.locationLat,
+    locationLng: core.locationLng,
+    memberCount: core.memberCount,
+    servantCount: core.servantCount,
   };
 }
 
@@ -71,11 +87,40 @@ export function directoryChurchLocation(church: DirectoryChurch): string {
   return [church.city, church.governorate, church.diocese].filter(Boolean).join(" · ");
 }
 
+export function churchHasMapTarget(church: DirectoryChurch): boolean {
+  if (church.locationLat != null && church.locationLng != null) return true;
+  return Boolean(
+    church.address?.trim() ||
+      church.name?.trim() ||
+      church.city?.trim() ||
+      church.governorate?.trim(),
+  );
+}
+
+export function mapsQueryLabel(church: DirectoryChurch): string {
+  if (church.address?.trim()) return church.address.trim();
+  return [church.name, church.city, church.governorate, church.diocese, church.country ?? "مصر"]
+    .filter(Boolean)
+    .join("، ");
+}
+
+/** Opens Google Maps directions using DB coordinates or textual location. */
+export function mapsDirectionsUrlForChurch(church: DirectoryChurch): string {
+  if (church.locationLat != null && church.locationLng != null) {
+    return `https://www.google.com/maps/dir/?api=1&destination=${church.locationLat},${church.locationLng}`;
+  }
+  const label = mapsQueryLabel(church);
+  return label
+    ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(label)}`
+    : "#";
+}
+
+/** Opens Google Maps search / pin view. */
 export function mapsUrlForChurch(church: DirectoryChurch): string {
   if (church.locationLat != null && church.locationLng != null) {
     return `https://www.google.com/maps/search/?api=1&query=${church.locationLat},${church.locationLng}`;
   }
-  const label = church.address ?? [church.name, church.city].filter(Boolean).join("، ");
+  const label = mapsQueryLabel(church);
   return label
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(label)}`
     : "#";
@@ -111,30 +156,26 @@ async function priestNamesByChurchIds(churchIds: string[]): Promise<Map<string, 
 export async function fetchApprovedChurches(): Promise<DirectoryChurch[]> {
   const { data, error } = await supabase
     .from("churches")
-    .select(
-      "id, name, diocese, governorate, city, address, phone, whatsapp, cover_image_url, location_lat, location_lng, member_count, servant_count, status",
-    )
-    .eq("status", "approved")
-    .order("name");
+    .select(CHURCHES_DIRECTORY_SELECT)
+    .eq("is_active", true)
+    .order("church_name");
 
   if (error) {
     console.error("fetchApprovedChurches", error);
     return [];
   }
 
-  const rows = (data ?? []) as ChurchRow[];
+  const rows = (data ?? []) as ChurchesTableRow[];
   const priestMap = await priestNamesByChurchIds(rows.map((r) => String(r.id)));
-  return rows.map((row) => mapChurchRow(row, priestMap.get(String(row.id)) ?? null));
+  return rows.map((row) => mapDirectoryChurch(row, priestMap.get(String(row.id)) ?? null));
 }
 
 export async function fetchApprovedChurchById(id: string): Promise<DirectoryChurch | null> {
   const { data, error } = await supabase
     .from("churches")
-    .select(
-      "id, name, diocese, governorate, city, address, phone, whatsapp, cover_image_url, location_lat, location_lng, member_count, servant_count, status",
-    )
+    .select(CHURCHES_DIRECTORY_SELECT)
     .eq("id", id)
-    .eq("status", "approved")
+    .eq("is_active", true)
     .maybeSingle();
 
   if (error || !data) {
@@ -143,7 +184,7 @@ export async function fetchApprovedChurchById(id: string): Promise<DirectoryChur
   }
 
   const priestMap = await priestNamesByChurchIds([String(data.id)]);
-  return mapChurchRow(data as ChurchRow, priestMap.get(String(data.id)) ?? null);
+  return mapDirectoryChurch(data as ChurchesTableRow, priestMap.get(String(data.id)) ?? null);
 }
 
 const RECENT_KEY = "alpha:church-directory:recent";

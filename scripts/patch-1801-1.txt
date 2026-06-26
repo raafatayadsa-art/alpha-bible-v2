@@ -1,0 +1,41 @@
+=== OLD ===
+          <p className="flex-1 min-w-0 pb-1">
+          <VerseHighlighted
+            text={text}
+            matchedSet={matchedSet}
+            dictIndex={dictIndex}
+            seenChapterWords={seenChapterWords}
+            onSelectWord={onSelectWord}
+            spiritualMode={spiritualMode}
+          />
+          {showRef && (
+            <ReferenceIndicator
+              count={2}
+              onClick={(e?: any) => {
+                e?.stopPropagation?.();
+                onOpenRef();
+              }}
+            />
+          )}
+          </p>
+
+=== NEW ===
+          <p className="flex-1 min-w-0 pb-1">
+            <VerseHighlighted
+              text={text}
+              matchedSet={matchedSet}
+              dictIndex={dictIndex}
+              seenChapterWords={seenChapterWords}
+              onSelectWord={onSelectWord}
+              spiritualMode={spiritualMode}
+            />
+            {showRef && (
+              <ReferenceIndicator
+                count={2}
+                onClick={(e?: any) => {
+                  e?.stopPropagation?.();
+                  onOpenRef();
+                }}
+              />
+            )}
+          </p>

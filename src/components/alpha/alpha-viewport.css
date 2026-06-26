@@ -15,13 +15,13 @@ html.alpha-viewport-lock body {
 
 html.alpha-viewport-bg-shell,
 html.alpha-viewport-bg-shell body {
-  /* Match shell root — no lighter top band in safe-area / overscroll */
-  background-color: #f4ead8;
+  /* Match shell root — theme-aware overscroll / safe-area */
+  background-color: var(--alpha-bg-base);
 }
 
 html.alpha-viewport-bg-messaging,
 html.alpha-viewport-bg-messaging body {
-  background-color: #f4ead8;
+  background-color: var(--alpha-bg-base);
 }
 
 html.alpha-viewport-bg-connect-secure,
@@ -52,11 +52,13 @@ html.alpha-viewport-bg-default body {
 
 /* Screen fill on the viewport root — single layer, no fixed duplicate */
 .alpha-viewport-root--shell {
-  background-color: #f4ead8;
+  background-color: var(--alpha-bg-base);
+  color: var(--alpha-text);
 }
 
 .alpha-viewport-root--messaging {
-  background-color: #f4ead8;
+  background-color: var(--alpha-bg-base);
+  color: var(--alpha-text);
 }
 
 .alpha-viewport-root--connect-secure {

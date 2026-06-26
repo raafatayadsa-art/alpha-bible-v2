@@ -1,5 +1,9 @@
 export type ApprovalKind =
   | "church_setup"
+  | "church_claim"
+  | "publisher_setup"
+  | "publisher_publication"
+  | "content_review"
   | "priest_verification"
   | "servant_verification"
   | "saint_image"
@@ -29,6 +33,7 @@ export type ApprovalFilter =
   | "servants"
   | "saints"
   | "reports"
+  | "publishers"
   | "verification"
   | "critical"
   | "pending"
@@ -130,6 +135,10 @@ export type AiReviewData = {
 
 export const APPROVAL_KIND_LABELS: Record<ApprovalKind, string> = {
   church_setup: "Church Approval",
+  church_claim: "Church Claim",
+  publisher_setup: "Publisher Setup",
+  publisher_publication: "Publisher Publication",
+  content_review: "Content Review",
   priest_verification: "Priest Approval",
   servant_verification: "Servant Approval",
   saint_image: "Saint Image Approval",
@@ -173,6 +182,7 @@ export const FILTER_LABELS: Record<ApprovalFilter, string> = {
   servants: "الخدام",
   saints: "صور القديسين",
   reports: "البلاغات",
+  publishers: "الناشرون",
   verification: "التحقق",
   critical: "حرج",
   pending: "معلق",
@@ -303,9 +313,11 @@ export function getApprovalDetailRows(item: ApprovalItem): ApprovalDetailRow[] {
         { label: "حالة التحقق", value: item.verificationStatus ?? item.documentsStatus ?? statusLabel },
       ];
     case "church_setup":
-    case "church_verification":
+    case "church_claim":
+    case "publisher_setup":
+    case "publisher_publication":
       return [
-        { label: "اسم الكنيسة", value: item.churchName ?? item.verificationTarget },
+        { label: "اسم الجهة", value: item.churchName ?? item.verificationTarget ?? item.title },
         { label: "الإيبارشية", value: item.diocese },
         { label: "المدينة", value: item.city ?? item.address },
         { label: "الكاهن المسؤول", value: item.responsiblePriest ?? item.priestName },
@@ -318,6 +330,21 @@ export function getApprovalDetailRows(item: ApprovalItem): ApprovalDetailRow[] {
         { label: "المساهم", value: item.contributorName ?? item.submittedBy },
         { label: "حالة المراجعة", value: statusLabel },
         { label: "نتيجة الفحص", value: item.aiScanResults },
+      ];
+    case "content_review":
+      return [
+        { label: "عنوان المحتوى", value: item.title },
+        { label: "الناشر", value: item.churchName ?? item.verificationTarget },
+        { label: "حالة المراجعة", value: statusLabel },
+      ];
+    case "church_verification":
+      return [
+        { label: "اسم الكنيسة", value: item.churchName ?? item.verificationTarget },
+        { label: "الإيبارشية", value: item.diocese },
+        { label: "المدينة", value: item.city ?? item.address },
+        { label: "الكاهن المسؤول", value: item.responsiblePriest ?? item.priestName },
+        { label: "رقم التواصل", value: item.phone },
+        { label: "حالة التحقق", value: item.verificationStatus ?? item.documentsStatus ?? statusLabel },
       ];
     case "servant_verification":
       return [
@@ -341,15 +368,17 @@ export function kindMatchesFilter(kind: ApprovalKind, filter: ApprovalFilter): b
     case "all":
       return true;
     case "churches":
-      return kind === "church_setup";
+      return kind === "church_setup" || kind === "church_claim";
     case "priests":
       return kind === "priest_verification";
     case "servants":
       return kind === "servant_verification";
     case "saints":
-      return kind === "saint_image";
+      return kind === "saint_image" || kind === "content_review";
     case "reports":
       return kind === "critical_report";
+    case "publishers":
+      return kind === "publisher_setup" || kind === "publisher_publication";
     case "verification":
       return (
         kind === "church_verification" ||

@@ -59,33 +59,6 @@ export function getChurchContact(id: string): ChurchContact | undefined {
   return CHURCH_CONTACTS.find((c) => c.id === id);
 }
 
-export type ChatMessage = {
-  id: string;
-  from: "me" | "them";
-  text: string;
-  /** ISO offset in minutes from "now" — negative = in the past */
-  minutesAgo: number;
-};
-
-/** Seed conversation snippets per contact. */
-export const SEED_CONVERSATIONS: Record<string, ChatMessage[]> = {
-  p1: [
-    { id: "m1", from: "them", text: "سلام ونعمة يا ابني، الرب يبارك حياتك.", minutesAgo: 180 },
-    { id: "m2", from: "me", text: "أبونا أحتاج كلمة في موضوع مهم.", minutesAgo: 175 },
-    { id: "m3", from: "them", text: "بكل سرور، تعالى بعد القداس يوم الأحد.", minutesAgo: 60 },
-  ],
-  s1: [
-    { id: "m1", from: "them", text: "ميعاد اجتماع الشباب الخميس الساعة 7 مساءً.", minutesAgo: 240 },
-    { id: "m2", from: "me", text: "تمام، إن شاء الله أكون موجود.", minutesAgo: 230 },
-  ],
-  s2: [
-    { id: "m1", from: "them", text: "بركة القديسين معاكم.", minutesAgo: 1440 },
-  ],
-  a1: [
-    { id: "m1", from: "them", text: "تم استلام طلبك، سيتم الرد قريباً.", minutesAgo: 90 },
-  ],
-};
-
 export const ROLE_TONE_MAP: Record<ContactRoleType, { bg: string; tag: string; label: string }> = {
   priest: { bg: "linear-gradient(160deg, #7a4a26, #3a2a18)", tag: "#c79356", label: "كاهن" },
   servant: { bg: "linear-gradient(160deg, #6a4ab5, #4a2e8e)", tag: "#8a6ec1", label: "خادم" },

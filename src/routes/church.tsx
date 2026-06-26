@@ -3,47 +3,28 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ArrowRight, Phone, MessageCircle, MapPin, ShieldCheck, Users,
   HandHeart, Newspaper, Radio, CalendarDays, BookOpen, Library, Heart,
-  Play, ChevronLeft, Clock, Sparkles, Bell, Flame, Plus,
-  Navigation, Share2, Crown, UserCog, Send, Lock, X, MessageSquareHeart, Check, Church, Pin,
+  ChevronLeft, Clock, Sparkles, Flame,
+  Navigation, Share2, Crown, UserCog, Send, Lock, X, Church,
+  Mail, Globe, ExternalLink,
 } from "lucide-react";
 import type { ChurchContact, ContactRoleType } from "@/data/church-contacts";
-import { POST_TYPE_META, type ChurchPost } from "@/data/church-posts";
 import { useChurchPosts } from "@/features/church/use-church-posts";
 import { MemberAvatar } from "@/features/church/MemberAvatar";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { CopticWatermark } from "@/components/coptic";
 import { AlphaHeader, AlphaHeaderShell } from "@/components/navigation/AlphaHeader";
-import {
-  useCanManagePosts,
-  isPinned,
-  pinForDays,
-  pinUntil,
-  unpinPost,
-  archivePost,
-  useComments,
-  addCommentAsCurrentUser,
-  useReactions,
-  toggleReaction,
-  recordShare,
-  useShareCount,
-  prefetchPostInteractions,
-} from "@/features/church/post-store";
 import { getCurrentUser } from "@/features/church/current-user";
-import {
-  AttendButton,
-  CondolencePopup,
-  CongratsPopup,
-  ReservePopup,
-} from "@/features/church/PostActions";
-import { PostBuilder } from "@/features/church/PostBuilder";
-import { AlphaDatePicker } from "@/components/controls";
+import { ChurchMixedFeedSection } from "@/features/church-mixed-feed";
 import { useChurchDashboard } from "@/features/church/use-church-dashboard";
 import type { ContextualSearchContext } from "@/features/search/contextual-search";
+import { buildAlphaConnectChatSearch } from "@/features/alpha-connect/alpha-connect-nav";
+import { usePlatformModules } from "@/lib/platform-modules";
 import { ChurchDashboardProvider, useChurchDashboardData } from "@/features/church/church-dashboard-context";
 import {
   prayerStatsFromDashboard,
   type ChurchDashboardContact,
   type ChurchDashboardPrayer,
+  type ChurchDashboardRecord,
 } from "@/features/church/church-dashboard-api";
 
 
@@ -115,7 +96,7 @@ function GoldDivider() {
 function SectionTitle({ title, action }: { title: string; action?: React.ReactNode }) {
   return (
     <div className="mb-2.5 flex items-end justify-between gap-3 px-1">
-      <h2 className="text-[15px] font-extrabold text-[#3a2a18] leading-none">{title}</h2>
+      <h2 className="text-[15px] font-extrabold text-alpha-heading leading-none">{title}</h2>
       {action}
     </div>
   );
@@ -150,132 +131,386 @@ function Header({ searchContext }: { searchContext?: ContextualSearchContext }) 
 /* Hero Church Card                                              */
 /* ============================================================ */
 
+function priestLabel(church: ChurchDashboardRecord): string {
+  const raw = church.priestsFull ?? church.primaryPriestName ?? "";
+  const lines = raw.split(/\n+/).map((l) => l.trim()).filter(Boolean);
+  return lines.length > 1 ? "الكهنة المسؤولون" : "الكاهن المسؤول";
+}
+
+const CLERICAL_TITLES = [
+  "القمص", "الأب الكاهن", "الأب", "الأنبا", "القس", "الأرشيدياكون",
+  "الأسقف", "البابا", "البطريرك", "الشماس", "المتنيح", "الراهب", "الراهبة",
+];
+function stripClericalTitle(raw: string): string {
+  let s = raw.trim();
+  for (const t of CLERICAL_TITLES) {
+    if (s.startsWith(t + " ")) { s = s.slice(t.length).trimStart(); break; }
+  }
+  return s;
+}
+function stripPriestDates(raw: string): string {
+  return raw
+    .replace(/\([^)]*\d{4}[^)]*\)/g, "")
+    .replace(/\d{4}\s*[-–—]\s*\d{4}/g, "")
+    .replace(/سيامته[^·\n|]*/gi, "")
+    .replace(/نياحته[^·\n|]*/gi, "")
+    .replace(/تنصّره[^·\n|]*/gi, "")
+    .replace(/ولد[^·\n|]*\d{4}[^·\n|]*/gi, "")
+    .replace(/\s*[-–—·|]\s*$/g, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+function formatPriestLine(raw: string): string {
+  return stripPriestDates(stripClericalTitle(raw));
+}
+function priestDisplayText(church: ChurchDashboardRecord): string | null {
+  const raw = church.priestsFull ?? church.primaryPriestName;
+  if (!raw) return null;
+  return raw.split(/\n+/).map((l) => formatPriestLine(l.trim())).filter(Boolean).join("\n");
+}
+
+function ChurchContactChip({
+  href,
+  icon: Icon,
+  label,
+  value,
+  external,
+}: {
+  href: string;
+  icon: typeof Phone;
+  label: string;
+  value: string;
+  external?: boolean;
+}) {
+  return (
+    <a
+      href={href}
+      {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+      className="inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-xl border border-[#efe2c4] bg-white/80 px-2.5 py-1.5 text-right shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_4px_10px_-8px_rgba(120,80,30,0.35)] active:scale-[0.98] transition-transform"
+    >
+      <Icon className="h-3.5 w-3.5 shrink-0 text-[#b8893a]" strokeWidth={2.4} />
+      <span className="min-w-0 truncate text-[10.5px] font-extrabold text-alpha-heading">{value}</span>
+      <span className="sr-only">{label}</span>
+    </a>
+  );
+}
+
+function ChurchContactRow({ church }: { church: ChurchDashboardRecord }) {
+  const hasDirect =
+    church.phone || church.whatsapp || church.email || church.websiteUrl || church.facebookUrl || church.youtubeUrl || church.churchUrl;
+  if (!hasDirect) return null;
+
+  return (
+    <div className="mt-2.5 space-y-2">
+      <p className="text-[9.5px] font-bold text-[#b8893a] tracking-wide leading-none">التواصل مع الكنيسة</p>
+      <div className="flex flex-wrap justify-end gap-1.5">
+        {church.phone ? (
+          <ChurchContactChip href={`tel:${church.phone}`} icon={Phone} label="اتصال" value={church.phone} />
+        ) : null}
+        {church.whatsapp ? (
+          <ChurchContactChip
+            href={`https://wa.me/${church.whatsapp.replace(/\D/g, "")}`}
+            icon={MessageCircle}
+            label="واتساب"
+            value={church.whatsapp}
+            external
+          />
+        ) : null}
+        {church.email ? (
+          <ChurchContactChip href={`mailto:${church.email}`} icon={Mail} label="بريد" value={church.email} />
+        ) : null}
+        {church.websiteUrl ? (
+          <ChurchContactChip href={church.websiteUrl} icon={Globe} label="الموقع" value="الموقع" external />
+        ) : null}
+        {church.facebookUrl ? (
+          <ChurchContactChip href={church.facebookUrl} icon={ExternalLink} label="فيسبوك" value="Facebook" external />
+        ) : null}
+        {church.youtubeUrl ? (
+          <ChurchContactChip href={church.youtubeUrl} icon={ExternalLink} label="يوتيوب" value="YouTube" external />
+        ) : null}
+        {church.churchUrl ? (
+          <ChurchContactChip href={church.churchUrl} icon={ExternalLink} label="مرجع" value="st-takla.org" external />
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function HeroStatCell({
+  glyph,
+  value,
+  label,
+  accent,
+}: {
+  glyph: string;
+  value: string;
+  label: string;
+  accent: string;
+}) {
+  return (
+    <div
+      className="flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl px-1.5 py-2.5"
+      style={{
+        border: "1px solid rgba(240,215,140,0.14)",
+        background: "linear-gradient(180deg,rgba(240,215,140,0.03) 0%,rgba(0,0,0,0.5) 100%)",
+      }}
+    >
+      <div className="flex items-center gap-1.5">
+        <span aria-hidden className="select-none font-black leading-none text-[18px] hero-ledger-glyph-gold">
+          {glyph}
+        </span>
+        <span className="font-black tabular-nums leading-none text-white text-[14px]">{value}</span>
+      </div>
+      <p className="text-[9px] font-extrabold leading-none" style={{ color: accent }}>{label}</p>
+    </div>
+  );
+}
+
+function AlphaLedgerQuickBtn({
+  glyph,
+  label,
+  onClick,
+}: {
+  glyph: string;
+  label: string;
+  onClick?: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onClick}
+      className="flex min-w-[72px] flex-col items-center gap-1 rounded-2xl px-3 py-2 active:scale-95 transition-transform"
+      style={{
+        background: "linear-gradient(180deg, rgba(30,20,8,0.88) 0%, rgba(14,8,2,0.92) 100%)",
+        border: "1px solid rgba(240,215,140,0.18)",
+        boxShadow: "0 8px 20px -10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)",
+        backdropFilter: "blur(14px)",
+      }}
+    >
+      <span aria-hidden className="hero-ledger-glyph-gold hero-ledger-glyph-shimmer select-none text-[17px] font-black leading-none">
+        {glyph}
+      </span>
+      <span className="text-[9.5px] font-extrabold text-white/65 leading-none">{label}</span>
+    </button>
+  );
+}
+
+function ChurchQuickActionsBar({
+  onCall,
+  onMessage,
+  onMap,
+}: {
+  onCall: () => void;
+  onMessage: () => void;
+  onMap: () => void;
+}) {
+  return (
+    <div className="flex items-center justify-center gap-2.5" dir="rtl">
+      <AlphaLedgerQuickBtn glyph="Ⲕ" label="اتصال" onClick={onCall} />
+      <AlphaLedgerQuickBtn glyph="Ⲱ" label="رسائل" onClick={onMessage} />
+      <AlphaLedgerQuickBtn glyph="Ⲁ" label="موقع" onClick={onMap} />
+    </div>
+  );
+}
+
 function HeroChurchCard() {
   const { church, prayers, contacts } = useChurchDashboardData();
+  const { isModuleEnabled } = usePlatformModules();
+  const messagingOn = isModuleEnabled("messaging");
   const [leaderPopup, setLeaderPopup] = useState<null | "call" | "message">(null);
   const leaders = contacts.filter((c) => c.roleType === "priest" || c.roleType === "servant");
   const prayerStats = prayerStatsFromDashboard(prayers);
+  const { posts: allPosts } = useChurchPosts(church.id);
   const locationLine = [church.diocese, church.city].filter(Boolean).join(" · ");
+  const priestText = priestDisplayText(church);
+  const priestHeading = priestLabel(church);
   const mapsUrl =
     church.locationLat != null && church.locationLng != null
       ? `https://www.google.com/maps/search/?api=1&query=${church.locationLat},${church.locationLng}`
       : church.address
         ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(church.address)}`
         : undefined;
-  const handleMap = () => {
-    if (mapsUrl) window.open(mapsUrl, "_blank", "noopener,noreferrer");
-  };
+  const handleMap = () => { if (mapsUrl) window.open(mapsUrl, "_blank", "noopener,noreferrer"); };
+
   return (
-    <section className="relative">
-      <div className="relative overflow-hidden rounded-[32px] border border-[#e7c97a]/50 shadow-[0_30px_60px_-20px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.7)]">
-        {/* Church image background */}
-        <div className="relative h-[210px] w-full">
-          <img
-            src={church.coverImageUrl || heroChurchPremium}
-            alt={church.name}
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(180deg, rgba(15,10,4,0.1) 0%, rgba(15,10,4,0.3) 50%, rgba(15,10,4,0.85) 100%)",
-            }}
-          />
-          <div
-            aria-hidden
-            className="absolute inset-0 opacity-50 mix-blend-screen"
-            style={{
-              background:
-                "radial-gradient(70% 60% at 70% 25%, rgba(255,210,120,0.3), transparent 60%)",
-            }}
-          />
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#c79356]/70 to-transparent" />
-
-          {/* Floating glass actions over image */}
-          <div className="absolute top-3 left-3 flex flex-col gap-2">
-            <FloatAction icon={Phone} label="اتصال Alpha" onClick={() => setLeaderPopup("call")} />
-            <FloatAction icon={MessageCircle} label="رسائل Alpha" onClick={() => setLeaderPopup("message")} />
-            <FloatAction icon={MapPin} label="خريطة" onClick={handleMap} />
-          </div>
-
-          {/* Verified premium green badge */}
-          <div className="absolute top-3 right-3">
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#1f8a5a]/95 backdrop-blur-md px-2.5 py-1 text-[10px] font-extrabold text-white border border-white/30 shadow-[0_8px_18px_-8px_rgba(31,138,90,0.7)]">
-              <ShieldCheck className="h-3 w-3" strokeWidth={2.6} />
-              عضوية موثقة
-            </span>
-          </div>
-
-          {/* Bottom: Church Name & Location */}
-          <div className="absolute bottom-3 right-4 left-4 text-right text-white">
-            <h2 className="font-arabic-serif text-[22px] font-extrabold leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)]">
-              {church.name}
-            </h2>
-            {locationLine ? (
-              <p className="mt-1 inline-flex items-center gap-1.5 text-[11.5px] text-white/90">
-                <MapPin className="h-3.5 w-3.5" strokeWidth={2.5} />
-                {locationLine}
-              </p>
-            ) : null}
-          </div>
-        </div>
-
-        {/* Glass body — compact, two dedicated rows */}
+    <>
+      {/* Inject hero ledger glyph styles once */}
+      <style>{`
+        .hero-ledger-glyph-gold {
+          background: linear-gradient(180deg,#ffd86a 0%,#c79356 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+        .hero-ledger-glyph-shimmer {
+          animation: heroGlyphShimmer 2.4s ease-in-out infinite;
+        }
+        @keyframes heroGlyphShimmer {
+          0%, 100% { filter: drop-shadow(0 0 4px rgba(240,215,140,0.4)); }
+          50% { filter: drop-shadow(0 0 10px rgba(255,216,106,0.85)); }
+        }
+      `}</style>
+      <section className="relative">
         <div
-          className="relative px-4 pt-3 pb-3"
+          className="relative overflow-hidden rounded-[32px]"
           style={{
-            background:
-              "linear-gradient(180deg, rgba(251,243,225,0.94) 0%, rgba(246,232,200,0.97) 100%)",
-            backdropFilter: "blur(20px)",
+            background: "linear-gradient(148deg,#1e1408 0%,#2e1e0a 50%,#180e06 100%)",
+            border: "1px solid rgba(240,215,140,0.12)",
+            boxShadow: "0 30px 60px -20px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.03), inset 0 1px 0 rgba(255,255,255,0.07)",
           }}
         >
-          <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-[#c79356]/40 to-transparent" />
+          {/* Top gold stripe */}
+          <div aria-hidden className="absolute inset-x-0 top-0 h-px z-10"
+            style={{ background: "linear-gradient(90deg,transparent,rgba(240,215,140,0.6),transparent)" }} />
 
-          {/* Row 1: Priest information (dedicated row, full name) */}
-          <div className="flex items-center gap-3">
-            <MemberAvatar
-              name={church.primaryPriestName ?? "الكاهن"}
-              avatarUrl={church.primaryPriestAvatarUrl ?? undefined}
-              size="lg"
-              className="border-[2.5px] border-[#e7c97a] shadow-[0_8px_20px_-8px_rgba(60,40,16,0.6)]"
+          {/* Cover image */}
+          <div className="relative h-[210px] w-full">
+            <img
+              src={church.coverImageUrl || heroChurchPremium}
+              alt={church.name}
+              className="absolute inset-0 h-full w-full object-cover"
             />
-            <div className="flex-1 min-w-0 text-right">
-              <p className="text-[9.5px] font-bold text-[#b8893a] tracking-wide leading-none">الكاهن المسؤول</p>
-              <p className="mt-1 font-arabic-serif text-[15px] font-extrabold text-[#3a2a18] leading-tight whitespace-normal break-words">
-                {church.primaryPriestName ?? "—"}
-              </p>
-              {church.diocese && (
-                <p className="mt-0.5 text-[10px] text-[#6a543a] font-medium leading-none">
-                  {church.diocese}
+            {/* Gradient to dark */}
+            <div className="absolute inset-0" style={{
+              background: "linear-gradient(180deg,rgba(14,8,2,0.1) 0%,rgba(14,8,2,0.35) 50%,rgba(14,8,2,0.92) 100%)"
+            }} />
+            {/* Gold ambient glow */}
+            <div aria-hidden className="pointer-events-none absolute inset-0 opacity-50 mix-blend-screen"
+              style={{ background: "radial-gradient(70% 55% at 65% 20%,rgba(240,190,80,0.25),transparent 65%)" }} />
+
+            {/* Float actions — left side */}
+            <div className="absolute top-3 left-3 flex flex-col gap-2 z-20">
+              <FloatAction icon={Phone} label="اتصال" onClick={() => setLeaderPopup("call")} />
+              {messagingOn ? (
+                <FloatAction icon={MessageCircle} label="الفا كونكت" onClick={() => setLeaderPopup("message")} />
+              ) : null}
+              <FloatAction icon={MapPin} label="خريطة" onClick={handleMap} />
+            </div>
+
+            {/* Verified badge */}
+            <div className="absolute top-3 right-3">
+              <span className="inline-flex items-center gap-1 rounded-full bg-[#1f8a5a]/90 backdrop-blur-md px-2.5 py-1 text-[10px] font-extrabold text-white border border-white/25 shadow-[0_8px_18px_-8px_rgba(31,138,90,0.7)]">
+                <ShieldCheck className="h-3 w-3" strokeWidth={2.6} /> عضوية موثقة
+              </span>
+            </div>
+
+            {/* Church name on image */}
+            <div className="absolute bottom-3 right-4 left-4 text-right text-white" dir="rtl">
+              <h2 className="font-arabic-serif text-[22px] font-extrabold leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
+                {church.name}
+              </h2>
+              {locationLine && (
+                <p className="mt-1 inline-flex items-center gap-1.5 text-[11.5px] text-white/80">
+                  <MapPin className="h-3.5 w-3.5" strokeWidth={2.5} />
+                  {locationLine}
                 </p>
               )}
             </div>
           </div>
 
-          {/* Coptic gold separator */}
-          <div className="my-2.5 flex items-center gap-2" aria-hidden>
-            <span className="h-px flex-1 bg-gradient-to-l from-transparent via-[#c79356]/50 to-transparent" />
-            <span className="inline-block h-1 w-1 rotate-45 rounded-[1px] bg-[#c79356]" />
-            <span className="h-px flex-1 bg-gradient-to-r from-transparent via-[#c79356]/50 to-transparent" />
-          </div>
+          {/* Dark glass body */}
+          <div
+            className="relative px-4 pt-3.5 pb-4"
+            style={{
+              background: "linear-gradient(180deg,rgba(30,20,8,0.0) 0%,rgba(22,14,4,0.95) 18%)",
+              backdropFilter: "blur(20px)",
+            }}
+            dir="rtl"
+          >
+            {/* Gold divider */}
+            <div aria-hidden className="absolute top-0 left-4 right-4 h-px"
+              style={{ background: "linear-gradient(90deg,transparent,rgba(240,215,140,0.3),transparent)" }} />
 
-          {/* Row 2: Statistics (dedicated row) */}
-          <div className="grid grid-cols-3 gap-2">
-            <StatTile icon={Users} value={church.memberCount.toLocaleString("en-US")} label="عضو" tone="#5b8fd1" />
-            <StatTile icon={HandHeart} value={church.servantCount.toLocaleString("en-US")} label="خادم" tone="#1f8a5a" />
-            <StatTile icon={Flame} value={prayerStats.active.toLocaleString("en-US")} label="طلبات صلاة" tone="#c98a3c" />
+            {/* Priest — avatar beside name */}
+            <div className="mb-3" dir="rtl">
+              <p className="text-[9.5px] font-bold text-[#f0d78c]/60 tracking-wide leading-none">{priestHeading}</p>
+              <div className="mt-1.5 flex items-center justify-end gap-2.5">
+                {priestText ? (
+                  <p className="font-arabic-serif text-[14.5px] font-extrabold text-white/90 leading-snug whitespace-pre-line">
+                    {priestText}
+                  </p>
+                ) : (
+                  <p className="font-arabic-serif text-[15px] font-extrabold text-white/50">—</p>
+                )}
+                <MemberAvatar
+                  name={church.primaryPriestName ?? priestText ?? "الكاهن"}
+                  avatarUrl={church.primaryPriestAvatarUrl ?? undefined}
+                  size="md"
+                  className="border-[2px] border-[#e7c97a]/55 shadow-[0_6px_16px_-6px_rgba(0,0,0,0.6)] shrink-0"
+                />
+              </div>
+            </div>
+
+            {/* Contact chips — dark glass style */}
+            {(church.phone || church.whatsapp || church.email || church.websiteUrl) ? (
+              <div className="mb-3 flex flex-wrap justify-end gap-1.5">
+                {church.phone && (
+                  <a href={`tel:${church.phone}`}
+                    className="inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[10px] font-bold text-white/70 active:scale-95 transition-transform"
+                    style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)" }}>
+                    <Phone className="h-3 w-3 text-[#f0d78c]/70" strokeWidth={2.4} />
+                    {church.phone}
+                  </a>
+                )}
+                {church.whatsapp && (
+                  <a href={`https://wa.me/${church.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[10px] font-bold text-white/70 active:scale-95 transition-transform"
+                    style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)" }}>
+                    <MessageCircle className="h-3 w-3 text-[#f0d78c]/70" strokeWidth={2.4} />
+                    واتساب
+                  </a>
+                )}
+                {church.email && (
+                  <a href={`mailto:${church.email}`}
+                    className="inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[10px] font-bold text-white/70 active:scale-95 transition-transform"
+                    style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)" }}>
+                    <Mail className="h-3 w-3 text-[#f0d78c]/70" strokeWidth={2.4} />
+                    بريد
+                  </a>
+                )}
+                {church.websiteUrl && (
+                  <a href={church.websiteUrl} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[10px] font-bold text-white/70 active:scale-95 transition-transform"
+                    style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)" }}>
+                    <Globe className="h-3 w-3 text-[#f0d78c]/70" strokeWidth={2.4} />
+                    الموقع
+                  </a>
+                )}
+              </div>
+            ) : null}
+
+            {/* Gold divider */}
+            <div aria-hidden className="mb-3 h-px w-full"
+              style={{ background: "linear-gradient(90deg,transparent,rgba(240,215,140,0.25),transparent)" }} />
+
+            {/* Stats — dark ledger cells */}
+            <div className="flex items-stretch gap-1.5"
+              style={{
+                background: "rgba(14,8,2,0.5)",
+                border: "1px solid rgba(240,215,140,0.12)",
+                borderRadius: "14px",
+                padding: "6px",
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              <HeroStatCell glyph="Ⲁ" value={church.memberCount.toLocaleString("ar-EG")} label="عضو" accent="#5b9fd8" />
+              <div aria-hidden className="my-1 w-px shrink-0 bg-gradient-to-b from-transparent via-[#e7c97a]/25 to-transparent" />
+              <HeroStatCell glyph="Ⲱ" value={church.servantCount.toLocaleString("ar-EG")} label="خادم" accent="#1faa6a" />
+              <div aria-hidden className="my-1 w-px shrink-0 bg-gradient-to-b from-transparent via-[#e7c97a]/25 to-transparent" />
+              <HeroStatCell glyph="Ⲱ" value={allPosts.length.toLocaleString("ar-EG")} label="منشور" accent="#f0c850" />
+            </div>
           </div>
         </div>
-      </div>
 
-      {leaderPopup === "call" ? (
-        <ContactsPopup contacts={leaders} onClose={() => setLeaderPopup(null)} />
-      ) : null}
-      {leaderPopup === "message" ? (
-        <MessagesPopup contacts={leaders} onClose={() => setLeaderPopup(null)} />
-      ) : null}
-    </section>
+        {leaderPopup === "call" && (
+          <ContactsPopup contacts={leaders} church={church} onClose={() => setLeaderPopup(null)} />
+        )}
+        {messagingOn && leaderPopup === "message" && (
+          <MessagesPopup contacts={leaders} church={church} onClose={() => setLeaderPopup(null)} />
+        )}
+      </section>
+    </>
   );
 }
 
@@ -284,8 +519,8 @@ function MiniStat({ icon: Icon, value, label }: { icon: any; value: string; labe
   return (
     <div className="rounded-xl bg-white/75 border border-white/80 px-2 py-1.5 text-center min-w-[46px] shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_4px_10px_-8px_rgba(120,80,30,0.4)]">
       <Icon className="mx-auto h-3.5 w-3.5 text-[#b8893a]" strokeWidth={2} />
-      <p className="mt-0.5 text-[11.5px] font-extrabold text-[#3a2a18] leading-none">{value}</p>
-      <p className="mt-0.5 text-[8.5px] text-[#6a543a] leading-none">{label}</p>
+      <p className="mt-0.5 text-[11.5px] font-extrabold text-alpha-heading leading-none">{value}</p>
+      <p className="mt-0.5 text-[8.5px] text-alpha-muted leading-none">{label}</p>
     </div>
   );
 }
@@ -318,8 +553,8 @@ function StatTile({ icon: Icon, value, label, tone }: { icon: any; value: string
       >
         <Icon className="h-5 w-5" strokeWidth={2.2} />
       </div>
-      <p className="mt-2.5 text-[15px] font-extrabold text-[#3a2a18] leading-none tracking-tight drop-shadow-sm">{value}</p>
-      <p className="mt-1.5 text-[10px] font-bold text-[#6a543a] leading-none">{label}</p>
+      <p className="mt-2.5 text-[15px] font-extrabold text-alpha-heading leading-none tracking-tight drop-shadow-sm">{value}</p>
+      <p className="mt-1.5 text-[10px] font-bold text-alpha-muted leading-none">{label}</p>
     </div>
   );
 }
@@ -461,196 +696,6 @@ function useAutoMarquee(
   }, [ref, speed, direction, resumeMs, loop]);
 }
 
-/** Premium infinite wheel — same motion DNA as Home Screen. */
-function Coverflow<T>({
-  items,
-  direction,
-  height,
-  cardWidthPct,
-  peekPct,
-  renderCard,
-  getKey,
-}: {
-  items: T[];
-  direction: 1 | -1;
-  height: number;
-  cardWidthPct: number;
-  peekPct: number;
-  renderCard: (item: T, isActive: boolean) => React.ReactNode;
-  getKey: (item: T) => string;
-}) {
-  const total = items.length;
-  const progressRef = useRef(0);
-  const velocityRef = useRef(0);
-  const draggingRef = useRef(false);
-  const pauseUntilRef = useRef(0);
-  const lastTsRef = useRef(0);
-  const [, force] = useState(0);
-  const rerender = useCallback(() => force((n) => (n + 1) % 1_000_000), []);
-  const dragStartXRef = useRef(0);
-  const dragStartProgRef = useRef(0);
-  const lastMoveXRef = useRef(0);
-  const lastMoveTRef = useRef(0);
-  const containerWRef = useRef(1);
-  const containerRef = useRef<HTMLDivElement | null>(null);
-
-  const pxPerSlot = useCallback(() => Math.max(80, (containerWRef.current * peekPct) / 100), [peekPct]);
-
-  useEffect(() => {
-    if (total < 2) return;
-    let raf = 0;
-    const autoSpeed = 0.16;
-    const tick = (ts: number) => {
-      const last = lastTsRef.current || ts;
-      const dt = Math.min(0.05, (ts - last) / 1000);
-      lastTsRef.current = ts;
-      const now = performance.now();
-      const autoActive = !draggingRef.current && now >= pauseUntilRef.current;
-      if (!draggingRef.current && velocityRef.current !== 0) {
-        progressRef.current += velocityRef.current * dt;
-        velocityRef.current *= Math.exp(-dt * 2.6);
-        if (Math.abs(velocityRef.current) < 0.02) velocityRef.current = 0;
-      }
-      if (autoActive) {
-        progressRef.current += direction * autoSpeed * dt;
-      }
-      rerender();
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [total, direction, rerender]);
-
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(() => {
-      containerWRef.current = el.clientWidth || 1;
-    });
-    ro.observe(el);
-    containerWRef.current = el.clientWidth || 1;
-    return () => ro.disconnect();
-  }, []);
-
-  const onStart = (clientX: number) => {
-    draggingRef.current = true;
-    dragStartXRef.current = clientX;
-    dragStartProgRef.current = progressRef.current;
-    lastMoveXRef.current = clientX;
-    lastMoveTRef.current = performance.now();
-    velocityRef.current = 0;
-  };
-  const onMove = (clientX: number) => {
-    if (!draggingRef.current) return;
-    const dx = clientX - dragStartXRef.current;
-    progressRef.current = dragStartProgRef.current - dx / pxPerSlot();
-    const t = performance.now();
-    const dt = Math.max(1, t - lastMoveTRef.current);
-    velocityRef.current = -((clientX - lastMoveXRef.current) / pxPerSlot()) * (1000 / dt);
-    lastMoveXRef.current = clientX;
-    lastMoveTRef.current = t;
-  };
-  const onEnd = () => {
-    if (!draggingRef.current) return;
-    draggingRef.current = false;
-    velocityRef.current = Math.max(-8, Math.min(8, velocityRef.current));
-    pauseUntilRef.current = performance.now() + 220;
-  };
-
-  if (total < 2) {
-    return (
-      <div className="relative w-full" style={{ height }}>
-        {items[0] ? renderCard(items[0], true) : null}
-      </div>
-    );
-  }
-
-  const visible = 5;
-  const half = Math.floor(visible / 2);
-  const progress = progressRef.current;
-  const centerIdx = Math.round(progress);
-  const frac = progress - centerIdx;
-  const currentMod = ((centerIdx % total) + total) % total;
-
-  return (
-    <div
-      ref={containerRef}
-      className="relative w-full select-none overflow-hidden touch-pan-y"
-      style={{ height, perspective: 1400, perspectiveOrigin: "50% 50%" }}
-      onTouchStart={(e) => onStart(e.touches[0].clientX)}
-      onTouchMove={(e) => onMove(e.touches[0].clientX)}
-      onTouchEnd={onEnd}
-      onMouseDown={(e) => onStart(e.clientX)}
-      onMouseMove={(e) => {
-        if (draggingRef.current) onMove(e.clientX);
-      }}
-      onMouseUp={onEnd}
-      onMouseLeave={onEnd}
-    >
-      {Array.from({ length: visible }, (_, i) => i - half).map((s) => {
-        const effective = s - frac;
-        const cardIdx = ((centerIdx + s) % total + total) % total;
-        const item = items[cardIdx];
-        const absEff = Math.abs(effective);
-        const isFront = absEff < 0.5;
-        const baseXPct = effective * peekPct;
-        const rotateY = Math.max(-60, Math.min(60, -effective * 36));
-        const translateZ = -Math.min(absEff, 2.2) * 90;
-        const scale = Math.max(0.66, 1 - absEff * 0.14);
-        const opacity = Math.max(0.1, 1 - absEff * 0.38);
-        const z = 100 - Math.round(absEff * 20);
-        return (
-          <div
-            key={`${getKey(item)}-${s}`}
-            className="absolute top-0 left-1/2"
-            style={{
-              width: `${cardWidthPct}%`,
-              transform: `translate3d(calc(-50% + ${baseXPct}%), 0, ${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`,
-              transformStyle: "preserve-3d",
-              transformOrigin: "50% 50%",
-              zIndex: z,
-              opacity,
-              filter: absEff >= 1.6 ? "blur(1.5px)" : "none",
-              willChange: "transform, opacity",
-              pointerEvents: isFront ? "auto" : "none",
-              borderRadius: 28,
-            }}
-          >
-            <div className="relative" style={{ filter: isFront ? "none" : "brightness(0.82) saturate(0.9)" }}>
-              {renderCard(item, isFront)}
-              {!isFront ? (
-                <div
-                  aria-hidden
-                  className="pointer-events-none absolute inset-0 rounded-[28px]"
-                  style={{
-                    background:
-                      effective > 0
-                        ? "linear-gradient(270deg, rgba(20,12,4,0.35), rgba(20,12,4,0) 65%)"
-                        : "linear-gradient(90deg, rgba(20,12,4,0.35), rgba(20,12,4,0) 65%)",
-                  }}
-                />
-              ) : null}
-            </div>
-          </div>
-        );
-      })}
-      <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1.5 pointer-events-none">
-        {items.map((it, i) => (
-          <span
-            key={getKey(it)}
-            className="h-1.5 rounded-full transition-all duration-500"
-            style={{
-              width: i === currentMod ? 18 : 5,
-              background: i === currentMod ? "#b8893a" : "rgba(120,80,30,0.25)",
-              boxShadow: i === currentMod ? "0 0 6px rgba(184,137,58,0.55)" : "none",
-            }}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function QuickGrid() {
   const trackRef = useRef<HTMLDivElement | null>(null);
   const items = [...QUICK, ...QUICK];
@@ -678,1029 +723,16 @@ function QuickGrid() {
   );
 }
 
-/* ============================================================ */
-/* Church Posts — Premium horizontal cards (Apple-style)       */
-/* ============================================================ */
-
-function CategoryPill({ type, size = "sm" }: { type: ChurchPost["type"]; size?: "sm" | "md" }) {
-  const meta = POST_TYPE_META[type];
-  const px = size === "md" ? "px-3 py-1 text-[11px]" : "px-2.5 py-0.5 text-[10px]";
-  return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-full font-extrabold text-white border border-white/30 shadow-[0_6px_14px_-8px_rgba(0,0,0,0.45)] ${px}`}
-      style={{ background: `linear-gradient(180deg, ${meta.tone}, ${meta.tone}cc)` }}
-    >
-      {meta.label}
-    </span>
-  );
-}
-
-function FeaturedPostCard({ post }: { post: ChurchPost }) {
-  return (
-    <Link
-      to="/church/post/$id"
-      params={{ id: post.id }}
-      className="block active:scale-[0.99] transition-transform"
-    >
-      <Glass className="overflow-hidden" padded={false}>
-        <div className="relative">
-          <img src={post.image} alt={post.title} className="h-44 w-full object-cover" loading="lazy" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#1a0f04]/85 via-[#1a0f04]/15 to-transparent" />
-
-          <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5">
-            {post.pinned && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-[#b8893a] px-2 py-0.5 text-[9.5px] font-extrabold text-white border border-white/40">
-                <Pin className="h-3 w-3" strokeWidth={2.6} /> مثبت
-              </span>
-            )}
-            <CategoryPill type={post.type} size="md" />
-          </div>
-
-          <div className="absolute bottom-3 right-3 left-3 text-right text-white">
-            <h3 className="font-arabic-serif text-[17px] font-extrabold leading-snug drop-shadow-[0_2px_8px_rgba(0,0,0,0.65)]">
-              {post.title}
-            </h3>
-            <p className="mt-1 inline-flex items-center gap-2 text-[11px] text-white/90">
-              <CalendarDays className="h-3.5 w-3.5" />
-              {post.date}
-              <span className="text-[#e7c97a]">•</span>
-              {post.author}
-            </p>
-          </div>
-        </div>
-        <div className="p-4 text-right">
-          <p className="text-[12.5px] text-[#6a543a] leading-relaxed line-clamp-2">{post.excerpt}</p>
-          <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-l from-[#7a4a26] to-[#b8893a] text-white text-[12px] font-bold px-4 py-2 shadow-[0_10px_20px_-10px_rgba(122,74,38,0.7)]">
-            عرض التفاصيل
-            <ArrowRight className="h-3.5 w-3.5 -scale-x-100" />
-          </span>
-        </div>
-      </Glass>
-    </Link>
-  );
-}
-
-function SmallPostCard({ post }: { post: ChurchPost }) {
-  return (
-    <Link
-      to="/church/post/$id"
-      params={{ id: post.id }}
-      className="block active:scale-[0.98] transition-transform"
-    >
-      <Glass padded={false} className="overflow-hidden">
-        <div className="flex gap-3 p-2.5">
-          <div className="relative h-[78px] w-[88px] shrink-0 overflow-hidden rounded-2xl border border-white/70">
-            <img src={post.image} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
-            {post.pinned && (
-              <span className="absolute top-1 right-1 grid place-items-center h-5 w-5 rounded-full bg-[#b8893a] text-white border border-white/50 shadow">
-                <Pin className="h-2.5 w-2.5" strokeWidth={3} />
-              </span>
-            )}
-          </div>
-          <div className="flex-1 min-w-0 text-right">
-            <div className="flex items-center justify-end gap-1.5">
-              <CategoryPill type={post.type} />
-            </div>
-            <h4 className="mt-1 text-[13.5px] font-extrabold text-[#3a2a18] leading-tight line-clamp-2">
-              {post.title}
-            </h4>
-            <p className="mt-1 inline-flex items-center gap-1.5 text-[10.5px] text-[#6a543a]">
-              <CalendarDays className="h-3 w-3 text-[#b8893a]" />
-              {post.date}
-            </p>
-          </div>
-          <ChevronLeft className="self-center h-4 w-4 text-[#b8893a] shrink-0" />
-        </div>
-      </Glass>
-    </Link>
-  );
-}
-
-function PostCardActions({ post }: { post: ChurchPost }) {
-  const [popup, setPopup] = useState<null | "condolence" | "congrats" | "reserve">(null);
-
-  const openCondolence = (e: React.MouseEvent) => {
-    e.preventDefault(); e.stopPropagation(); setPopup("condolence");
-  };
-  const openCongrats = (e: React.MouseEvent) => {
-    e.preventDefault(); e.stopPropagation(); setPopup("congrats");
-  };
-  const openReserve = (e: React.MouseEvent) => {
-    e.preventDefault(); e.stopPropagation(); setPopup("reserve");
-  };
-
-  let primary: React.ReactNode = (
-    <Link
-      to="/church/post/$id"
-      params={{ id: post.id }}
-      className="inline-flex items-center justify-center gap-1 rounded-full px-3 py-2 text-[11.5px] font-extrabold bg-gradient-to-l from-[#7a4a26] to-[#b8893a] text-white shadow-[0_8px_18px_-10px_rgba(122,74,38,0.7)] active:scale-[0.97]"
-    >
-      عرض التفاصيل
-      <ArrowRight className="h-3 w-3 -scale-x-100" />
-    </Link>
-  );
-
-  let secondary: React.ReactNode = null;
-
-  if (post.type === "liturgy" || post.type === "meeting") {
-    secondary = <AttendButton postId={post.id} />;
-  } else if (post.type === "trip") {
-    secondary = (
-      <button
-        type="button"
-        onClick={openReserve}
-        className="inline-flex items-center justify-center gap-1 rounded-full px-3 py-2 text-[11.5px] font-extrabold bg-[#1f8a5a] text-white shadow-[0_8px_18px_-10px_rgba(31,138,90,0.7)] active:scale-[0.97]"
-      >
-        حجز
-      </button>
-    );
-  } else if (post.type === "wedding") {
-    secondary = (
-      <button
-        type="button"
-        onClick={openCongrats}
-        className="inline-flex items-center justify-center gap-1 rounded-full px-3 py-2 text-[11.5px] font-extrabold bg-[#d97a8a] text-white shadow-[0_8px_18px_-10px_rgba(217,122,138,0.7)] active:scale-[0.97]"
-      >
-        شارك التهنئة
-      </button>
-    );
-  } else if (post.type === "condolence") {
-    secondary = (
-      <button
-        type="button"
-        onClick={openCondolence}
-        className="inline-flex items-center justify-center gap-1 rounded-full px-3 py-2 text-[11.5px] font-extrabold bg-[#6a543a] text-white shadow-[0_8px_18px_-10px_rgba(106,84,58,0.7)] active:scale-[0.97]"
-      >
-        أرسل تعزية
-      </button>
-    );
-  }
-
-  return (
-    <>
-      <div className="flex items-center gap-2">
-        {secondary ? <div className="flex-1">{secondary}</div> : null}
-        <div className={secondary ? "" : "flex-1"}>{primary}</div>
-      </div>
-      {popup === "condolence" ? (
-        <CondolencePopup postId={post.id} onClose={() => setPopup(null)} />
-      ) : popup === "congrats" ? (
-        <CongratsPopup postId={post.id} onClose={() => setPopup(null)} />
-      ) : popup === "reserve" ? (
-        <ReservePopup postId={post.id} totalSeats={post.details?.seats} onClose={() => setPopup(null)} />
-      ) : null}
-    </>
-  );
-}
-
-function PinMenu({ post, onClose }: { post: ChurchPost; onClose: () => void }) {
-  const [customOpen, setCustomOpen] = useState(false);
-  const [customDate, setCustomDate] = useState("");
-  const pinned = isPinned(post);
-
-  const apply = (days: number) => {
-    pinForDays(post.id, days);
-    onClose();
-  };
-  const applyCustom = () => {
-    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(customDate.trim());
-    if (!m) return;
-    const year = Number(m[1]);
-    const month = Number(m[2]);
-    const day = Number(m[3]);
-    const ms = new Date(year, month - 1, day, 23, 59, 59, 999).getTime();
-    if (Number.isFinite(ms) && ms > Date.now()) {
-      pinUntil(post.id, ms);
-      onClose();
-    }
-  };
-
-  return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      className="fixed inset-0 z-[65] flex items-end sm:items-center justify-center px-3 pb-[max(env(safe-area-inset-bottom,0px),12px)]"
-    >
-      <button
-        type="button"
-        aria-label="إغلاق"
-        onClick={onClose}
-        className="absolute inset-0 bg-[#1a0f04]/55 backdrop-blur-sm"
-      />
-      <div className="relative w-full max-w-[380px] rounded-[24px] border border-white/75 bg-[#fbf3e1]/95 backdrop-blur-2xl shadow-[0_30px_60px_-20px_rgba(60,40,16,0.6)] p-4 text-right">
-        <div className="flex items-center justify-between gap-2 mb-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="grid h-8 w-8 place-items-center rounded-full bg-white/90 border border-[#efe2c4] text-[#7a5a30] active:scale-90"
-            aria-label="إغلاق"
-          >
-            <X className="h-4 w-4" />
-          </button>
-          <h3 className="font-arabic-serif text-[14.5px] font-extrabold text-[#3a2a18]">تثبيت المنشور</h3>
-        </div>
-        <div className="grid grid-cols-3 gap-2">
-          {[1, 3, 7].map((d) => (
-            <button
-              key={d}
-              type="button"
-              onClick={() => apply(d)}
-              className="rounded-2xl bg-white/90 border border-[#efe2c4] py-2.5 text-[12px] font-extrabold text-[#3a2a18] active:scale-95"
-            >
-              {d.toLocaleString("ar-EG")} يوم
-            </button>
-          ))}
-        </div>
-        <button
-          type="button"
-          onClick={() => setCustomOpen((v) => !v)}
-          className="mt-2.5 w-full rounded-2xl bg-white/90 border border-[#efe2c4] py-2.5 text-[12px] font-extrabold text-[#3a2a18] active:scale-95"
-        >
-          حتى تاريخ مخصص
-        </button>
-        {customOpen ? (
-          <div className="mt-2 flex items-center gap-2">
-            <div className="flex-1 min-w-0">
-              <AlphaDatePicker
-                value={customDate}
-                onChange={setCustomDate}
-                title="تثبيت حتى"
-                placeholder="اختر التاريخ"
-                minYear={new Date().getFullYear()}
-                maxYear={new Date().getFullYear() + 5}
-              />
-            </div>
-            <button
-              type="button"
-              onClick={applyCustom}
-              className="rounded-full bg-gradient-to-l from-[#7a4a26] to-[#b8893a] text-white text-[11.5px] font-extrabold px-3 py-2 active:scale-95"
-            >
-              تثبيت
-            </button>
-          </div>
-        ) : null}
-        {pinned ? (
-          <button
-            type="button"
-            onClick={() => { unpinPost(post.id); onClose(); }}
-            className="mt-3 w-full rounded-2xl bg-[#fff0f2] border border-[#f1c8cf] py-2.5 text-[12px] font-extrabold text-[#a8344f] active:scale-95"
-          >
-            إلغاء التثبيت
-          </button>
-        ) : null}
-        <button
-          type="button"
-          onClick={() => { archivePost(post.id); onClose(); }}
-          className="mt-2 w-full rounded-2xl bg-white/70 border border-[#efe2c4] py-2.5 text-[11.5px] font-extrabold text-[#6a543a] active:scale-95"
-        >
-          أرشفة المنشور
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function ManageButton({ post }: { post: ChurchPost }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <>
-      <button
-        type="button"
-        aria-label="إدارة المنشور"
-        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpen(true); }}
-        className="absolute top-2 left-2 grid h-7 w-7 place-items-center rounded-full bg-white/85 border border-white/60 text-[#7a5a30] backdrop-blur active:scale-90 shadow"
-      >
-        <Pin className={"h-3.5 w-3.5 " + (isPinned(post) ? "text-[#b8893a] fill-current" : "")} strokeWidth={2.4} />
-      </button>
-      {open ? <PinMenu post={post} onClose={() => setOpen(false)} /> : null}
-    </>
-  );
-}
-
-/* --------- Premium Post Card (swipeable horizontal feed) --------- */
-
-type CTASpec = {
-  label: string;
-  bg: string;
-  shadow: string;
-  kind: "link" | "reserve" | "attend" | "prayer" | "live" | "details" | "congrats" | "condolence";
-};
-
-function ctaFor(post: ChurchPost): CTASpec {
-  switch (post.type) {
-    case "trip":
-      return { label: "احجز الآن", bg: "linear-gradient(180deg,#1f9d63,#157a4a)", shadow: "rgba(31,138,90,0.55)", kind: "reserve" };
-    case "meeting":
-    case "liturgy":
-      return { label: "سجّل حضورك", bg: "linear-gradient(180deg,#7c5ad1,#5a3eb0)", shadow: "rgba(124,90,209,0.55)", kind: "attend" };
-    case "prayer":
-      return { label: "صلّيت", bg: "linear-gradient(180deg,#3f7ed6,#2a5fb0)", shadow: "rgba(63,126,214,0.55)", kind: "prayer" };
-    case "announcement":
-      return { label: "عرض التفاصيل", bg: "linear-gradient(180deg,#f59042,#d96f1f)", shadow: "rgba(217,111,31,0.55)", kind: "details" };
-    case "event":
-      return { label: "شاهد البث", bg: "linear-gradient(180deg,#e0464d,#b8232b)", shadow: "rgba(184,35,43,0.55)", kind: "live" };
-    case "wedding":
-      return { label: "أرسل تهنئة", bg: "linear-gradient(180deg,#e58aa0,#c44569)", shadow: "rgba(196,69,105,0.5)", kind: "congrats" };
-    case "condolence":
-      return { label: "أرسل تعزية", bg: "linear-gradient(180deg,#8a7257,#6a543a)", shadow: "rgba(106,84,58,0.55)", kind: "condolence" };
-    default:
-      return { label: "عرض التفاصيل", bg: "linear-gradient(180deg,#b8893a,#7a4a26)", shadow: "rgba(122,74,38,0.55)", kind: "details" };
-  }
-}
-
-function PostHeader({ post, canManage, onManage }: { post: ChurchPost; canManage: boolean; onManage: () => void }) {
-  const { church } = useChurchDashboardData();
-  const meta = POST_TYPE_META[post.type];
-  return (
-    <div className="flex items-center gap-2.5 px-3.5 pt-3.5">
-      <button
-        type="button"
-        aria-label="خيارات"
-        onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (canManage) onManage(); }}
-        className="grid h-8 w-8 place-items-center rounded-full bg-white/85 border border-[#efe2c4] text-[#7a5a30] active:scale-90"
-      >
-        <span className="flex flex-col gap-[2px]">
-          <span className="h-[3px] w-[3px] rounded-full bg-[#7a5a30]" />
-          <span className="h-[3px] w-[3px] rounded-full bg-[#7a5a30]" />
-          <span className="h-[3px] w-[3px] rounded-full bg-[#7a5a30]" />
-        </span>
-      </button>
-      <div className="flex-1 min-w-0 text-right">
-        <div className="flex items-center justify-end gap-1.5">
-          <span
-            className="inline-flex items-center rounded-full px-2 py-[2px] text-[10px] font-extrabold text-white border border-white/40"
-            style={{ background: `linear-gradient(180deg, ${meta.tone}, ${meta.tone}d0)` }}
-          >
-            {meta.label}
-          </span>
-          {isPinned(post) && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#fff3d6] border border-[#e7c97a] px-1.5 py-[2px] text-[9.5px] font-extrabold text-[#8a6a1e]">
-              <Pin className="h-2.5 w-2.5" strokeWidth={3} /> مثبت
-            </span>
-          )}
-        </div>
-        <div className="mt-0.5 text-[12.5px] font-extrabold text-[#3a2a18] leading-tight truncate">
-          {church.name}
-        </div>
-        <div className="text-[10px] text-[#8a6a3a] font-medium">{post.date}</div>
-      </div>
-      <MemberAvatar
-        name={church.primaryPriestName ?? church.name}
-        avatarUrl={church.primaryPriestAvatarUrl ?? undefined}
-        size="md"
-        className="ring-2 ring-[#f5e6c2]"
-      />
-    </div>
-  );
-}
-
-function PremiumPostCard({ post, inCoverflow = false }: { post: ChurchPost; inCoverflow?: boolean }) {
-  const canManage = useCanManagePosts();
-  const [draft, setDraft] = useState("");
-  const [expanded, setExpanded] = useState(false);
-  const [popup, setPopup] = useState<null | "condolence" | "congrats" | "reserve" | "manage">(null);
-
-  const comments = useComments(post.id);
-  const r = useReactions(post.id);
-  const shares = useShareCount(post.id);
-  const latest = comments[0];
-  const user = getCurrentUser();
-  const cta = ctaFor(post);
-
-  const sendComment = (e: React.MouseEvent | React.KeyboardEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const text = draft.trim();
-    if (!text) return;
-    addCommentAsCurrentUser(post.id, text);
-    setDraft("");
-  };
-
-  const onLike = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    toggleReaction(post.id, "love");
-  };
-
-  const onShare = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const url = `${window.location.origin}/church/post/${post.id}`;
-    try {
-      if (typeof navigator.share === "function") {
-        await navigator.share({ title: post.title, text: post.excerpt, url });
-      } else {
-        await navigator.clipboard.writeText(url);
-      }
-      recordShare(post.id);
-    } catch {
-      /* cancelled */
-    }
-  };
-
-  const onCta = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (cta.kind === "reserve") setPopup("reserve");
-    else if (cta.kind === "congrats") setPopup("congrats");
-    else if (cta.kind === "condolence") setPopup("condolence");
-    else if (cta.kind === "prayer") toggleReaction(post.id, "love");
-    else if (cta.kind === "live" || cta.kind === "link") {
-      window.location.assign(`/church/post/${post.id}`);
-    }
-  };
-
-  const actionButtonClass =
-    "w-full inline-flex items-center justify-center gap-2 rounded-2xl py-2.5 text-[13px] font-extrabold text-white active:scale-[0.98] transition-transform";
-
-  return (
-    <article
-      className={
-        (inCoverflow
-          ? "w-full relative rounded-[28px]"
-          : "shrink-0 snap-center w-[88vw] max-w-[var(--alpha-dock-max-width)] relative rounded-[28px]") +
-        " border border-white/75 bg-[#fbf3e1]/92 backdrop-blur-xl shadow-[0_24px_50px_-26px_rgba(120,80,30,0.55),inset_0_1px_0_rgba(255,255,255,0.9)] overflow-hidden"
-      }
-    >
-      <PostHeader post={post} canManage={canManage} onManage={() => setPopup("manage")} />
-
-      <div className="px-3.5 pt-3">
-        <div className="relative overflow-hidden rounded-[22px] border border-white/70 shadow-[0_14px_28px_-18px_rgba(60,40,16,0.55)]">
-          <img src={post.image} alt={post.title} className="block h-[150px] w-full object-cover" loading="lazy" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#1a0f04]/45 via-transparent to-transparent" />
-        </div>
-      </div>
-
-      <div className="px-4 pt-2.5 text-right">
-        <h3 className="font-arabic-serif text-[16.5px] font-extrabold text-[#2a1d10] leading-snug">{post.title}</h3>
-        <p className={"mt-1 text-[12.5px] text-[#4a3a26] leading-relaxed " + (expanded ? "" : "line-clamp-2")}>
-          {post.excerpt}
-        </p>
-        {post.excerpt.length > 60 && !expanded ? (
-          <button
-            type="button"
-            onClick={() => setExpanded(true)}
-            className="mt-0.5 text-[11.5px] font-extrabold text-[#b8893a] active:scale-95"
-          >
-            عرض المزيد
-          </button>
-        ) : null}
-      </div>
-
-      <div className="mx-4 mt-2.5 flex items-center justify-between rounded-2xl bg-white/70 border border-white/80 px-3.5 py-2 text-[13px] font-extrabold text-[#3a2a18]">
-        <button
-          type="button"
-          onClick={onLike}
-          aria-pressed={r.love.mine}
-          className="inline-flex items-center gap-2 active:scale-95"
-          aria-label={r.love.mine ? "إلغاء الإعجاب" : "إعجاب"}
-        >
-          <Heart className={"h-[20px] w-[20px] " + (r.love.mine ? "text-[#e0464d] fill-current" : "text-[#c44569]")} strokeWidth={2.2} />
-          <span className="tabular-nums">{r.love.count.toLocaleString("en-US")}</span>
-        </button>
-        <Link
-          to="/church/post/$id"
-          params={{ id: post.id }}
-          className="inline-flex items-center gap-2 active:scale-95"
-          aria-label="التعليقات"
-        >
-          <MessageCircle className="h-[20px] w-[20px] text-[#5b8fd1]" strokeWidth={2.2} />
-          <span className="tabular-nums">{comments.length.toLocaleString("en-US")}</span>
-        </Link>
-        <button type="button" onClick={onShare} className="inline-flex items-center gap-2 active:scale-95" aria-label="مشاركة">
-          <Share2 className="h-[20px] w-[20px] text-[#7a4a26]" strokeWidth={2.2} />
-          <span className="tabular-nums">{shares.toLocaleString("en-US")}</span>
-        </button>
-      </div>
-
-      <div className="mx-4 mt-2 space-y-2">
-        <div className="h-[52px] shrink-0 flex items-start gap-2 rounded-2xl bg-white/60 border border-white/70 px-3 py-2 text-right overflow-hidden">
-          {latest ? (
-            <>
-              <MemberAvatar name={latest.name} avatarUrl={user.avatarUrl} size="sm" />
-              <div className="min-w-0 flex-1">
-                <p className="text-[12px] leading-snug text-[#2a1d10] line-clamp-2">
-                  <span className="font-extrabold text-[#7a4a26]">{latest.name}: </span>
-                  {latest.text}
-                </p>
-              </div>
-            </>
-          ) : (
-            <p className="flex-1 text-[11px] font-bold text-[#8a6a3a]/75 text-right leading-snug py-0.5">
-              لا توجد تعليقات بعد
-            </p>
-          )}
-        </div>
-
-        <div className="shrink-0 flex items-center gap-2 rounded-full bg-white/85 border border-[#efe2c4] pl-1 pr-3 py-1">
-          <button
-            type="button"
-            onClick={sendComment}
-            disabled={!draft.trim()}
-            aria-label="إرسال"
-            className="inline-flex h-8 shrink-0 items-center justify-center rounded-full bg-[#1f8a5a] px-3 text-white active:scale-90 shadow-[0_8px_16px_-10px_rgba(31,138,90,0.55)] disabled:opacity-40"
-          >
-            <Send className="h-3.5 w-3.5 -scale-x-100" />
-          </button>
-          <input
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") sendComment(e); }}
-            placeholder="اكتب تعليق..."
-            className="flex-1 min-w-0 bg-transparent text-right text-[12.5px] text-[#3a2a18] placeholder:text-[#a99060] outline-none py-1"
-            dir="rtl"
-          />
-        </div>
-      </div>
-
-      <div className="px-4 pt-2 pb-4 space-y-2">
-        {cta.kind === "attend" ? (
-          <AttendButton
-            postId={post.id}
-            label="سجّل حضورك"
-            activeLabel="✓ سجّلت حضورك"
-            className={actionButtonClass + " bg-gradient-to-l from-[#7c5ad1] to-[#5a3eb0] shadow-[0_14px_26px_-14px_rgba(124,90,209,0.55)]"}
-          />
-        ) : cta.kind !== "details" ? (
-          <button
-            type="button"
-            onClick={onCta}
-            className={actionButtonClass}
-            style={{ background: cta.bg, boxShadow: `0 14px 26px -14px ${cta.shadow}` }}
-          >
-            {cta.label}
-            <ArrowRight className="h-3.5 w-3.5 -scale-x-100" />
-          </button>
-        ) : null}
-        <Link
-          to="/church/post/$id"
-          params={{ id: post.id }}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-[#efe2c4] bg-white/85 py-2.5 text-[12.5px] font-extrabold text-[#7a4a26] active:scale-[0.98] transition-transform"
-        >
-          عرض التفاصيل
-          <ArrowRight className="h-3.5 w-3.5 -scale-x-100" />
-        </Link>
-      </div>
-
-      {popup === "condolence" ? (
-        <CondolencePopup postId={post.id} onClose={() => setPopup(null)} />
-      ) : popup === "congrats" ? (
-        <CongratsPopup postId={post.id} onClose={() => setPopup(null)} />
-      ) : popup === "reserve" ? (
-        <ReservePopup postId={post.id} totalSeats={post.details?.seats} onClose={() => setPopup(null)} />
-      ) : popup === "manage" ? (
-        <PinMenu post={post} onClose={() => setPopup(null)} />
-      ) : null}
-    </article>
-  );
-}
-
 function ChurchPostsFeed() {
   const { church } = useChurchDashboardData();
   const { posts: sorted, loading: loadingPosts, refresh } = useChurchPosts(church.id);
-  const [builderOpen, setBuilderOpen] = useState(false);
-
-  useEffect(() => {
-    if (sorted.length) void prefetchPostInteractions(sorted.map((p) => p.id));
-  }, [sorted]);
 
   return (
-    <section>
-      <SectionTitle
-        title="منشورات الكنيسة"
-        action={
-          <div className="flex items-center gap-2">
-            <Link
-              to="/church/archive"
-              className="text-[11px] font-bold text-[#b8893a]"
-            >
-              الأرشيف
-            </Link>
-            <button
-              type="button"
-              aria-label="منشور جديد"
-              title="إنشاء منشور (للكهنة والخدام)"
-              onClick={() => setBuilderOpen(true)}
-              className="inline-flex items-center gap-1 rounded-full bg-gradient-to-l from-[#7a4a26] to-[#b8893a] text-white text-[11px] font-extrabold px-3 py-1.5 shadow-[0_10px_20px_-10px_rgba(122,74,38,0.6)] active:scale-95 transition-transform"
-            >
-              <Plus className="h-3.5 w-3.5" strokeWidth={2.6} />
-              منشور
-            </button>
-          </div>
-        }
-      />
-      {loadingPosts ? (
-        <Glass className="text-center py-6">
-          <p className="text-[13px] font-bold text-[#6a543a]">جاري تحميل المنشورات…</p>
-        </Glass>
-      ) : sorted.length === 0 ? (
-        <Glass className="text-center py-8">
-          <Newspaper className="mx-auto mb-2.5 h-8 w-8 text-[#b8893a]/75" strokeWidth={2.2} />
-          <p className="text-[13px] font-bold text-[#6a543a]">لا توجد منشورات بعد</p>
-        </Glass>
-      ) : (
-        <Coverflow
-          items={sorted}
-          direction={-1}
-          height={500}
-          cardWidthPct={78}
-          peekPct={52}
-          getKey={(p) => p.id}
-          renderCard={(post) => <PremiumPostCard post={post} inCoverflow />}
-        />
-      )}
-      {builderOpen ? (
-        <PostBuilder
-          churchId={church.id}
-          onClose={() => setBuilderOpen(false)}
-          onCreated={() => void refresh()}
-        />
-      ) : null}
-    </section>
-  );
-}
-
-/* ============================================================ */
-/* Upcoming Meetings                                             */
-/* ============================================================ */
-
-const MEETINGS = [
-  { day: "12", month: "سبتمبر", title: "اجتماع الخدام", time: "5:00 مساءً", location: "قاعة القديس أغسطينوس", tone: "#1f8a5a" },
-  { day: "11", month: "سبتمبر", title: "اجتماع الشباب", time: "7:30 مساءً", location: "قاعة المجمع", tone: "#5b8fd1" },
-  { day: "9", month: "سبتمبر", title: "درس الكتاب المقدس", time: "6:00 مساءً", location: "الكنيسة الرئيسية", tone: "#8a6ec1" },
-];
-
-function MeetingCard({ m }: { m: typeof MEETINGS[number] }) {
-  return (
-    <div
-      className={[
-        "relative flex h-full w-full items-stretch gap-0 overflow-hidden rounded-[24px]",
-        "border border-white/75 bg-[#fbf3e1]/82 backdrop-blur-xl",
-        "shadow-[0_3px_10px_-3px_rgba(120,80,30,0.22),0_12px_28px_-16px_rgba(120,80,30,0.32),inset_0_1px_0_rgba(255,255,255,0.92),inset_0_-1px_0_rgba(120,80,30,0.05)]",
-        "ring-1 ring-[#c79356]/[0.07] ring-inset",
-        "active:scale-[0.98] transition-transform",
-      ].join(" ")}
-    >
-      {/* Glass reflection + top highlight */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-[38%] bg-gradient-to-b from-white/26 via-white/7 to-transparent"
-      />
-
-      {/* Date block */}
-      <div
-        className="relative flex h-full w-[74px] shrink-0 flex-col items-center justify-center gap-0.5 border-l border-white/55"
-        style={{
-          background: `linear-gradient(165deg, ${m.tone}40 0%, ${m.tone}28 42%, ${m.tone}16 100%)`,
-          boxShadow: `inset 0 1px 0 rgba(255,255,255,0.42), inset 0 -10px 18px -10px ${m.tone}30`,
-        }}
-      >
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-1 top-1 h-[38%] rounded-lg bg-gradient-to-b from-white/22 to-transparent"
-        />
-        <span className="relative text-[22px] font-extrabold text-[#3a2a18] leading-none">{m.day}</span>
-        <span className="relative text-[10px] font-bold text-[#b8893a] leading-none">{m.month}</span>
-      </div>
-
-      {/* Content */}
-      <div className="relative flex min-w-0 flex-1 flex-col p-3 text-right">
-        <h4 className="line-clamp-2 min-h-[2.25rem] text-[13.5px] font-extrabold leading-tight text-[#3a2a18]">
-          {m.title}
-        </h4>
-        <div className="mt-auto flex shrink-0 flex-col gap-1 pt-1.5">
-          <p className="flex h-4 items-center justify-end gap-1.5 truncate text-[11px] text-[#6a543a]">
-            <Clock className="h-3.5 w-3.5 shrink-0 text-[#b8893a]" strokeWidth={2} />
-            <span className="truncate">{m.time}</span>
-          </p>
-          <p className="flex h-4 items-center justify-end gap-1.5 truncate text-[11px] text-[#6a543a]">
-            <MapPin className="h-3.5 w-3.5 shrink-0 text-[#b8893a]" strokeWidth={2} />
-            <span className="truncate">{m.location}</span>
-          </p>
-        </div>
-      </div>
-
-      {/* Chevron */}
-      <div className="relative flex w-9 shrink-0 items-center justify-center">
-        <ChevronLeft className="h-4 w-4 text-[#c79356]" />
-      </div>
-    </div>
-  );
-}
-
-function UpcomingMeetings() {
-  const trackRef = useRef<HTMLDivElement | null>(null);
-  const items = [...MEETINGS, ...MEETINGS];
-  useAutoMarquee(trackRef, { speed: 16, direction: 1, loop: true });
-
-  return (
-    <section id="church-meetings">
-      <SectionTitle
-        title="الاجتماعات القادمة"
-        action={
-          <button
-            type="button"
-            className="inline-flex items-center gap-1 text-[11px] font-bold text-[#b8893a] active:opacity-60 transition-opacity"
-          >
-            عرض الكل
-            <ArrowRight className="h-3.5 w-3.5 -scale-x-100" />
-          </button>
-        }
-      />
-      <div
-        ref={trackRef}
-        className="-mx-4 overflow-x-auto no-scrollbar scroll-smooth"
-        style={{ WebkitOverflowScrolling: "touch" }}
-      >
-        <div className="flex gap-3 px-4 pb-1">
-          {items.map((m, i) => (
-            <div key={`${m.title}-${i}`} className="h-[96px] w-[216px] shrink-0">
-              <MeetingCard m={m} />
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ============================================================ */
-/* Prayer Requests Preview Card (links to /prayer-requests)      */
-/* ============================================================ */
-
-function PrayerCardCompact({ p }: { p: ChurchDashboardPrayer }) {
-  return (
-    <Link
-      to="/prayer-requests"
-      className="block shrink-0 w-[208px] active:scale-[0.98] transition-transform"
-    >
-      <div className="rounded-2xl bg-white/85 border border-white/80 p-2.5 text-right shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_14px_30px_-20px_rgba(120,80,30,0.45)] h-[124px] flex flex-col">
-        <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-          <span className="inline-flex items-center gap-1 rounded-full bg-[#8a6ec1]/15 px-2 py-0.5 text-[10px] font-extrabold text-[#6a4ab5] border border-[#8a6ec1]/25">
-            <HandHeart className="h-2.5 w-2.5" strokeWidth={2.8} />
-            {p.category}
-          </span>
-          {p.status === "urgent" ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#c44569]/15 px-2 py-0.5 text-[10px] font-extrabold text-[#a8344f] border border-[#c44569]/25">
-              <Flame className="h-2.5 w-2.5" strokeWidth={2.8} />
-              عاجلة
-            </span>
-          ) : p.status === "answered" ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#1f8a5a]/15 px-2 py-0.5 text-[10px] font-extrabold text-[#136a44] border border-[#1f8a5a]/25">
-              <Check className="h-2.5 w-2.5" strokeWidth={2.8} />
-              تمّت
-            </span>
-          ) : null}
-        </div>
-        <p className="font-arabic-serif text-[12.5px] font-extrabold text-[#3a2a18] leading-tight line-clamp-1">
-          {p.title}
-        </p>
-        <p className="mt-0.5 text-[10.5px] text-[#6a543a] leading-snug line-clamp-2 flex-1">
-          {p.request}
-        </p>
-        <div className="mt-1.5 flex items-center justify-between text-[10px] font-bold text-[#8a6325]">
-          <span className="inline-flex items-center gap-1">
-            <Heart className="h-2.5 w-2.5 fill-current" strokeWidth={0} />
-            {p.prayers.toLocaleString("ar-EG")}
-          </span>
-          <span className="inline-flex items-center gap-1 text-[#7a5a30]">
-            <Clock className="h-2.5 w-2.5" />
-            {p.time}
-          </span>
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-function PrayerRequestsCard() {
-  const { prayers } = useChurchDashboardData();
-  const stats = prayerStatsFromDashboard(prayers);
-  const trackRef = useRef<HTMLDivElement | null>(null);
-  const items = prayers.length > 1 ? [...prayers, ...prayers] : prayers;
-  useAutoMarquee(trackRef, { speed: 14, direction: -1, loop: prayers.length > 1 });
-
-  return (
-    <section>
-      <SectionTitle
-        title="طلبات الصلاة"
-        action={
-          <Link
-            to="/prayer-requests"
-            className="inline-flex items-center gap-1 text-[11px] font-bold text-[#b8893a] active:opacity-60 transition-opacity"
-          >
-            عرض الكل
-            <ArrowRight className="h-3.5 w-3.5 -scale-x-100" />
-          </Link>
-        }
-      />
-
-      {/* Compact stats row */}
-      <div className="grid grid-cols-3 gap-2 mb-2.5">
-        <StatPill icon={<Sparkles className="h-3 w-3" strokeWidth={2.6} />} label="نشط" value={stats.active} tone="purple" />
-        <StatPill icon={<HandHeart className="h-3 w-3" strokeWidth={2.6} />} label="صلّوا" value={stats.peoplePrayed} tone="green" />
-        <StatPill icon={<MessageSquareHeart className="h-3 w-3" strokeWidth={2.6} />} label="طلب" value={prayers.length} tone="rose" />
-      </div>
-
-      {prayers.length === 0 ? (
-        <Glass className="text-center py-6">
-          <p className="text-[13px] font-bold text-[#6a543a]">لا توجد طلبات صلاة عامة حالياً</p>
-        </Glass>
-      ) : (
-        <div
-          ref={trackRef}
-          className="-mx-4 overflow-x-auto no-scrollbar scroll-smooth"
-          style={{ WebkitOverflowScrolling: "touch" }}
-        >
-          <div className="flex gap-2.5 px-4 pb-1">
-            {items.map((p, i) => (
-              <PrayerCardCompact key={`${p.id}-${i}`} p={p} />
-            ))}
-          </div>
-        </div>
-      )}
-    </section>
-  );
-}
-
-function StatPill({
-  icon, label, value, tone,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: number;
-  tone: "purple" | "rose" | "green";
-}) {
-  const toneClass = {
-    purple: "text-[#6a4ab5]",
-    rose: "text-[#a8344f]",
-    green: "text-[#136a44]",
-  }[tone];
-  return (
-    <div className="rounded-2xl bg-white/80 border border-white/80 px-2.5 py-2 text-right shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
-      <p className={"inline-flex items-center gap-1 text-[10px] font-bold " + toneClass}>
-        {icon}
-        {label}
-      </p>
-      <p className="mt-0.5 text-[15px] font-extrabold text-[#3a2a18] leading-none">
-        {value.toLocaleString("ar-EG")}
-      </p>
-    </div>
-  );
-}
-
-
-
-/* ============================================================ */
-/* Live Broadcast                                                */
-/* ============================================================ */
-
-function useCountdown(target: number) {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, []);
-  const diff = Math.max(0, target - now);
-  const days = Math.floor(diff / 86400000);
-  const hours = Math.floor((diff % 86400000) / 3600000);
-  const mins = Math.floor((diff % 3600000) / 60000);
-  const secs = Math.floor((diff % 60000) / 1000);
-  return { days, hours, mins, secs, done: diff === 0 };
-}
-
-function CountdownUnit({ value, label }: { value: number; label: string }) {
-  return (
-    <div className="flex flex-col items-center min-w-[44px]">
-      <span className="font-arabic-serif text-[18px] font-extrabold text-[#3a2a18] tabular-nums leading-none">
-        {String(value).padStart(2, "0")}
-      </span>
-      <span className="mt-1 text-[9.5px] font-bold text-[#8a6a3a] tracking-wide">{label}</span>
-    </div>
-  );
-}
-
-function UpcomingStreamCard() {
-  const [reminded, setReminded] = useState(false);
-  // Next Sunday 9:00 AM local
-  const target = useRef<number>(
-    (() => {
-      const d = new Date();
-      const day = d.getDay();
-      const add = ((7 - day) % 7) || 7;
-      d.setDate(d.getDate() + add);
-      d.setHours(9, 0, 0, 0);
-      return d.getTime();
-    })()
-  ).current;
-  const { days, hours, mins, secs } = useCountdown(target);
-
-  return (
-    <div className="relative overflow-hidden rounded-[24px] border border-white/70 bg-[#fbf3e1]/85 backdrop-blur-xl shadow-[0_20px_44px_-26px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.85)]">
-      <div className="flex gap-3 p-3">
-        <div className="relative h-[92px] w-[92px] shrink-0 overflow-hidden rounded-[18px] border border-white/70">
-          <img src={cardChurch} alt="بث قادم" className="absolute inset-0 h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-          <div className="absolute bottom-1 right-1 inline-flex items-center gap-1 rounded-full bg-white/95 px-1.5 py-0.5 text-[9px] font-extrabold text-[#3a2a18]">
-            <CalendarDays className="h-2.5 w-2.5" /> قريباً
-          </div>
-        </div>
-        <div className="flex-1 min-w-0">
-          <h4 className="font-arabic-serif text-[14px] font-extrabold text-[#3a2a18] leading-tight">
-            قداس الأحد القادم
-          </h4>
-          <p className="mt-0.5 text-[11px] text-[#7a5a30]">من الكاتدرائية المرقسية</p>
-          <div className="mt-2 flex items-center gap-1.5" dir="ltr">
-            <CountdownUnit value={days} label="يوم" />
-            <span className="text-[#c79356] font-bold">:</span>
-            <CountdownUnit value={hours} label="ساعة" />
-            <span className="text-[#c79356] font-bold">:</span>
-            <CountdownUnit value={mins} label="دقيقة" />
-            <span className="text-[#c79356] font-bold">:</span>
-            <CountdownUnit value={secs} label="ثانية" />
-          </div>
-        </div>
-      </div>
-      <div className="px-3 pb-3">
-        <button
-          type="button"
-          onClick={() => setReminded((v) => !v)}
-          className={
-            "w-full inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-[12.5px] font-extrabold transition-all active:scale-[0.98] " +
-            (reminded
-              ? "bg-[#e9d9b8] text-[#3a2a18] border border-[#c79356]/40"
-              : "bg-gradient-to-l from-[#c79356] to-[#d6a862] text-white shadow-[0_10px_24px_-12px_rgba(199,147,86,0.7)]")
-          }
-        >
-          <Bell className={"h-4 w-4 " + (reminded ? "fill-current" : "")} />
-          {reminded ? "تم تفعيل التذكير" : "ذكّرني قبل البث"}
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function LiveBroadcast() {
-  return (
-    <section>
-      <SectionTitle title="البث المباشر" />
-      <div className="relative overflow-hidden rounded-[28px] border border-white/70 shadow-[0_24px_50px_-26px_rgba(60,40,16,0.6),inset_0_1px_0_rgba(255,255,255,0.7)]">
-        <div className="relative h-[200px]">
-          <img src={heavenlyChurch} alt="البث المباشر" className="absolute inset-0 h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0603]/90 via-[#0a0603]/35 to-transparent" />
-
-          {/* LIVE pill */}
-          <div className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-[#c44569] px-2.5 py-1 text-[10.5px] font-extrabold text-white shadow-lg">
-            <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-            LIVE
-          </div>
-          <div className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-black/55 backdrop-blur-md px-2.5 py-1 text-[10.5px] font-bold text-white border border-white/20">
-            <Users className="h-3 w-3" />
-            1,284 يشاهدون
-          </div>
-
-          {/* Play button */}
-          <button
-            type="button"
-            aria-label="مشاهدة البث المباشر"
-            className="absolute inset-0 grid place-items-center"
-          >
-            <span className="grid h-16 w-16 place-items-center rounded-full bg-white/95 text-[#3a2a18] shadow-[0_20px_40px_-12px_rgba(0,0,0,0.6)] active:scale-95 transition-transform">
-              <Play className="h-7 w-7 fill-current" strokeWidth={0} />
-            </span>
-          </button>
-
-          {/* Bottom title */}
-          <div className="absolute bottom-3 right-3 left-3 text-right text-white">
-            <h3 className="font-arabic-serif text-[16px] font-extrabold drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
-              قداس الأحد الإلهي
-            </h3>
-            <p className="mt-0.5 text-[11px] text-white/85">بث مباشر من الكاتدرائية</p>
-          </div>
-        </div>
-        {/* Watch button bar */}
-        <div className="bg-[#1a0f06] px-3 py-2.5 flex items-center gap-2">
-          <button
-            type="button"
-            className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-l from-[#c44569] to-[#e0577f] px-4 py-2.5 text-[12.5px] font-extrabold text-white shadow-[0_10px_24px_-12px_rgba(196,69,105,0.8)] active:scale-[0.98] transition-transform"
-          >
-            <Play className="h-4 w-4 fill-current" strokeWidth={0} />
-            شاهد الآن
-          </button>
-          <button
-            type="button"
-            aria-label="مشاركة"
-            className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white border border-white/15 active:scale-95 transition-transform"
-          >
-            <Sparkles className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
-
-      <div className="mt-3">
-        <UpcomingStreamCard />
-      </div>
-    </section>
+    <ChurchMixedFeedSection
+      posts={sorted}
+      loading={loadingPosts}
+      onRefresh={refresh}
+    />
   );
 }
 
@@ -1831,7 +863,7 @@ function CallLeaderRow({ contact, onClose }: { contact: Contact; onClose: () => 
         </span>
       </div>
       <div className="flex-1 min-w-0">
-        <p className="font-arabic-serif text-[13.5px] font-extrabold text-[#3a2a18] leading-tight truncate">
+        <p className="font-arabic-serif text-[13.5px] font-extrabold text-alpha-heading leading-tight truncate">
           {contact.name}
         </p>
         <p className="mt-0.5 text-[10.5px] text-[#7a5a30] leading-none">{contact.role}</p>
@@ -1842,6 +874,9 @@ function CallLeaderRow({ contact, onClose }: { contact: Contact; onClose: () => 
 }
 
 function MessageRow({ contact, unread, onClose }: { contact: Contact; unread?: number; onClose?: () => void }) {
+  const { isModuleEnabled } = usePlatformModules();
+  if (!isModuleEnabled("messaging")) return null;
+
   const tone = ROLE_TONE[contact.roleType];
   const allowed = contact.messagingAllowed;
   const className =
@@ -1858,7 +893,7 @@ function MessageRow({ contact, unread, onClose }: { contact: Contact; unread?: n
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
-          <p className="font-arabic-serif text-[13.5px] font-extrabold text-[#3a2a18] leading-tight truncate">
+          <p className="font-arabic-serif text-[13.5px] font-extrabold text-alpha-heading leading-tight truncate">
             {contact.name}
           </p>
           {allowed && unread ? (
@@ -1895,14 +930,13 @@ function MessageRow({ contact, unread, onClose }: { contact: Contact; unread?: n
 
   return (
     <Link
-      to="/messages/chat/$contactId"
-      params={{ contactId: contact.id }}
-      search={{
+      to="/alpha-connect"
+      search={buildAlphaConnectChatSearch({
+        contactId: contact.id,
         name: contact.name,
         role: contact.roleType,
         phone: contact.phone,
-        from: "/church",
-      }}
+      })}
       onClick={onClose}
       className={className}
     >
@@ -1924,7 +958,7 @@ function PopupShell({
       <div className="relative w-full max-w-[var(--alpha-dock-max-width)] rounded-[28px] border border-white/75 bg-[#fbf3e1]/95 backdrop-blur-2xl shadow-[0_30px_60px_-20px_rgba(60,40,16,0.6)] p-3.5 text-right max-h-[80vh] overflow-y-auto no-scrollbar">
         <div className="flex items-center justify-between gap-2 mb-2.5">
           <div className="min-w-0">
-            <h3 className="font-arabic-serif text-[15.5px] font-extrabold text-[#3a2a18] leading-tight">{title}</h3>
+            <h3 className="font-arabic-serif text-[15.5px] font-extrabold text-alpha-heading leading-tight">{title}</h3>
             {subtitle ? (
               <p className="mt-0.5 text-[10.5px] text-[#7a5a30] inline-flex items-center gap-1">
                 <ShieldCheck className="h-3 w-3 text-[#1f8a5a]" /> {subtitle}
@@ -1963,8 +997,77 @@ function groupedContacts(contacts: ChurchDashboardContact[]) {
   };
 }
 
-function ContactsPopup({ contacts, onClose }: { contacts: ChurchDashboardContact[]; onClose: () => void }) {
+function ChurchDirectCallRow({
+  label,
+  value,
+  href,
+  onClose,
+}: {
+  label: string;
+  value: string;
+  href: string;
+  onClose: () => void;
+}) {
+  return (
+    <a
+      href={href}
+      onClick={onClose}
+      className="w-full flex items-center gap-3 rounded-2xl bg-white/70 border border-white/80 p-2.5 text-right shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_6px_14px_-12px_rgba(120,80,30,0.4)] active:scale-[0.98] transition-transform"
+    >
+      <div className="relative h-11 w-11 shrink-0 rounded-full grid place-items-center text-[#f3e6c4] font-arabic-serif text-[16px] font-extrabold border-2 border-white shadow-[0_6px_14px_-6px_rgba(60,40,16,0.5)] bg-gradient-to-br from-[#7a4a26] to-[#3a2a18]">
+        <Church className="h-4 w-4" strokeWidth={2.2} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="font-arabic-serif text-[13.5px] font-extrabold text-alpha-heading leading-tight truncate">{label}</p>
+        <p className="mt-0.5 text-[10.5px] text-[#7a5a30] leading-none truncate">{value}</p>
+      </div>
+      <Phone className="h-4 w-4 text-[#5b8fd1] shrink-0" strokeWidth={2.4} />
+    </a>
+  );
+}
+
+function ChurchDirectMessageRow({
+  label,
+  value,
+  href,
+  onClose,
+}: {
+  label: string;
+  value: string;
+  href: string;
+  onClose: () => void;
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={onClose}
+      className="w-full flex items-center gap-3 rounded-2xl bg-white/70 border border-white/80 p-2.5 text-right shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_6px_14px_-12px_rgba(120,80,30,0.4)] active:scale-[0.98] transition-transform"
+    >
+      <div className="h-11 w-11 shrink-0 rounded-full grid place-items-center text-[#f3e6c4] font-arabic-serif text-[16px] font-extrabold border-2 border-white shadow-[0_6px_14px_-6px_rgba(60,40,16,0.5)] bg-gradient-to-br from-[#1f8a5a] to-[#136a44]">
+        <Church className="h-4 w-4" strokeWidth={2.2} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="font-arabic-serif text-[13.5px] font-extrabold text-alpha-heading leading-tight truncate">{label}</p>
+        <p className="mt-0.5 text-[10.5px] text-[#7a5a30] leading-none truncate">{value}</p>
+      </div>
+      <Send className="h-4 w-4 text-[#c79356] -scale-x-100 shrink-0" strokeWidth={2.4} />
+    </a>
+  );
+}
+
+function ContactsPopup({
+  contacts,
+  church,
+  onClose,
+}: {
+  contacts: ChurchDashboardContact[];
+  church: ChurchDashboardRecord;
+  onClose: () => void;
+}) {
   const { priests, servants } = groupedContacts(contacts);
+  const hasChurchPhone = Boolean(church.phone || church.whatsapp);
   return (
     <PopupShell title="اختر للاتصال" subtitle="Alpha Connect — اضغط على الاسم للاتصال" onClose={onClose}>
       {priests.length > 0 && (
@@ -1981,15 +1084,44 @@ function ContactsPopup({ contacts, onClose }: { contacts: ChurchDashboardContact
           ))}
         </PopupGroup>
       )}
-      {contacts.length === 0 ? (
-        <p className="px-1 py-4 text-center text-[12px] font-bold text-[#6a543a]">لا توجد جهات اتصال متاحة</p>
+      {contacts.length === 0 && hasChurchPhone ? (
+        <PopupGroup label="الكنيسة">
+          {church.phone ? (
+            <ChurchDirectCallRow
+              label="هاتف الكنيسة"
+              value={church.phone}
+              href={`tel:${church.phone}`}
+              onClose={onClose}
+            />
+          ) : null}
+          {church.whatsapp ? (
+            <ChurchDirectCallRow
+              label="واتساب الكنيسة"
+              value={church.whatsapp}
+              href={`https://wa.me/${church.whatsapp.replace(/\D/g, "")}`}
+              onClose={onClose}
+            />
+          ) : null}
+        </PopupGroup>
+      ) : null}
+      {contacts.length === 0 && !hasChurchPhone ? (
+        <p className="px-1 py-4 text-center text-[12px] font-bold text-alpha-muted">لا توجد جهات اتصال متاحة</p>
       ) : null}
     </PopupShell>
   );
 }
 
-function MessagesPopup({ contacts, onClose }: { contacts: ChurchDashboardContact[]; onClose: () => void }) {
+function MessagesPopup({
+  contacts,
+  church,
+  onClose,
+}: {
+  contacts: ChurchDashboardContact[];
+  church: ChurchDashboardRecord;
+  onClose: () => void;
+}) {
   const { priests, servants } = groupedContacts(contacts);
+  const hasChurchMessage = Boolean(church.whatsapp || church.email);
   return (
     <PopupShell title="مراسلة قادة الكنيسة" subtitle="اضغط على الاسم لبدء محادثة خاصة" onClose={onClose}>
       {priests.length > 0 && (
@@ -2006,8 +1138,28 @@ function MessagesPopup({ contacts, onClose }: { contacts: ChurchDashboardContact
           ))}
         </PopupGroup>
       )}
-      {contacts.length === 0 ? (
-        <p className="px-1 py-4 text-center text-[12px] font-bold text-[#6a543a]">لا توجد جهات مراسلة متاحة</p>
+      {contacts.length === 0 && hasChurchMessage ? (
+        <PopupGroup label="الكنيسة">
+          {church.whatsapp ? (
+            <ChurchDirectMessageRow
+              label="واتساب الكنيسة"
+              value={church.whatsapp}
+              href={`https://wa.me/${church.whatsapp.replace(/\D/g, "")}`}
+              onClose={onClose}
+            />
+          ) : null}
+          {church.email ? (
+            <ChurchDirectMessageRow
+              label="بريد الكنيسة"
+              value={church.email}
+              href={`mailto:${church.email}`}
+              onClose={onClose}
+            />
+          ) : null}
+        </PopupGroup>
+      ) : null}
+      {contacts.length === 0 && !hasChurchMessage ? (
+        <p className="px-1 py-4 text-center text-[12px] font-bold text-alpha-muted">لا توجد جهات مراسلة متاحة</p>
       ) : null}
     </PopupShell>
   );
@@ -2024,10 +1176,10 @@ function ChurchEmptyState() {
       <div className="mx-auto grid h-20 w-20 place-items-center rounded-[22px] border border-[#efe2c4] bg-gradient-to-br from-[#fff8e9] to-[#e7c07a]/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_10px_24px_-12px_rgba(120,80,30,0.45)]">
         <Church className="h-9 w-9 text-[#7a4a26]" strokeWidth={1.8} />
       </div>
-      <h2 className="mt-5 font-arabic-serif text-[18px] font-bold text-[#3a2a18]">
+      <h2 className="mt-5 font-arabic-serif text-[18px] font-bold text-alpha-heading">
         لا توجد كنيسة مرتبطة بحسابك
       </h2>
-      <p className="mt-2 text-[13px] leading-relaxed text-[#6a543a]">
+      <p className="mt-2 text-[13px] leading-relaxed text-alpha-muted">
         اختر كنيستك من الدليل واضغط «انضم للكنيسة» لفتح لوحة كنيستك وخدماتها.
       </p>
       <div className="mt-5 space-y-2.5">
@@ -2039,7 +1191,7 @@ function ChurchEmptyState() {
         </Link>
         <Link
           to="/profile/church"
-          className="inline-flex h-12 w-full items-center justify-center rounded-2xl border border-[#efe2c4] bg-white/75 px-6 text-[14px] font-extrabold text-[#3a2a18] shadow-[0_8px_18px_-14px_rgba(120,80,30,0.35)] active:scale-[0.98] transition-transform"
+          className="inline-flex h-12 w-full items-center justify-center rounded-2xl border border-[#efe2c4] bg-white/75 px-6 text-[14px] font-extrabold text-alpha-heading shadow-[0_8px_18px_-14px_rgba(120,80,30,0.35)] active:scale-[0.98] transition-transform"
         >
           طلب تأسيس كنيسة
         </Link>
@@ -2064,7 +1216,7 @@ function ChurchScreen() {
   return (
     <main
       dir="rtl"
-      className="relative min-h-screen w-full overflow-x-hidden bg-[#f4ead8]"
+      className="relative min-h-screen w-full overflow-x-hidden bg-alpha-base text-alpha"
     >
       <CopticWatermark />
 
@@ -2073,17 +1225,14 @@ function ChurchScreen() {
       <div className="relative mx-auto w-full max-w-[var(--alpha-content-max-width)] px-4 pt-2 pb-[calc(env(safe-area-inset-bottom,0px)+120px)] space-y-5">
         {showBootLoading ? (
           <Glass className="text-center py-12">
-            <p className="text-[13px] font-bold text-[#6a543a]">جاري تحميل بيانات الكنيسة…</p>
+            <p className="text-[13px] font-bold text-alpha-muted">جاري تحميل بيانات الكنيسة…</p>
           </Glass>
         ) : !hasChurch || !data ? (
           <ChurchEmptyState />
         ) : (
           <ChurchDashboardProvider data={data}>
             <HeroChurchCard />
-            <QuickGrid />
             <ChurchPostsFeed />
-            <UpcomingMeetings />
-            <PrayerRequestsCard />
             <LocationRow />
           </ChurchDashboardProvider>
         )}

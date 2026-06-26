@@ -1,0 +1,457 @@
+/**
+ * Alpha Premium semantic theme — single source for light/dark DNA.
+ * Applied via <html data-theme="light|dark"> + .dark (shadcn compat).
+ */
+
+:root,
+[data-theme="light"] {
+  /* Foundation */
+  --alpha-bg: #faf7f2;
+  --alpha-bg-base: #f4ead8;
+  --alpha-bg-elevated: #fbf3e1;
+  --alpha-surface: rgba(255, 255, 255, 0.72);
+  --alpha-surface-solid: #fdfbf7;
+  --alpha-surface-glass: rgba(253, 251, 247, 0.92);
+
+  /* Typography */
+  --alpha-text: #3a2a18;
+  --alpha-text-muted: #6a543a;
+  --alpha-text-heading: #5a1f2a;
+  --alpha-text-heading-muted: #7a3944;
+
+  /* Borders & accents */
+  --alpha-border: rgba(239, 226, 196, 0.9);
+  --alpha-border-subtle: rgba(239, 226, 196, 0.55);
+  --alpha-gold: #e7c97a;
+  --alpha-gold-bright: #f0d78c;
+  --alpha-gold-deep: #b8893a;
+  --alpha-progress-track: #ecdcb6;
+
+  /* Reader */
+  --alpha-reader-bg: #f4ead8;
+  --alpha-reader-text: #3a2410;
+  --alpha-reader-text-strong: #3a2a18;
+  --alpha-reader-text-soft: #f3e6c4;
+  --alpha-reader-accent: #b8893a;
+  --alpha-reader-surface-bg: rgba(255, 255, 255, 0.7);
+  --alpha-reader-surface-border: #efe2c4;
+  --alpha-reader-surface-shadow: 0 8px 22px -16px rgba(120, 80, 30, 0.22);
+  --alpha-reader-verse-bg: rgba(255, 255, 255, 0.65);
+  --alpha-reader-verse-border: rgba(239, 226, 196, 0.8);
+  --alpha-reader-verse-shadow: 0 6px 18px -14px rgba(120, 80, 30, 0.3);
+  --alpha-reader-header-btn-bg: rgba(255, 255, 255, 0.7);
+  --alpha-reader-header-btn-border: rgba(239, 226, 196, 0.9);
+  --alpha-reader-header-btn-text: #3a2a18;
+
+  /* Dock (light ivory glass) */
+  --alpha-dock-bar-bg: linear-gradient(
+    165deg,
+    rgba(253, 251, 247, 0.96) 0%,
+    rgba(251, 243, 225, 0.92) 48%,
+    rgba(244, 234, 216, 0.94) 100%
+  );
+  --alpha-dock-bar-border: rgba(239, 226, 196, 0.85);
+  --alpha-dock-bar-shadow:
+    0 -10px 36px -12px rgba(120, 80, 30, 0.18),
+    0 -2px 16px -6px rgba(231, 201, 122, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --alpha-dock-tab-color: rgba(58, 42, 24, 0.52);
+  --alpha-dock-tab-active-color: #b8893a;
+  --alpha-dock-tab-active-bg: linear-gradient(180deg, rgba(231, 201, 122, 0.22) 0%, rgba(231, 201, 122, 0.08) 100%);
+  --alpha-dock-tab-active-shadow:
+    0 0 14px rgba(231, 201, 122, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  --alpha-dock-tab-icon-filter: drop-shadow(0 1px 2px rgba(120, 80, 30, 0.12));
+
+  /* Shell background overlay (dark mode only — light uses variant gradients) */
+  --alpha-shell-overlay: none;
+
+  /* Align shadcn body with Alpha ivory in light mode */
+  --background: oklch(0.98 0.01 85);
+  --foreground: oklch(0.28 0.04 55);
+}
+
+[data-theme="dark"],
+.dark {
+  --alpha-bg: #050814;
+  --alpha-bg-base: #08131f;
+  --alpha-bg-elevated: #0c1828;
+  --alpha-surface: rgba(17, 34, 58, 0.55);
+  --alpha-surface-solid: #0e1a2e;
+  --alpha-surface-glass: rgba(10, 14, 28, 0.88);
+
+  --alpha-text: #e8e2cf;
+  --alpha-text-muted: rgba(232, 226, 207, 0.58);
+  --alpha-text-heading: #f3e6c4;
+  --alpha-text-heading-muted: rgba(243, 230, 196, 0.72);
+
+  --alpha-border: rgba(255, 255, 255, 0.1);
+  --alpha-border-subtle: rgba(255, 255, 255, 0.06);
+  --alpha-gold: #e7c97a;
+  --alpha-gold-bright: #f0d78c;
+  --alpha-gold-deep: #c79356;
+  --alpha-progress-track: rgba(255, 255, 255, 0.12);
+
+  --alpha-reader-bg: #08131f;
+  --alpha-reader-text: #e8e2cf;
+  --alpha-reader-text-strong: #f3e6c4;
+  --alpha-reader-text-soft: #f3e6c4;
+  --alpha-reader-accent: #c79356;
+  --alpha-reader-surface-bg: rgba(17, 34, 58, 0.6);
+  --alpha-reader-surface-border: rgba(255, 255, 255, 0.08);
+  --alpha-reader-surface-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 8px 22px -16px rgba(0, 0, 0, 0.7);
+  --alpha-reader-verse-bg: rgba(17, 34, 58, 0.55);
+  --alpha-reader-verse-border: rgba(255, 255, 255, 0.07);
+  --alpha-reader-verse-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 6px 18px -14px rgba(0, 0, 0, 0.6);
+  --alpha-reader-header-btn-bg: rgba(14, 26, 46, 0.55);
+  --alpha-reader-header-btn-border: rgba(255, 255, 255, 0.1);
+  --alpha-reader-header-btn-text: #f3e6c4;
+
+  --alpha-dock-bar-bg: linear-gradient(
+    165deg,
+    rgba(10, 8, 22, 0.88) 0%,
+    rgba(14, 11, 28, 0.78) 48%,
+    rgba(8, 6, 18, 0.84) 100%
+  );
+  --alpha-dock-bar-border: rgba(231, 201, 122, 0.16);
+  --alpha-dock-bar-shadow:
+    0 -14px 44px -10px rgba(0, 0, 0, 0.72),
+    0 -2px 24px -8px rgba(231, 201, 122, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  --alpha-dock-tab-color: rgba(255, 255, 255, 0.48);
+  --alpha-dock-tab-active-color: #f0d78c;
+  --alpha-dock-tab-active-bg: linear-gradient(180deg, rgba(231, 201, 122, 0.14) 0%, rgba(231, 201, 122, 0.06) 100%);
+  --alpha-dock-tab-active-shadow:
+    0 0 18px rgba(231, 201, 122, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --alpha-dock-tab-icon-filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+
+  --alpha-shell-overlay:
+    radial-gradient(120% 50% at 50% 0%, rgba(231, 201, 122, 0.08), transparent 60%),
+    radial-gradient(70% 60% at 100% 30%, rgba(90, 60, 150, 0.12), transparent 65%),
+    radial-gradient(80% 60% at 0% 85%, rgba(184, 137, 58, 0.1), transparent 65%);
+
+  --background: oklch(0.14 0.03 260);
+  --foreground: oklch(0.93 0.02 90);
+}
+
+/* ===== Utility classes (pilot surfaces) ===== */
+
+.bg-alpha-base {
+  background-color: var(--alpha-bg-base);
+}
+
+.bg-alpha-elevated {
+  background-color: var(--alpha-bg-elevated);
+}
+
+.bg-alpha-surface {
+  background-color: var(--alpha-surface);
+}
+
+.text-alpha {
+  color: var(--alpha-text);
+}
+
+.text-alpha-muted {
+  color: var(--alpha-text-muted);
+}
+
+.text-alpha-heading {
+  color: var(--alpha-text-heading);
+}
+
+.text-alpha-heading-muted {
+  color: var(--alpha-text-heading-muted);
+}
+
+.border-alpha {
+  border-color: var(--alpha-border);
+}
+
+.border-alpha-subtle {
+  border-color: var(--alpha-border-subtle);
+}
+
+.text-alpha-gold {
+  color: var(--alpha-gold);
+}
+
+.text-alpha-gold-bright {
+  color: var(--alpha-gold-bright);
+}
+
+.bg-alpha-progress-track {
+  background-color: var(--alpha-progress-track);
+}
+
+.bg-alpha-glass-bar {
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--alpha-bg-elevated) 95%, transparent),
+    color-mix(in srgb, var(--alpha-bg-base) 95%, transparent)
+  );
+}
+
+.alpha-chrome-btn {
+  border: 1px solid var(--alpha-border);
+  background-color: var(--alpha-surface);
+  color: var(--alpha-text);
+  backdrop-filter: blur(24px);
+  box-shadow: 0 6px 14px -10px rgba(120, 80, 30, 0.22);
+}
+
+[data-theme="dark"] .alpha-chrome-btn,
+.dark .alpha-chrome-btn {
+  box-shadow: 0 6px 14px -10px rgba(0, 0, 0, 0.45);
+}
+
+/* Reader palette */
+.bg-alpha-reader {
+  background-color: var(--alpha-reader-bg);
+}
+
+.text-alpha-reader {
+  color: var(--alpha-reader-text);
+}
+
+.alpha-reader-surface {
+  background-color: var(--alpha-reader-surface-bg);
+  border-color: var(--alpha-reader-surface-border);
+  box-shadow: var(--alpha-reader-surface-shadow);
+}
+
+.alpha-reader-verse {
+  background-color: var(--alpha-reader-verse-bg);
+  border-color: var(--alpha-reader-verse-border);
+  box-shadow: var(--alpha-reader-verse-shadow);
+}
+
+.alpha-reader-header-btn {
+  display: grid;
+  height: 2.75rem;
+  width: 2.75rem;
+  place-items: center;
+  border-radius: 9999px;
+  border: 1px solid var(--alpha-reader-header-btn-border);
+  background-color: var(--alpha-reader-header-btn-bg);
+  color: var(--alpha-reader-header-btn-text);
+  backdrop-filter: blur(24px);
+  transition: transform 0.15s ease;
+}
+
+.alpha-reader-header-btn:active {
+  transform: scale(0.95);
+}
+
+.alpha-reader-header-btn--active {
+  border-color: color-mix(in srgb, var(--alpha-gold-bright) 50%, transparent);
+  background-color: color-mix(in srgb, var(--alpha-gold-bright) 15%, transparent);
+}
+
+[data-theme="light"] .alpha-reader-header-btn--active {
+  border-color: rgba(90, 61, 146, 0.35);
+  background-color: rgba(122, 92, 176, 0.12);
+  color: #5a3d92;
+}
+
+/* Dark shell background bowl — !important overrides inline light gradients */
+[data-theme="dark"] [data-alpha-background],
+.dark [data-alpha-background] {
+  background-image: var(--alpha-shell-overlay) !important;
+}
+
+/* Profile — membership card */
+.alpha-membership-card {
+  border: 1px solid var(--alpha-membership-border);
+  background: var(--alpha-membership-bg);
+  box-shadow: var(--alpha-membership-shadow);
+}
+
+:root,
+[data-theme="light"] {
+  --alpha-membership-border: rgba(184, 137, 58, 0.35);
+  --alpha-membership-bg: linear-gradient(
+    155deg,
+    rgba(253, 251, 247, 0.98) 0%,
+    rgba(251, 243, 225, 0.96) 55%,
+    rgba(244, 234, 216, 0.94) 100%
+  );
+  --alpha-membership-shadow: 0 18px 40px -16px rgba(120, 80, 30, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  --alpha-membership-title: var(--alpha-text);
+  --alpha-membership-sub: var(--alpha-gold-deep);
+  --alpha-membership-muted: var(--alpha-text-muted);
+  --alpha-profile-ledger-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.72) 0%, rgba(251, 243, 225, 0.55) 100%);
+  --alpha-profile-ledger-border: rgba(239, 226, 196, 0.85);
+  --alpha-profile-ledger-text: var(--alpha-text);
+  --alpha-profile-ledger-muted: var(--alpha-text-muted);
+}
+
+[data-theme="dark"],
+.dark {
+  --alpha-membership-border: rgba(240, 215, 140, 0.16);
+  --alpha-membership-bg: linear-gradient(
+    155deg,
+    rgba(26, 16, 8, 0.94) 0%,
+    rgba(18, 12, 8, 0.92) 55%,
+    rgba(30, 20, 12, 0.9) 100%
+  );
+  --alpha-membership-shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --alpha-membership-title: rgba(255, 255, 255, 0.92);
+  --alpha-membership-sub: rgba(240, 215, 140, 0.8);
+  --alpha-membership-muted: rgba(255, 255, 255, 0.4);
+  --alpha-profile-ledger-bg: linear-gradient(180deg, rgba(240, 215, 140, 0.02) 0%, rgba(0, 0, 0, 0.35) 100%);
+  --alpha-profile-ledger-border: rgba(240, 215, 140, 0.1);
+  --alpha-profile-ledger-text: rgba(255, 255, 255, 0.85);
+  --alpha-profile-ledger-muted: rgba(255, 255, 255, 0.45);
+}
+
+.alpha-profile-ledger-cell {
+  border: 1px solid var(--alpha-profile-ledger-border);
+  background: var(--alpha-profile-ledger-bg);
+}
+
+.text-alpha-membership-title {
+  color: var(--alpha-membership-title);
+}
+
+.text-alpha-membership-sub {
+  color: var(--alpha-membership-sub);
+}
+
+.text-alpha-membership-muted {
+  color: var(--alpha-membership-muted);
+}
+
+.text-alpha-profile-ledger {
+  color: var(--alpha-profile-ledger-text);
+}
+
+.text-alpha-profile-ledger-muted {
+  color: var(--alpha-profile-ledger-muted);
+}
+
+/* Coptic ledger glyphs — brown on light, gold glow on dark */
+.text-alpha-glyph {
+  color: #5a3d20;
+}
+
+[data-theme="dark"] .text-alpha-glyph,
+.dark .text-alpha-glyph {
+  color: var(--alpha-gold-bright);
+  text-shadow: 0 0 10px rgba(240, 215, 140, 0.75), 0 0 4px rgba(255, 216, 106, 0.5);
+}
+
+/* ===== Global theme shell ===== */
+
+html[data-theme],
+html[data-theme] body {
+  background-color: var(--alpha-bg-base);
+  color: var(--alpha-text);
+  color-scheme: light dark;
+}
+
+[data-theme="dark"],
+.dark {
+  color-scheme: dark;
+}
+
+.alpha-app-shell {
+  color: inherit;
+}
+
+/* ===== Legacy parchment remap (dark mode) — screens not yet on semantic tokens ===== */
+
+[data-theme="dark"] .bg-\[\#f4ead8\],
+.dark .bg-\[\#f4ead8\],
+[data-theme="dark"] .bg-\[\#faf8f3\],
+.dark .bg-\[\#faf8f3\],
+[data-theme="dark"] .bg-\[\#FAF8F3\],
+.dark .bg-\[\#FAF8F3\],
+[data-theme="dark"] .bg-\[\#fbf3e1\],
+.dark .bg-\[\#fbf3e1\],
+[data-theme="dark"] .bg-\[\#fff7e7\],
+.dark .bg-\[\#fff7e7\],
+[data-theme="dark"] .bg-\[\#F5F2ED\],
+.dark .bg-\[\#F5F2ED\],
+[data-theme="dark"] .bg-\[\#F4EEE6\],
+.dark .bg-\[\#F4EEE6\] {
+  background-color: var(--alpha-bg-base) !important;
+}
+
+[data-theme="dark"] .bg-\[\#f4ead8\]\/80,
+.dark .bg-\[\#f4ead8\]\/80,
+[data-theme="dark"] .bg-\[\#f4ead8\]\/95,
+.dark .bg-\[\#f4ead8\]\/95,
+[data-theme="dark"] .bg-\[\#f4ead8\]\/97,
+.dark .bg-\[\#f4ead8\]\/97,
+[data-theme="dark"] .bg-\[\#fbf3e1\]\/80,
+.dark .bg-\[\#fbf3e1\]\/80,
+[data-theme="dark"] .bg-\[\#fbf3e1\]\/85,
+.dark .bg-\[\#fbf3e1\]\/85,
+[data-theme="dark"] .bg-\[\#fbf3e1\]\/90,
+.dark .bg-\[\#fbf3e1\]\/90,
+[data-theme="dark"] .bg-\[\#fbf3e1\]\/95,
+.dark .bg-\[\#fbf3e1\]\/95,
+[data-theme="dark"] .bg-\[\#fbf3e1\]\/97,
+.dark .bg-\[\#fbf3e1\]\/97 {
+  background-color: color-mix(in srgb, var(--alpha-bg-elevated) 92%, transparent) !important;
+}
+
+[data-theme="dark"] .text-\[\#3a2a18\],
+.dark .text-\[\#3a2a18\],
+[data-theme="dark"] .text-\[\#3a2410\],
+.dark .text-\[\#3a2410\],
+[data-theme="dark"] .text-\[\#6a543a\],
+.dark .text-\[\#6a543a\],
+[data-theme="dark"] .text-\[\#5b3a18\],
+.dark .text-\[\#5b3a18\],
+[data-theme="dark"] .text-\[\#5a3d20\],
+.dark .text-\[\#5a3d20\],
+[data-theme="dark"] .text-\[\#2A1F12\],
+.dark .text-\[\#2A1F12\],
+[data-theme="dark"] .text-\[\#5A4A32\],
+.dark .text-\[\#5A4A32\] {
+  color: var(--alpha-text-heading) !important;
+}
+
+[data-theme="dark"] .text-\[\#8A7355\],
+.dark .text-\[\#8A7355\],
+[data-theme="dark"] .text-\[\#8a7355\],
+.dark .text-\[\#8a7355\] {
+  color: var(--alpha-text-muted) !important;
+}
+
+[data-theme="dark"] .bg-\[\#faf6ec\]\/65,
+.dark .bg-\[\#faf6ec\]\/65,
+[data-theme="dark"] .bg-\[\#faf6ec\]\/66,
+.dark .bg-\[\#faf6ec\]\/66,
+[data-theme="dark"] .bg-\[\#faf6ec\]\/70,
+.dark .bg-\[\#faf6ec\]\/70,
+[data-theme="dark"] .bg-\[\#faf6ec\]\/80,
+.dark .bg-\[\#faf6ec\]\/80,
+[data-theme="dark"] .bg-\[\#faf6ec\]\/92,
+.dark .bg-\[\#faf6ec\]\/92 {
+  background-color: color-mix(in srgb, var(--alpha-bg-elevated) 88%, transparent) !important;
+}
+
+[data-theme="dark"] .\!bg-\[\#faf6ec\]\/65,
+.dark .\!bg-\[\#faf6ec\]\/65,
+[data-theme="dark"] .\!bg-\[\#faf6ec\]\/66,
+.dark .\!bg-\[\#faf6ec\]\/66 {
+  background-color: color-mix(in srgb, var(--alpha-bg-elevated) 88%, transparent) !important;
+}
+
+[data-theme="dark"] .border-\[\#efe2c4\],
+.dark .border-\[\#efe2c4\],
+[data-theme="dark"] .border-\[\#efe2c4\]\/80,
+.dark .border-\[\#efe2c4\]\/80,
+[data-theme="dark"] .border-\[\#efe2c4\]\/90,
+.dark .border-\[\#efe2c4\]\/90,
+[data-theme="dark"] .border-\[\#c79356\]\/25,
+.dark .border-\[\#c79356\]\/25,
+[data-theme="dark"] .border-\[\#ead9b1\],
+.dark .border-\[\#ead9b1\] {
+  border-color: var(--alpha-border) !important;
+}
+

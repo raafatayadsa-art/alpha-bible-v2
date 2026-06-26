@@ -10,6 +10,7 @@ import {
 } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
+import "@/lib/alpha-theme/alpha-theme.css";
 import "@/lib/i18n";
 import "@/components/alpha/styles.css";
 import "@/components/alpha/alpha-responsive.css";
@@ -29,6 +30,11 @@ import { BibleSearchProvider } from "@/features/bible-search";
 import { AuthBootstrap } from "@/features/auth";
 import { I18nBootstrap } from "@/lib/i18n/use-locale";
 import { useTranslation } from "react-i18next";
+import { PlatformModuleGate, PlatformModulesBootstrap } from "@/lib/platform-modules";
+import { AlphaThemeBootstrap } from "@/lib/alpha-theme";
+import { AlphaShareSheetHost } from "@/lib/alpha-share-sheet";
+
+const ALPHA_THEME_BOOT_SCRIPT = `(function(){try{var r=localStorage.getItem("ab:alpha-settings");var m="light";if(r){var s=JSON.parse(r);m=s.themeMode||"light";}var d=m==="dark"||(m==="system"&&window.matchMedia("(prefers-color-scheme: dark)").matches);var t=d?"dark":"light";document.documentElement.setAttribute("data-theme",t);if(d)document.documentElement.classList.add("dark");}catch(e){}})();`;
 
 
 function NotFoundComponent() {
@@ -107,6 +113,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Noto+Sans+Coptic:wght@400;500;600;700&display=swap",
+      },
     ],
 
   }),
@@ -120,6 +132,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: ALPHA_THEME_BOOT_SCRIPT }} />
         <HeadContent />
       </head>
       <body className="font-sans antialiased">
@@ -150,20 +163,27 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <AlphaThemeBootstrap />
       <I18nBootstrap />
       <AuthBootstrap />
+      <PlatformModulesBootstrap />
       <AlphaNavigationProvider>
         <BibleSearchProvider>
           <AlphaBackgroundProvider>
             <AlphaViewportSync pathname={pathname} />
             {useScreenFrame ? (
               <AlphaScreenFrame mode="flow">
-                <Outlet />
+                <PlatformModuleGate>
+                  <Outlet />
+                </PlatformModuleGate>
               </AlphaScreenFrame>
             ) : (
-              <Outlet />
+              <PlatformModuleGate>
+                <Outlet />
+              </PlatformModuleGate>
             )}
             <GlobalBackButton />
+            <AlphaShareSheetHost />
             <Toaster />
             <AlphaTopDebugSafeArea />
             <AlphaTopDebugLabel />

@@ -6,6 +6,7 @@ import {
   AlphaControlFontStepper,
   AlphaControlIconButton,
   AlphaControlPlayButton,
+  type AlphaControlTone,
 } from "@/components/controls/AlphaControlBar";
 
 /**
@@ -28,6 +29,9 @@ export type AlphaReadingControlBarProps = {
   onToggleTheme: () => void;
   className?: string;
   compact?: boolean;
+  tone?: AlphaControlTone;
+  /** When false, hides play + speed (e.g. Katameros typography-only bar). */
+  showAutoscroll?: boolean;
 };
 
 export function AlphaReadingControlBar({
@@ -46,26 +50,32 @@ export function AlphaReadingControlBar({
   onToggleTheme,
   className,
   compact,
+  tone = "default",
+  showAutoscroll = true,
 }: AlphaReadingControlBarProps) {
   return (
-    <AlphaControlBarShell dark={dark} className={className} compact={compact}>
-      <AlphaControlPlayButton
-        playing={playing}
-        onToggle={onTogglePlay}
-        dark={dark}
-        size={compact ? "sm" : "md"}
-      />
+    <AlphaControlBarShell dark={dark} tone={tone} className={className} compact={compact}>
+      {showAutoscroll ? (
+        <>
+          <AlphaControlPlayButton
+            playing={playing}
+            onToggle={onTogglePlay}
+            dark={dark}
+            size={compact ? "sm" : "md"}
+          />
 
-      <AlphaControlDivider dark={dark} compact={compact} />
+          <AlphaControlDivider dark={dark} compact={compact} />
 
-      <AlphaControlCycleButton
-        icon={Gauge}
-        label={speedLabel}
-        ariaLabel={`السرعة: ${speedLabel}`}
-        onClick={onCycleSpeed}
-        dark={dark}
-        compact={compact}
-      />
+          <AlphaControlCycleButton
+            icon={Gauge}
+            label={speedLabel}
+            ariaLabel={`السرعة: ${speedLabel}`}
+            onClick={onCycleSpeed}
+            dark={dark}
+            compact={compact}
+          />
+        </>
+      ) : null}
 
       <AlphaControlCycleButton
         icon={Rows3}

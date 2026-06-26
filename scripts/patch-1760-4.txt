@@ -1,0 +1,8 @@
+=== OLD ===
+  activeVerse: string | null;
+  spiritualMode: boolean;
+
+=== NEW ===
+  activeVerse: string | null;
+  pulsingVerseId: string | null;
+  spiritualMode: boolean;

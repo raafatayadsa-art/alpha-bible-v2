@@ -50,6 +50,7 @@ import { ConnectChannelQrBadge } from "./ConnectChannelQrBadge";
 import { usePresenceStoreVersion } from "@/features/alpha-connect/useAlphaPresence";
 import { PRESENCE_LABELS, resolvePresenceDotForUser } from "@/features/alpha-connect/presence";
 import { cn } from "@/lib/utils";
+import { connectBottomSheetHostClass } from "@/features/alpha-connect/alpha-connect-layout";
 
 export type { ConnectChannel, ConnectChannelIcon, ConnectTalkPermission };
 
@@ -968,7 +969,7 @@ export function ConnectChannelModerationSheet({
   if (!open || !member) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end justify-center" onClick={onClose}>
+    <div className={`${connectBottomSheetHostClass()} z-[60]`} onClick={onClose}>
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
       <div dir="rtl" className="relative w-full max-w-[var(--alpha-content-narrow-width)] glass-strong rounded-t-3xl p-4 pb-[max(16px,env(safe-area-inset-bottom))]" onClick={(e) => e.stopPropagation()}>
         <p className="mb-3 text-center text-sm font-semibold">إدارة {member.name}</p>

@@ -1,4 +1,9 @@
 import { displayName } from "@/lib/bible-books";
+import { resolveBookId } from "@/lib/bible-icons";
+
+const GOSPEL_IDS = new Set(["Matthew", "Mark", "Luke", "John"]);
+const ACTS_ID = "Acts";
+const REVELATION_ID = "Revelation";
 
 function norm(s: string): string {
   return displayName(s)
@@ -60,16 +65,22 @@ export type NtCategory = "all" | "gospels" | "letters" | "revelation";
 
 export function matchesNtFilter(book: string, filter: NtCategory): boolean {
   if (filter === "all") return true;
+  const id = resolveBookId(book);
   const n = norm(book);
-  const isEpistle = n.includes("الاول") || n.includes("الثان") || n.includes("الثال") || n.includes("رسالة");
+
   if (filter === "gospels") {
-    if (isEpistle) return false;
-    return ["متى", "مرقس", "لوقا", "يوحنا"].some((g) => n.includes(g));
+    return id != null && GOSPEL_IDS.has(id);
   }
-  if (filter === "revelation") return n.includes("رؤيا");
+  if (filter === "revelation") {
+    return id === REVELATION_ID || n.includes("رؤيا");
+  }
   if (filter === "letters") {
-    const isGospel = !isEpistle && ["متى", "مرقس", "لوقا", "يوحنا"].some((g) => n.includes(g));
-    return !isGospel && !n.includes("اعمال") && !n.includes("رؤيا");
+    if (id != null) {
+      if (GOSPEL_IDS.has(id) || id === ACTS_ID || id === REVELATION_ID) return false;
+      return true;
+    }
+    const isGospel = ["متي", "مرقس", "لوقا", "يوحنا"].some((g) => n.includes(g));
+    return !isGospel && !n.includes("اعمال") && !n.includes("أعمال") && !n.includes("رؤيا");
   }
   return true;
 }
@@ -80,8 +91,14 @@ export function matchesOtFilter(book: string, filter: OtCategory): boolean {
   if (filter === "all") return true;
   const n = norm(book);
   if (filter === "law") return ["تكوين", "خروج", "لاويين", "عدد", "تثنية"].some((x) => n.includes(x));
-  if (filter === "history") return ["يشوع", "قضاة", "راعوث", "صموئيل", "ملوك", "اخبار", "عزرا", "نحميا", "استير", "طوبيا", "يهوديت", "مكابيين"].some((x) => n.includes(x));
-  if (filter === "wisdom") return ["ايوب", "مزامير", "امثال", "جامعة", "نشيد", "حكمة", "سيراخ", "باروخ", "مراثي"].some((x) => n.includes(x));
-  if (filter === "prophets") return ["اشعياء", "ارميا", "حزقيال", "دانيال", "هوشع", "يوئيل", "عاموس", "عوبديا", "يونان", "ميخا", "ناحوم", "حبقوق", "صفنيا", "حجي", "زكريا", "ملاخي"].some((x) => n.includes(x));
+  if (filter === "history") {
+    if (n.includes("سيراخ")) return false;
+    return (
+      (n.includes("يشوع") && !n.includes("سيراخ")) ||
+      ["قضاة", "راعوث", "صموئيل", "ملوك", "اخبار", "عزرا", "نحميا", "طوبيا", "يهوديت", "استير", "مكابيين"].some((x) => n.includes(x))
+    );
+  }
+  if (filter === "wisdom") return ["ايوب", "أيوب", "مزامير", "مزمور", "امثال", "أمثال", "جامعة", "نشيد", "حكمة", "سيراخ"].some((x) => n.includes(x));
+  if (filter === "prophets") return ["اشعياء", "إشعياء", "ارميا", "إرميا", "مراثي", "باروخ", "حزقيال", "دانيال", "هوشع", "يوئيل", "عاموس", "عوبديا", "يونان", "ميخا", "ناحوم", "حبقوق", "صفنيا", "حجي", "زكريا", "ملاخي"].some((x) => n.includes(x));
   return true;
 }

@@ -1,0 +1,412 @@
+[
+  {
+    "id": 1,
+    "church_name": "كنيسة ماربقطر \nشو الشهيد، دير \nشو، مصر",
+    "formatted_address": null,
+    "city": "دير شو",
+    "governorate": "أسيوط",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 2,
+    "church_name": "كنيسة الشهيد الأمير تادروس، \nدير بصرة، مصر",
+    "formatted_address": null,
+    "city": "دير بصرة",
+    "governorate": "أسيوط",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 4,
+    "church_name": "كنيسة القديسة العذراء مريم، \nشقلقيل، مصر",
+    "formatted_address": null,
+    "city": "شقلقيل",
+    "governorate": "أسيوط",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 5,
+    "church_name": "كنيسة العذراء مريم، المعابدة \nالغربية، مصر",
+    "formatted_address": null,
+    "city": "المعابدة الغربية",
+    "governorate": "أسيوط",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 7,
+    "church_name": "كنيسة العذراء مريم القديسة، \nبني عليج، مصر",
+    "formatted_address": null,
+    "city": "بني عليج",
+    "governorate": "أسيوط",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 10,
+    "church_name": "كنيسة الشهيد مارمرقس، مدينة \nالفتح، مصر",
+    "formatted_address": null,
+    "city": "مدينة الفتح",
+    "governorate": "أسيوط",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 12,
+    "church_name": "كنيسة الشهيد مارجرجس، \nالمعابدة الغربية، مصر",
+    "formatted_address": null,
+    "city": "المعابدة الغربية",
+    "governorate": "أسيوط",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 53,
+    "church_name": "كنيسة الشهيد مارجرجس، ساقلتة، مصر",
+    "formatted_address": null,
+    "city": "ساقلتة",
+    "governorate": "سوهاج",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 89,
+    "church_name": "كنيسة الشهيد ماربقطر، موشا، مصر",
+    "formatted_address": null,
+    "city": "موشا",
+    "governorate": "أسيوط",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 90,
+    "church_name": "كنيسة الأمير تادرس الشطبي، \nشطب، مصر",
+    "formatted_address": null,
+    "city": "شطب",
+    "governorate": "أسيوط",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 91,
+    "church_name": "كنيسة الأمير تادرس \nالمشرقي، دير ريفا، مصر",
+    "formatted_address": null,
+    "city": "دير ريفا",
+    "governorate": "أسيوط",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 94,
+    "church_name": "كنيسة الملاك ميخائيل، منشاة \nالعقال البحري، مصر",
+    "formatted_address": null,
+    "city": "منشاة العقال البحري",
+    "governorate": "أسيوط",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 100,
+    "church_name": "كنيسة الأنبا قلته الطبيب، \nريفا، مصر",
+    "formatted_address": null,
+    "city": "ريفا",
+    "governorate": "أسيوط",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 247,
+    "church_name": "كنيسة الشهيد مار مرقس، رشيد، \nبالبحيرة، مصر",
+    "formatted_address": null,
+    "city": "بالبحيرة",
+    "governorate": "البحيرة",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 277,
+    "church_name": "كنيسة الشهيد مارجرجس، مصراتة، \nليبيا",
+    "formatted_address": null,
+    "city": "مصراتة",
+    "governorate": "البحيرة",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 409,
+    "church_name": "كنيسة الأنبا بشاي والأنبا \nبطرس، الزقازيق، بالشرقية، مصر",
+    "formatted_address": null,
+    "city": "بالشرقية",
+    "governorate": "الشرقية",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 465,
+    "church_name": "كنيسة مارجرجس الروماني، \nالفيوم (المطرانية)، مصر",
+    "formatted_address": null,
+    "city": "الفيوم (المطرانية)",
+    "governorate": "الفيوم",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 529,
+    "church_name": "كنيسة القديس مارجرجس، كفر \nششتا، بزفتى، بالغربية، مصر",
+    "formatted_address": null,
+    "city": "بالغربية",
+    "governorate": "الغربية",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 684,
+    "church_name": "كنيسة الشهيد مارجرجس \nالروماني، نزلة الفشن، مصر",
+    "formatted_address": null,
+    "city": "نزلة الفشن",
+    "governorate": "بني سويف",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 874,
+    "church_name": "كنيسة الملاك، بني غنى، \nسمالوط",
+    "formatted_address": null,
+    "city": "بني غنى",
+    "governorate": "المنيا",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 875,
+    "church_name": "كنيسة الأنبا بيشوي، عزبة \nبشرى، سمالوط",
+    "formatted_address": null,
+    "city": "عزبة بشرى",
+    "governorate": "المنيا",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 877,
+    "church_name": "كنيسة الشهيد مارمينا، طحا \nالعمدة، سمالوط",
+    "formatted_address": null,
+    "city": "طحا العمدة",
+    "governorate": "المنيا",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 878,
+    "church_name": "كنيسة الملاك ميخائيل، \nالعوايسة، سمالوط",
+    "formatted_address": null,
+    "city": "العوايسة",
+    "governorate": "المنيا",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 879,
+    "church_name": "كنيسة الملاك ميخائيل والآباء \nالرسل، قلوصنا، سمالوط",
+    "formatted_address": null,
+    "city": "قلوصنا",
+    "governorate": "المنيا",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 880,
+    "church_name": "كنيسة العذراء مريم، قرى \nالمهاجرين، سمالوط",
+    "formatted_address": null,
+    "city": "قرى المهاجرين",
+    "governorate": "المنيا",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 881,
+    "church_name": "كنيسة العذراء مريم، عزبة \nطانيوس، سمالوط",
+    "formatted_address": null,
+    "city": "عزبة طانيوس",
+    "governorate": "المنيا",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 883,
+    "church_name": "كنيسة العذراء مريم، عزبة عبد \nالله الخواجة، سمالوط",
+    "formatted_address": null,
+    "city": "عزبة عبد الله الخواجة",
+    "governorate": "المنيا",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 885,
+    "church_name": "كنيسة العذراء مريم، الشروبي، \nسمالوط",
+    "formatted_address": null,
+    "city": "الشروبي",
+    "governorate": "المنيا",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 887,
+    "church_name": "كنيسة العذراء مريم القديسة، \nدير العذراء، جبل الطير، سمالوط",
+    "formatted_address": null,
+    "city": "جبل الطير",
+    "governorate": "المنيا",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 888,
+    "church_name": "كنيسة العذراء القديسة مريم، \nأبو سيدهم، سمالوط",
+    "formatted_address": null,
+    "city": "أبو سيدهم",
+    "governorate": "المنيا",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 889,
+    "church_name": "كنيسة العذراء مريم والأنبا \nأنطونيوس، منقطين، سمالوط",
+    "formatted_address": null,
+    "city": "منقطين",
+    "governorate": "المنيا",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 895,
+    "church_name": "كنيسة الشهيد مارجرجس، نزلة \nحنا، سمالوط",
+    "formatted_address": null,
+    "city": "نزلة حنا",
+    "governorate": "المنيا",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 896,
+    "church_name": "كنيسة الشهيد مارجرجس، نزلة \nأسعد، سمالوط",
+    "formatted_address": null,
+    "city": "نزلة أسعد",
+    "governorate": "المنيا",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 897,
+    "church_name": "كنيسة مارجرجس الروماني، \nمعصرة شرق، سمالوط",
+    "formatted_address": null,
+    "city": "معصرة شرق",
+    "governorate": "المنيا",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 899,
+    "church_name": "كنيسة مارجرجس الروماني، حسن \nباشا، بسمالوط، بالمنيا",
+    "formatted_address": null,
+    "city": "بسمالوط",
+    "governorate": "المنيا",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 904,
+    "church_name": "كنيسة مار جرجس الروماني، \nالمعصرة شرق، سمالوط",
+    "formatted_address": null,
+    "city": "المعصرة شرق",
+    "governorate": "المنيا",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 905,
+    "church_name": "كنيسة الشهيد مارجرجس، \nالحتاحتة، سمالوط",
+    "formatted_address": null,
+    "city": "الحتاحتة",
+    "governorate": "المنيا",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 906,
+    "church_name": "كنيسة مار جرجس الروماني، دفش، \nسمالوط",
+    "formatted_address": null,
+    "city": "دفش",
+    "governorate": "المنيا",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 907,
+    "church_name": "كنيسة الشهيد مارجرجس، أبو \nنخلة، سمالوط",
+    "formatted_address": null,
+    "city": "أبو نخلة",
+    "governorate": "المنيا",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 910,
+    "church_name": "كنيسة القديس أبو مقار، دير \nالعذراء بجبل الطير، بسمالوط، بالمنيا",
+    "formatted_address": null,
+    "city": "بسمالوط",
+    "governorate": "المنيا",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  },
+  {
+    "id": 912,
+    "church_name": "كنيسة الشهيد أبسخيرون \nالقليني، جبل الطير، سمالوط",
+    "formatted_address": null,
+    "city": "جبل الطير",
+    "governorate": "المنيا",
+    "country": null,
+    "latitude": null,
+    "longitude": null
+  }
+]

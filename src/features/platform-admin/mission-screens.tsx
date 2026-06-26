@@ -29,24 +29,48 @@ import { usePlatformDashboard } from "./use-platform-dashboard";
 import { MC } from "./platform-store";
 
 export function ModuleControlScreen() {
-  const { modules, toggleModule, addAudit } = usePlatformStore();
+  const { modules, toggleModule, addAudit, dbSynced } = usePlatformStore();
+  const [busyKey, setBusyKey] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const onToggle = async (key: (typeof modules)[number]["key"], labelAr: string, wasEnabled: boolean) => {
+    setError(null);
+    setBusyKey(key);
+    const ok = await toggleModule(key);
+    if (ok) {
+      addAudit(wasEnabled ? `إيقاف ${labelAr}` : `تشغيل ${labelAr}`, "Owner action");
+    } else {
+      setError("تعذّر حفظ حالة الموديول في قاعدة البيانات.");
+    }
+    setBusyKey(null);
+  };
 
   return (
     <MissionSubShell title="Module Control" titleEn="إدارة الموديولات">
-      <PrivacyStrip>تشغيل/إيقاف الموديولات — بدون الوصول لبيانات المستخدمين.</PrivacyStrip>
+      <PrivacyStrip>تشغيل/إيقاف الموديولات — عند الإيقاف يختفي الموديول من التطبيق لجميع المستخدمين.</PrivacyStrip>
+      {error ? (
+        <p className="mb-2 text-[11px] font-bold text-red-400">{error}</p>
+      ) : null}
+      <p className="mb-2 text-[10px] font-bold text-slate-500">
+        {modules.length} موديول · {dbSynced ? "متزامن مع قاعدة البيانات" : "جاري التحميل من قاعدة البيانات…"}
+      </p>
       <div className="space-y-2">
-        {modules.map((m) => (
-          <CyberToggle
-            key={m.key}
-            label={`${m.labelAr} · ${m.label}`}
-            checked={m.enabled}
-            onChange={() => {
-              toggleModule(m.key);
-              addAudit(m.enabled ? `إيقاف ${m.labelAr}` : `تشغيل ${m.labelAr}`, "Owner action");
-            }}
-          />
-        ))}
+        {modules.length ? (
+          modules.map((m) => (
+            <CyberToggle
+              key={m.key}
+              label={`${m.labelAr} · ${m.label}`}
+              checked={m.enabled}
+              onChange={() => void onToggle(m.key, m.labelAr, m.enabled)}
+            />
+          ))
+        ) : (
+          <p className="rounded-lg border border-slate-700/60 bg-black/30 px-3 py-4 text-center text-[12px] font-bold text-slate-400">
+            لا توجد موديولات للعرض — تحقق من اتصال Supabase.
+          </p>
+        )}
       </div>
+      {busyKey ? <p className="mt-2 text-[10px] text-slate-500">جاري الحفظ في قاعدة البيانات…</p> : null}
     </MissionSubShell>
   );
 }
@@ -224,7 +248,7 @@ export function SystemSettingsScreen() {
 
   if (!settings) {
     return (
-      <MissionSubShell title="System Settings" titleEn="إعدادات النظام">
+      <MissionSubShell title="System Settings" titleEn="إعدادات النظام" navActive="profile">
         <CyberPanel glow={MC.steel}>
           <p className="text-[12px] text-slate-400">جاري تحميل الإعدادات…</p>
         </CyberPanel>
@@ -233,7 +257,7 @@ export function SystemSettingsScreen() {
   }
 
   return (
-    <MissionSubShell title="System Settings" titleEn="إعدادات النظام">
+    <MissionSubShell title="System Settings" titleEn="إعدادات النظام" navActive="profile">
       <PrivacyStrip>إعدادات المنصة العامة — بدون الوصول للمحتوى الخاص.</PrivacyStrip>
       <div className="space-y-2">
         <CyberToggle

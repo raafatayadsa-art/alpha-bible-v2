@@ -12,7 +12,7 @@ export const ALPHA_SCREEN_FRAME = {
   minHeight: "100dvh",
   safeAreaTop: "max(env(safe-area-inset-top), 24px)",
   safeAreaBottom: "max(24px, env(safe-area-inset-bottom))",
-  shellBackground: "#f4ead8",
+  shellBackground: "var(--alpha-bg-base)",
 } as const;
 
 export const alphaScreenFrameStyleVars = {
@@ -111,6 +111,6 @@ export function shouldUseAlphaScreenFrame(pathname: string): boolean {
   if (pathname.startsWith("/dev")) return false;
   if (pathname === "/diagnostics") return false;
   if (pathname === "/alpha-connect" || pathname === "/call" || pathname === "/personal-call") return false;
-  if (pathname === "/messages" || pathname.startsWith("/messages/")) return false;
+  if (pathname === "/messages" || pathname.startsWith("/messages/") || pathname === "/profile/messages") return false;
   return true;
 }

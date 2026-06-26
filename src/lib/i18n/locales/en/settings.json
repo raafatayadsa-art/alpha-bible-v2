@@ -103,6 +103,7 @@
     "devicesAndSessions": "Devices & Sessions",
     "securityGuarantees": "Security Guarantees",
     "visibilityAndData": "Visibility & Data",
+    "membershipAndChurch": "Membership & Church",
     "dataManagement": "Data Management",
     "blocking": "Blocking",
     "bible": "Holy Bible"
@@ -144,8 +145,9 @@
 
     "hidePhone": { "label": "Show/Hide Phone Number", "subtitle": "Control phone visibility" },
     "hideEmail": { "label": "Show/Hide Email", "subtitle": "Control email visibility" },
-    "hideChurch": { "label": "Show/Hide Church", "subtitle": "Control church visibility" },
-    "hideBirthdate": { "label": "Show/Hide Birthdate", "subtitle": "Control birthdate visibility" },
+    "profileVisibility": { "label": "Profile Privacy", "subtitle": "Bio, achievements, and visibility — in profile edit" },
+    "profileChurchData": { "label": "Church & Membership Data", "subtitle": "Church, role, transfer — in profile edit" },
+    "churchManagement": { "label": "Church Management", "subtitle": "Priest or admin dashboard" },
     "whoCanMessage": { "label": "Who Can Message Me", "subtitle": "Choose who can send messages" },
     "receivePrivateMessages": { "label": "Receive Private Messages", "subtitle": "Enable or disable messages" },
     "autoDeleteMessages": { "label": "Auto-Delete Messages", "subtitle": "Delete messages after duration" },

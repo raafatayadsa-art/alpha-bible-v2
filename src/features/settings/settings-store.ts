@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import type { AppLocale } from "@/lib/i18n";
+import { applyAlphaThemeFromMode } from "@/lib/alpha-theme";
 
 const STORAGE_KEY = "ab:alpha-settings";
 
@@ -121,6 +122,7 @@ function write(state: SettingsState) {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    applyAlphaThemeFromMode(state.themeMode);
     window.dispatchEvent(new CustomEvent("ab:settings", { detail: state }));
   } catch { /* ignore */ }
 }
