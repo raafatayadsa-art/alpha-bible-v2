@@ -27,6 +27,7 @@ import { AlphaTopDebugSafeArea } from "@/components/alpha/AlphaTopDebugSafeArea"
 import { AlphaNavigationProvider } from "@/components/navigation/AlphaNavigationProvider";
 import { BibleSearchProvider } from "@/features/bible-search";
 import { AuthBootstrap } from "@/features/auth";
+import { GuardedOutlet } from "@/features/profile";
 import { I18nBootstrap } from "@/lib/i18n/use-locale";
 import { useTranslation } from "react-i18next";
 
@@ -146,6 +147,22 @@ function RootComponent() {
     );
   }
 
+  // Mandatory Alpha username onboarding renders full-screen, outside the app
+  // shell (no navigation, dock, back button or overlays) so it cannot be
+  // skipped, closed or backed out of — but with auth bootstrap available.
+  const isUsernameOnboarding = pathname === "/username-onboarding";
+
+  if (isUsernameOnboarding) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <I18nBootstrap />
+        <AuthBootstrap />
+        <Outlet />
+        <Toaster />
+      </QueryClientProvider>
+    );
+  }
+
   const useScreenFrame = shouldUseAlphaScreenFrame(pathname);
 
   return (
@@ -158,10 +175,10 @@ function RootComponent() {
             <AlphaViewportSync pathname={pathname} />
             {useScreenFrame ? (
               <AlphaScreenFrame mode="flow">
-                <Outlet />
+                <GuardedOutlet />
               </AlphaScreenFrame>
             ) : (
-              <Outlet />
+              <GuardedOutlet />
             )}
             <GlobalBackButton />
             <Toaster />
