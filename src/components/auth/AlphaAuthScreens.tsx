@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import { isProfileCompleted } from "@/features/profile";
 import { cn } from "@/lib/utils";
 import { AlphaOfficialLogo } from "@/components/brand/AlphaOfficialLogo";
 
@@ -99,6 +100,14 @@ export function AlphaLoginScreen() {
       if (!data.user) throw new Error("Missing user");
       window.localStorage.setItem("alpha_remember_me", remember ? "1" : "0");
       await supabase.from("profiles").upsert({ id: data.user.id }, { onConflict: "id", ignoreDuplicates: true });
+      // Mandatory Alpha identity gate: the backend is the single source of truth.
+      // Users without a completed profile must finish username onboarding before
+      // entering the application.
+      const profileCompleted = await isProfileCompleted();
+      if (!profileCompleted) {
+        await navigate({ to: "/username-onboarding", replace: true });
+        return;
+      }
       const { completePendingChurchJoin } = await import("@/features/church/church-membership-api");
       const joinedChurchId = await completePendingChurchJoin();
       await navigate({ to: joinedChurchId ? "/church" : "/" });

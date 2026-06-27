@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UsernameOnboardingRouteImport } from './routes/username-onboarding'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
@@ -92,6 +93,11 @@ import { Route as ChurchDirectoryPlaceIdRouteImport } from './routes/church.dire
 import { Route as ChurchChatContactIdRouteImport } from './routes/church.chat.$contactId'
 import { Route as PlatformScanTrustTrustIdRouteImport } from './routes/platform.scan.trust.$trustId'
 
+const UsernameOnboardingRoute = UsernameOnboardingRouteImport.update({
+  id: '/username-onboarding',
+  path: '/username-onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -533,6 +539,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRouteWithChildren
+  '/username-onboarding': typeof UsernameOnboardingRoute
   '/$book/$chapter': typeof BookChapterRoute
   '/agpeya/$prayerId': typeof AgpeyaPrayerIdRoute
   '/agpeya/saved': typeof AgpeyaSavedRoute
@@ -616,6 +623,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRouteWithChildren
+  '/username-onboarding': typeof UsernameOnboardingRoute
   '/$book/$chapter': typeof BookChapterRoute
   '/agpeya/$prayerId': typeof AgpeyaPrayerIdRoute
   '/agpeya/saved': typeof AgpeyaSavedRoute
@@ -701,6 +709,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRouteWithChildren
+  '/username-onboarding': typeof UsernameOnboardingRoute
   '/$book/$chapter': typeof BookChapterRoute
   '/agpeya/$prayerId': typeof AgpeyaPrayerIdRoute
   '/agpeya/saved': typeof AgpeyaSavedRoute
@@ -787,6 +796,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/search'
     | '/settings'
+    | '/username-onboarding'
     | '/$book/$chapter'
     | '/agpeya/$prayerId'
     | '/agpeya/saved'
@@ -870,6 +880,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/search'
     | '/settings'
+    | '/username-onboarding'
     | '/$book/$chapter'
     | '/agpeya/$prayerId'
     | '/agpeya/saved'
@@ -954,6 +965,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/search'
     | '/settings'
+    | '/username-onboarding'
     | '/$book/$chapter'
     | '/agpeya/$prayerId'
     | '/agpeya/saved'
@@ -1039,6 +1051,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   SearchRoute: typeof SearchRoute
   SettingsRoute: typeof SettingsRouteWithChildren
+  UsernameOnboardingRoute: typeof UsernameOnboardingRoute
   AgpeyaPrayerIdRoute: typeof AgpeyaPrayerIdRoute
   AgpeyaSavedRoute: typeof AgpeyaSavedRoute
   DevAuthRoute: typeof DevAuthRoute
@@ -1075,6 +1088,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/username-onboarding': {
+      id: '/username-onboarding'
+      path: '/username-onboarding'
+      fullPath: '/username-onboarding'
+      preLoaderRoute: typeof UsernameOnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
@@ -1810,6 +1830,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   SearchRoute: SearchRoute,
   SettingsRoute: SettingsRouteWithChildren,
+  UsernameOnboardingRoute: UsernameOnboardingRoute,
   AgpeyaPrayerIdRoute: AgpeyaPrayerIdRoute,
   AgpeyaSavedRoute: AgpeyaSavedRoute,
   DevAuthRoute: DevAuthRoute,
