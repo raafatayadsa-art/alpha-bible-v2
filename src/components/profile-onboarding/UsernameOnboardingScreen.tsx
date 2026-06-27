@@ -139,10 +139,7 @@ export function UsernameOnboardingScreen() {
   }, [availability, username]);
 
   const canSubmit =
-    !submitting &&
-    availability === "available" &&
-    !formatError &&
-    displayName.trim().length > 0;
+    !submitting && availability === "available" && !formatError && displayName.trim().length > 0;
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -242,7 +239,9 @@ export function UsernameOnboardingScreen() {
                 {availability === "available" && (
                   <Check className="h-5 w-5 text-[#1f8a5b]" strokeWidth={3} />
                 )}
-                {availability === "taken" && <X className="h-5 w-5 text-[#c0504a]" strokeWidth={3} />}
+                {availability === "taken" && (
+                  <X className="h-5 w-5 text-[#c0504a]" strokeWidth={3} />
+                )}
               </span>
             </div>
 
