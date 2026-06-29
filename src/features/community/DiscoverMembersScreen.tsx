@@ -7,22 +7,20 @@ import { toast } from "sonner";
 import { DiscoverMemberRow } from "./DiscoverMemberRow";
 import { DiscoverNewMembersCarousel } from "./DiscoverNewMembersCarousel";
 import { CommunityMemberQuickSheet } from "./CommunityMemberQuickSheet";
-import type { CommunityMemberPreview } from "./community-user-trust";
+import { resolveCommunityMemberPreview, type CommunityMemberPreview } from "./community-user-trust";
 import { useDiscoverMembers } from "./useDiscoverMembers";
 import type { DiscoverMember } from "./discover-members-api";
 import { cn } from "@/lib/utils";
 
 function toPreview(member: DiscoverMember): CommunityMemberPreview {
-  return {
+  return resolveCommunityMemberPreview({
     userId: member.userId,
     userName: member.name,
     userAvatarUrl: member.avatarUrl,
     churchName: member.churchName,
-    alphaId: member.alphaId,
     role: member.serviceLabel ?? "عضو",
-    shieldRole: "member",
-    verified: true,
-  };
+    roleType: member.roleType,
+  });
 }
 
 export function DiscoverMembersScreen() {

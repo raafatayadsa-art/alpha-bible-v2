@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { CopticWatermark } from "@/components/coptic";
 import { CalendarDays, Church, Luggage, Users, UserRound } from "lucide-react";
@@ -17,9 +17,7 @@ import { ProfileSuggestedFriendsSection } from "./ProfileSuggestedFriendsSection
 import { AddProfilePersonSheet } from "./AddProfilePersonSheet";
 import { resolveProfileAvatar, useProfileUser } from "./profile-user-store";
 import { isFieldVisibleOnProfile } from "./profile-privacy";
-import { alphaRoleToShieldRole } from "./profile-role";
-import { getAlphaRoleSync } from "@/features/auth";
-import { useState } from "react";
+import { getChurchShieldRoleSync } from "@/features/auth";
 import { COMMUNITY_ROUTES } from "@/features/community/community-routes";
 
 export function ProfilePremiumScreen() {
@@ -39,7 +37,8 @@ export function ProfilePremiumScreen() {
     ? resolveProfileAvatar(profileUser.customAvatarUrl, m.avatarUrl)
     : "";
 
-  const shieldRole = isApproved ? alphaRoleToShieldRole(getAlphaRoleSync()) : null;
+  const churchShield = getChurchShieldRoleSync();
+  const shieldRole = isApproved ? (churchShield ?? "member") : null;
   const trips = listPilgrimagePassport();
 
   const churchLifeItems = useMemo(() => {
@@ -118,14 +117,14 @@ export function ProfilePremiumScreen() {
           affiliation={status}
           affiliationLoading={affiliationLoading}
           shieldRole={shieldRole}
-          showShield={isApproved}
+          showShield={isApproved && Boolean(shieldRole)}
         />
 
         {isFieldVisibleOnProfile(profileUser.privacy.spiritualStats) ? (
           <ProfileMyActivityCard summary={activitySummary} />
         ) : null}
 
-        {communityOn && isFieldVisibleOnProfile(profileUser.privacy.peopleConnect) ? (
+        {communityOn ? (
           <ProfileSuggestedFriendsSection />
         ) : null}
 

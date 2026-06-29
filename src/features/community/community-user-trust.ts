@@ -24,11 +24,12 @@ function mapRoleLabelToShield(roleType?: string | null): ShieldRole | null {
 
 export function resolveCommunityShieldRole(userId: string, roleType?: string): ShieldRole | null {
   if (!userId || !UUID_RE.test(userId)) return null;
+  if (!roleType) return null;
   return mapRoleLabelToShield(roleType) ?? "member";
 }
 
-export function isCommunityUserVerified(userId: string): boolean {
-  return UUID_RE.test(userId);
+export function isCommunityUserVerified(userId: string, roleType?: string): boolean {
+  return UUID_RE.test(userId) && Boolean(roleType);
 }
 
 export function resolveCommunityMemberPreview(input: {
@@ -39,7 +40,7 @@ export function resolveCommunityMemberPreview(input: {
   role?: string;
   roleType?: string;
 }): CommunityMemberPreview {
-  const verified = isCommunityUserVerified(input.userId);
+  const verified = isCommunityUserVerified(input.userId, input.roleType);
   return {
     userId: input.userId,
     userName: input.userName,

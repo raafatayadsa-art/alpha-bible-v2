@@ -1,10 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { BadgeCheck, Clock, UserPen, UserX } from "lucide-react";
-import { AvatarWithDisplayShield } from "@/components/alpha/AvatarWithDisplayShield";
 import type { ShieldRole } from "@/components/alpha/AlphaShield";
+import { ProfileCopticAvatarFrame } from "./ProfileCopticAvatarFrame";
 import type { ProfileAffiliationStatus } from "./profile-membership-status";
 import { AFFILIATION_LABEL } from "./profile-membership-status";
-import { cn } from "@/lib/utils";
 
 type Props = {
   name: string;
@@ -13,6 +12,7 @@ type Props = {
   churchName: string;
   affiliation: ProfileAffiliationStatus;
   affiliationLoading?: boolean;
+  /** Church shield only — omit when user is not church-affiliated. */
   shieldRole: ShieldRole | null;
   showShield: boolean;
 };
@@ -26,7 +26,7 @@ function AffiliationBadge({
 }) {
   if (loading) {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full border border-alpha px-3 py-1.5 text-[13px] font-bold text-alpha-muted">
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-alpha px-3 py-1.5 text-[14px] font-bold text-alpha-muted">
         …
       </span>
     );
@@ -39,7 +39,7 @@ function AffiliationBadge({
 
   return (
     <span
-      className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[13px] font-extrabold"
+      className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[14px] font-extrabold"
       style={{
         borderColor: `${color}44`,
         background: `${color}12`,
@@ -66,38 +66,13 @@ export function ProfileSimpleHeader({
 
   return (
     <header className="pt-[max(env(safe-area-inset-top),12px)] pb-6 text-center">
-      <div className="mx-auto mb-4 flex justify-center">
-        {showShield && shieldRole ? (
-          <AvatarWithDisplayShield
-            userName={name}
-            userAvatar={src}
-            shieldRole={shieldRole}
-            shieldSize="lg"
-          >
-            <img
-              src={src}
-              alt=""
-              className={cn(
-                "h-[108px] w-[108px] rounded-full border-[3px] border-alpha-gold-bright/50 object-cover shadow-[var(--alpha-shadow-normal)]",
-              )}
-            />
-          </AvatarWithDisplayShield>
-        ) : (
-          <div className="relative">
-            {src ? (
-              <img
-                src={src}
-                alt=""
-                className="h-[108px] w-[108px] rounded-full border-[3px] border-alpha-gold-bright/35 object-cover shadow-[var(--alpha-shadow-normal)]"
-              />
-            ) : (
-              <div className="grid h-[108px] w-[108px] place-items-center rounded-full border-[3px] border-alpha-gold-bright/35 bg-alpha-surface text-[32px] font-black text-alpha-glyph">
-                {name.trim().charAt(0) || "Ⲁ"}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+      <ProfileCopticAvatarFrame
+        name={name}
+        avatarUrl={src}
+        shieldRole={shieldRole}
+        showShield={showShield}
+        className="mb-5"
+      />
 
       <h1 className="text-[28px] font-extrabold leading-tight text-alpha-heading">{name}</h1>
       <p className="mt-1 font-mono text-[15px] font-bold tracking-wide text-alpha-muted">{alphaId}</p>
