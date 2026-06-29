@@ -17,5 +17,8 @@ export * from "./ReaderArticleProgress";
 export * from "./BottomDock";
 export * from "./Skeletons";
 export * from "./ChapterReadingScrollRail";
-export * from "./RecentJourney";
+export * from "./VerseActionSheet";
+export * from "./BooksQuickPickerSheet";
+export * from "./ReaderAudioSheet";
+export * from "./ReaderAudioMiniBar";
 

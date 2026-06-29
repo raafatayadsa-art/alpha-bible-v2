@@ -12,9 +12,12 @@ export function usePlatformModules() {
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
-    const rows = await fetchPlatformModulesPublic();
-    setModules(rows);
-    setLoading(false);
+    try {
+      const rows = await fetchPlatformModulesPublic();
+      setModules(rows);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {

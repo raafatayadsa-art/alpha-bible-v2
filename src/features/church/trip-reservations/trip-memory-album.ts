@@ -1,7 +1,12 @@
-/** ALPHA-090 — Trip memory album */
+/** ALPHA-090 — Trip memory album (local + Domain 10) */
 
 import type { TripMemoryAlbum } from "./trip-features-roadmap";
 import type { ChurchPost } from "@/data/church-posts";
+import {
+  fetchTripMemoryAlbumRemote,
+  isDomain10RemoteAvailable,
+  persistTripMemoryAlbumRemote,
+} from "./trip-domain-api";
 
 const KEY = "alpha:090:trip-albums";
 
@@ -24,6 +29,17 @@ export function getTripMemoryAlbum(postId: string): TripMemoryAlbum | null {
   return readMap()[postId] ?? null;
 }
 
+export async function syncTripMemoryAlbumFromDb(postId: string): Promise<void> {
+  if (!postId || isDomain10RemoteAvailable() === false) return;
+
+  const remote = await fetchTripMemoryAlbumRemote(postId);
+  if (!remote) return;
+
+  const map = readMap();
+  map[postId] = { postId, ...remote };
+  writeMap(map);
+}
+
 export function buildTripMemoryAlbum(post: ChurchPost): TripMemoryAlbum {
   const album: TripMemoryAlbum = {
     postId: post.id,
@@ -39,5 +55,14 @@ export function buildTripMemoryAlbum(post: ChurchPost): TripMemoryAlbum {
   const map = readMap();
   map[post.id] = album;
   writeMap(map);
+
+  void persistTripMemoryAlbumRemote({
+    postId: post.id,
+    title: post.title,
+    photos: album.photos,
+    videos: album.videos,
+    highlights: album.highlights,
+  });
+
   return album;
 }

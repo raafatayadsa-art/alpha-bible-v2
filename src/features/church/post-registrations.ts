@@ -2,6 +2,7 @@ import { useEffect, useSyncExternalStore } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { joinTripPublicChannel } from "@/features/alpha-connect/provision-trip-channels";
 import { processWaitlistAfterCancellation } from "./trip-reservations/trip-waitlist";
+import { mirrorTripBookingFromRegistration } from "./trip-reservations/trip-domain-api";
 import { currentUserName, getCurrentUser } from "./current-user";
 import { resolvedMemberChurchName } from "./member-church-api";
 
@@ -226,6 +227,13 @@ export async function registerForPost(opts: {
       const row = rowFromDb(data as Record<string, unknown>);
       upsertLocal(row);
       afterTripRegistration(opts.postId, opts.kind);
+      void mirrorTripBookingFromRegistration({
+        postId: row.postId,
+        userId: row.userId,
+        userName: row.userName,
+        seats: row.seats,
+        status: row.status,
+      });
       return { ok: true, row };
     }
 
@@ -251,6 +259,15 @@ export async function registerForPost(opts: {
     const row = rowFromDb(data as Record<string, unknown>);
     upsertLocal(row);
     afterTripRegistration(opts.postId, opts.kind);
+    if (opts.kind === "trip") {
+      void mirrorTripBookingFromRegistration({
+        postId: row.postId,
+        userId: row.userId,
+        userName: row.userName,
+        seats: row.seats,
+        status: row.status,
+      });
+    }
     return { ok: true, row };
   }
 
@@ -288,13 +305,24 @@ export async function cancelRegistration(id: string) {
   );
   writeCache(list);
 
+  if (row && row.kind === "trip") {
+    void mirrorTripBookingFromRegistration({
+      postId: row.postId,
+      userId: row.userId,
+      userName: row.userName,
+      seats: row.seats,
+      status: "cancelled",
+    });
+  }
+
   if (postId && kind === "trip") {
-    processWaitlistAfterCancellation(postId, freedSeats);
+    await processWaitlistAfterCancellation(postId, freedSeats);
   }
   return !error;
 }
 
 export async function confirmRegistration(id: string) {
+  const row = readCache().find((r) => r.id === id);
   const { error } = await supabase
     .from("post_registrations")
     .update({ status: "confirmed", updated_at: new Date().toISOString() })
@@ -304,6 +332,15 @@ export async function confirmRegistration(id: string) {
     r.id === id ? { ...r, status: "confirmed" as const, updatedAt: new Date().toISOString() } : r,
   );
   writeCache(list);
+  if (row?.kind === "trip") {
+    void mirrorTripBookingFromRegistration({
+      postId: row.postId,
+      userId: row.userId,
+      userName: row.userName,
+      seats: row.seats,
+      status: "confirmed",
+    });
+  }
   return !error;
 }
 

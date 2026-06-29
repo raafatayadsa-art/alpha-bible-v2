@@ -1,7 +1,7 @@
 import avatarMina from "@/assets/avatar-mina.jpg";
 import avatarPriest from "@/assets/avatar-priest.jpg";
 import type { AlphaRole } from "@/features/auth/alpha-roles";
-import { getAlphaRoleSync } from "@/features/auth";
+import { getDisplayShieldRoleSync } from "@/features/auth";
 import { getCurrentUser } from "@/features/church/current-user";
 import { conversations } from "./messaging-data";
 import { hasAlphaPermission, isAlphaOwner } from "@/features/alpha-connect/alpha-permissions";
@@ -28,7 +28,7 @@ export function actorHasAlphaShieldSupremacy(actorId: string): boolean {
   return hasAlphaPermission(actorId, "manage_channels");
 }
 
-export function resolveChannelMemberShieldRole(member: ChannelMember): ChannelMemberShieldRole {
+export function resolveChannelMemberShieldRole(member: ChannelMember): ChannelMemberShieldRole | null {
   if (member.shieldRole) return member.shieldRole;
 
   const fromContact = conversations.find((contact) => contact.id === member.id);
@@ -36,12 +36,10 @@ export function resolveChannelMemberShieldRole(member: ChannelMember): ChannelMe
 
   const user = getCurrentUser();
   if (member.id === user.id) {
-    const role = getAlphaRoleSync();
-    if (role === "owner") return "official";
-    return alphaRoleToChannelMemberShield(role);
+    return getDisplayShieldRoleSync();
   }
 
-  return "member";
+  return null;
 }
 
 export function alphaRoleToChannelMemberShield(role: AlphaRole): ChannelMemberShieldRole {
@@ -285,7 +283,7 @@ export function inviteMembersToChannel(channelId: string, memberIds: string[], c
       name: contact.name,
       avatar: contact.avatar,
       role: "member",
-      shieldRole: fromContact?.role ?? "member",
+      shieldRole: fromContact?.role,
     });
   }
   saveChannelState(channelId, state);

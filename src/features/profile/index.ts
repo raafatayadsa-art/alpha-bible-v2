@@ -13,4 +13,4 @@ export { ProfileVisitsSection } from "./ProfileVisitsSection";
 export { ProfileTripTimelineSection } from "./ProfileTripTimelineSection";
 export { MembershipCompactStrip } from "./MembershipCompactStrip";
 export { MembershipBarcodeCard } from "./MembershipBarcodeCard";
-export { alphaRoleToShieldRole, roleLabelAr } from "./profile-role";
+export { alphaRoleToShieldRole, roleLabelAr, resolveProfileRoleLabel } from "./profile-role";

@@ -5,9 +5,9 @@ import { Link2, MapPin, Siren, type LucideIcon } from "lucide-react";
 import controlCenterBg from "@/assets/control-center-bg.png";
 import { MC } from "./platform-store";
 
-export const PP_GOLD = "#e7c97a";
-export const PP_GOLD_BRIGHT = "#f0d78c";
-export const PP_BLUE = "#8fd4ff";
+export const PP_GOLD = "#34C759";
+export const PP_GOLD_BRIGHT = "#30D158";
+export const PP_BLUE = "#0A84FF";
 
 /** Western digits only — platform control standard */
 export function formatPlatformNumber(n: number): string {
@@ -18,13 +18,12 @@ export function PlatformPremiumStyles() {
   return (
     <style>{`
       .pp-card-shell {
-        background: linear-gradient(155deg, rgba(18, 24, 42, 0.94) 0%, rgba(8, 10, 20, 0.98) 100%);
+        background: #1C1C1E;
       }
       .pp-hero-shell {
         box-shadow:
-          0 0 0 1px rgba(231,201,122,0.18),
-          0 12px 32px -14px rgba(0,0,0,0.75),
-          0 0 28px rgba(110,181,240,0.08);
+          0 0 0 1px rgba(255,255,255,0.06),
+          0 8px 24px -12px rgba(0,0,0,0.65);
       }
     `}</style>
   );
@@ -51,76 +50,17 @@ export function PlatformStatsBar({
     <div
       className="relative mb-3 overflow-hidden rounded-[18px] border"
       style={{
-        borderColor: `${PP_GOLD}28`,
-        background: "rgba(0,0,0,0.35)",
-        boxShadow: `inset 0 1px 0 rgba(255,255,255,0.06), 0 0 24px ${PP_GOLD}12`,
+        borderColor: MC.panelBorder,
+        background: "#000000",
+        boxShadow: `inset 0 1px 0 rgba(255,255,255,0.04)`,
       }}
     >
       <div className="grid grid-cols-2 gap-px sm:grid-cols-4" style={{ background: `${MC.panelBorder}` }}>
         {items.map((item) => (
-          <div key={item.label} className="px-3 py-3 text-center" style={{ background: "rgba(8,12,24,0.92)" }}>
-            <p className="text-[9px] font-bold text-slate-500">{item.label}</p>
+          <div key={item.label} className="px-3 py-3 text-center" style={{ background: MC.panel }}>
+            <p className="text-[9px] font-bold" style={{ color: MC.muted }}>{item.label}</p>
             <p className="mt-1 font-mono text-[18px] font-extrabold tabular-nums" style={{ color: item.color }}>
               {item.value}
-            </p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-export function PlatformDashboardPanel({
-  healthScore,
-  items,
-  loading = false,
-}: {
-  healthScore: number;
-  items: { label: string; value: string; color: string }[];
-  loading?: boolean;
-}) {
-  const [sync, setSync] = useState(() =>
-    new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
-  );
-
-  useEffect(() => {
-    const t = window.setInterval(() => {
-      setSync(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
-    }, 1000);
-    return () => window.clearInterval(t);
-  }, []);
-
-  return (
-    <div
-      className="relative mb-3 overflow-hidden rounded-[18px] border"
-      style={{
-        borderColor: `${PP_GOLD}30`,
-        background: "linear-gradient(160deg, rgba(14,20,36,0.96) 0%, rgba(6,8,16,0.98) 100%)",
-        boxShadow: `inset 0 1px 0 rgba(255,255,255,0.07), 0 0 28px ${PP_GOLD}10`,
-      }}
-    >
-      <div
-        className="flex items-center justify-between gap-2 border-b px-3.5 py-2.5"
-        style={{ borderColor: `${MC.panelBorder}` }}
-      >
-        <div className="flex items-center gap-1.5">
-          <span className="h-1.5 w-1.5 rounded-full" style={{ background: MC.green, boxShadow: `0 0 8px ${MC.green}` }} />
-          <span className="text-[10px] font-bold" style={{ color: MC.green }}>
-            Operational · {healthScore}%
-          </span>
-        </div>
-        <span className="font-mono text-[9px] font-semibold tabular-nums text-slate-500">Sync {sync}</span>
-      </div>
-
-      <div className="grid grid-cols-3 gap-px sm:grid-cols-5" style={{ background: MC.panelBorder }}>
-        {items.map((item) => (
-          <div key={item.label} className="px-2.5 py-3 text-center" style={{ background: "rgba(8,12,24,0.94)" }}>
-            <p className="truncate text-[9px] font-bold uppercase tracking-wide text-slate-500">{item.label}</p>
-            <p
-              className="mt-1 font-mono text-[22px] font-extrabold tabular-nums leading-none"
-              style={{ color: item.color }}
-            >
-              {loading ? "…" : item.value}
             </p>
           </div>
         ))}
@@ -133,7 +73,7 @@ export function PlatformControlHero({ subtitle }: { subtitle?: string }) {
   return (
     <article
       className="pp-hero-shell relative mb-3 h-[96px] w-full overflow-hidden rounded-[20px] border"
-      style={{ borderColor: "rgba(231,201,122,0.32)", background: "#030208" }}
+      style={{ borderColor: MC.panelBorder, background: "#000000" }}
     >
       <img
         src={controlCenterBg}
@@ -280,7 +220,7 @@ export function PlatformActionStrip({
         />
         <div
           aria-hidden
-          className="my-1.5 w-px shrink-0 bg-gradient-to-b from-transparent via-[#e7c97a]/35 to-transparent"
+          className="my-1.5 w-px shrink-0 bg-gradient-to-b from-transparent via-[#34C759]/35 to-transparent"
         />
         <PlatformGlowBtn
           tone="gold"

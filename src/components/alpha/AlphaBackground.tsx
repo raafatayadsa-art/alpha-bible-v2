@@ -44,9 +44,13 @@ export function AlphaBackground({
       )}
       style={{
         backgroundColor: "var(--alpha-bg-base)",
-        backgroundImage: gradient,
+        backgroundImage: isDark
+          ? `var(--alpha-shell-overlay), var(--alpha-bg-radial), var(--alpha-bg-bloom)`
+          : `${gradient ?? ""}, var(--alpha-bg-radial), var(--alpha-bg-bloom)`.replace(/^, /, ""),
         ...alphaTopDebugBorderStyle(fixedBgActive),
       }}
-    />
+    >
+      <div className="alpha-bg-noise-layer" aria-hidden />
+    </div>
   );
 }

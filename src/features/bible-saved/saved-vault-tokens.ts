@@ -12,6 +12,17 @@ export const SAVED_VAULT = {
   cardBg: "#07040f",
 } as const;
 
+/** Light ivory theme for the highlighted-verses tab. */
+export const HIGHLIGHT_VAULT = {
+  bgDeep: "#FAF7F2",
+  gold: "#D4AF37",
+  goldMuted: "#B8893A",
+  text: "#2A1F12",
+  textMuted: "#8A7355",
+  border: "rgba(212, 175, 55, 0.32)",
+  cardBorder: "rgba(212, 175, 55, 0.22)",
+} as const;
+
 export function formatSavedAgo(ms: number): string {
   const diff = Date.now() - ms;
   const mins = Math.floor(diff / 60_000);

@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AlphaRegisterScreen } from "@/components/auth/AlphaAuthScreens";
+import { AlphaPremiumSignUpScreen } from "@/components/auth/AlphaPremiumSignUpScreen";
 
 export const Route = createFileRoute("/register")({
   head: () => ({ meta: [
-    { title: "إنشاء حساب — Alpha" },
-    { name: "description", content: "أنشئ حسابًا جديدًا في تطبيق ألفا." },
-    { property: "og:title", content: "إنشاء حساب — Alpha" },
-    { property: "og:description", content: "أنشئ حسابًا جديدًا في تطبيق ألفا." },
+    { title: "Sign Up — Alpha" },
+    { name: "description", content: "Create your Alpha account and begin your spiritual journey." },
+    { property: "og:title", content: "Sign Up — Alpha" },
+    { property: "og:description", content: "Create your Alpha account and begin your spiritual journey." },
   ] }),
-  component: AlphaRegisterScreen,
+  component: AlphaPremiumSignUpScreen,
 });

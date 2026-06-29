@@ -41,6 +41,9 @@ export async function changeAppLocale(locale: AppLocale) {
   writeSettingsState({ locale: next });
   try {
     localStorage.setItem(LOCALE_STORAGE_KEY, next);
+    void import("@/lib/user-sync-scheduler").then(({ scheduleUserDataSync }) =>
+      scheduleUserDataSync({ delayMs: 2000, extraKey: LOCALE_STORAGE_KEY }),
+    );
   } catch {
     /* ignore */
   }

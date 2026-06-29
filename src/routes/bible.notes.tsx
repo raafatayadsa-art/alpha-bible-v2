@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { useCallback } from "react";
 import { BibleJournalPremiumScreen } from "@/features/bible-journal";
 import type { JournalKind } from "@/lib/bible-journal-state";
 
@@ -22,10 +23,22 @@ export const Route = createFileRoute("/bible/notes")({
 });
 
 function BibleNotesPage() {
-  const { tab, compose, book, chapter, verse } = Route.useSearch();
+  const router = useRouter();
+  const { tab, compose, book, chapter, verse, from } = Route.useSearch();
 
   const chapterNum = chapter ? parseInt(chapter, 10) : undefined;
   const verseNum = verse ? parseInt(verse, 10) : undefined;
+
+  const handleBack = useCallback(() => {
+    if (from === "reader" && book && chapterNum && !Number.isNaN(chapterNum)) {
+      void router.navigate({
+        to: "/$book/$chapter",
+        params: { book, chapter: String(chapterNum) },
+      });
+      return;
+    }
+    void router.navigate({ to: "/bible" });
+  }, [router, from, book, chapterNum]);
 
   const verseLink =
     book && chapterNum && !Number.isNaN(chapterNum)
@@ -38,7 +51,7 @@ function BibleNotesPage() {
 
   return (
     <BibleJournalPremiumScreen
-      backTo="/bible"
+      onBack={handleBack}
       fromBible2
       initialTab={tab ?? "note"}
       initialCompose={compose}

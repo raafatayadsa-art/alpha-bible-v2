@@ -23,5 +23,8 @@ export function toggleFavoriteChurch(id: string): boolean {
   else set.add(id);
   window.localStorage.setItem(FAVORITES_KEY, JSON.stringify([...set]));
   window.dispatchEvent(new CustomEvent("ab:church-directory-favorites"));
+  void import("@/lib/user-sync-scheduler").then(({ scheduleUserDataSync }) =>
+    scheduleUserDataSync({ delayMs: 1500, extraKey: FAVORITES_KEY }),
+  );
   return !next;
 }

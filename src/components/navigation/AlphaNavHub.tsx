@@ -21,7 +21,7 @@ import {
   MESSAGING_GLASS_SHELL,
 } from "@/components/alpha/messaging-ui";
 import { getCurrentUser } from "@/features/church/current-user";
-import { subscribeAuthContext, getAlphaRoleSync } from "@/features/auth";
+import { subscribeAuthContext, getDisplayShieldRoleSync } from "@/features/auth";
 import { deriveAlphaIdShort } from "@/features/identity/alpha-identity";
 import { AlphaShield } from "@/components/alpha/AlphaShield";
 import { NAV_ITEM_MODULE_KEY, usePlatformModules } from "@/lib/platform-modules";
@@ -119,12 +119,14 @@ export function AlphaNavHub({ open, onClose }: AlphaNavHubProps) {
             <div className="flex flex-col gap-0.5">
               <p className="text-[15px] font-bold text-[#1F2937]">{user.name?.trim() || "مينا جورج"}</p>
               <div className="flex items-center gap-1.5">
-                <AlphaShield
-                  role={getAlphaRoleSync() || "member"}
-                  size="sm"
-                  userName={user.name?.trim() || "مينا جورج"}
-                  userAvatar={user.avatarUrl || avatarMina}
-                />
+                {getDisplayShieldRoleSync() ? (
+                  <AlphaShield
+                    role={getDisplayShieldRoleSync()}
+                    size="sm"
+                    userName={user.name?.trim() || "مينا جورج"}
+                    userAvatar={user.avatarUrl || avatarMina}
+                  />
+                ) : null}
                 <span className="text-[11px] font-bold tracking-wide text-[#6B7280] font-mono">
                   {deriveAlphaIdShort(user.id)}
                 </span>

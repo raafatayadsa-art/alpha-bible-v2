@@ -186,12 +186,12 @@ function ParticipantStatusIcons({ member }: { member: ChannelMember }) {
   return (
     <div className="absolute -left-0.5 -top-0.5 z-[2] flex flex-col gap-0.5">
       {member.muted ? (
-        <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full border border-[#0a1430] bg-destructive shadow-sm">
+        <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full border border-[var(--alpha-bg-cinematic)] bg-destructive shadow-sm">
           <MicOff className="h-2 w-2 text-white" />
         </span>
       ) : null}
       {member.blocked ? (
-        <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full border border-[#0a1430] bg-destructive/90 shadow-sm">
+        <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full border border-[var(--alpha-bg-cinematic)] bg-destructive/90 shadow-sm">
           <Ban className="h-2 w-2 text-white" />
         </span>
       ) : null}
@@ -680,7 +680,7 @@ export function ConnectChannelTalkPermission({
         <Lock className="h-4 w-4 shrink-0 text-muted-foreground" />
       </button>
       {open && canEdit ? (
-        <div className="absolute inset-x-0 top-[calc(100%+6px)] z-20 overflow-hidden rounded-2xl border border-white/10 bg-[#0a1430]/95 shadow-xl backdrop-blur-md">
+        <div className="absolute inset-x-0 top-[calc(100%+6px)] z-20 overflow-hidden rounded-2xl border border-white/10 bg-[color-mix(in_srgb,var(--alpha-bg-cinematic)_95%,transparent)] shadow-xl backdrop-blur-md">
           {TALK_PERMISSION_OPTIONS.map((option) => (
             <button
               key={option.id}
@@ -804,7 +804,7 @@ export function ConnectChannelActionBar({
             )}
           >
             {action.soon ? (
-              <span className="absolute -top-1 left-1/2 z-10 -translate-x-1/2 rounded-full px-1.5 py-0.5 text-[7px] font-bold text-[#0a1430]" style={{ background: "oklch(0.78 0.16 75)" }}>
+              <span className="absolute -top-1 left-1/2 z-10 -translate-x-1/2 rounded-full px-1.5 py-0.5 text-[7px] font-bold text-[var(--alpha-bg-cinematic)]" style={{ background: "oklch(0.78 0.16 75)" }}>
                 قريباً
               </span>
             ) : null}

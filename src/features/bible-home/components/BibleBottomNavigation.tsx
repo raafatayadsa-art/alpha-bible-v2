@@ -12,7 +12,7 @@ const TABS = [
   { id: "katameros", label: "القطمارس", to: "/katameros", icon: CalendarDays, module: "katameros" as PlatformModuleKey },
   { id: "bible", label: "الكتاب المقدس", raised: true as const, module: "bible" as PlatformModuleKey },
   { id: "agpeya", label: "الأجبية", to: "/agpeya", icon: Cross, module: "agpeya" as PlatformModuleKey },
-  { id: "more", label: "المزيد", to: "/settings", icon: MoreHorizontal },
+  { id: "more", label: "المزيد", to: "/more", icon: MoreHorizontal },
 ] as const;
 
 export function BibleBottomNavigation({

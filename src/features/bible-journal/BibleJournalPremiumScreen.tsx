@@ -12,7 +12,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import cardMeditation from "@/assets/home/card-meditation.jpg";
 import artVerse from "@/assets/home/art-verse.jpg";
-import controlCenterBg from "@/assets/control-center-bg.png";
+import bgWatermark from "@/features/bible-lavoble/assets/bg-watermark.jpg";
 import { BackButton } from "@/components/bible";
 import { CopticCross, CopticMiniCross } from "@/components/coptic";
 import { HeroBadgeEmblem, HeroLedgerStylesHost } from "@/components/home/hero-card-chrome";
@@ -38,8 +38,8 @@ function JournalVaultStyles() {
         50% { opacity: 0.5; filter: drop-shadow(0 0 10px rgba(168,232,204,0.55)); }
       }
       @keyframes journalHeroPulse {
-        0%, 100% { box-shadow: 0 0 0 1px rgba(110,181,240,0.15), 0 0 32px rgba(100,200,160,0.08); }
-        50% { box-shadow: 0 0 0 1px rgba(143,212,180,0.35), 0 0 48px rgba(110,181,240,0.15); }
+        0%, 100% { box-shadow: 0 0 0 1px rgba(212,175,55,0.2), 0 8px 28px rgba(120,90,40,0.08); }
+        50% { box-shadow: 0 0 0 1px rgba(212,175,55,0.38), 0 12px 36px rgba(120,90,40,0.14); }
       }
       @keyframes journalCardIn {
         from { opacity: 0; transform: translateY(12px); }
@@ -48,19 +48,15 @@ function JournalVaultStyles() {
       @keyframes journalTabGoldPulse {
         0%, 100% {
           box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.18),
-            inset 0 -3px 6px rgba(0,0,0,0.35),
-            0 10px 22px -10px rgba(0,0,0,0.55),
-            0 0 0 1px rgba(231,201,122,0.35),
-            0 0 18px rgba(231,201,122,0.12);
+            inset 0 1px 0 rgba(255,255,255,0.95),
+            0 8px 20px -10px rgba(120,90,40,0.18),
+            0 0 0 1px rgba(212,175,55,0.35);
         }
         50% {
           box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.28),
-            inset 0 -3px 6px rgba(0,0,0,0.3),
-            0 14px 28px -8px rgba(231,201,122,0.35),
-            0 0 0 2px rgba(240,215,140,0.65),
-            0 0 32px rgba(231,201,122,0.38);
+            inset 0 1px 0 rgba(255,255,255,1),
+            0 12px 28px -8px rgba(212,175,55,0.28),
+            0 0 0 2px rgba(212,175,55,0.55);
         }
       }
       .journal-vault-glyph { animation: journalGlyphGlow 4.5s ease-in-out infinite; }
@@ -87,23 +83,22 @@ function JournalVaultBackdrop({ tab }: { tab: JournalKind }) {
 
   const glow =
     tab === "meditation"
-      ? "radial-gradient(ellipse 80% 50% at 70% 20%, rgba(100,200,160,0.22) 0%, transparent 60%)"
-      : "radial-gradient(ellipse 80% 50% at 30% 20%, rgba(110,181,240,0.22) 0%, transparent 60%)";
+      ? "radial-gradient(ellipse 80% 50% at 70% 20%, rgba(100,200,160,0.14) 0%, transparent 60%)"
+      : "radial-gradient(ellipse 80% 50% at 30% 20%, rgba(110,181,240,0.14) 0%, transparent 60%)";
 
   return (
     <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden>
       <img
-        src={controlCenterBg}
+        src={bgWatermark}
         alt=""
         draggable={false}
-        className="absolute inset-0 h-full w-full object-cover object-center"
-        style={{ opacity: 0.85, filter: "brightness(1.2) contrast(1.05) saturate(0.8)" }}
+        className="absolute inset-x-0 top-0 h-[55vh] w-full object-cover opacity-[0.22] mix-blend-luminosity"
       />
       <div
         className="absolute inset-0"
         style={{
           background:
-            "linear-gradient(180deg, rgba(5,8,20,0.5) 0%, rgba(3,2,8,0.88) 45%, rgba(3,2,8,0.97) 100%)",
+            "linear-gradient(180deg, rgba(250,247,242,0.35) 0%, rgba(250,247,242,0.92) 45%, #FAF7F2 100%)",
         }}
       />
       <div className="absolute inset-0 opacity-90 transition-[background] duration-700" style={{ background: glow }} />
@@ -153,27 +148,27 @@ function JournalHeroTabChip({
       style={
         active
           ? {
-              borderColor: "rgba(231,201,122,0.55)",
-              background: `linear-gradient(155deg, ${bgActive} 0%, rgba(3,2,8,0.88) 55%, rgba(7,4,15,0.95) 100%)`,
+              borderColor: "rgba(212,175,55,0.55)",
+              background: `linear-gradient(155deg, ${bgActive} 0%, rgba(255,255,255,0.95) 55%, rgba(250,247,242,0.98) 100%)`,
             }
           : {
               borderColor: borderIdle,
-              background: "linear-gradient(155deg, rgba(255,255,255,0.07) 0%, rgba(0,0,0,0.42) 48%, rgba(3,2,8,0.78) 100%)",
+              background: "linear-gradient(155deg, rgba(255,255,255,0.92) 0%, rgba(245,239,228,0.88) 48%, rgba(250,247,242,0.95) 100%)",
               boxShadow:
-                "inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -3px 6px rgba(0,0,0,0.4), 0 8px 18px -12px rgba(0,0,0,0.55)",
+                "inset 0 1px 0 rgba(255,255,255,0.95), 0 6px 16px -10px rgba(120,90,40,0.12)",
             }
       }
     >
       <span
         className="grid h-10 w-10 place-items-center rounded-[14px] border backdrop-blur-sm"
         style={{
-          borderColor: active ? "rgba(231,201,122,0.35)" : `${accent}44`,
+          borderColor: active ? "rgba(212,175,55,0.35)" : `${accent}44`,
           background: active
-            ? "linear-gradient(145deg, rgba(255,255,255,0.14) 0%, rgba(0,0,0,0.35) 100%)"
-            : "linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.3) 100%)",
+            ? "linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(245,239,228,0.85) 100%)"
+            : "linear-gradient(145deg, rgba(255,255,255,0.88) 0%, rgba(250,247,242,0.75) 100%)",
           boxShadow: active
-            ? "inset 0 1px 0 rgba(255,255,255,0.22), 0 4px 12px -4px rgba(231,201,122,0.35)"
-            : `inset 0 1px 0 rgba(255,255,255,0.15), 0 4px 10px -6px ${accent}33`,
+            ? "inset 0 1px 0 rgba(255,255,255,1), 0 4px 12px -4px rgba(212,175,55,0.25)"
+            : `inset 0 1px 0 rgba(255,255,255,0.9), 0 4px 10px -6px ${accent}22`,
         }}
       >
         <Icon className="h-[18px] w-[18px]" style={{ color: active ? JOURNAL_VAULT.gold : accentBright }} strokeWidth={2} />
@@ -262,7 +257,7 @@ function JournalActionRow({
         style={{
           borderColor: "rgba(255,120,120,0.3)",
           background: "rgba(255,80,80,0.08)",
-          color: "#ffaaaa",
+          color: "#ff6666",
         }}
       >
         <Trash2 className="h-4 w-4" />
@@ -314,14 +309,14 @@ function JournalSpotlightCard({
           aria-hidden
           draggable={false}
           className="pointer-events-none absolute inset-0 h-full w-full object-cover"
-          style={{ filter: "brightness(0.38) saturate(1.05)" }}
+          style={{ filter: "brightness(0.92) saturate(0.95)" }}
         />
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              "linear-gradient(180deg, rgba(3,2,8,0.3) 0%, rgba(3,2,8,0.75) 55%, rgba(3,2,8,0.94) 100%)",
+              "linear-gradient(180deg, rgba(250,247,242,0.15) 0%, rgba(250,247,242,0.72) 55%, rgba(250,247,242,0.94) 100%)",
           }}
         />
         <div className="relative z-10 p-5 text-right">
@@ -384,7 +379,7 @@ function JournalEntryCard({
         style={{
           borderColor: `${accent}33`,
           background: JOURNAL_VAULT.cardBg,
-          boxShadow: `0 16px 36px -14px rgba(0,0,0,0.65), 0 0 24px ${isMed ? "rgba(100,200,160,0.06)" : "rgba(110,181,240,0.06)"}`,
+          boxShadow: `0 12px 28px -14px rgba(120,90,40,0.16), 0 0 20px ${isMed ? "rgba(100,200,160,0.08)" : "rgba(110,181,240,0.08)"}`,
         }}
       >
         <div
@@ -417,7 +412,7 @@ function JournalEntryCard({
             {ref ? (
               <span
                 className="inline-flex rounded-full border px-2 py-0.5 backdrop-blur-md"
-                style={{ borderColor: `${JOURNAL_VAULT.gold}44`, background: "rgba(0,0,0,0.35)" }}
+                style={{ borderColor: `${JOURNAL_VAULT.gold}44`, background: "rgba(255,255,255,0.85)" }}
               >
                 <HeroBadgeEmblem label={ref} compact />
               </span>
@@ -459,7 +454,7 @@ function JournalEmptyState({
       className="journal-vault-hero relative mt-8 overflow-hidden rounded-[28px] border p-8 text-center"
       style={{
         borderColor: `${accent}44`,
-        background: "linear-gradient(180deg, rgba(7,4,15,0.92) 0%, rgba(3,2,8,0.88) 100%)",
+        background: "linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(250,247,242,0.92) 100%)",
       }}
     >
       <div className="relative mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl border" style={{ borderColor: `${accent}44`, background: isMed ? JOURNAL_VAULT.meditationBg : JOURNAL_VAULT.noteBg }}>
@@ -491,13 +486,13 @@ function JournalEmptyState({
 }
 
 export function BibleJournalPremiumScreen({
-  backTo,
+  onBack,
   fromBible2,
   initialTab = "note",
   initialCompose = false,
   verseLink,
 }: {
-  backTo: string;
+  onBack: () => void;
   fromBible2: boolean;
   initialTab?: JournalKind;
   initialCompose?: boolean;
@@ -516,6 +511,10 @@ export function BibleJournalPremiumScreen({
   const [editEntry, setEditEntry] = useState<BibleJournalEntry | null>(null);
   const [resolvedVerseLink, setResolvedVerseLink] = useState(verseLink);
   const [lockReference, setLockReference] = useState(false);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, []);
 
   useEffect(() => {
     const prefill = consumeJournalVersePrefill();
@@ -577,7 +576,7 @@ export function BibleJournalPremiumScreen({
   );
 
   return (
-    <main dir="rtl" className="relative min-h-screen w-full overflow-x-hidden" style={{ background: JOURNAL_VAULT.bgDeep }}>
+    <main dir="rtl" className="relative min-h-screen w-full overflow-x-hidden bg-alpha-base text-alpha">
       <HeroLedgerStylesHost />
       <JournalVaultStyles />
       <JournalVaultBackdrop tab={tab} />
@@ -586,12 +585,12 @@ export function BibleJournalPremiumScreen({
         <header
           className="sticky top-0 z-30 -mx-1 mb-2 flex items-center justify-between gap-2 rounded-2xl border px-1 py-2 backdrop-blur-xl"
           style={{
-            borderColor: "rgba(231,201,122,0.18)",
-            background: "rgba(5,8,20,0.72)",
+            borderColor: "rgba(212,175,55,0.28)",
+            background: "rgba(250,247,242,0.92)",
             top: "max(env(safe-area-inset-top), 8px)",
           }}
         >
-          <BackButton to={backTo} compact tone="dark" />
+          <BackButton onBack={onBack} compact tone="light" />
           <div className="text-center">
             <p className="text-[10px] font-bold tracking-wide" style={{ color: JOURNAL_VAULT.gold }}>
               ✦ ALPHA BIBLE ✦
@@ -619,7 +618,7 @@ export function BibleJournalPremiumScreen({
           className="journal-vault-hero relative mt-3 overflow-hidden rounded-[26px] border p-5"
           style={{
             borderColor: JOURNAL_VAULT.border,
-            background: "linear-gradient(145deg, rgba(7,4,15,0.88) 0%, rgba(3,2,8,0.75) 100%)",
+            background: "linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(245,239,228,0.88) 100%)",
           }}
         >
           <div className="pointer-events-none absolute left-3 top-3 text-[#7ec8f0]/30" aria-hidden>
@@ -676,8 +675,8 @@ export function BibleJournalPremiumScreen({
           {tab === "meditation" ? "بحث في تأملاتك" : "بحث في ملاحظاتك"}
         </p>
         <div
-          className="mt-2 flex items-center gap-2 rounded-2xl border px-3 py-2.5"
-          style={{ borderColor: "rgba(255,255,255,0.1)", background: "rgba(0,0,0,0.35)" }}
+          className="mt-2 flex items-center gap-2 rounded-2xl border bg-white/80 px-3 py-2.5"
+          style={{ borderColor: "rgba(212,175,55,0.28)" }}
         >
           <Search className="h-4 w-4 shrink-0" style={{ color: JOURNAL_VAULT.textMuted }} />
           <input

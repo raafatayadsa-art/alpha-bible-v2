@@ -1,7 +1,12 @@
-/** ALPHA-096 — Companion matching (rooms / seats / housing) */
+/** ALPHA-096 — Companion matching (local + Domain 10 `trip_companion_groups`) */
 
 import { getRegistrationsForPost } from "../post-registrations";
 import { getFamilyBookingMeta } from "./family-booking";
+import {
+  fetchTripCompanionGroups,
+  isDomain10RemoteAvailable,
+  replaceTripCompanionGroupsRemote,
+} from "./trip-domain-api";
 
 const KEY = "alpha:096:companion-groups";
 
@@ -28,8 +33,33 @@ function writeAll(rows: CompanionGroup[]) {
   localStorage.setItem(KEY, JSON.stringify(rows));
 }
 
+function mergeRemoteLocal(postId: string, remote: CompanionGroup[]): CompanionGroup[] {
+  const local = readAll().filter((g) => g.postId === postId);
+  const merged = remote.map((g) => ({ ...g, postId }));
+  for (const row of local) {
+    if (!merged.some((x) => x.id === row.id)) merged.push(row);
+  }
+  return merged;
+}
+
 export function listCompanionGroups(postId: string): CompanionGroup[] {
   return readAll().filter((g) => g.postId === postId);
+}
+
+export async function syncCompanionGroupsFromDb(postId: string): Promise<void> {
+  if (!postId || isDomain10RemoteAvailable() === false) return;
+
+  const remoteRows = await fetchTripCompanionGroups(postId);
+  const remote: CompanionGroup[] = remoteRows.map((r) => ({
+    id: r.id,
+    postId,
+    label: r.label,
+    registrationIds: r.registrationIds,
+    kind: r.kind,
+  }));
+
+  const rest = readAll().filter((g) => g.postId !== postId);
+  writeAll([...mergeRemoteLocal(postId, remote), ...rest]);
 }
 
 export function autoMatchCompanions(postId: string): CompanionGroup[] {
@@ -62,5 +92,17 @@ export function autoMatchCompanions(postId: string): CompanionGroup[] {
   }
 
   writeAll([...readAll().filter((g) => g.postId !== postId), ...groups]);
+
+  void replaceTripCompanionGroupsRemote({
+    postId,
+    groups: groups.map((g) => ({
+      label: g.label,
+      registrationIds: g.registrationIds,
+      kind: g.kind,
+    })),
+  }).then((ok) => {
+    if (ok) void syncCompanionGroupsFromDb(postId);
+  });
+
   return groups;
 }

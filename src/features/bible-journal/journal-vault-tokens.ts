@@ -1,20 +1,20 @@
-/** Premium journal vault — notes (study blue) + meditations (spirit green). */
+/** Premium journal — light ivory + gold; notes (study blue) + meditations (spirit green). */
 
 export const JOURNAL_VAULT = {
-  bgDeep: "#030208",
-  gold: "#e7c97a",
-  goldMuted: "#b8893a",
-  text: "rgba(255,255,255,0.92)",
-  textMuted: "rgba(255,255,255,0.58)",
-  border: "rgba(231,201,122,0.28)",
-  cardBg: "#07040f",
-  noteAccent: "#6eb5f0",
-  noteAccentBright: "#8fd4ff",
-  noteBg: "rgba(110,181,240,0.1)",
-  meditationAccent: "#8fd4b8",
-  meditationAccentBright: "#a8e8cc",
-  meditationBg: "rgba(100,200,160,0.1)",
-  meditationGlow: "rgba(143,212,180,0.35)",
+  bgDeep: "#FAF7F2",
+  gold: "#D4AF37",
+  goldMuted: "#B8893A",
+  text: "#2A1F12",
+  textMuted: "#8A7355",
+  border: "rgba(212, 175, 55, 0.35)",
+  cardBg: "#FFFFFF",
+  noteAccent: "#3D7AB8",
+  noteAccentBright: "#4A8EC8",
+  noteBg: "rgba(110, 181, 240, 0.14)",
+  meditationAccent: "#3D8A68",
+  meditationAccentBright: "#5A9E78",
+  meditationBg: "rgba(100, 200, 160, 0.14)",
+  meditationGlow: "rgba(100, 200, 160, 0.28)",
 } as const;
 
 export const STUDY_TAG_LABELS: Record<string, string> = {

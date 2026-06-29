@@ -27,20 +27,18 @@ export function BibleV2TestamentCard({ data }: { data: BibleV2TestamentData }) {
       search={{ testament: data.id }}
       dir="rtl"
       aria-label={data.title}
-      className="group relative flex aspect-[1/1.55] flex-1 flex-col overflow-hidden rounded-[26px] transition duration-300 hover:-translate-y-1 active:scale-[0.98]"
+      className="group relative block aspect-[1/1.55] min-w-0 flex-1 overflow-hidden rounded-[26px] transition duration-300 hover:-translate-y-1 active:scale-[0.98]"
       style={{
         boxShadow: [`0 0 0 1px ${outerRing}`, liftShadow].join(", "),
       }}
     >
-      <div className="absolute inset-0 overflow-hidden">
-        <img
+      <img
           src={data.image}
           alt=""
           loading="eager"
           draggable={false}
-          className="h-full w-full object-cover object-top transition duration-500 group-hover:scale-[1.04]"
+          className="absolute inset-0 block h-full w-full min-h-full min-w-full object-cover object-center transition duration-500 group-hover:scale-[1.03]"
         />
-      </div>
 
       <div
         aria-hidden

@@ -1,9 +1,20 @@
+import { useEffect, useState } from "react";
 import { Wallet } from "lucide-react";
-import { getTripWallet, walletRemaining } from "../trip-wallet";
+import { myRegistration } from "../../post-registrations";
+import { getTripWallet, syncTripWalletFromDb, walletRemaining } from "../trip-wallet";
 
-export function TripWalletStrip({ registrationId }: { registrationId: string }) {
-  const ledger = getTripWallet(registrationId);
-  if (!ledger) return null;
+export function TripWalletStrip({ postId, registrationId }: { postId: string; registrationId?: string }) {
+  const mine = myRegistration(postId, "trip");
+  const regId = registrationId ?? mine?.id;
+  const [, setTick] = useState(0);
+  const ledger = regId ? getTripWallet(regId) : undefined;
+
+  useEffect(() => {
+    if (!regId) return;
+    void syncTripWalletFromDb({ postId, registrationId: regId }).then(() => setTick((n) => n + 1));
+  }, [postId, regId]);
+
+  if (!regId || !ledger) return null;
   const remaining = walletRemaining(ledger);
 
   return (

@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Bus, Plus, Users } from "lucide-react";
 import {
   autoDistributeBuses,
   busOccupancy,
   createTripBus,
   listTripBuses,
+  syncTripBusesFromDb,
   updateTripBus,
 } from "../trip-bus-store";
 
@@ -14,6 +15,10 @@ export function TripBusPanel({ postId }: { postId: string }) {
   const [capacity, setCapacity] = useState("45");
 
   const refresh = () => setBuses(listTripBuses(postId));
+
+  useEffect(() => {
+    void syncTripBusesFromDb(postId).then(refresh);
+  }, [postId]);
 
   return (
     <div className="mt-2 rounded-xl border border-white/10 bg-white/5 p-2.5 text-right" dir="rtl">

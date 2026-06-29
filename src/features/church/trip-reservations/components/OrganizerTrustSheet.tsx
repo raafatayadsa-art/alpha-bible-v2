@@ -1,5 +1,6 @@
+import { useEffect, useState } from "react";
 import { Award, ShieldCheck } from "lucide-react";
-import { getOrganizerTrustStats } from "../organizer-trust";
+import { getOrganizerTrustStats, syncOrganizerTrustFromDb } from "../organizer-trust";
 
 export function OrganizerTrustSheet({
   organizerUserId,
@@ -10,6 +11,12 @@ export function OrganizerTrustSheet({
   organizerName: string;
   onClose: () => void;
 }) {
+  const [, setTick] = useState(0);
+
+  useEffect(() => {
+    void syncOrganizerTrustFromDb(organizerUserId).then(() => setTick((n) => n + 1));
+  }, [organizerUserId]);
+
   const stats = getOrganizerTrustStats(organizerUserId);
 
   return (

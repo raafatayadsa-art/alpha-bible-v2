@@ -49,9 +49,12 @@
   flex-direction: column;
   align-items: center;
   gap: 0.2rem;
-  border-radius: 1rem;
+  border-radius: var(--alpha-radius-dock-tab);
   padding: 0.35rem 0;
-  transition: transform 0.18s cubic-bezier(0.34, 1.25, 0.64, 1), background 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform var(--alpha-duration-normal) var(--alpha-ease-spring),
+    background var(--alpha-duration-normal) var(--alpha-ease-standard),
+    box-shadow var(--alpha-duration-normal) var(--alpha-ease-standard);
 }
 
 @media (min-width: 640px) {
@@ -67,15 +70,20 @@
 
 .alpha-dock-tab__icon {
   color: oklch(0.98 0.01 250 / 0.52);
-  transition: color 0.2s ease, filter 0.2s ease;
+  width: var(--alpha-icon-md);
+  height: var(--alpha-icon-md);
+  stroke-width: var(--alpha-icon-stroke);
+  transition: color var(--alpha-duration-normal) var(--alpha-ease-standard),
+    filter var(--alpha-duration-normal) var(--alpha-ease-standard);
 }
 
 .alpha-dock-tab__label {
   color: oklch(0.98 0.01 250 / 0.52);
-  font-size: 0.58rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
   line-height: 1;
   white-space: nowrap;
-  transition: color 0.2s ease;
+  transition: color var(--alpha-duration-normal) var(--alpha-ease-standard);
 }
 
 @media (min-width: 640px) {

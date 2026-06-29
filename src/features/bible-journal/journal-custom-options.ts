@@ -33,6 +33,9 @@ function writeCustomOptions(key: string, items: JournalCustomOption[]) {
   try {
     window.localStorage.setItem(key, JSON.stringify(items));
     window.dispatchEvent(new CustomEvent("ab:storage", { detail: { key } }));
+    void import("@/lib/user-sync-scheduler").then(({ scheduleUserDataSync }) =>
+      scheduleUserDataSync({ delayMs: 1500, extraKey: key }),
+    );
   } catch {
     /* ignore */
   }

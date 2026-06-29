@@ -72,8 +72,8 @@ function Glass({
   return (
     <div
       className={
-        "relative rounded-[28px] border border-white/70 bg-[#fbf3e1]/80 backdrop-blur-xl " +
-        "shadow-[0_20px_44px_-26px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.85)] " +
+        "alpha-glass-interactive relative rounded-[var(--alpha-radius-hero)] border border-white/70 " +
+        "shadow-[var(--alpha-shadow-hero)] " +
         (padded ? "p-4 " : "") +
         className
       }
@@ -86,9 +86,9 @@ function Glass({
 function GoldDivider() {
   return (
     <div className="flex items-center gap-2 justify-center my-3" aria-hidden>
-      <span className="h-px flex-1 bg-gradient-to-l from-transparent via-[#c79356]/60 to-transparent" />
-      <span className="inline-block h-1.5 w-1.5 rotate-45 rounded-[2px] bg-[#c79356]" />
-      <span className="h-px flex-1 bg-gradient-to-r from-transparent via-[#c79356]/60 to-transparent" />
+      <span className="h-px flex-1 bg-gradient-to-l from-transparent via-[var(--alpha-gold-deep)]/60 to-transparent" />
+      <span className="inline-block h-1.5 w-1.5 rotate-45 rounded-[2px] bg-[var(--alpha-gold-deep)]" />
+      <span className="h-px flex-1 bg-gradient-to-r from-transparent via-[var(--alpha-gold-deep)]/60 to-transparent" />
     </div>
   );
 }
@@ -96,7 +96,7 @@ function GoldDivider() {
 function SectionTitle({ title, action }: { title: string; action?: React.ReactNode }) {
   return (
     <div className="mb-2.5 flex items-end justify-between gap-3 px-1">
-      <h2 className="text-[15px] font-extrabold text-alpha-heading leading-none">{title}</h2>
+      <h2 className="alpha-type-h2 text-alpha-heading leading-none">{title}</h2>
       {action}
     </div>
   );
@@ -186,9 +186,9 @@ function ChurchContactChip({
     <a
       href={href}
       {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-      className="inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-xl border border-[#efe2c4] bg-white/80 px-2.5 py-1.5 text-right shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_4px_10px_-8px_rgba(120,80,30,0.35)] active:scale-[0.98] transition-transform"
+      className="inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-xl border border-alpha bg-white/80 px-2.5 py-1.5 text-right shadow-[var(--alpha-shadow-mini)] active:scale-[0.98] alpha-motion-spring"
     >
-      <Icon className="h-3.5 w-3.5 shrink-0 text-[#b8893a]" strokeWidth={2.4} />
+      <Icon className="h-3.5 w-3.5 shrink-0 text-alpha-gold-deep" strokeWidth={2.4} />
       <span className="min-w-0 truncate text-[10.5px] font-extrabold text-alpha-heading">{value}</span>
       <span className="sr-only">{label}</span>
     </a>
@@ -202,7 +202,7 @@ function ChurchContactRow({ church }: { church: ChurchDashboardRecord }) {
 
   return (
     <div className="mt-2.5 space-y-2">
-      <p className="text-[9.5px] font-bold text-[#b8893a] tracking-wide leading-none">التواصل مع الكنيسة</p>
+      <p className="alpha-type-caption font-bold text-alpha-gold-deep tracking-wide leading-none">التواصل مع الكنيسة</p>
       <div className="flex flex-wrap justify-end gap-1.5">
         {church.phone ? (
           <ChurchContactChip href={`tel:${church.phone}`} icon={Phone} label="اتصال" value={church.phone} />
@@ -353,7 +353,7 @@ function HeroChurchCard() {
       `}</style>
       <section className="relative">
         <div
-          className="relative overflow-hidden rounded-[32px]"
+          className="relative overflow-hidden rounded-[var(--alpha-radius-hero)]"
           style={{
             background: "linear-gradient(148deg,#1e1408 0%,#2e1e0a 50%,#180e06 100%)",
             border: "1px solid rgba(240,215,140,0.12)",
@@ -369,7 +369,7 @@ function HeroChurchCard() {
             <img
               src={church.coverImageUrl || heroChurchPremium}
               alt={church.name}
-              className="absolute inset-0 h-full w-full object-cover"
+              className="absolute inset-0 h-full w-full object-cover alpha-media-polish"
             />
             {/* Gradient to dark */}
             <div className="absolute inset-0" style={{
@@ -424,7 +424,7 @@ function HeroChurchCard() {
 
             {/* Priest — avatar beside name */}
             <div className="mb-3" dir="rtl">
-              <p className="text-[9.5px] font-bold text-[#f0d78c]/60 tracking-wide leading-none">{priestHeading}</p>
+              <p className="alpha-type-caption font-bold text-alpha-gold-bright/60 tracking-wide leading-none">{priestHeading}</p>
               <div className="mt-1.5 flex items-center justify-end gap-2.5">
                 {priestText ? (
                   <p className="font-arabic-serif text-[14.5px] font-extrabold text-white/90 leading-snug whitespace-pre-line">
@@ -449,7 +449,7 @@ function HeroChurchCard() {
                   <a href={`tel:${church.phone}`}
                     className="inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[10px] font-bold text-white/70 active:scale-95 transition-transform"
                     style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)" }}>
-                    <Phone className="h-3 w-3 text-[#f0d78c]/70" strokeWidth={2.4} />
+                    <Phone className="h-3 w-3 text-alpha-gold-bright/70" strokeWidth={2.4} />
                     {church.phone}
                   </a>
                 )}
@@ -457,7 +457,7 @@ function HeroChurchCard() {
                   <a href={`https://wa.me/${church.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[10px] font-bold text-white/70 active:scale-95 transition-transform"
                     style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)" }}>
-                    <MessageCircle className="h-3 w-3 text-[#f0d78c]/70" strokeWidth={2.4} />
+                    <MessageCircle className="h-3 w-3 text-alpha-gold-bright/70" strokeWidth={2.4} />
                     واتساب
                   </a>
                 )}
@@ -465,7 +465,7 @@ function HeroChurchCard() {
                   <a href={`mailto:${church.email}`}
                     className="inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[10px] font-bold text-white/70 active:scale-95 transition-transform"
                     style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)" }}>
-                    <Mail className="h-3 w-3 text-[#f0d78c]/70" strokeWidth={2.4} />
+                    <Mail className="h-3 w-3 text-alpha-gold-bright/70" strokeWidth={2.4} />
                     بريد
                   </a>
                 )}
@@ -473,7 +473,7 @@ function HeroChurchCard() {
                   <a href={church.websiteUrl} target="_blank" rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[10px] font-bold text-white/70 active:scale-95 transition-transform"
                     style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)" }}>
-                    <Globe className="h-3 w-3 text-[#f0d78c]/70" strokeWidth={2.4} />
+                    <Globe className="h-3 w-3 text-alpha-gold-bright/70" strokeWidth={2.4} />
                     الموقع
                   </a>
                 )}
@@ -518,7 +518,7 @@ function HeroChurchCard() {
 function MiniStat({ icon: Icon, value, label }: { icon: any; value: string; label: string }) {
   return (
     <div className="rounded-xl bg-white/75 border border-white/80 px-2 py-1.5 text-center min-w-[46px] shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_4px_10px_-8px_rgba(120,80,30,0.4)]">
-      <Icon className="mx-auto h-3.5 w-3.5 text-[#b8893a]" strokeWidth={2} />
+      <Icon className="mx-auto h-3.5 w-3.5 text-alpha-gold-deep" strokeWidth={2} />
       <p className="mt-0.5 text-[11.5px] font-extrabold text-alpha-heading leading-none">{value}</p>
       <p className="mt-0.5 text-[8.5px] text-alpha-muted leading-none">{label}</p>
     </div>
@@ -542,7 +542,7 @@ function FloatAction({ icon: Icon, label, onClick }: { icon: any; label: string;
 function StatTile({ icon: Icon, value, label, tone }: { icon: any; value: string; label: string; tone: string }) {
   return (
     <div
-      className="relative overflow-hidden rounded-[20px] border border-white/80 px-2 py-3 text-center shadow-[0_12px_24px_-12px_rgba(120,80,30,0.3),inset_0_1px_0_rgba(255,255,255,1)] backdrop-blur-2xl"
+      className="relative overflow-hidden rounded-[var(--alpha-radius-mini)] border border-white/80 px-2 py-3 text-center shadow-[var(--alpha-shadow-featured)] backdrop-blur-2xl"
       style={{
         background: "linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.65) 100%)",
       }}
@@ -765,21 +765,21 @@ function LocationRow() {
         >
           <div className="p-3.5 h-[148px] flex flex-col justify-between text-right">
             <div className="flex items-start justify-between">
-              <div className="h-10 w-10 rounded-2xl grid place-items-center bg-white/85 border border-[#efe2c4] text-[#6b3a8a] shadow-[0_8px_18px_-10px_rgba(107,58,138,0.6)]">
+              <div className="h-10 w-10 rounded-[var(--alpha-radius-dock-tab)] grid place-items-center bg-white/85 border border-alpha text-[var(--alpha-purple)] shadow-[var(--alpha-shadow-normal)]">
                 <Library className="h-5 w-5" strokeWidth={2.2} />
               </div>
-              <span className="inline-flex items-center px-2 h-[18px] rounded-full bg-[#3a2a18] text-white text-[9px] font-extrabold">
+              <span className="alpha-tag !text-white bg-alpha">
                 جديد
               </span>
             </div>
             <div>
-              <p className="font-arabic-serif text-[14px] font-extrabold text-[#2a1d10] leading-tight">
+              <p className="alpha-type-h2 font-arabic-serif text-alpha leading-tight">
                 دليل الكنائس والأديرة
               </p>
-              <p className="mt-1 text-[10.5px] text-[#6b5436] leading-snug">
+              <p className="alpha-type-desc mt-1 text-alpha-muted leading-snug">
                 كنائس، أديرة، ومعالم مسيحية قريبة منك
               </p>
-              <span className="mt-2 inline-flex items-center gap-1 text-[10.5px] font-extrabold text-[#6b3a8a]">
+              <span className="alpha-type-desc mt-2 inline-flex items-center gap-1 font-extrabold text-[var(--alpha-purple)]">
                 استكشاف ←
               </span>
             </div>
@@ -805,16 +805,16 @@ function LocationRow() {
                   <MapPin className="h-5 w-5" strokeWidth={2.4} />
                 </div>
               </div>
-              <Navigation className="h-4 w-4 text-[#8a5a1f]" strokeWidth={2.4} />
+              <Navigation className="h-4 w-4 text-alpha-gold-deep" strokeWidth={2.4} />
             </div>
             <div>
-              <p className="font-arabic-serif text-[14px] font-extrabold text-[#2a1d10] leading-tight">
+              <p className="alpha-type-h2 font-arabic-serif text-alpha leading-tight">
                 موقع كنيستي
               </p>
-              <p className="mt-1 text-[10.5px] text-[#6b5436] leading-snug truncate">
+              <p className="alpha-type-desc mt-1 text-alpha-muted leading-snug truncate">
                 {addressLabel || "—"}
               </p>
-              <span className="mt-2 inline-flex items-center gap-1 text-[10.5px] font-extrabold text-[#c44569]">
+              <span className="alpha-type-desc mt-2 inline-flex items-center gap-1 font-extrabold text-[#c44569]">
                 فتح الخرائط ←
               </span>
             </div>
@@ -851,7 +851,7 @@ function CallLeaderRow({ contact, onClose }: { contact: Contact; onClose: () => 
       className="w-full flex items-center gap-3 rounded-2xl bg-white/70 border border-white/80 p-2.5 text-right shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_6px_14px_-12px_rgba(120,80,30,0.4)] active:scale-[0.98] transition-transform"
     >
       <div
-        className="relative h-11 w-11 shrink-0 rounded-full grid place-items-center text-[#f3e6c4] font-arabic-serif text-[16px] font-extrabold border-2 border-white shadow-[0_6px_14px_-6px_rgba(60,40,16,0.5)]"
+        className="relative h-11 w-11 shrink-0 rounded-full grid place-items-center text-[var(--alpha-reader-text-soft)] font-arabic-serif text-[16px] font-extrabold border-2 border-white shadow-[var(--alpha-shadow-normal)]"
         style={{ background: tone.bg }}
       >
         {contact.initials}
@@ -866,7 +866,7 @@ function CallLeaderRow({ contact, onClose }: { contact: Contact; onClose: () => 
         <p className="font-arabic-serif text-[13.5px] font-extrabold text-alpha-heading leading-tight truncate">
           {contact.name}
         </p>
-        <p className="mt-0.5 text-[10.5px] text-[#7a5a30] leading-none">{contact.role}</p>
+        <p className="mt-0.5 text-[10.5px] text-alpha-muted leading-none">{contact.role}</p>
       </div>
       <Phone className="h-4 w-4 text-[#5b8fd1] shrink-0" strokeWidth={2.4} />
     </button>
@@ -886,7 +886,7 @@ function MessageRow({ contact, unread, onClose }: { contact: Contact; unread?: n
   const inner = (
     <>
       <div
-        className="h-11 w-11 shrink-0 rounded-full grid place-items-center text-[#f3e6c4] font-arabic-serif text-[16px] font-extrabold border-2 border-white shadow-[0_6px_14px_-6px_rgba(60,40,16,0.5)]"
+        className="h-11 w-11 shrink-0 rounded-full grid place-items-center text-[var(--alpha-reader-text-soft)] font-arabic-serif text-[16px] font-extrabold border-2 border-white shadow-[var(--alpha-shadow-normal)]"
         style={{ background: tone.bg }}
       >
         {contact.initials}
@@ -902,7 +902,7 @@ function MessageRow({ contact, unread, onClose }: { contact: Contact; unread?: n
             </span>
           ) : null}
         </div>
-        <p className="mt-0.5 inline-flex items-center gap-1 text-[10.5px] text-[#7a5a30] truncate">
+        <p className="mt-0.5 inline-flex items-center gap-1 text-[10.5px] text-alpha-muted truncate">
           {allowed ? (
             "اضغط لبدء محادثة خاصة"
           ) : (
@@ -913,7 +913,7 @@ function MessageRow({ contact, unread, onClose }: { contact: Contact; unread?: n
         </p>
       </div>
       {allowed ? (
-        <Send className="h-4 w-4 text-[#c79356] -scale-x-100 shrink-0" strokeWidth={2.4} />
+        <Send className="h-4 w-4 text-alpha-gold-deep -scale-x-100 shrink-0" strokeWidth={2.4} />
       ) : (
         <Lock className="h-4 w-4 text-[#a08862] shrink-0" strokeWidth={2.2} />
       )}
@@ -954,13 +954,13 @@ function PopupShell({
 }: { title: string; subtitle?: string; onClose: () => void; children: React.ReactNode }) {
   return (
     <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-end sm:items-center justify-center px-3 pb-[max(env(safe-area-inset-bottom,0px),12px)]">
-      <button type="button" aria-label="إغلاق" onClick={onClose} className="absolute inset-0 bg-[#1a0f04]/55 backdrop-blur-sm" />
-      <div className="relative w-full max-w-[var(--alpha-dock-max-width)] rounded-[28px] border border-white/75 bg-[#fbf3e1]/95 backdrop-blur-2xl shadow-[0_30px_60px_-20px_rgba(60,40,16,0.6)] p-3.5 text-right max-h-[80vh] overflow-y-auto no-scrollbar">
+      <button type="button" aria-label="إغلاق" onClick={onClose} className="absolute inset-0 bg-[color-mix(in_srgb,var(--alpha-text)_55%,transparent)] backdrop-blur-sm" />
+      <div className="alpha-glass-interactive relative w-full max-w-[var(--alpha-dock-max-width)] rounded-[var(--alpha-radius-hero)] border border-white/75 shadow-[var(--alpha-shadow-hero)] p-3.5 text-right max-h-[80vh] overflow-y-auto no-scrollbar">
         <div className="flex items-center justify-between gap-2 mb-2.5">
           <div className="min-w-0">
             <h3 className="font-arabic-serif text-[15.5px] font-extrabold text-alpha-heading leading-tight">{title}</h3>
             {subtitle ? (
-              <p className="mt-0.5 text-[10.5px] text-[#7a5a30] inline-flex items-center gap-1">
+              <p className="mt-0.5 text-[10.5px] text-alpha-muted inline-flex items-center gap-1">
                 <ShieldCheck className="h-3 w-3 text-[#1f8a5a]" /> {subtitle}
               </p>
             ) : null}
@@ -969,7 +969,7 @@ function PopupShell({
             type="button"
             onClick={onClose}
             aria-label="إغلاق"
-            className="grid h-8 w-8 place-items-center rounded-full bg-white/90 border border-[#efe2c4] text-[#7a5a30] active:scale-90"
+            className="grid h-8 w-8 place-items-center rounded-full bg-white/90 border border-alpha text-alpha-muted active:scale-90"
           >
             <X className="h-4 w-4" />
           </button>
@@ -983,7 +983,7 @@ function PopupShell({
 function PopupGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="mb-2">
-      <p className="px-1 mb-1 text-[10.5px] font-extrabold tracking-wide text-[#b8893a]">{label}</p>
+      <p className="px-1 mb-1 alpha-type-desc font-extrabold tracking-wide text-alpha-gold-deep">{label}</p>
       <div className="space-y-1.5">{children}</div>
     </div>
   );
@@ -1014,12 +1014,12 @@ function ChurchDirectCallRow({
       onClick={onClose}
       className="w-full flex items-center gap-3 rounded-2xl bg-white/70 border border-white/80 p-2.5 text-right shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_6px_14px_-12px_rgba(120,80,30,0.4)] active:scale-[0.98] transition-transform"
     >
-      <div className="relative h-11 w-11 shrink-0 rounded-full grid place-items-center text-[#f3e6c4] font-arabic-serif text-[16px] font-extrabold border-2 border-white shadow-[0_6px_14px_-6px_rgba(60,40,16,0.5)] bg-gradient-to-br from-[#7a4a26] to-[#3a2a18]">
+      <div className="relative h-11 w-11 shrink-0 rounded-full grid place-items-center text-[var(--alpha-reader-text-soft)] font-arabic-serif text-[16px] font-extrabold border-2 border-white shadow-[0_6px_14px_-6px_rgba(60,40,16,0.5)] bg-gradient-to-br from-[#7a4a26] to-[#3a2a18]">
         <Church className="h-4 w-4" strokeWidth={2.2} />
       </div>
       <div className="flex-1 min-w-0">
         <p className="font-arabic-serif text-[13.5px] font-extrabold text-alpha-heading leading-tight truncate">{label}</p>
-        <p className="mt-0.5 text-[10.5px] text-[#7a5a30] leading-none truncate">{value}</p>
+        <p className="alpha-type-desc mt-0.5 text-alpha-muted leading-none truncate">{value}</p>
       </div>
       <Phone className="h-4 w-4 text-[#5b8fd1] shrink-0" strokeWidth={2.4} />
     </a>
@@ -1045,14 +1045,14 @@ function ChurchDirectMessageRow({
       onClick={onClose}
       className="w-full flex items-center gap-3 rounded-2xl bg-white/70 border border-white/80 p-2.5 text-right shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_6px_14px_-12px_rgba(120,80,30,0.4)] active:scale-[0.98] transition-transform"
     >
-      <div className="h-11 w-11 shrink-0 rounded-full grid place-items-center text-[#f3e6c4] font-arabic-serif text-[16px] font-extrabold border-2 border-white shadow-[0_6px_14px_-6px_rgba(60,40,16,0.5)] bg-gradient-to-br from-[#1f8a5a] to-[#136a44]">
+      <div className="h-11 w-11 shrink-0 rounded-full grid place-items-center text-[var(--alpha-reader-text-soft)] font-arabic-serif text-[16px] font-extrabold border-2 border-white shadow-[0_6px_14px_-6px_rgba(60,40,16,0.5)] bg-gradient-to-br from-[#1f8a5a] to-[#136a44]">
         <Church className="h-4 w-4" strokeWidth={2.2} />
       </div>
       <div className="flex-1 min-w-0">
         <p className="font-arabic-serif text-[13.5px] font-extrabold text-alpha-heading leading-tight truncate">{label}</p>
-        <p className="mt-0.5 text-[10.5px] text-[#7a5a30] leading-none truncate">{value}</p>
+        <p className="alpha-type-desc mt-0.5 text-alpha-muted leading-none truncate">{value}</p>
       </div>
-      <Send className="h-4 w-4 text-[#c79356] -scale-x-100 shrink-0" strokeWidth={2.4} />
+      <Send className="h-4 w-4 text-alpha-gold-deep -scale-x-100 shrink-0" strokeWidth={2.4} />
     </a>
   );
 }
@@ -1173,8 +1173,8 @@ function MessagesPopup({
 function ChurchEmptyState() {
   return (
     <Glass className="text-center py-10 px-5">
-      <div className="mx-auto grid h-20 w-20 place-items-center rounded-[22px] border border-[#efe2c4] bg-gradient-to-br from-[#fff8e9] to-[#e7c07a]/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_10px_24px_-12px_rgba(120,80,30,0.45)]">
-        <Church className="h-9 w-9 text-[#7a4a26]" strokeWidth={1.8} />
+      <div className="mx-auto grid h-20 w-20 place-items-center rounded-[var(--alpha-radius-card-compact)] border border-alpha bg-gradient-to-br from-[color-mix(in_srgb,var(--alpha-bg-elevated)_95%,white)] to-[color-mix(in_srgb,var(--alpha-gold)_40%,transparent)] shadow-[var(--alpha-shadow-normal)]">
+        <Church className="h-9 w-9 text-alpha-gold-deep" strokeWidth={1.8} />
       </div>
       <h2 className="mt-5 font-arabic-serif text-[18px] font-bold text-alpha-heading">
         لا توجد كنيسة مرتبطة بحسابك
@@ -1191,7 +1191,7 @@ function ChurchEmptyState() {
         </Link>
         <Link
           to="/profile/church"
-          className="inline-flex h-12 w-full items-center justify-center rounded-2xl border border-[#efe2c4] bg-white/75 px-6 text-[14px] font-extrabold text-alpha-heading shadow-[0_8px_18px_-14px_rgba(120,80,30,0.35)] active:scale-[0.98] transition-transform"
+          className="inline-flex h-12 w-full items-center justify-center rounded-2xl border border-alpha bg-white/75 px-6 text-[14px] font-extrabold text-alpha-heading shadow-[0_8px_18px_-14px_rgba(120,80,30,0.35)] active:scale-[0.98] transition-transform"
         >
           طلب تأسيس كنيسة
         </Link>

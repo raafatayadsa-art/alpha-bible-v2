@@ -1,26 +1,18 @@
 import { supabase } from "@/integrations/supabase/client";
 import { getAuthUserId } from "@/features/auth";
 import { deriveAlphaIdShort } from "@/features/identity/alpha-identity";
+import { lookupUserByAlphaCode } from "@/features/identity/alpha-identity-lookup";
 import { normalizeAlphaMemberCode } from "@/features/publisher/components/AlphaMemberScanSheet";
 
 export type ResolvablePerson = {
   name: string;
-  avatarUrl: string;
+  avatarUrl?: string;
   alphaId: string;
   linkedUserId?: string;
   churchName?: string;
-  source: "contact" | "demo" | "manual";
+  role?: string;
+  source: "contact" | "directory" | "manual";
 };
-
-const FALLBACK_AVATAR = (name: string) => `https://i.pravatar.cc/96?u=${encodeURIComponent(name)}`;
-
-/** Demo suggestions — same faces as profile mock until full directory ships. */
-export const DEMO_SUGGESTIONS: ResolvablePerson[] = [
-  { name: "أحمد نبيل", avatarUrl: "https://i.pravatar.cc/96?u=ahmed", alphaId: "A-DEMO01", linkedUserId: "demo-ahmed", source: "demo" },
-  { name: "مارينا فادي", avatarUrl: "https://i.pravatar.cc/96?u=marina", alphaId: "A-DEMO02", linkedUserId: "demo-marina", source: "demo" },
-  { name: "مينا جورج", avatarUrl: "https://i.pravatar.cc/96?u=mina", alphaId: "A-DEMO03", linkedUserId: "demo-mina", source: "demo" },
-  { name: "سارة عادل", avatarUrl: "https://i.pravatar.cc/96?u=sara", alphaId: "A-DEMO04", linkedUserId: "demo-sara", source: "demo" },
-];
 
 export async function fetchContactPeople(): Promise<ResolvablePerson[]> {
   const uid = await getAuthUserId();
@@ -35,24 +27,21 @@ export async function fetchContactPeople(): Promise<ResolvablePerson[]> {
   if (!ids.length) return [];
 
   const { data: profiles } = await supabase
-    .from("profiles")
-    .select("id, display_name, avatar_url")
-    .in("id", ids);
+    .from("user_profiles")
+    .select("user_id, display_name, avatar_url")
+    .in("user_id", ids);
 
   return (profiles ?? []).map((p) => ({
-    linkedUserId: p.id as string,
+    linkedUserId: p.user_id as string,
     name: (p.display_name as string)?.trim() || "عضو Alpha",
-    avatarUrl: (p.avatar_url as string)?.trim() || FALLBACK_AVATAR(p.id as string),
-    alphaId: deriveAlphaIdShort(p.id as string),
+    avatarUrl: (p.avatar_url as string)?.trim() || undefined,
+    alphaId: deriveAlphaIdShort(p.user_id as string),
     source: "contact" as const,
   }));
 }
 
 export async function loadPeopleDirectory(): Promise<ResolvablePerson[]> {
-  const contacts = await fetchContactPeople();
-  const contactIds = new Set(contacts.map((c) => c.linkedUserId ?? c.alphaId));
-  const demos = DEMO_SUGGESTIONS.filter((d) => !contactIds.has(d.linkedUserId ?? d.alphaId));
-  return [...contacts, ...demos];
+  return fetchContactPeople();
 }
 
 export async function resolvePersonFromCode(raw: string): Promise<ResolvablePerson | null> {
@@ -63,15 +52,18 @@ export async function resolvePersonFromCode(raw: string): Promise<ResolvablePers
   const hit = directory.find((p) => p.alphaId.toUpperCase() === code);
   if (hit) return hit;
 
-  const demoHit = DEMO_SUGGESTIONS.find((p) => p.alphaId === code);
-  if (demoHit) return demoHit;
+  const identity = await lookupUserByAlphaCode(code);
+  if (identity) {
+    return {
+      linkedUserId: identity.userId,
+      name: identity.displayName,
+      avatarUrl: identity.avatarUrl,
+      alphaId: identity.alphaIdShort,
+      source: "directory",
+    };
+  }
 
-  return {
-    name: `عضو ${code}`,
-    avatarUrl: FALLBACK_AVATAR(code),
-    alphaId: code,
-    source: "manual",
-  };
+  return null;
 }
 
 export async function searchPeople(query: string): Promise<ResolvablePerson[]> {

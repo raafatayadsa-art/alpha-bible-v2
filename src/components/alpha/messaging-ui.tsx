@@ -5,59 +5,59 @@ import { hapticSelection, hapticWarning } from "./messaging-haptics";
 
 /** Alpha Connect dark glass constants (embedded settings inside alpha-connect) */
 export const ALPHA_SETTINGS_CARD =
-  "relative overflow-hidden rounded-[18px] border border-white/10 bg-white/5 shadow-[0_2px_18px_rgba(0,0,0,0.35)] backdrop-blur-xl";
+  "relative overflow-hidden rounded-[var(--alpha-radius-button)] border border-white/10 bg-white/5 shadow-[0_2px_18px_rgba(0,0,0,0.35)] backdrop-blur-xl";
 
 export const ALPHA_SETTINGS_INNER =
-  "rounded-[14px] border border-white/10 bg-white/5 backdrop-blur-sm";
+  "rounded-[var(--alpha-radius-dock-tab)] border border-white/10 bg-white/5 backdrop-blur-sm";
 
 export const ALPHA_SETTINGS_ROW =
-  "flex w-full items-center gap-2.5 rounded-[14px] border border-white/10 bg-white/5 px-3 py-3 text-right backdrop-blur-sm transition-all";
+  "flex w-full items-center gap-2.5 rounded-[var(--alpha-radius-dock-tab)] border border-white/10 bg-white/5 px-3 py-3 text-right backdrop-blur-sm transition-all";
 
 export const ALPHA_SETTINGS_ROW_DANGER =
-  "flex w-full items-center gap-2.5 rounded-[14px] border border-destructive/25 bg-destructive/10 px-3 py-3 text-right backdrop-blur-sm transition-all";
+  "flex w-full items-center gap-2.5 rounded-[var(--alpha-radius-dock-tab)] border border-destructive/25 bg-destructive/10 px-3 py-3 text-right backdrop-blur-sm transition-all";
 
 export const ALPHA_SETTINGS_ICON_BOX =
-  "grid size-8 shrink-0 place-items-center rounded-[10px] border border-white/12 bg-white/8";
+  "grid size-8 shrink-0 place-items-center rounded-[var(--alpha-radius-thumb)] border border-white/12 bg-white/8";
 
 /** Shared frosted glass shell — chat settings, message settings, pickers */
 export const MESSAGING_GLASS_SHELL =
-  "overflow-hidden rounded-[20px] border border-white/28 bg-white/62 shadow-[0_16px_40px_rgba(0,0,0,0.14)] backdrop-blur-3xl";
+  "overflow-hidden rounded-[var(--alpha-radius-mini)] border border-white/28 bg-white/62 shadow-[var(--alpha-shadow-featured)] backdrop-blur-3xl";
 
 /** Inner glass card row (separated items inside a shell) */
 export const MESSAGING_GLASS_INNER =
-  "rounded-[14px] border border-white/32 bg-white/42 shadow-[0_3px_11px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.55)] backdrop-blur-sm";
+  "rounded-[var(--alpha-radius-dock-tab)] border border-white/32 bg-white/42 shadow-[var(--alpha-shadow-mini),inset_0_1px_0_rgba(255,255,255,0.55)] backdrop-blur-sm";
 
 /** Menu-style glass row — matches in-chat conversation settings items */
 export const MESSAGING_GLASS_ROW =
-  "flex w-full items-center gap-2.5 rounded-[14px] border border-white/32 bg-white/42 px-3 py-3 text-right shadow-[0_3px_11px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.55)] backdrop-blur-sm transition-all";
+  "flex w-full items-center gap-2.5 rounded-[var(--alpha-radius-dock-tab)] border border-white/32 bg-white/42 px-3 py-3 text-right shadow-[var(--alpha-shadow-mini),inset_0_1px_0_rgba(255,255,255,0.55)] backdrop-blur-sm transition-all";
 
 export const MESSAGING_GLASS_ROW_DANGER =
-  "flex w-full items-center gap-2.5 rounded-[14px] border border-[#FECACA]/70 bg-[#FFF5F5]/55 px-3 py-3 text-right shadow-[0_3px_11px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.55)] backdrop-blur-sm transition-all";
+  "flex w-full items-center gap-2.5 rounded-[var(--alpha-radius-dock-tab)] border border-[#FECACA]/70 bg-[#FFF5F5]/55 px-3 py-3 text-right shadow-[var(--alpha-shadow-mini),inset_0_1px_0_rgba(255,255,255,0.55)] backdrop-blur-sm transition-all";
 
 export const MESSAGING_GLASS_ICON_BOX =
-  "grid size-8 shrink-0 place-items-center rounded-[10px] border border-white/35 bg-white/50";
+  "grid size-8 shrink-0 place-items-center rounded-[var(--alpha-radius-thumb)] border border-white/35 bg-white/50";
 
 /** Apple frosted glass — conversation list cards (matches in-chat settings shell) */
 export const MESSAGING_CONV_CARD =
-  "group relative flex w-full cursor-pointer items-center gap-2.5 overflow-hidden rounded-[20px] border border-white/28 bg-white/62 p-2.5 text-right shadow-[0_16px_40px_rgba(0,0,0,0.14),inset_0_1px_0_rgba(255,255,255,0.55)] backdrop-blur-3xl transition-all duration-200 hover:border-white/38 hover:bg-white/70 hover:shadow-[0_16px_40px_rgba(0,0,0,0.16),inset_0_1px_0_rgba(255,255,255,0.65)] active:scale-[0.985]";
+  "group relative flex w-full cursor-pointer items-center gap-2.5 overflow-hidden rounded-[var(--alpha-radius-mini)] border border-white/28 bg-white/62 p-2.5 text-right shadow-[var(--alpha-shadow-featured),inset_0_1px_0_rgba(255,255,255,0.55)] backdrop-blur-3xl transition-all duration-200 hover:border-white/38 hover:bg-white/70 hover:shadow-[var(--alpha-shadow-featured),inset_0_1px_0_rgba(255,255,255,0.65)] active:scale-[0.985]";
 
-export const MESSAGING_CONV_CARD_RADIUS = "rounded-[20px]";
+export const MESSAGING_CONV_CARD_RADIUS = "rounded-[var(--alpha-radius-mini)]";
 
 /** Conversation-list cream card DNA (screenshot style) */
 export const MESSAGING_CREAM_CARD =
-  "relative overflow-hidden rounded-[18px] border border-gold/12 bg-[rgba(247,240,224,0.62)] shadow-[0_2px_12px_-4px_rgba(200,149,42,0.18),0_1px_3px_rgba(0,0,0,0.04)] backdrop-blur-xl";
+  "relative overflow-hidden rounded-[var(--alpha-radius-button)] border border-gold/12 bg-[rgba(247,240,224,0.62)] shadow-[0_2px_12px_-4px_rgba(200,149,42,0.18),0_1px_3px_rgba(0,0,0,0.04)] backdrop-blur-xl";
 
 export const MESSAGING_CREAM_INNER =
-  "rounded-[14px] border border-gold/10 bg-[rgba(255,255,255,0.28)] shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] backdrop-blur-sm";
+  "rounded-[var(--alpha-radius-dock-tab)] border border-gold/10 bg-[rgba(255,255,255,0.28)] shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] backdrop-blur-sm";
 
 export const MESSAGING_CREAM_ROW =
-  "flex w-full items-center gap-2.5 rounded-[14px] border border-gold/10 bg-[rgba(255,255,255,0.32)] px-3 py-3 text-right shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] backdrop-blur-sm transition-all";
+  "flex w-full items-center gap-2.5 rounded-[var(--alpha-radius-dock-tab)] border border-gold/10 bg-[rgba(255,255,255,0.32)] px-3 py-3 text-right shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] backdrop-blur-sm transition-all";
 
 export const MESSAGING_CREAM_ROW_DANGER =
-  "flex w-full items-center gap-2.5 rounded-[14px] border border-[#FECACA]/55 bg-[rgba(254,242,242,0.45)] px-3 py-3 text-right shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] backdrop-blur-sm transition-all";
+  "flex w-full items-center gap-2.5 rounded-[var(--alpha-radius-dock-tab)] border border-[#FECACA]/55 bg-[rgba(254,242,242,0.45)] px-3 py-3 text-right shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] backdrop-blur-sm transition-all";
 
 export const MESSAGING_CREAM_ICON_BOX =
-  "grid size-8 shrink-0 place-items-center rounded-[10px] border border-gold/15 bg-[rgba(255,255,255,0.42)]";
+  "grid size-8 shrink-0 place-items-center rounded-[var(--alpha-radius-thumb)] border border-gold/15 bg-[rgba(255,255,255,0.42)]";
 
 export function MessagingCreamSettingsCard({
   title,
@@ -81,7 +81,7 @@ export function MessagingCreamSettingsCard({
       </div>
       <div className="relative z-[1] p-2.5">
         <div className="mb-2 px-1 text-center">
-          <p className="text-[13px] font-bold text-[#1F2937]">{title}</p>
+          <p className="alpha-type-body font-bold text-alpha-heading">{title}</p>
           {desc && (
             <p className="mt-0.5 text-[10px] leading-relaxed text-muted-foreground/75">{desc}</p>
           )}
@@ -151,7 +151,7 @@ export function SettingsGlassToggle({
     tone === "cream" ? MESSAGING_CREAM_ICON_BOX :
     tone === "alpha" ? ALPHA_SETTINGS_ICON_BOX :
     MESSAGING_GLASS_ICON_BOX;
-  const labelCls = tone === "alpha" ? "text-foreground" : "text-[#1F2937]";
+  const labelCls = tone === "alpha" ? "text-foreground" : "text-alpha-heading";
   return (
     <div className={row}>
       <span className={iconBox}>
@@ -192,7 +192,7 @@ export function SettingsGlassActionRow({
     ? (isAlpha ? "text-destructive" : "text-[#B91C1C]")
     : success
       ? (isAlpha ? "text-neon-green" : "text-[#14532D]")
-      : (isAlpha ? "text-foreground" : "text-[#1F2937]");
+      : (isAlpha ? "text-foreground" : "text-alpha-heading");
   const row = danger
     ? (tone === "cream" ? MESSAGING_CREAM_ROW_DANGER : isAlpha ? ALPHA_SETTINGS_ROW_DANGER : MESSAGING_GLASS_ROW_DANGER)
     : (tone === "cream" ? MESSAGING_CREAM_ROW : isAlpha ? ALPHA_SETTINGS_ROW : MESSAGING_GLASS_ROW);
@@ -227,7 +227,7 @@ export function MessagingGlassCard({
 }) {
   return (
     <div
-      className={`overflow-hidden rounded-[14px] border shadow-[0_3px_11px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.55)] backdrop-blur-sm ${
+      className={`overflow-hidden rounded-[var(--alpha-radius-dock-tab)] border shadow-[var(--alpha-shadow-mini),inset_0_1px_0_rgba(255,255,255,0.55)] backdrop-blur-sm ${
         danger ? "border-[#FECACA]/70 bg-[#FFF5F5]/55" : "border-white/32 bg-white/42"
       } ${className}`}
     >
@@ -257,17 +257,17 @@ export function MessagingGlassPanelShell({
   return (
     <div dir="rtl" className={`${MESSAGING_GLASS_SHELL} ${className}`}>
       <div className="relative flex h-11 shrink-0 items-center justify-center px-4 pt-2">
-        <p className="text-[13px] font-bold text-[#1F2937]">{title}</p>
+        <p className="alpha-type-body font-bold text-alpha-heading">{title}</p>
         <button
           type="button"
           onClick={onDone}
-          className="absolute inset-y-0 right-4 flex items-center pt-0.5 text-[15px] font-bold text-[#166534] transition-colors hover:text-[#14532D] active:text-[#0F3D22]"
+          className="absolute inset-y-0 right-4 flex items-center pt-0.5 alpha-type-h2 font-bold text-[#166534] transition-colors hover:text-[#14532D] active:text-[#0F3D22]"
         >
           {doneLabel}
         </button>
       </div>
       {desc && (
-        <p className="px-4 pb-2 text-center text-[10px] leading-relaxed text-[#6B7280]">{desc}</p>
+        <p className="px-4 pb-2 text-center alpha-type-caption leading-relaxed text-alpha-muted">{desc}</p>
       )}
       <div className={`px-2.5 pb-3 pt-0.5 ${bodyClassName}`}>{children}</div>
     </div>
@@ -285,10 +285,10 @@ export function PinBoxes({ value, len = 6, error = false }: { value: string; len
             error
               ? "border-[#B91C1C] bg-[#FEE2E2] text-[#B91C1C]"
               : i < value.length
-              ? "border-gold bg-gold/10 text-[#1F2937] shadow-[inset_0_1px_4px_rgba(200,149,42,0.12)]"
+              ? "border-gold bg-gold/10 text-alpha-heading shadow-[inset_0_1px_4px_rgba(200,149,42,0.12)]"
               : i === value.length
               ? "border-gold/50 bg-[#FEFCE8] shadow-[0_0_0_3px_rgba(200,149,42,0.08)]"
-              : "border-[#D1D5DB] bg-white/60"
+              : "border-alpha bg-white/60"
           }`}
         >
           {i < value.length ? "●" : ""}
@@ -323,7 +323,7 @@ export function CenterGlassPopup({
             type="button"
             onClick={onClose}
             aria-label="إغلاق"
-            className="absolute left-3 top-3 grid size-7 place-items-center rounded-full bg-[#F3F4F6] text-[#6B7280] hover:bg-[#E5E7EB]"
+            className="absolute left-3 top-3 grid size-7 place-items-center rounded-full bg-muted text-alpha-muted hover:bg-alpha/30"
           >
             <X className="size-3.5" />
           </button>
@@ -351,7 +351,7 @@ export function SettingsRow({
   success?: boolean;
 }) {
   const Tag = onClick ? "button" : "div";
-  const labelColor = danger ? "text-[#B91C1C]" : success ? "text-[#14532D]" : "text-[#1F2937]";
+  const labelColor = danger ? "text-[#B91C1C]" : success ? "text-[#14532D]" : "text-alpha-heading";
   return (
     <Tag
       type={onClick ? "button" : undefined}
@@ -362,7 +362,7 @@ export function SettingsRow({
     >
       <div className="min-w-0 flex-1">
         <p className={`text-[12px] font-semibold ${labelColor}`}>{label}</p>
-        {desc && <p className="mt-0.5 text-[10px] text-[#6B7280]">{desc}</p>}
+        {desc && <p className="mt-0.5 alpha-type-caption text-alpha-muted">{desc}</p>}
       </div>
       {trailing}
     </Tag>
@@ -453,7 +453,7 @@ export function PopupActions({
 }) {
   return (
     <div className="mt-4 flex gap-2.5">
-      <Button onClick={onCancel} variant="ghost" className="h-10 flex-1 rounded-2xl border border-[#E5E7EB] bg-white/80 text-[12px] text-[#374151]">
+      <Button onClick={onCancel} variant="ghost" className="h-10 flex-1 rounded-2xl border border-alpha bg-white/80 alpha-type-body text-alpha-heading">
         {cancelLabel}
       </Button>
       <Button

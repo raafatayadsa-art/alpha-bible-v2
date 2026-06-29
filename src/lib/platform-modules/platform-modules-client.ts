@@ -4,17 +4,18 @@ import { OWNER_MODULE_DEFAULTS } from "./owner-module-defaults";
 
 const DEFAULT_LABELS = new Map(OWNER_MODULE_DEFAULTS.map((m) => [m.key, m]));
 
-const CACHE_KEY = "ab:platform-modules-public-v5";
+const CACHE_KEY = "ab:platform-modules-public-v6";
 const LEGACY_CACHE_KEYS = [
   "ab:platform-modules-public",
   "ab:platform-modules-public-v2",
   "ab:platform-modules-public-v3",
   "ab:platform-modules-public-v4",
+  "ab:platform-modules-public-v5",
 ] as const;
 
 type ModuleCacheBlob = { at: number; rows: PlatformModuleRow[] };
 
-/** Routes that must stay reachable even if a stale cache marks them disabled. */
+/** Reserved for routes that must ignore owner toggles (empty — all modules respect owner state). */
 export const ALWAYS_ENABLED_MODULE_KEYS = new Set<PlatformModuleKey>();
 
 const DEFAULT_MODULES: PlatformModuleRow[] = OWNER_MODULE_DEFAULTS.map((m) => ({
@@ -71,13 +72,34 @@ export function getCachedPlatformModules(): PlatformModuleRow[] {
 }
 
 export async function fetchPlatformModulesPublic(): Promise<PlatformModuleRow[]> {
+  const { data: rpcData, error: rpcError } = await supabase.rpc("platform_fetch_modules");
+  if (!rpcError && rpcData != null) {
+    const rpcRows = Array.isArray(rpcData) ? rpcData : [rpcData];
+    if (rpcRows.length > 0) {
+      const rows = mergePlatformModulesWithDefaults(
+        rpcRows.map((r) => {
+          const row = r as { key: string; label: string; label_ar: string; enabled: unknown };
+          return {
+            key: row.key as PlatformModuleKey,
+            label: row.label,
+            labelAr: row.label_ar,
+            enabled: row.enabled === true,
+          };
+        }),
+      );
+      memoryCache = rows;
+      writeLocalCache(rows);
+      return rows;
+    }
+  }
+
   const { data, error } = await supabase
     .from("platform_modules")
     .select("key, label, label_ar, enabled")
     .order("key");
 
   if (error || !data?.length) {
-    console.warn("[platform-modules] fetch failed", error?.message);
+    console.warn("[platform-modules] fetch failed", error?.message ?? rpcError?.message);
     return getCachedPlatformModules();
   }
 
@@ -132,6 +154,13 @@ export function patchCachedPlatformModule(key: PlatformModuleKey, enabled: boole
   const next = current.map((m) => (m.key === key ? { ...m, enabled } : m));
   memoryCache = next;
   writeLocalCache(next);
+}
+
+/** Replace the full public module cache (after owner batch save). */
+export function replacePlatformModulesCache(rows: PlatformModuleRow[]) {
+  const merged = mergePlatformModulesWithDefaults(rows);
+  memoryCache = merged;
+  writeLocalCache(merged);
 }
 
 export function notifyPlatformModulesChanged() {

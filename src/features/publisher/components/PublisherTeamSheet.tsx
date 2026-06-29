@@ -6,6 +6,23 @@ import {
   addPublisherTeamMemberByAlphaId,
 } from "../publisher-team-api";
 import { AlphaMemberScanSheet } from "./AlphaMemberScanSheet";
+import {
+  PUBLISHER_DIVIDER,
+  PUBLISHER_EMAIL_INPUT,
+  PUBLISHER_INNER_CARD,
+  PUBLISHER_PERM_ROW,
+  PUBLISHER_PURPLE_BTN_SOLID,
+  PUBLISHER_PURPLE_GRADIENT,
+  PUBLISHER_SHEET_FOOTER_BORDER,
+  PUBLISHER_SHEET_HEADER_BORDER,
+  PUBLISHER_SHEET_OVERLAY,
+  PUBLISHER_SHEET_PANEL,
+  PUBLISHER_TEXT_ACCENT_CAPTION,
+  PUBLISHER_TEXT_ERROR,
+  PUBLISHER_TEXT_MUTED,
+  PUBLISHER_TEXT_SUB,
+  PUBLISHER_TEXT_TITLE,
+} from "./publisher-glass-chrome";
 
 type DraftPerms = {
   canEditProfile: boolean;
@@ -78,18 +95,18 @@ export function PublisherTeamSheet({ open, publisherId, onClose, onAdded }: Prop
 
   return (
     <>
-      <div className="fixed inset-0 z-[70] flex items-end justify-center bg-black/55 p-3 backdrop-blur-sm sm:items-center">
+      <div className={PUBLISHER_SHEET_OVERLAY}>
         <div
-          className="flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-[22px] border border-[rgba(93,50,145,0.14)] bg-[#fbf7f0]"
+          className={PUBLISHER_SHEET_PANEL}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex shrink-0 items-center justify-between border-b border-[rgba(93,50,145,0.1)] px-4 py-3">
+          <div className={`flex shrink-0 items-center justify-between ${PUBLISHER_SHEET_HEADER_BORDER} px-4 py-3`}>
             <button type="button" onClick={close} className="grid h-9 w-9 place-items-center rounded-full border bg-white">
               <X className="h-4 w-4" />
             </button>
             <div className="text-right">
-              <p className="text-[13px] font-extrabold text-[#3a3258]">إضافة مساعد</p>
-              <p className="text-[10px] font-bold text-[#6b658a]">امسح الباركود أو أضف بالبريد</p>
+              <p className={PUBLISHER_TEXT_TITLE}>إضافة مساعد</p>
+              <p className={PUBLISHER_TEXT_SUB}>امسح الباركود أو أضف بالبريد</p>
             </div>
             <span className="w-9" />
           </div>
@@ -99,27 +116,27 @@ export function PublisherTeamSheet({ open, publisherId, onClose, onAdded }: Prop
               type="button"
               onClick={() => setScanOpen(true)}
               disabled={saving}
-              className="inline-flex w-full items-center justify-center gap-1.5 rounded-2xl py-3 text-[12px] font-extrabold text-white disabled:opacity-60"
-              style={{ background: "linear-gradient(160deg, #7b4cb8, #5D3291)" }}
+              className={`${PUBLISHER_PURPLE_BTN_SOLID} rounded-2xl py-3`}
+              style={{ background: PUBLISHER_PURPLE_GRADIENT }}
             >
               <ScanLine className="h-4 w-4" />
               مسح باركود العضو
             </button>
 
             <div className="flex items-center gap-2">
-              <div className="h-px flex-1 bg-[rgba(93,50,145,0.12)]" />
-              <span className="text-[9px] font-bold text-[#8a84a8]">أو بالبريد</span>
-              <div className="h-px flex-1 bg-[rgba(93,50,145,0.12)]" />
+              <div className={PUBLISHER_DIVIDER} />
+              <span className={PUBLISHER_TEXT_MUTED}>أو بالبريد</span>
+              <div className={PUBLISHER_DIVIDER} />
             </div>
 
             <label className="block text-right">
-              <span className="mb-1 block text-[10px] font-extrabold text-[#5D3291]">بريد المساعد في ألفا</span>
+              <span className={`mb-1 block ${PUBLISHER_TEXT_ACCENT_CAPTION}`}>بريد المساعد في ألفا</span>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="example@email.com"
-                className="w-full rounded-2xl border border-[rgba(93,50,145,0.14)] bg-white px-3 py-2.5 text-[12px] font-bold text-[#3a3258]"
+                className={PUBLISHER_EMAIL_INPUT}
                 dir="ltr"
               />
             </label>
@@ -130,16 +147,16 @@ export function PublisherTeamSheet({ open, publisherId, onClose, onAdded }: Prop
               onToggle={(key, value) => setDraft((d) => ({ ...d, [key]: value }))}
             />
 
-            {feedback ? <p className="text-center text-[11px] font-bold text-[#a8344f]">{feedback}</p> : null}
+            {feedback ? <p className={PUBLISHER_TEXT_ERROR}>{feedback}</p> : null}
           </div>
 
-          <div className="shrink-0 border-t border-[rgba(93,50,145,0.1)] px-4 py-3">
+          <div className={`shrink-0 ${PUBLISHER_SHEET_FOOTER_BORDER} px-4 py-3`}>
             <button
               type="button"
               onClick={() => void addMemberByEmail()}
               disabled={saving || !email.trim()}
-              className="inline-flex w-full items-center justify-center gap-1.5 rounded-full py-2.5 text-[12px] font-extrabold text-white disabled:opacity-60"
-              style={{ background: "linear-gradient(160deg, #7b4cb8, #5D3291)" }}
+              className={PUBLISHER_PURPLE_BTN_SOLID}
+              style={{ background: PUBLISHER_PURPLE_GRADIENT }}
             >
               {saving ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
               {saving ? "جاري الإضافة…" : "إضافة المساعد"}
@@ -169,13 +186,13 @@ function PermissionToggles({
   const keys = Object.keys(PUBLISHER_TEAM_PERMISSION_LABELS) as (keyof DraftPerms)[];
 
   return (
-    <div className="rounded-2xl border border-[rgba(93,50,145,0.1)] bg-white/90 p-2">
-      <p className="mb-2 text-right text-[10px] font-extrabold text-[#5D3291]">صلاحيات المساعد</p>
+    <div className={PUBLISHER_INNER_CARD}>
+      <p className={`mb-2 text-right ${PUBLISHER_TEXT_ACCENT_CAPTION}`}>صلاحيات المساعد</p>
       <div className="grid grid-cols-1 gap-1.5">
         {keys.map((key) => (
           <label
             key={key}
-            className="flex items-center justify-between gap-2 rounded-xl border border-[rgba(93,50,145,0.08)] bg-[#faf8fc] px-2.5 py-2"
+            className={PUBLISHER_PERM_ROW}
           >
             <input
               type="checkbox"
@@ -184,7 +201,7 @@ function PermissionToggles({
               onChange={(e) => onToggle(key, e.target.checked)}
               className="h-4 w-4 accent-[#5D3291]"
             />
-            <span className="flex-1 text-right text-[10px] font-extrabold text-[#3a3258]">
+            <span className={`flex-1 text-right ${PUBLISHER_TEXT_TITLE} text-[10px]`}>
               {PUBLISHER_TEAM_PERMISSION_LABELS[key]}
             </span>
           </label>

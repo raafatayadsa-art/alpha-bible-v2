@@ -128,6 +128,15 @@ body::-webkit-scrollbar {
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-alpha-gold: var(--alpha-gold);
+  --color-alpha-gold-bright: var(--alpha-gold-bright);
+  --color-alpha-gold-deep: var(--alpha-gold-deep);
+  --color-alpha-gold-dark: var(--alpha-gold-dark);
+  --color-alpha-cream: var(--alpha-cream);
+  --color-alpha-navy: var(--alpha-navy);
+  --color-alpha-paper: var(--alpha-paper);
+  --color-alpha-accent-green: var(--alpha-accent-green-deep);
+  --color-alpha-accent-purple: var(--alpha-accent-purple-deep);
 }
 
 :root {

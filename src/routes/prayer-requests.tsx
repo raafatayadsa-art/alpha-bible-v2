@@ -10,7 +10,6 @@ import {
   PRAYER_TABS,
   type PrayerFilter,
   type PrayerRequest,
-  type EncouragementMessage,
   type PrayerCategory,
   ENCOURAGEMENT_CHIPS,
   ENCOURAGEMENT_MAX,
@@ -24,6 +23,9 @@ import {
   prayerStatsFromItems,
   PRAYER_REQUESTS_CHANGED,
 } from "@/features/church/prayer-requests-api";
+import { usePrayerEncouragements } from "@/features/church/prayer-encouragements-store";
+import { markPrayedRequest, readPrayedRequestIds } from "@/features/church/prayer-prayed-store";
+import { shareSpiritualMomentToCommunity } from "@/features/community";
 import {
   PrayerUserAvatar, PrayerStackAvatars, firstNameFrom,
 } from "@/features/prayer/prayer-avatars";
@@ -66,8 +68,8 @@ function categoryAccent(cat: PrayerCategory) {
 
 function PrayerRequestsScreen() {
   const [tab, setTab] = useState<PrayerFilter>("all");
-  const [prayedIds, setPrayedIds] = useState<Set<string>>(() => new Set());
-  const [messages, setMessages] = useState<EncouragementMessage[]>([]);
+  const [prayedIds, setPrayedIds] = useState<Set<string>>(() => readPrayedRequestIds());
+  const { messages, add: addEncouragementMessage } = usePrayerEncouragements();
   const [encourageFor, setEncourageFor] = useState<PrayerRequest | null>(null);
   const [showAdd, setShowAdd] = useState(false);
   const [items, setItems] = useState<PrayerRequest[]>([]);
@@ -98,28 +100,26 @@ function PrayerRequestsScreen() {
 
   const togglePray = (id: string) => {
     const wasPrayed = prayedIds.has(id);
-    setPrayedIds((prev) => {
-      const next = new Set(prev);
-      if (wasPrayed) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+    const next = markPrayedRequest(id, !wasPrayed);
+    setPrayedIds(next);
+    if (!wasPrayed) {
+      const item = items.find((row) => row.id === id);
+      if (item) {
+        void import("@/features/community/community-auto-activity").then((m) =>
+          m.maybeEmitPrayerIntercessionActivity(item),
+        );
+      }
+    }
     void (wasPrayed ? decrementPrayerCount(id) : incrementPrayerCount(id)).then(() => void loadItems());
   };
 
   const addEncouragement = (text: string, anonymous: boolean) => {
     const trimmed = text.trim();
     if (!trimmed) return;
-    setMessages((prev) => [
-      {
-        id: `local-${Date.now()}`,
-        author: anonymous ? "عضو الكنيسة" : "أنت",
-        text: trimmed.slice(0, ENCOURAGEMENT_MAX),
-        time: "الآن",
-        anonymous,
-      },
-      ...prev,
-    ]);
+    addEncouragementMessage(trimmed.slice(0, ENCOURAGEMENT_MAX), {
+      anonymous,
+      prayerRequestId: encourageFor?.id,
+    });
     setEncourageFor(null);
   };
 
@@ -132,6 +132,17 @@ function PrayerRequestsScreen() {
     }
     setItems((prev) => [result.request, ...prev]);
     setShowAdd(false);
+    if (!anonymous) {
+      shareSpiritualMomentToCommunity({
+        kind: "prayer",
+        prayer: {
+          title,
+          body,
+          category: result.request.category,
+          sourcePrayerId: result.request.id,
+        },
+      });
+    }
   };
 
   return (
@@ -149,7 +160,7 @@ function PrayerRequestsScreen() {
       >
         <AlphaHeader
           variant="internal"
-          backTo="/church"
+          backTo="/community"
           searchScope="community"
           searchContext={{ prayerRequests: items }}
           title={
@@ -327,6 +338,56 @@ function PrayerRequestsScreen() {
             </div>
           )}
         </section>
+
+        {!loading && filtered.length > 0 ? (
+          <section className="px-4 mt-4">
+            <h2 className="mb-2.5 text-[14px] font-extrabold text-[#3a2a18]">كل الطلبات</h2>
+            <div className="space-y-2.5">
+              {filtered.map((req) => {
+                const hasPrayed = prayedIds.has(req.id);
+                const accent = categoryAccent(req.category);
+                return (
+                  <article
+                    key={`list-${req.id}`}
+                    className="rounded-[18px] border px-3.5 py-3 backdrop-blur-xl"
+                    style={{
+                      background: `linear-gradient(160deg, ${accent.soft}, rgba(255,255,255,0.88))`,
+                      borderColor: accent.border,
+                    }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <PrayerUserAvatar
+                        name={req.anonymous ? "?" : req.name}
+                        avatarUrl={req.anonymous ? undefined : req.avatarUrl}
+                        size="sm"
+                        anonymous={req.anonymous}
+                      />
+                      <div className="min-w-0 flex-1 text-right">
+                        <p className="text-[13px] font-extrabold text-[#3a2a18] line-clamp-1">{req.title}</p>
+                        <p className="mt-1 text-[12px] leading-snug text-[#5a4a38] line-clamp-2">{req.request}</p>
+                        <p className="mt-1.5 text-[10px] font-bold text-[#8a6ec1]">{req.prayers} صلّوا · {req.time}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => togglePray(req.id)}
+                        aria-pressed={hasPrayed}
+                        className={
+                          "shrink-0 inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-extrabold border active:scale-[0.98] " +
+                          (hasPrayed
+                            ? "bg-[#1f8a5a]/15 text-[#1f8a5a] border-[#1f8a5a]/25"
+                            : "bg-gradient-to-l from-[#b8893a] to-[#c79356] text-white border-transparent")
+                        }
+                      >
+                        {hasPrayed ? <Check className="h-3 w-3" /> : <HandHeart className="h-3 w-3" />}
+                        {hasPrayed ? "تمت" : "صلّيت"}
+                      </button>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
 
         {/* Encouragement Messages — lavender ivory glass */}
         <section className="px-4">

@@ -5,6 +5,7 @@ import {
   reactToTripPrayer,
   submitTripPrayerRequest,
   subscribeTripPrayers,
+  syncTripPrayersFromDb,
 } from "../trip-prayer-requests";
 
 const GLASS = "rounded-2xl border border-[#efe2c4] bg-white/60 p-3";
@@ -15,6 +16,10 @@ export function TripPrayerPanel({ postId }: { postId: string }) {
   const [shareOrg, setShareOrg] = useState(true);
 
   useEffect(() => subscribeTripPrayers(() => setRequests(listTripPrayerRequests(postId))), [postId]);
+
+  useEffect(() => {
+    void syncTripPrayersFromDb(postId).then(() => setRequests(listTripPrayerRequests(postId)));
+  }, [postId]);
 
   return (
     <section className={GLASS + " text-right mt-3"} dir="rtl">

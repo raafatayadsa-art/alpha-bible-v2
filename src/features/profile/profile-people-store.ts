@@ -96,6 +96,10 @@ export function removeProfileConnectLink(id: string) {
   writeLists(lists);
 }
 
+export function clearProfilePeopleLinks() {
+  writeLists({ family: [], connect: [] });
+}
+
 export function useProfilePeopleLinks() {
   const [family, setFamily] = useState<ProfileLinkedPerson[]>(() => getProfileFamilyLinks());
   const [connect, setConnect] = useState<ProfileLinkedPerson[]>(() => getProfileConnectLinks());

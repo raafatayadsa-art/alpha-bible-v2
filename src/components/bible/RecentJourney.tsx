@@ -27,8 +27,8 @@ export function RecentJourney() {
   return (
     <section className="mt-5">
       <div className="mb-2 flex items-center justify-between px-1">
-        <h2 className="text-[14px] font-extrabold text-[#3a2a18]">رحلتك الأخيرة</h2>
-        <Clock className="h-3.5 w-3.5 text-[#b8893a]" />
+        <h2 className="alpha-type-h2 text-alpha-heading">رحلتك الأخيرة</h2>
+        <Clock className="h-3.5 w-3.5 text-alpha-gold-deep" />
       </div>
       <div className="-mx-4 px-4 flex gap-2.5 overflow-x-auto no-scrollbar pb-1">
         {items.map((r) => {
@@ -39,30 +39,29 @@ export function RecentJourney() {
               to="/$book/$chapter"
               params={{ book: r.book, chapter: String(r.chapter) }}
               className={cn(
-                "shrink-0 w-[170px] rounded-2xl border border-[#efe2c4]",
-                "bg-[#fbf3e1]/90 px-3 py-2.5 text-right",
-                "shadow-[0_8px_18px_-14px_rgba(120,80,30,0.4)]",
-                "active:scale-[0.97] transition-transform",
+                "alpha-card-mini shrink-0 w-[170px] rounded-[var(--alpha-radius-dock-tab)] border border-alpha",
+                "px-3 py-2.5 text-right",
+                "active:scale-[0.97] alpha-motion-spring",
               )}
             >
               <div className="mb-2 h-10 w-10">
                 <BookIcon book={r.book} className="h-full w-full" />
               </div>
-              <p className="text-[10.5px] font-bold text-[#b8893a]">
+              <p className="alpha-type-desc font-bold text-alpha-gold-deep">
                 {timeAgo(r.lastOpenedAt)}
               </p>
-              <h3 className="mt-0.5 truncate font-arabic-serif text-[13px] font-extrabold text-[#3a2a18]">
+              <h3 className="alpha-type-h2 mt-0.5 truncate font-arabic-serif text-alpha-heading">
                 {displayName(r.bookName || r.book)}
               </h3>
-              <p className="text-[11px] text-[#6a543a]">{chapterWithNumber(r.book, r.chapter)}</p>
+              <p className="alpha-type-desc text-alpha-description">{chapterWithNumber(r.book, r.chapter)}</p>
               <div className="mt-2 flex items-center gap-1.5">
-                <div className="h-1 flex-1 rounded-full bg-[#ecdcb6] overflow-hidden">
+                <div className="h-1 flex-1 rounded-full bg-alpha-progress-track overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-[#e7c97a] via-[#c79356] to-[#7a4a26]"
+                    className="alpha-progress-gold h-full rounded-full"
                     style={{ width: `${pct}%` }}
                   />
                 </div>
-                <span className="text-[9.5px] font-bold text-[#7a4a26] tabular-nums">{pct}%</span>
+                <span className="alpha-type-caption font-bold text-alpha-gold-deep tabular-nums">{pct}%</span>
               </div>
             </Link>
           );

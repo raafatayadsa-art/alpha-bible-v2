@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { recordJourneyReading } from "@/features/bible-journey/journey-storage";
+import { canUsePersonalFeaturesSync } from "@/features/auth/auth-capabilities";
+import { recordJourneyReading, journeyChapterKey, readJourneyChapterMap } from "@/features/bible-journey/journey-storage";
 
 /* ---------- Types ---------- */
 
@@ -61,6 +62,13 @@ function write(key: string, value: unknown) {
   try {
     window.localStorage.setItem(key, JSON.stringify(value));
     window.dispatchEvent(new CustomEvent("ab:storage", { detail: { key } }));
+    void import("@/lib/user-sync-scheduler").then(({ scheduleUserDataSync }) => {
+      if (key === KEYS.current || key === KEYS.recent) {
+        scheduleUserDataSync({ debounced: true, delayMs: 5000 });
+      } else {
+        scheduleUserDataSync({ delayMs: 1500, extraKey: key });
+      }
+    });
   } catch {
     /* ignore */
   }
@@ -120,12 +128,13 @@ export function useSavedChapters() {
   const [list, setList] = useLSValue<SavedChapter[]>(KEYS.savedChapters, []);
 
   const isChapterSaved = useCallback(
-    (id: string) => list.some((c) => c.id === id),
+    (id: string) => canUsePersonalFeaturesSync() && list.some((c) => c.id === id),
     [list],
   );
 
   const toggleChapter = useCallback(
     (c: Omit<SavedChapter, "savedAt" | "id"> & { id?: string }) => {
+      if (!canUsePersonalFeaturesSync()) return false;
       const id = c.id ?? chapterKey(c.book, c.chapter);
       const exists = list.some((x) => x.id === id);
       const next = exists
@@ -144,18 +153,22 @@ export function useSavedVerses() {
   const [list, setList] = useLSValue<SavedVerse[]>(KEYS.saved, []);
 
   const isSaved = useCallback(
-    (id: string) => list.some((v) => v.id === id),
+    (id: string) => canUsePersonalFeaturesSync() && list.some((v) => v.id === id),
     [list],
   );
 
   const toggle = useCallback(
     (v: Omit<SavedVerse, "savedAt" | "id"> & { id?: string }) => {
+      if (!canUsePersonalFeaturesSync()) return false;
       const id = v.id ?? verseKey(v.book, v.chapter, v.verse);
       const exists = list.some((x) => x.id === id);
       const next = exists
         ? list.filter((x) => x.id !== id)
         : [{ ...v, id, savedAt: Date.now() } as SavedVerse, ...list];
       setList(next);
+      void import("@/lib/saved-verses-sync").then(({ pushSavedVerseToggle }) =>
+        pushSavedVerseToggle({ ...v, id }, !exists),
+      );
       return !exists;
     },
     [list, setList],
@@ -185,6 +198,8 @@ export function updateSession(s: ReadingSession) {
   const next = [s, ...filtered].slice(0, 6);
   write(KEYS.recent, next);
 
+  const prevProgress = readJourneyChapterMap()[journeyChapterKey(s.book, s.chapter)]?.progressPercent ?? 0;
+
   recordJourneyReading({
     book: s.book,
     chapter: s.chapter,
@@ -192,4 +207,8 @@ export function updateSession(s: ReadingSession) {
     verse: s.verse,
     lastOpenedAt: s.lastOpenedAt,
   });
+
+  void import("@/features/community/community-auto-activity").then((m) =>
+    m.maybeEmitReadingActivity(s, prevProgress),
+  );
 }

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { canUsePersonalFeaturesSync } from "@/features/auth/auth-capabilities";
 
 export type JournalKind = "note" | "meditation";
 
@@ -38,6 +39,9 @@ function write(value: unknown) {
   try {
     window.localStorage.setItem(KEY, JSON.stringify(value));
     window.dispatchEvent(new CustomEvent("ab:storage", { detail: { key: KEY } }));
+    void import("@/lib/user-sync-scheduler").then(({ scheduleUserDataSync }) =>
+      scheduleUserDataSync({ delayMs: 1500, extraKey: KEY }),
+    );
   } catch {
     /* ignore */
   }
@@ -73,6 +77,7 @@ export function useBibleJournal() {
 
   const upsert = useCallback(
     (entry: BibleJournalEntry) => {
+      if (!canUsePersonalFeaturesSync()) return entry;
       const exists = entries.some((e) => e.id === entry.id);
       const next = exists
         ? entries.map((e) => (e.id === entry.id ? entry : e))

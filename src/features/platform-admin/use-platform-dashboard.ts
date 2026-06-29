@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useApprovalsCenter } from "./approvals-store";
+import { subscribePlatformSync } from "./platform-control-sync";
 import {
   fetchDashboardStats,
   fetchPlatformHealth,
@@ -13,6 +14,16 @@ export function usePlatformDashboard() {
   const [health, setHealth] = useState<PlatformHealth | null>(null);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [reloadTick, setReloadTick] = useState(0);
+
+  const refresh = useCallback(() => {
+    setLoading(true);
+    setReloadTick((t) => t + 1);
+  }, []);
+
+  useEffect(() => {
+    return subscribePlatformSync(() => refresh());
+  }, [refresh]);
 
   useEffect(() => {
     let cancelled = false;
@@ -26,7 +37,7 @@ export function usePlatformDashboard() {
     return () => {
       cancelled = true;
     };
-  }, [pendingCount]);
+  }, [pendingCount, reloadTick]);
 
   const users = stats?.users ?? 0;
   const churches = stats?.churches ?? 0;
@@ -35,6 +46,7 @@ export function usePlatformDashboard() {
 
   return {
     loading,
+    refresh,
     health,
     healthScore: health?.score ?? 98,
     pendingApprovals: pendingCount,

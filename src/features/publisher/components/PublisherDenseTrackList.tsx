@@ -1,6 +1,7 @@
 import { Pause, Play } from "lucide-react";
 import { formatDurationSeconds } from "@/features/publisher/publisher-content-payload";
 import type { PublisherPlayableTrack } from "../publisher-playback";
+import { PUBLISHER_TEXT_MUTED, PUBLISHER_TEXT_TITLE } from "./publisher-glass-chrome";
 
 type Props = {
   tracks: PublisherPlayableTrack[];
@@ -25,7 +26,7 @@ export function PublisherDenseTrackList({ tracks, currentKey, playing, onPlay }:
                 isCurrent ? "bg-[var(--gold)]/8" : "hover:bg-[var(--gold)]/5"
               }`}
             >
-              <span className="w-5 shrink-0 text-center text-[11px] font-black tabular-nums text-[#8a84a8]">
+              <span className={`w-5 shrink-0 text-center alpha-type-desc font-black tabular-nums ${PUBLISHER_TEXT_MUTED}`}>
                 {isCurrent && playing ? (
                   <Pause className="mx-auto h-3.5 w-3.5 text-[var(--gold-deep)]" strokeWidth={2.5} />
                 ) : (
@@ -37,15 +38,15 @@ export function PublisherDenseTrackList({ tracks, currentKey, playing, onPlay }:
               </div>
               <div className="min-w-0 flex-1">
                 <p
-                  className={`truncate text-[13px] font-extrabold ${
-                    isCurrent ? "text-[var(--gold-deep)]" : "text-[#3a3258]"
+                  className={`truncate alpha-type-body font-extrabold ${
+                    isCurrent ? "text-[var(--gold-deep)]" : PUBLISHER_TEXT_TITLE
                   }`}
                 >
                   {track.title}
                 </p>
-                <p className="mt-0.5 truncate text-[10px] font-bold text-[#8a84a8]">{track.subtitle}</p>
+                <p className={`mt-0.5 truncate ${PUBLISHER_TEXT_MUTED}`}>{track.subtitle}</p>
               </div>
-              <span className="shrink-0 text-[10px] font-bold tabular-nums text-[#8a84a8]" dir="ltr">
+              <span className={`shrink-0 ${PUBLISHER_TEXT_MUTED} tabular-nums`} dir="ltr">
                 {formatDurationSeconds(track.durationSeconds)}
               </span>
             </button>

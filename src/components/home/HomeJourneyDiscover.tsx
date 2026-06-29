@@ -21,6 +21,7 @@ const JOURNEY_BADGE: Record<string, string> = {
   katameros: "قطمارس",
   synaxarium: "سنكسار",
   church: "كنيسة",
+  community: "مجتمعي",
   audio: "صوتيات",
   kids: "أطفال",
   meditation: "تأمل",
@@ -40,19 +41,19 @@ const JourneyDiscoverCard = memo(function JourneyDiscoverCard({
 }: JourneyDiscoverItem & { badge: string; itemKey: string }) {
   return (
     <Link
-      to={to as "/"}
+      to={to as never}
       aria-label={title}
       data-journey-key={itemKey}
       className="journey-discover-card group relative z-[1] block shrink-0 active:scale-[0.98] transition-transform"
       style={{ width: JOURNEY_CARD_WIDTH, "--journey-accent": accent } as CSSProperties}
     >
-      <article className="journey-discover-article relative h-[176px] w-full overflow-hidden rounded-[22px] border">
+      <article className="journey-discover-article alpha-home-daily-card relative h-[176px] w-full overflow-hidden border">
         <img
           src={image}
           alt=""
           draggable={false}
           loading="lazy"
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-cover alpha-media-polish"
         />
         <div
           aria-hidden
@@ -62,15 +63,15 @@ const JourneyDiscoverCard = memo(function JourneyDiscoverCard({
               "linear-gradient(180deg, rgba(0,0,0,0.32) 0%, rgba(0,0,0,0.04) 36%, rgba(0,0,0,0.22) 62%, rgba(0,0,0,0.88) 100%)",
           }}
         />
-        <div aria-hidden className="journey-discover-inset pointer-events-none absolute inset-[1px] rounded-[21px]" />
+        <div aria-hidden className="journey-discover-inset pointer-events-none absolute inset-[1px] rounded-[calc(var(--alpha-radius-card-compact)-1px)]" />
         <div
           aria-hidden
-          className="journey-glow-ring pointer-events-none absolute inset-0 rounded-[22px]"
+          className="journey-glow-ring pointer-events-none absolute inset-0 rounded-[var(--alpha-radius-card-compact)]"
         />
 
         <div className="absolute inset-x-0 top-0 z-10 flex items-start justify-end px-3 pt-2.5">
           <div
-            className="inline-flex items-center rounded-full border px-2.5 py-1 backdrop-blur-md shadow-[0_4px_14px_rgba(0,0,0,0.22)]"
+            className="alpha-tag inline-flex items-center backdrop-blur-md"
             style={{ borderColor: `${accent}55`, background: "rgba(0,0,0,0.38)" }}
           >
             <HeroBadgeEmblem label={badge} compact />
@@ -79,12 +80,12 @@ const JourneyDiscoverCard = memo(function JourneyDiscoverCard({
 
         <div className="absolute inset-x-0 bottom-0 z-10 px-3.5 pb-3 pt-10">
           <h3
-            className="text-right text-[16px] font-extrabold leading-tight text-white line-clamp-1"
+            className="text-[17px] font-extrabold text-right leading-tight text-white line-clamp-1"
             style={{ textShadow: "0 2px 14px rgba(0,0,0,0.85)" }}
           >
             {title}
           </h3>
-          <p className="mt-1 text-right text-[11px] font-medium leading-snug text-white/78 line-clamp-2">
+          <p className="mt-1 text-right text-[13px] font-medium leading-snug !text-white/78 line-clamp-2">
             {sub}
           </p>
           <div className="mt-2 flex justify-end">
@@ -171,7 +172,7 @@ export function HomeJourneyDiscover({ items }: { items: JourneyDiscoverItem[] })
         .journey-discover-card {
           transform: translate3d(0, 0, 0) scale(1);
           transform-origin: center bottom;
-          transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+          transition: transform var(--alpha-motion-standard);
           will-change: transform;
           backface-visibility: hidden;
           contain: layout style;
@@ -182,11 +183,8 @@ export function HomeJourneyDiscover({ items }: { items: JourneyDiscoverItem[] })
         }
         .journey-discover-article {
           border-color: color-mix(in srgb, var(--journey-accent) 55%, transparent);
-          background: #07040f;
-          box-shadow:
-            0 22px 44px -16px rgba(0, 0, 0, 0.72),
-            0 0 0 1px rgba(231, 201, 122, 0.12),
-            0 0 28px color-mix(in srgb, var(--journey-accent) 12%, transparent);
+          background: var(--alpha-bg-cinematic);
+          box-shadow: var(--alpha-shadow-normal);
         }
         .journey-discover-inset {
           box-shadow:
@@ -231,17 +229,17 @@ export function HomeJourneyDiscover({ items }: { items: JourneyDiscoverItem[] })
 
       <div className="mb-3 flex items-end justify-between px-1">
         <div>
-          <p className="text-[10px] font-extrabold tracking-wide text-alpha-heading-muted">
+          <p className="alpha-type-caption font-extrabold tracking-wide text-alpha-heading-muted">
             بوابات ألفا الروحية
           </p>
-          <h2 className="mt-0.5 flex items-center gap-1.5 text-[15px] font-extrabold tracking-tight text-alpha-heading">
+          <h2 className="alpha-type-h2 mt-0.5 flex items-center gap-1.5 tracking-tight text-alpha-heading">
             <span className="text-alpha-gold-bright">
-              <CopticCross size={14} />
+              <CopticCross size={16} />
             </span>
             اكتشف رحلتك اليوم
           </h2>
         </div>
-        <span className="rounded-full border border-alpha bg-alpha-surface px-2 py-0.5 text-[9.5px] font-bold text-alpha-gold-deep backdrop-blur-sm">
+        <span className="alpha-tag border-alpha bg-alpha-surface !text-alpha-gold-deep backdrop-blur-sm">
           {items.length} أبواب
         </span>
       </div>
@@ -267,7 +265,7 @@ export function HomeJourneyDiscover({ items }: { items: JourneyDiscoverItem[] })
         </div>
       </div>
 
-      <p className="mt-2 text-center text-[9px] font-semibold text-alpha-heading-muted">
+      <p className="alpha-type-caption mt-2 text-center font-semibold text-alpha-heading-muted">
         اسحب للتوقف · الكارت في المنتصف يُرفع تلقائياً
       </p>
     </section>

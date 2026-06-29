@@ -37,7 +37,7 @@ export function KholagyHomeCard() {
 
   return (
     <article
-      className="group relative h-[156px] w-full overflow-hidden rounded-[26px] border"
+      className="group alpha-card-featured relative h-[156px] w-full overflow-hidden !p-0 border"
       style={{
         borderColor: `${GOLD}44`,
         background: "#1a1030",
@@ -60,7 +60,7 @@ export function KholagyHomeCard() {
         aria-hidden
         draggable={false}
         loading="lazy"
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center alpha-media-polish"
         style={{
           opacity: 0.58,
           filter: "saturate(1.08) contrast(1.05)",
@@ -85,7 +85,7 @@ export function KholagyHomeCard() {
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-[1px] rounded-[25px]"
+        className="pointer-events-none absolute inset-[1px] rounded-[calc(var(--alpha-radius-card)-1px)]"
         style={{
           boxShadow:
             "inset 0 1px 0 rgba(255,255,255,0.16), inset 0 0 28px rgba(90,61,146,0.2)",
@@ -95,14 +95,14 @@ export function KholagyHomeCard() {
       <div className="relative z-10 flex h-full flex-col justify-between px-3.5 py-3 pointer-events-none">
         <div className="flex items-start gap-3">
           <div
-            className="relative grid h-11 w-11 shrink-0 place-items-center rounded-[16px] border backdrop-blur-md"
+            className="relative grid h-11 w-11 shrink-0 place-items-center rounded-[var(--alpha-radius-dock-tab)] border backdrop-blur-md"
             style={{
               borderColor: `${GOLD}55`,
               background: "rgba(90,61,146,0.35)",
               boxShadow: `0 0 20px ${PURPLE_SOFT}`,
             }}
           >
-            <Music2 className="h-5 w-5 text-[#f5f2ed]" strokeWidth={2.1} />
+            <Music2 className="h-5 w-5 text-white/95" strokeWidth={2.1} />
             <span
               aria-hidden
               className="absolute -bottom-0.5 -right-0.5 grid h-4 w-4 place-items-center rounded-full border border-white/30"
@@ -120,21 +120,21 @@ export function KholagyHomeCard() {
               >
                 <HeroBadgeEmblem label="الخولاجي" compact />
               </div>
-              <span className="text-[10px] font-bold text-white/50">·</span>
-              <span className="text-[10px] font-extrabold" style={{ color: GOLD }}>
+              <span className="alpha-type-caption font-bold text-white/50">·</span>
+              <span className="alpha-type-caption font-extrabold" style={{ color: GOLD }}>
                 Ⲁ Ⲱ
               </span>
             </div>
-            <h3 className="mt-1 font-arabic-serif text-[16px] font-extrabold leading-tight text-white">
+            <h3 className="alpha-type-h2 mt-1 font-arabic-serif leading-tight text-white">
               الخولاجي المقدس
             </h3>
-            <p className="mt-0.5 text-[10.5px] font-medium leading-snug text-white/75 line-clamp-1">
+            <p className="alpha-type-desc mt-0.5 leading-snug !text-white/75 line-clamp-1">
               تسبحة · أوشيات · ذكصولوجيات · {hymnCount} لحن · عربي + قبطي
             </p>
           </div>
 
           <span
-            className="pointer-events-auto shrink-0 self-center rounded-full border px-3 py-1.5 text-[10px] font-extrabold text-white backdrop-blur-md transition active:scale-95 group-hover:brightness-110"
+            className="pointer-events-auto shrink-0 self-center alpha-tag !text-white backdrop-blur-md transition active:scale-95 group-hover:brightness-110"
             style={{
               borderColor: `${GOLD}55`,
               background: `linear-gradient(160deg, ${PURPLE}, #3a2560)`,
@@ -171,7 +171,7 @@ export function KholagyHomeCard() {
           />
           <div
             aria-hidden
-            className="my-1.5 w-px shrink-0 bg-gradient-to-b from-transparent via-[#f0d78c]/35 to-transparent"
+            className="my-1.5 w-px shrink-0 bg-gradient-to-b from-transparent via-[var(--alpha-gold-bright)]/35 to-transparent"
           />
           <HeroSpiritLedgerCell
             glyph="Ⲱ"

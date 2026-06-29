@@ -9,7 +9,7 @@ import {
 
 type AlphaUserNameProps = {
   name: string;
-  role: ShieldRole;
+  role: ShieldRole | null;
   size?: "sm" | "md" | "lg";
   className?: string;
   nameClassName?: string;

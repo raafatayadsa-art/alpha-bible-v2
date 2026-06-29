@@ -5,6 +5,7 @@ import { findTripLinkByChannelId } from "@/features/alpha-connect/trip-channel-l
 import { pushInternalTripAlert, readTripOperations } from "@/features/alpha-connect/trip-operations-store";
 import { buildCommandCenterSnapshot } from "@/features/church/trip-reservations/trip-command-center";
 import { TripBusPanel } from "@/features/church/trip-reservations/components/TripBusPanel";
+import { TripOrganizerPaymentPanel } from "@/features/church/trip-reservations/components/TripOrganizerPaymentPanel";
 import { CompanionMatchingPanel } from "@/features/church/trip-reservations/components/CompanionMatchingPanel";
 import { cn } from "@/lib/utils";
 
@@ -67,6 +68,7 @@ export function TripOperationsPanel({
       </div>
 
       <TripBusPanel postId={link.postId} />
+      <TripOrganizerPaymentPanel postId={link.postId} />
       <CompanionMatchingPanel postId={link.postId} />
 
       {ops.adminAlerts[0] ? (

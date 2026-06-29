@@ -17,7 +17,10 @@ export function HighlightedWord({
   return (
     <button
       type="button"
-      onClick={onSelect}
+      onClick={(e) => {
+        e.stopPropagation();
+        onSelect?.();
+      }}
       className="dictionary-highlight inline align-baseline"
     >
       {children}

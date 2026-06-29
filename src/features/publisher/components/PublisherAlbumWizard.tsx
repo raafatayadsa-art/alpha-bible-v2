@@ -11,6 +11,9 @@ import {
   PUBLISHER_GLASS_LABEL,
   PUBLISHER_GLASS_SHEET_BACKDROP,
   PUBLISHER_GLASS_SHEET_OVERLAY,
+  PUBLISHER_GOLD_BTN,
+  PUBLISHER_GOLD_BTN_FULL,
+  PUBLISHER_WIZARD_SECONDARY_BTN,
   publisherGlassSheetPanel,
 } from "./publisher-glass-chrome";
 
@@ -116,13 +119,13 @@ export function PublisherAlbumWizard({ open, publisherId, onClose, onSuccess }: 
           <button
             type="button"
             onClick={close}
-            className="absolute end-3 grid h-8 w-8 place-items-center rounded-full border border-white/35 bg-white/50 text-[#3a2a18]"
+            className="absolute end-3 grid h-8 w-8 place-items-center rounded-full border border-white/35 bg-white/50 text-alpha-heading"
           >
             <X className="h-4 w-4" />
           </button>
           <div className="text-center">
-            <p className="text-[14px] font-bold text-[#1F2937]">إضافة ألبوم جديد</p>
-            <p className="text-[10px] font-bold text-[#8a6a3a]">
+            <p className="alpha-type-h2 font-bold text-alpha-heading">إضافة ألبوم جديد</p>
+            <p className="alpha-type-caption font-bold text-alpha-muted">
               {STEPS[step]} · {step + 1}/{STEPS.length}
             </p>
           </div>
@@ -169,7 +172,7 @@ export function PublisherAlbumWizard({ open, publisherId, onClose, onSuccess }: 
                   <AlphaDatePicker value={releaseDate} onChange={setReleaseDate} title="تاريخ الإصدار" />
                 </div>
                 {releaseDate ? (
-                  <p className="mt-1 text-[10px] font-bold text-[#9a7e5a]">{formatAlphaDateDisplay(releaseDate)}</p>
+                  <p className="mt-1 alpha-type-caption font-bold text-alpha-gold-deep/80">{formatAlphaDateDisplay(releaseDate)}</p>
                 ) : null}
               </div>
             </>
@@ -203,14 +206,14 @@ export function PublisherAlbumWizard({ open, publisherId, onClose, onSuccess }: 
           {step === 4 ? (
             <div className="space-y-3 py-8 text-center">
               <CheckCircle2 className="mx-auto h-16 w-16 text-[#166534]" />
-              <p className="text-[15px] font-extrabold text-[#1F2937]">تم إرسال الألبوم للمراجعة</p>
-              <p className="text-[11px] font-bold text-[#8a6a3a]">
+              <p className="alpha-type-h2 font-extrabold text-alpha-heading">تم إرسال الألبوم للمراجعة</p>
+              <p className="alpha-type-desc font-bold text-alpha-muted">
                 {payloadTracks.length} ترنيمة · سيظهر بعد اعتماد Alpha.
               </p>
             </div>
           ) : null}
 
-          {error ? <p className="text-center text-[11px] font-bold text-[#EF4444]">{error}</p> : null}
+          {error ? <p className="text-center alpha-type-desc font-bold text-[#EF4444]">{error}</p> : null}
         </div>
 
         <div className="flex shrink-0 gap-2 border-t border-white/25 px-4 py-3">
@@ -218,7 +221,7 @@ export function PublisherAlbumWizard({ open, publisherId, onClose, onSuccess }: 
             <button
               type="button"
               onClick={() => setStep((s) => s - 1)}
-              className="inline-flex flex-1 items-center justify-center gap-1 rounded-full border border-[#efe2c4]/90 bg-white/65 py-2.5 text-[12px] font-extrabold text-[#3a2a18] backdrop-blur-sm"
+              className={PUBLISHER_WIZARD_SECONDARY_BTN}
             >
               <ChevronRight className="h-4 w-4" />
               السابق
@@ -229,7 +232,7 @@ export function PublisherAlbumWizard({ open, publisherId, onClose, onSuccess }: 
               type="button"
               disabled={!canNext}
               onClick={() => setStep((s) => s + 1)}
-              className="inline-flex flex-1 items-center justify-center gap-1 rounded-full border border-[#efe2c4]/80 bg-gradient-to-b from-[#f5e6c8] to-[#e8c878] py-2.5 text-[12px] font-extrabold text-[#3a2a18] shadow-[0_4px_14px_rgba(184,137,58,0.22)] disabled:opacity-50"
+              className={PUBLISHER_GOLD_BTN}
             >
               التالي
               <ChevronLeft className="h-4 w-4" />
@@ -240,7 +243,7 @@ export function PublisherAlbumWizard({ open, publisherId, onClose, onSuccess }: 
               type="button"
               disabled={!legalConsent || submitting}
               onClick={() => void submit()}
-              className="inline-flex flex-1 items-center justify-center gap-1 rounded-full border border-[#efe2c4]/80 bg-gradient-to-b from-[#f5e6c8] to-[#e8c878] py-2.5 text-[12px] font-extrabold text-[#3a2a18] shadow-[0_4px_14px_rgba(184,137,58,0.22)] disabled:opacity-50"
+              className={PUBLISHER_GOLD_BTN}
             >
               {submitting ? "جاري الإرسال…" : "إرسال للمراجعة"}
             </button>
@@ -249,7 +252,7 @@ export function PublisherAlbumWizard({ open, publisherId, onClose, onSuccess }: 
             <button
               type="button"
               onClick={close}
-              className="w-full rounded-full border border-[#efe2c4]/80 bg-gradient-to-b from-[#f5e6c8] to-[#e8c878] py-2.5 text-[12px] font-extrabold text-[#3a2a18]"
+              className={PUBLISHER_GOLD_BTN_FULL}
             >
               إغلاق
             </button>

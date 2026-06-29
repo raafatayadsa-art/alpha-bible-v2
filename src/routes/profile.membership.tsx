@@ -10,22 +10,14 @@ import { AlphaQrCode } from "@/components/identity/AlphaQrCode";
 import { ShieldImage } from "@/components/alpha/AlphaShield";
 import { useProfileMembershipData } from "@/features/profile/useProfileMembershipData";
 import { saveAlphaQrImage } from "@/features/identity/save-alpha-qr-image";
+import { ControlCenterScreenBackground } from "@/features/settings/components/ControlCenterScreenBackground";
+import { cn } from "@/lib/utils";
 
 const AlphaMembershipQrScanner = lazy(() =>
   import("@/features/profile/AlphaMembershipQrScanner").then((mod) => ({
     default: mod.AlphaMembershipQrScanner,
   })),
 );
-
-const PURPLE = {
-  page: "linear-gradient(180deg, #1a1028 0%, #140e22 50%, #0c0816 100%)",
-  card: "linear-gradient(155deg, rgba(48,32,78,0.96) 0%, rgba(28,18,48,0.94) 55%, rgba(36,24,58,0.92) 100%)",
-  panel: "linear-gradient(155deg, rgba(38,24,62,0.92) 0%, rgba(22,14,38,0.95) 100%)",
-  accent: "#b8a0e8",
-  accentSoft: "#8a6ec1",
-  border: "rgba(184,160,232,0.22)",
-  glow: "rgba(138,110,193,0.35)",
-};
 
 export const Route = createFileRoute("/profile/membership")({
   ssr: false,
@@ -73,84 +65,76 @@ function MembershipScreen() {
   };
 
   return (
-    <div
-      dir="rtl"
-      className="relative min-h-screen w-full overflow-x-hidden"
-      style={{ background: PURPLE.page }}
-    >
-      <div
-        aria-hidden
-        className="fixed inset-0 -z-10 opacity-[0.12]"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at 18% 12%, #8a6ec1 1px, transparent 1.5px), radial-gradient(circle at 82% 88%, #6a4ab5 1px, transparent 1.5px)",
-          backgroundSize: "52px 52px",
-        }}
-      />
+    <div dir="rtl" className="relative min-h-screen w-full overflow-x-hidden bg-alpha-base">
+      <ControlCenterScreenBackground />
+      <div aria-hidden className="pointer-events-none fixed inset-0 -z-[9] bg-[var(--alpha-bg-radial)]" />
+      <div aria-hidden className="pointer-events-none fixed inset-0 -z-[8] bg-[var(--alpha-bg-bloom)]" />
 
       <div className="relative mx-auto w-full max-w-[var(--alpha-content-max-width)] px-4 pb-10 pt-[max(env(safe-area-inset-top),12px)]">
         <header className="relative flex items-center justify-between gap-2 pt-1">
           <Link
             to="/profile"
             aria-label="رجوع"
-            className="grid h-10 w-10 place-items-center rounded-full border border-[#b8a0e8]/25 bg-[#2a1a45]/60 text-white backdrop-blur-xl shadow-[0_6px_14px_-8px_rgba(0,0,0,0.5)] active:scale-95 transition"
+            className="grid h-10 w-10 place-items-center rounded-full border border-alpha bg-alpha-surface text-alpha shadow-[var(--alpha-shadow-mini)] backdrop-blur-xl active:scale-95 alpha-motion-spring"
           >
             <ChevronRight className="h-5 w-5" />
           </Link>
           <div className="flex flex-col items-center">
-            <h1 className="text-[16px] font-extrabold text-white/92 tracking-tight">بطاقة العضوية</h1>
+            <h1 className="alpha-type-h2 font-arabic-serif font-extrabold text-alpha-section-purple tracking-tight">بطاقة العضوية</h1>
             <div className="mt-1.5 flex items-center gap-1.5">
-              <span className="h-px w-8 bg-gradient-to-l from-[#b8a0e8] to-transparent" />
-              <Cross className="h-2.5 w-2.5 text-[#b8a0e8]" strokeWidth={2.5} />
-              <span className="text-[#b8a0e8]/70 text-[8px]">✦</span>
-              <Cross className="h-3 w-3 text-[#8a6ec1]" strokeWidth={2.5} />
-              <span className="text-[#b8a0e8]/70 text-[8px]">✦</span>
-              <Cross className="h-2.5 w-2.5 text-[#b8a0e8]" strokeWidth={2.5} />
-              <span className="h-px w-8 bg-gradient-to-r from-[#b8a0e8] to-transparent" />
+              <span className="h-px w-8 bg-gradient-to-l from-alpha-gold-bright/50 to-transparent" />
+              <Cross className="h-2.5 w-2.5 text-alpha-gold-deep" strokeWidth={2.5} />
+              <span className="alpha-type-caption text-alpha-gold-deep/55">✦</span>
+              <Cross className="h-3 w-3 text-alpha-gold-bright" strokeWidth={2.5} />
+              <span className="alpha-type-caption text-alpha-gold-deep/55">✦</span>
+              <Cross className="h-2.5 w-2.5 text-alpha-gold-deep" strokeWidth={2.5} />
+              <span className="h-px w-8 bg-gradient-to-r from-alpha-gold-bright/50 to-transparent" />
             </div>
           </div>
           <div className="w-10" aria-hidden />
         </header>
 
-        {/* === IDENTITY + COMPACT QR === */}
-        <article
-          className="relative mt-5 overflow-hidden rounded-[24px] border p-4"
-          style={{
-            borderColor: PURPLE.border,
-            background: PURPLE.card,
-            boxShadow: `0 22px 48px -20px rgba(0,0,0,0.65), 0 0 32px -12px ${PURPLE.glow}`,
-          }}
-        >
+        <article className="alpha-membership-card relative mt-5 overflow-hidden rounded-[var(--alpha-radius-featured)] p-4">
           <div
             aria-hidden
-            className="pointer-events-none absolute -left-10 -top-10 h-36 w-36 rounded-full opacity-30"
-            style={{ background: "radial-gradient(circle, rgba(184,160,232,0.35), transparent 70%)" }}
+            className="pointer-events-none absolute -left-10 -top-10 h-36 w-36 rounded-full"
+            style={{ background: "radial-gradient(circle, var(--alpha-membership-glow), transparent 70%)" }}
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-0 h-[45%] rounded-t-[var(--alpha-radius-featured)] bg-gradient-to-b from-white/48 to-transparent"
           />
 
           <div className="relative flex items-center gap-3">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2.5">
                 <div className="relative shrink-0">
-                  <div className="h-[58px] w-[58px] overflow-hidden rounded-full border-2 border-[#b8a0e8]/50 bg-[#1a1028] shadow-md">
+                  <div className="h-[58px] w-[58px] overflow-hidden rounded-full border-2 border-alpha-gold-bright/55 bg-alpha-surface shadow-[0_4px_14px_-6px_rgba(120,80,30,0.32)]">
                     {m.avatarUrl ? (
                       <img src={m.avatarUrl} alt="" className="h-full w-full object-cover" />
                     ) : (
-                      <span className="grid h-full w-full place-items-center text-xl font-extrabold text-[#b8a0e8]">
+                      <span
+                        className="grid h-full w-full place-items-center text-xl font-extrabold text-alpha-gold-deep"
+                        style={{
+                          background:
+                            "linear-gradient(155deg, color-mix(in srgb, var(--alpha-gold-bright) 28%, white), color-mix(in srgb, var(--alpha-gold-deep) 12%, var(--alpha-bg-elevated)))",
+                        }}
+                      >
                         {m.displayName.charAt(0)}
                       </span>
                     )}
                   </div>
-                  <span className="absolute -bottom-0.5 -left-0.5 grid h-6 w-6 place-items-center rounded-full border border-[#b8a0e8]/40 bg-[#1a1028]">
-                    <ShieldImage role={m.shieldRole} px={20} />
+                  <span className="absolute -bottom-0.5 -left-0.5 grid h-6 w-6 place-items-center rounded-full border border-alpha-gold-bright/40 bg-alpha-surface">
+                    {m.shieldRole ? <ShieldImage role={m.shieldRole} px={20} /> : null}
                   </span>
                 </div>
                 <div className="min-w-0 flex-1 text-right">
-                  <h2 className="truncate text-[17px] font-extrabold leading-tight text-white">
+                  <h2 className="alpha-type-h1 truncate leading-tight text-alpha-section-purple">
                     {m.displayName}
                   </h2>
-                  <p className="mt-0.5 text-[11px] font-bold text-[#b8a0e8]/85">{m.roleLabel}</p>
+                  <p className="alpha-type-desc mt-0.5 font-bold text-alpha-field-value">{m.roleLabel}</p>
                   {m.verified ? (
-                    <span className="mt-1 inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/12 px-2 py-0.5 text-[8px] font-extrabold text-emerald-300">
+                    <span className="mt-1 inline-flex items-center gap-1 rounded-full border border-alpha-gold-deep/35 bg-gradient-to-l from-[color-mix(in_srgb,var(--alpha-gold-bright)_22%,white)] to-[color-mix(in_srgb,var(--alpha-gold-deep)_8%,white)] px-2 py-0.5 text-[8px] font-extrabold text-alpha-gold-deep">
                       <ShieldCheck className="h-2.5 w-2.5" strokeWidth={2.4} />
                       موثّق
                     </span>
@@ -163,19 +147,18 @@ function MembershipScreen() {
           </div>
         </article>
 
-        {/* === MEMBERSHIP DATA (single source — no duplicates) === */}
         <section
-          className="relative mt-4 overflow-hidden rounded-[22px] border p-3.5"
+          className="relative mt-4 overflow-hidden rounded-[var(--alpha-radius-card-compact)] border border-alpha/80 p-3.5 backdrop-blur-xl"
           style={{
-            borderColor: PURPLE.border,
-            background: PURPLE.panel,
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
+            background:
+              "linear-gradient(to bottom, color-mix(in srgb, var(--alpha-bg-elevated) 96%, transparent), color-mix(in srgb, var(--alpha-bg-base) 94%, transparent))",
+            boxShadow: "0 16px 36px -18px rgba(120,80,30,0.24), inset 0 1px 0 rgba(255,255,255,0.85)",
           }}
         >
           <div className="flex items-center justify-center gap-2">
-            <span className="text-[#b8a0e8]/40 text-[9px]">✦ ✧ ✦</span>
-            <h3 className="text-[13px] font-extrabold text-[#d4c4f8]">بيانات العضوية</h3>
-            <span className="text-[#b8a0e8]/40 text-[9px]">✦ ✧ ✦</span>
+            <span className="alpha-type-caption text-alpha-gold-deep/45">✦ ✧ ✦</span>
+            <h3 className="alpha-type-h2 font-extrabold text-alpha-section-green">بيانات العضوية</h3>
+            <span className="alpha-type-caption text-alpha-gold-deep/45">✦ ✧ ✦</span>
           </div>
 
           <div className="mt-3 grid grid-cols-2 gap-2">
@@ -210,39 +193,40 @@ function MembershipScreen() {
         </section>
 
         <div className="mt-3 grid grid-cols-3 gap-2">
-          <ActionCard onClick={share} icon={<Share2 className="h-5 w-5" strokeWidth={2.2} />} label="مشاركة" tint="purple" />
+          <ActionCard onClick={share} icon={<Share2 className="h-5 w-5" strokeWidth={2.2} />} label="مشاركة" tint="gold" />
           <ActionCard
             onClick={() => void saveQr()}
             icon={qrSaved ? <Check className="h-5 w-5" strokeWidth={2.4} /> : <Download className="h-5 w-5" strokeWidth={2.2} />}
             label={qrSaved ? "تم الحفظ" : "حفظ QR"}
-            tint="violet"
+            tint="burgundy"
           />
           <ActionCard
             onClick={copyId}
             icon={copied ? <Check className="h-5 w-5" strokeWidth={2.4} /> : <Copy className="h-5 w-5" strokeWidth={2.2} />}
             label={copied ? "تم" : "نسخ ID"}
-            tint="mint"
+            tint="ivory"
           />
         </div>
 
         <button
           type="button"
           onClick={() => setScannerOpen(true)}
-          className="group relative mt-3 w-full overflow-hidden rounded-[20px] border border-[#b8a0e8]/30 active:scale-[0.99] transition"
+          className="group relative mt-3 w-full overflow-hidden rounded-[var(--alpha-radius-mini)] border border-alpha-gold-deep/35 active:scale-[0.99] alpha-motion-spring"
           style={{
-            background: "linear-gradient(135deg, rgba(106,74,181,0.55) 0%, rgba(58,36,98,0.85) 100%)",
-            boxShadow: "0 16px 32px -14px rgba(0,0,0,0.55), 0 0 24px -8px rgba(138,110,193,0.4)",
+            background:
+              "linear-gradient(135deg, color-mix(in srgb, var(--alpha-gold-bright) 32%, white), color-mix(in srgb, var(--alpha-gold-deep) 18%, var(--alpha-bg-elevated)))",
+            boxShadow: "0 16px 32px -14px rgba(120,80,30,0.32), inset 0 1px 0 rgba(255,255,255,0.75)",
           }}
         >
           <div className="relative flex items-center gap-3 px-3.5 py-3 text-right">
-            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-[#d4c4f8]/25 bg-[#b8a0e8]/15">
-              <ScanLine className="h-5 w-5 text-[#d4c4f8]" strokeWidth={2.4} />
+            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-[var(--alpha-radius-dock-tab)] border border-alpha-gold-bright/40 bg-white/45 text-alpha-gold-deep">
+              <ScanLine className="h-5 w-5" strokeWidth={2.4} />
             </div>
             <div className="flex-1 text-center">
-              <p className="text-[14px] font-extrabold text-white leading-tight">مسح عضو آخر</p>
-              <p className="mt-0.5 text-[10px] text-[#b8a0e8]/75">للتحقق من عضوية عضو آخر</p>
+              <p className="alpha-type-h2 font-extrabold text-alpha-section-green leading-tight">مسح عضو آخر</p>
+              <p className="alpha-type-caption mt-0.5 text-alpha-muted">للتحقق من عضوية عضو آخر</p>
             </div>
-            <ChevronLeft className="h-5 w-5 text-[#b8a0e8]" />
+            <ChevronLeft className="h-5 w-5 text-alpha-gold-deep" />
           </div>
         </button>
 
@@ -250,7 +234,7 @@ function MembershipScreen() {
           <p
             className="font-coptic text-[24px] font-black leading-none tracking-[0.14em]"
             style={{
-              background: "linear-gradient(180deg, #d4c4f8 0%, #8a6ec1 55%, #6a4ab5 100%)",
+              background: "linear-gradient(180deg, var(--alpha-gold-bright) 0%, var(--alpha-gold-deep) 55%, var(--alpha-text-heading-muted) 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
@@ -259,7 +243,7 @@ function MembershipScreen() {
             ⲁⲗⲫⲁ
           </p>
           <p
-            className="mt-3 max-w-[320px] text-[8px] font-bold uppercase leading-relaxed tracking-[0.12em] text-[#b8a0e8]/55"
+            className="alpha-type-caption mt-3 max-w-[320px] font-bold uppercase leading-relaxed tracking-[0.12em] text-alpha-muted"
             aria-label={ALPHA_OFFICIAL_SLOGAN}
           >
             {ALPHA_OFFICIAL_SLOGAN}
@@ -282,15 +266,15 @@ function CompactQrBadge({ payload }: { payload: string }) {
       <div
         className="relative rounded-[14px] p-[3px]"
         style={{
-          background: "linear-gradient(135deg, #d4c4f8 0%, #8a6ec1 45%, #6a4ab5 100%)",
-          boxShadow: "0 8px 20px -8px rgba(106,74,181,0.65), inset 0 1px 0 rgba(255,255,255,0.35)",
+          background: "linear-gradient(135deg, var(--alpha-gold-bright) 0%, var(--alpha-gold-deep) 55%, var(--alpha-text-heading-muted) 100%)",
+          boxShadow: "0 8px 20px -8px rgba(120,80,30,0.38), inset 0 1px 0 rgba(255,255,255,0.65)",
         }}
       >
-        <div className="rounded-[11px] bg-white p-1.5">
+        <div className="rounded-[11px] bg-white p-1.5 shadow-[inset_0_1px_2px_rgba(120,80,30,0.06)]">
           <AlphaQrCode
             value={payload}
             size={160}
-            fgColor="1a1028"
+            fgColor="3a2a18"
             bgColor="ffffff"
             alt="Alpha QR"
             className="block h-[72px] w-[72px] rounded-[6px]"
@@ -299,12 +283,12 @@ function CompactQrBadge({ payload }: { payload: string }) {
         <span
           aria-hidden
           className="absolute inset-0 m-auto grid h-[22px] w-[22px] place-items-center rounded-md bg-white shadow-sm"
-          style={{ boxShadow: "0 0 0 2px #fff, 0 0 0 3px #8a6ec1" }}
+          style={{ boxShadow: "0 0 0 2px #fff, 0 0 0 3px var(--alpha-gold-deep)" }}
         >
           <AlphaOfficialLogo size="sm" className="scale-[0.55]" />
         </span>
       </div>
-      <p className="mt-1 text-[7.5px] font-bold text-[#b8a0e8]/60">امسح للتحقق</p>
+      <p className="alpha-type-caption mt-1 font-bold text-alpha-gold-deep/70">امسح للتحقق</p>
     </div>
   );
 }
@@ -321,19 +305,16 @@ function InfoCell({
   mono?: boolean;
 }) {
   return (
-    <div
-      className="min-w-0 rounded-xl border px-2.5 py-2 text-right"
-      style={{
-        borderColor: "rgba(184,160,232,0.12)",
-        background: "rgba(0,0,0,0.22)",
-      }}
-    >
-      <div className="mb-0.5 flex items-center justify-end gap-1 text-[#b8a0e8]/55">
+    <div className="min-w-0 rounded-xl border border-alpha/55 bg-white/42 px-2.5 py-2 text-right backdrop-blur-sm">
+      <div className="mb-0.5 flex items-center justify-end gap-1 alpha-type-caption text-alpha-field-label">
         {icon}
-        <span className="text-[8px] font-bold">{label}</span>
+        <span className="font-bold">{label}</span>
       </div>
       <p
-        className={`truncate text-[10px] font-extrabold leading-tight text-white/88 ${mono ? "font-mono tabular-nums tracking-wide" : ""}`}
+        className={cn(
+          "alpha-type-desc truncate font-extrabold leading-tight text-alpha-field-value-purple",
+          mono && "font-mono tabular-nums tracking-wide",
+        )}
         dir={mono ? "ltr" : "rtl"}
       >
         {value}
@@ -351,23 +332,23 @@ function ActionCard({
   onClick: () => void;
   icon: React.ReactNode;
   label: string;
-  tint: "purple" | "violet" | "mint";
+  tint: "gold" | "burgundy" | "ivory";
 }) {
   const styles = {
-    purple: {
-      bg: "linear-gradient(180deg, rgba(184,160,232,0.22) 0%, rgba(106,74,181,0.18) 100%)",
-      ring: "rgba(184,160,232,0.28)",
-      icon: "#d4c4f8",
+    gold: {
+      bg: "linear-gradient(180deg, color-mix(in srgb, var(--alpha-gold-bright) 24%, white), color-mix(in srgb, var(--alpha-gold-deep) 10%, white))",
+      ring: "color-mix(in srgb, var(--alpha-gold-deep) 35%, var(--alpha-border))",
+      icon: "var(--alpha-gold-deep)",
     },
-    violet: {
-      bg: "linear-gradient(180deg, rgba(138,110,193,0.2) 0%, rgba(74,48,120,0.22) 100%)",
-      ring: "rgba(138,110,193,0.3)",
-      icon: "#b8a0e8",
+    burgundy: {
+      bg: "linear-gradient(180deg, color-mix(in srgb, var(--alpha-text-heading-muted) 12%, white), color-mix(in srgb, var(--alpha-text-heading) 6%, white))",
+      ring: "color-mix(in srgb, var(--alpha-text-heading-muted) 28%, var(--alpha-border))",
+      icon: "var(--alpha-text-heading-muted)",
     },
-    mint: {
-      bg: "linear-gradient(180deg, rgba(52,211,153,0.14) 0%, rgba(16,120,80,0.16) 100%)",
-      ring: "rgba(52,211,153,0.28)",
-      icon: "#6ee7b7",
+    ivory: {
+      bg: "linear-gradient(180deg, rgba(255,255,255,0.72), color-mix(in srgb, var(--alpha-bg-elevated) 88%, white))",
+      ring: "var(--alpha-border)",
+      icon: "var(--alpha-text-muted)",
     },
   }[tint];
 
@@ -375,14 +356,14 @@ function ActionCard({
     <button
       type="button"
       onClick={onClick}
-      className="flex flex-col items-center gap-1 rounded-xl border px-2 py-3 active:scale-[0.97] transition"
+      className="flex flex-col items-center gap-1 rounded-[var(--alpha-radius-dock-tab)] border px-2 py-3 active:scale-[0.97] alpha-motion-spring backdrop-blur-sm"
       style={{
         background: styles.bg,
         borderColor: styles.ring,
       }}
     >
       <span style={{ color: styles.icon }}>{icon}</span>
-      <p className="text-[9.5px] font-extrabold text-white/85">{label}</p>
+      <p className="alpha-type-caption font-extrabold text-alpha-heading">{label}</p>
     </button>
   );
 }

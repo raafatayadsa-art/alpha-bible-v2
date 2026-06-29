@@ -1,12 +1,20 @@
 import { useCallback, useEffect, useState } from "react";
+import type { ShieldRole } from "@/components/alpha/AlphaShield";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAuthUser, type AlphaAuthUser } from "./alpha-auth";
 import {
   alphaRoleToChurchRole,
   resolveAlphaRoleContext,
+  roleLabelFromContext,
   type AlphaRole,
   type AlphaRoleContext,
 } from "./alpha-roles";
+import {
+  isPlaceholderAvatarUrl,
+  syncLocalProfileAvatarFromCloud,
+} from "@/features/profile/profile-user-store";
+import { handleAuthUserTransition } from "./user-data-isolation";
+import { ensureGuestSessionHygiene, clearGuestMode } from "./guest-mode";
 
 export const AUTH_CONTEXT_EVENT = "ab:auth-context";
 
@@ -15,6 +23,11 @@ let cachedRoleContext: AlphaRoleContext = {
   role: "guest",
   isPlatformOwner: false,
   churchId: null,
+  churchShieldRole: null,
+  platformShieldRole: null,
+  displayShieldRole: null,
+  platformOwnerLabel: null,
+  adminTeamRole: null,
 };
 let refreshPromise: Promise<void> | null = null;
 
@@ -39,6 +52,18 @@ export function isPlatformOwnerSync(): boolean {
   return cachedRoleContext.isPlatformOwner;
 }
 
+export function getChurchShieldRoleSync(): ShieldRole | null {
+  return cachedRoleContext.churchShieldRole;
+}
+
+export function getDisplayShieldRoleSync(): ShieldRole | null {
+  return cachedRoleContext.displayShieldRole;
+}
+
+export function getRoleLabelSync(): string {
+  return roleLabelFromContext(cachedRoleContext, cachedUser?.email ?? null);
+}
+
 export async function refreshAuthContext(): Promise<AlphaRoleContext> {
   if (refreshPromise) {
     await refreshPromise;
@@ -47,8 +72,20 @@ export async function refreshAuthContext(): Promise<AlphaRoleContext> {
 
   refreshPromise = (async () => {
     const user = await fetchAuthUser();
+    const nextUserId = user?.id ?? null;
+    handleAuthUserTransition(nextUserId);
+    if (nextUserId) {
+      clearGuestMode();
+    } else {
+      ensureGuestSessionHygiene();
+    }
     cachedUser = user;
-    cachedRoleContext = await resolveAlphaRoleContext(user?.id ?? null);
+    if (user) {
+      if (user.avatarUrl && !isPlaceholderAvatarUrl(user.avatarUrl)) {
+        syncLocalProfileAvatarFromCloud(user.avatarUrl);
+      }
+    }
+    cachedRoleContext = await resolveAlphaRoleContext(user?.id ?? null, user?.email ?? null);
     emitAuthContext();
   })();
 
@@ -79,10 +116,21 @@ export function useAlphaAuth() {
 
   const sync = useCallback(async () => {
     setLoading(true);
-    const ctx = await refreshAuthContext();
-    setUser(getAuthUserSync());
-    setRoleContext(ctx);
-    setLoading(false);
+    try {
+      const timeoutMs = 8000;
+      await Promise.race([
+        refreshAuthContext(),
+        new Promise<void>((_, reject) => {
+          window.setTimeout(() => reject(new Error("auth-timeout")), timeoutMs);
+        }),
+      ]);
+    } catch {
+      /* fail-open — keep app usable on slow/offline mobile */
+    } finally {
+      setUser(getAuthUserSync());
+      setRoleContext(getAlphaRoleContextSync());
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -116,10 +164,31 @@ export function useAlphaAuth() {
 export function AuthBootstrap() {
   useEffect(() => {
     void initAuth();
-    const { data: sub } = supabase.auth.onAuthStateChange(() => {
+
+    const refresh = () => {
       void refreshAuthContext();
+    };
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible") {
+        void supabase.auth.getSession().then(() => refresh());
+      }
+    };
+
+    const { data: sub } = supabase.auth.onAuthStateChange(() => {
+      refresh();
     });
-    return () => sub.subscription.unsubscribe();
+
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", refresh);
+    window.addEventListener("pageshow", refresh);
+
+    return () => {
+      sub.subscription.unsubscribe();
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", refresh);
+      window.removeEventListener("pageshow", refresh);
+    };
   }, []);
   return null;
 }

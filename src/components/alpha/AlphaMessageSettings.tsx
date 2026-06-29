@@ -31,6 +31,7 @@ import {
   ALPHA_SETTINGS_ICON_BOX,
   ALPHA_SETTINGS_INNER,
   CenterGlassPopup,
+  MESSAGING_CREAM_CARD,
   MESSAGING_CREAM_ICON_BOX,
   MESSAGING_CREAM_INNER,
   PinInput,
@@ -58,7 +59,7 @@ export function AlphaMessageSettings({
   const iconBoxCls = embedded ? ALPHA_SETTINGS_ICON_BOX : MESSAGING_CREAM_ICON_BOX;
   const clockColor = embedded ? "text-[var(--neon-blue)]" : "text-gold";
   const lockColor = embedded ? "text-neon-green" : "text-[#14532D]";
-  const labelColor = embedded ? "text-foreground" : "text-[#1F2937]";
+  const labelColor = embedded ? "text-foreground" : "text-alpha-heading";
 
   const [secretLockEnabled, setSecretLockEnabled] = useState(() => loadLS(MESSAGES_SECRET_LOCK_ENABLED, true));
   const [lockMethod, setLockMethod] = useState<LockMethod>(() => loadLS(MESSAGES_LOCK_METHOD, "face-id"));
@@ -196,13 +197,13 @@ export function AlphaMessageSettings({
               <div className="mb-0.5 flex items-center gap-2 text-[10px] font-semibold tracking-[0.18em] text-gold/75">
                 <span>Α</span><span className="h-px w-4 bg-gold/40" /><span>Ω</span>
               </div>
-              <h1 className="text-[22px] font-extrabold tracking-tight text-[#1F2937]">إعدادات الرسائل</h1>
-              <p className="text-[10px] text-[#6B7280]">الخصوصية والأمان</p>
+              <h1 className="alpha-type-h2 font-extrabold tracking-tight text-alpha-heading">إعدادات الرسائل</h1>
+              <p className="alpha-type-caption text-alpha-muted">الخصوصية والأمان</p>
             </div>
           </header>
         )}
 
-        <div className={`${embedded ? ALPHA_SETTINGS_CARD : "relative overflow-hidden rounded-[18px] border border-gold/12 bg-[rgba(247,240,224,0.62)] shadow-[0_2px_12px_-4px_rgba(200,149,42,0.18),0_1px_3px_rgba(0,0,0,0.04)] backdrop-blur-xl"} mb-3`}>
+        <div className={`${embedded ? ALPHA_SETTINGS_CARD : MESSAGING_CREAM_CARD} mb-3`}>
           {!embedded && (
             <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center">
               <img src="/shields/official-shield.png?v=14" alt="" className="size-[118px] object-contain opacity-[0.065]" />
@@ -277,7 +278,7 @@ export function AlphaMessageSettings({
                   {lockedConversations.map((conv) => (
                     <div key={conv.id} className={`flex items-center gap-2.5 rounded-[12px] px-2.5 py-2 backdrop-blur-sm ${embedded ? "border border-white/10 bg-white/5" : "border border-gold/10 bg-[rgba(255,255,255,0.32)]"}`}>
                       <img src={conv.avatar} alt="" className="size-8 rounded-full border border-gold/20 object-cover" />
-                      <span className={`flex-1 truncate text-[11px] font-medium ${embedded ? "text-foreground" : "text-[#374151]"}`}>{conv.name}</span>
+                      <span className={`flex-1 truncate alpha-type-desc font-medium ${embedded ? "text-foreground" : "text-alpha-heading"}`}>{conv.name}</span>
                       <button
                         type="button"
                         onClick={() => { unlockConversation(conv.id); refreshLocked(); showToast("تم إلغاء القفل"); }}
@@ -327,7 +328,7 @@ export function AlphaMessageSettings({
           </div>
         </div>
 
-        <p className="px-1 text-center text-[9px] leading-relaxed text-[#6B7280]">
+        <p className="px-1 text-center alpha-type-caption leading-relaxed text-alpha-muted">
           يمكنك الوصول للمحادثات المخفية بكتابة الكود السري في شريط البحث
         </p>
       </div>
@@ -355,8 +356,8 @@ export function AlphaMessageSettings({
             <div className="mx-auto mb-3 grid size-12 place-items-center rounded-full border border-gold/25 bg-gold/8">
               <Fingerprint className="size-5 text-gold" />
             </div>
-            <p className="mb-1 text-[14px] font-bold text-[#1F2937]">إنشاء كود سري</p>
-            <p className="mb-4 text-[10px] text-[#6B7280]">4–6 أرقام — كود واحد لجميع المحادثات المخفية</p>
+            <p className="mb-1 alpha-type-h2 font-bold text-alpha-heading">إنشاء كود سري</p>
+            <p className="mb-4 alpha-type-caption text-alpha-muted">4–6 أرقام — كود واحد لجميع المحادثات المخفية</p>
             <PinInput id="create-pin" value={pin} onChange={setPin} />
             <PopupActions onCancel={closePopup} onConfirm={() => setCreateStep(2)} confirmLabel="التالي" confirmDisabled={pin.length < 4} />
           </div>
@@ -383,8 +384,8 @@ export function AlphaMessageSettings({
         ) : (
         <CenterGlassPopup onClose={closePopup}>
           <div className="pt-2 text-center">
-            <p className="mb-1 text-[14px] font-bold text-[#1F2937]">تأكيد الكود</p>
-            <p className="mb-4 text-[10px] text-[#6B7280]">أعد إدخال الكود للتأكيد</p>
+            <p className="mb-1 alpha-type-h2 font-bold text-alpha-heading">تأكيد الكود</p>
+            <p className="mb-4 alpha-type-caption text-alpha-muted">أعد إدخال الكود للتأكيد</p>
             <PinInput id="create-confirm" value={pinConfirm} onChange={(v) => { setPinConfirm(v); setPinError(false); }} error={pinError} />
             {pinError && <p className="mt-2 text-[10px] text-[#B91C1C]">الكود غير متطابق</p>}
             <PopupActions
@@ -425,8 +426,8 @@ export function AlphaMessageSettings({
             <div className="mx-auto mb-3 grid size-12 place-items-center rounded-full border border-gold/25 bg-gold/8">
               <LockKeyhole className="size-5 text-gold" />
             </div>
-            <p className="mb-1 text-[14px] font-bold text-[#1F2937]">تأكيد الكود الحالي</p>
-            <p className="mb-4 text-[10px] text-[#6B7280]">أدخل الكود السري الحالي لإعادة التعيين</p>
+            <p className="mb-1 alpha-type-h2 font-bold text-alpha-heading">تأكيد الكود الحالي</p>
+            <p className="mb-4 alpha-type-caption text-alpha-muted">أدخل الكود السري الحالي لإعادة التعيين</p>
             <PinInput id="reset-verify-pin" value={pin} onChange={(v) => { setPin(v); setPinError(false); }} error={pinError} />
             {pinError && <p className="mt-2 text-[10px] text-[#B91C1C]">الكود غير صحيح</p>}
             <PopupActions
@@ -458,8 +459,8 @@ export function AlphaMessageSettings({
             <div className="mx-auto mb-3 grid size-10 place-items-center rounded-full bg-[#FEE2E2]">
               <RefreshCw className="size-4 text-[#B91C1C]" />
             </div>
-            <p className="mb-1 text-[13px] font-bold text-[#1F2937]">إعادة تعيين الكود؟</p>
-            <p className="mb-4 text-[10px] text-[#6B7280]">سيتم مسح الكود السري. المحادثات المخفية ستبقى مخفية.</p>
+            <p className="mb-1 alpha-type-body font-bold text-alpha-heading">إعادة تعيين الكود؟</p>
+            <p className="mb-4 alpha-type-caption text-alpha-muted">سيتم مسح الكود السري. المحادثات المخفية ستبقى مخفية.</p>
             <PopupActions onCancel={closePopup} onConfirm={handleResetCode} confirmLabel="إعادة التعيين" danger />
           </div>
         </CenterGlassPopup>
@@ -468,7 +469,7 @@ export function AlphaMessageSettings({
 
       {toast && (
         <div className="pointer-events-none fixed inset-x-0 bottom-24 z-[200] flex justify-center px-4">
-          <span className="rounded-full border border-white/20 bg-[#1F2937]/88 px-4 py-2 text-[11px] text-white/90 shadow-lg backdrop-blur-md">
+          <span className="rounded-full border border-white/20 bg-[color-mix(in_srgb,var(--alpha-bg-cinematic)_88%,transparent)] px-4 py-2 alpha-type-desc text-white/90 shadow-lg backdrop-blur-md">
             {toast}
           </span>
         </div>

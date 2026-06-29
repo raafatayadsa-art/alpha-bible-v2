@@ -19,9 +19,15 @@ export {
 } from "./scan-store";
 export { usePlatformDashboard } from "./use-platform-dashboard";
 export { usePlatformEmergencyFlags } from "./use-platform-emergency";
+export {
+  syncPlatformControlAll,
+  subscribePlatformSync,
+  broadcastPlatformLiveUpdate,
+  PLATFORM_SYNC_EVENT,
+  type PlatformSyncResult,
+} from "./platform-control-sync";
 export { useOwnerAccess, getOwnerPin, setOwnerPin, isOwnerSessionActive, revokeOwnerSession } from "./owner-access-store";
 export {
-  ModuleControlScreen,
   PrivacySecurityScreen,
   ReportedContentScreen,
   AIControlScreen,
@@ -32,6 +38,13 @@ export {
   OwnerSecurityScreen,
   EmergencyCenterScreen,
 } from "./mission-screens";
+export { ModuleControlScreen } from "./module-control-screen";
 export { ChurchLocationManagerScreen } from "./ChurchLocationManagerScreen";
 export { ContentReviewCenterScreen } from "./ContentReviewCenterScreen";
+export { MediaManagerScreen } from "./MediaManagerScreen";
 export { PublisherCenterScreen } from "./PublisherCenterScreen";
+export { AlphaTeamScreen } from "./admin-team/AlphaTeamScreen";
+export { AlphaTeamMemberScreen } from "./admin-team/AlphaTeamMemberScreen";
+export { AlphaTeamPermissionsScreen } from "./admin-team/AlphaTeamPermissionsScreen";
+export { AdminPermissionsProvider, useAdminPermissions } from "./admin-team/useAdminPermissions";
+export { AdminPermissionGate } from "./admin-team/AdminPermissionGate";

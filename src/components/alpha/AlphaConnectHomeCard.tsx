@@ -112,7 +112,7 @@ export function AlphaConnectHomeCard() {
             {activity.hasAnyActivity ? (
               <span
                 aria-hidden
-                className="absolute -left-0.5 -top-0.5 h-2 w-2 rounded-full bg-[#00ff50] ring-2 ring-[#07040f]"
+                className="absolute -left-0.5 -top-0.5 h-2 w-2 rounded-full bg-neon-green ring-2 ring-[var(--alpha-bg-cinematic)]"
                 style={{ boxShadow: "0 0 8px rgba(0,255,80,0.5)" }}
               />
             ) : null}

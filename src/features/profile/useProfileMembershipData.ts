@@ -1,12 +1,11 @@
 import { useMemo } from "react";
-import { getAlphaRoleSync } from "@/features/auth";
-import { getCurrentUser } from "@/features/church/current-user";
+import { getAlphaRoleContextSync, getAlphaRoleSync, useAlphaAuth } from "@/features/auth";
 import { useMemberChurch } from "@/features/church/use-member-church";
 import { useAlphaIdentity } from "@/features/identity/useAlphaIdentity";
 import type { ShieldRole } from "@/components/alpha/AlphaShield";
 import { formatBirthDateDisplay } from "./profile-privacy";
-import { alphaRoleToShieldRole, roleLabelAr } from "./profile-role";
-import { resolveProfileAvatar, useProfileUser } from "./profile-user-store";
+import { alphaRoleToShieldRole, resolveProfileRoleLabel } from "./profile-role";
+import { resolveAccountAvatar, useProfileUser } from "./profile-user-store";
 
 export type ProfileMembershipData = {
   displayName: string;
@@ -15,7 +14,8 @@ export type ProfileMembershipData = {
   diocese: string;
   churchLocation: string;
   roleLabel: string;
-  shieldRole: ShieldRole;
+  identityLabel: string | null;
+  shieldRole: ShieldRole | null;
   alphaId: string;
   qrPayload: string;
   memberSince: string | null;
@@ -24,16 +24,18 @@ export type ProfileMembershipData = {
 };
 
 export function useProfileMembershipData(): ProfileMembershipData {
-  const user = getCurrentUser();
+  const { user } = useAlphaAuth();
   const { church: memberChurch } = useMemberChurch();
   const { state: profileUser } = useProfileUser();
 
-  const displayName = user.name?.trim() || "مستخدم Alpha";
-  const avatarUrl = resolveProfileAvatar(profileUser.customAvatarUrl, user.avatarUrl);
+  const displayName = user?.displayName?.trim() || "مستخدم Alpha";
+  const avatarUrl = resolveAccountAvatar(profileUser.customAvatarUrl, user?.avatarUrl);
   const churchName = memberChurch?.name?.trim() || "لم تُحدد الكنيسة بعد";
   const diocese = memberChurch?.diocese?.trim() || "—";
   const churchLocation = memberChurch?.locationLine?.trim() || "—";
-  const roleLabel = roleLabelAr(getAlphaRoleSync());
+  const roleLabel = resolveProfileRoleLabel();
+  const ctx = getAlphaRoleContextSync();
+  const identityLabel = ctx.platformOwnerLabel || ctx.adminTeamRole ? roleLabel : null;
   const shieldRole = alphaRoleToShieldRole(getAlphaRoleSync());
   const memberSince = memberChurch?.joinLabel ?? null;
   const birthDate = formatBirthDateDisplay(profileUser.birthDate);
@@ -42,7 +44,7 @@ export function useProfileMembershipData(): ProfileMembershipData {
     displayName,
     avatarUrl,
     churchName,
-    verified: true,
+    verified: shieldRole != null,
   });
 
   return useMemo(
@@ -53,12 +55,13 @@ export function useProfileMembershipData(): ProfileMembershipData {
       diocese,
       churchLocation,
       roleLabel,
+      identityLabel,
       shieldRole,
       alphaId: identity.alphaIdShort,
       qrPayload: identity.qrPayload,
       memberSince,
       birthDate,
-      verified: identity.verified,
+      verified: shieldRole != null,
     }),
     [
       displayName,
@@ -67,10 +70,10 @@ export function useProfileMembershipData(): ProfileMembershipData {
       diocese,
       churchLocation,
       roleLabel,
+      identityLabel,
       shieldRole,
       identity.alphaIdShort,
       identity.qrPayload,
-      identity.verified,
       memberSince,
       birthDate,
     ],

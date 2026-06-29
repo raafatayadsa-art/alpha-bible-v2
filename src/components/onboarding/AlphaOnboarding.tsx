@@ -7,6 +7,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import { enterGuestMode } from "@/features/auth/guest-mode";
 import type { CSSProperties } from "react";
 import { ChevronRight } from "lucide-react";
 import { AlphaScreenFrame } from "@/components/alpha/AlphaScreenFrame";
@@ -299,6 +300,10 @@ export function AlphaOnboarding() {
       markOnboardingDone();
       setExiting(true);
       window.setTimeout(() => {
+        if (dest === "/home") {
+          void enterGuestMode().then(() => navigate({ to: dest }));
+          return;
+        }
         void navigate({ to: dest });
       }, 400);
     },

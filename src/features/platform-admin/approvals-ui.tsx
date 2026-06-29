@@ -59,9 +59,9 @@ export function SubmitterAvatar({ item, size = "md" }: { item: ApprovalItem; siz
       className={cn(dims, "grid shrink-0 place-items-center rounded-[14px] border font-extrabold")}
       style={{
         borderColor: `${MC.purple}44`,
-        background: `linear-gradient(155deg, rgba(139,122,184,0.35), rgba(15,22,40,0.95))`,
+        background: `linear-gradient(155deg, rgba(191,90,242,0.22), ${MC.panel})`,
         color: MC.white,
-        boxShadow: `0 4px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.1)`,
+        boxShadow: `0 4px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08)`,
       }}
     >
       {getSubmitterInitials(name)}
@@ -76,29 +76,29 @@ const PREMIUM_STYLES: Record<
   { gradient: string; border: string; color: string; glow: string; icon?: ReactNode }
 > = {
   review: {
-    gradient: "linear-gradient(155deg, rgba(139,122,184,0.42) 0%, rgba(45,38,72,0.95) 100%)",
-    border: "rgba(139,122,184,0.55)",
+    gradient: `linear-gradient(155deg, rgba(191,90,242,0.28) 0%, ${MC.panel} 100%)`,
+    border: "rgba(191,90,242,0.45)",
     color: MC.white,
     glow: MC.purple,
     icon: <Search className="h-4 w-4" strokeWidth={2.4} />,
   },
   approve: {
-    gradient: "linear-gradient(155deg, rgba(196,165,116,0.35) 0%, rgba(74,143,110,0.28) 55%, rgba(20,32,28,0.95) 100%)",
-    border: "rgba(74,143,110,0.5)",
+    gradient: `linear-gradient(155deg, rgba(52,199,89,0.28) 0%, ${MC.panel} 100%)`,
+    border: "rgba(52,199,89,0.45)",
     color: MC.green,
     glow: MC.green,
   },
   reject: {
-    gradient: "linear-gradient(155deg, rgba(184,92,88,0.32) 0%, rgba(40,18,18,0.95) 100%)",
-    border: "rgba(184,92,88,0.5)",
+    gradient: `linear-gradient(155deg, rgba(255,55,95,0.24) 0%, ${MC.panel} 100%)`,
+    border: "rgba(255,55,95,0.45)",
     color: MC.red,
     glow: MC.red,
   },
   changes: {
-    gradient: "linear-gradient(155deg, rgba(196,165,116,0.32) 0%, rgba(48,38,22,0.95) 100%)",
-    border: "rgba(196,165,116,0.48)",
-    color: MC.gold,
-    glow: MC.gold,
+    gradient: `linear-gradient(155deg, rgba(255,159,10,0.22) 0%, ${MC.panel} 100%)`,
+    border: "rgba(255,159,10,0.42)",
+    color: MC.amber,
+    glow: MC.amber,
   },
 };
 

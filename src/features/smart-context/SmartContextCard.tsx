@@ -16,14 +16,17 @@ function isSmartContextCardAllowed(
   isModuleEnabled: (key: import("@/lib/platform-modules").PlatformModuleKey) => boolean,
 ): boolean {
   const churchKinds = new Set<SmartContextCard["kind"]>([
-    "trip_companion",
-    "trip_completed",
-    "trip_upcoming",
-    "trip_open",
     "event_upcoming",
     "prayer_urgent",
     "church_announcement",
   ]);
+  const tripKinds = new Set<SmartContextCard["kind"]>([
+    "trip_companion",
+    "trip_completed",
+    "trip_upcoming",
+    "trip_open",
+  ]);
+  if (tripKinds.has(card.kind) && !isModuleEnabled("trips")) return false;
   if (churchKinds.has(card.kind) && !isModuleEnabled("community")) return false;
   if (card.kind === "connect_activity" && !isModuleEnabled("messaging")) return false;
 

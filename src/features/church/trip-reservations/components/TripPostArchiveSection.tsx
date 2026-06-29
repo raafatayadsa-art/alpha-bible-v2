@@ -1,13 +1,23 @@
+import { useEffect, useState } from "react";
 import type { ChurchPost } from "@/data/church-posts";
 import { readTripLiveSnapshot } from "@/features/smart-context/trip-live-store";
-import { getTripMemoryAlbum } from "../trip-memory-album";
-import { getTripTimeline } from "../trip-timeline";
+import { getTripMemoryAlbum, syncTripMemoryAlbumFromDb } from "../trip-memory-album";
+import { getTripTimeline, syncTripTimelineFromDb } from "../trip-timeline";
 import { Image, Clock } from "lucide-react";
 
 const GLASS = "rounded-2xl border border-[#efe2c4] bg-white/60 p-4";
 
 export function TripPostArchiveSection({ post }: { post: ChurchPost }) {
+  const [, setTick] = useState(0);
   const live = readTripLiveSnapshot(post.id);
+
+  useEffect(() => {
+    if (live?.phase !== "completed") return;
+    void Promise.all([syncTripMemoryAlbumFromDb(post.id), syncTripTimelineFromDb(post.id)]).then(() =>
+      setTick((n) => n + 1),
+    );
+  }, [post.id, live?.phase]);
+
   if (live?.phase !== "completed") return null;
 
   const album = getTripMemoryAlbum(post.id);

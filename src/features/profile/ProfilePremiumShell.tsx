@@ -44,7 +44,7 @@ export function ProfilePremiumShell({ name, avatarUrl, children, onBack }: Props
     <>
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-50 transition-[background,box-shadow,border-color] duration-300",
+          "fixed inset-x-0 top-0 z-50 alpha-motion-standard",
           showTitleBar
             ? isDark
               ? "border-b border-white/10 bg-[#120c08]/94 shadow-[0_8px_24px_-18px_rgba(0,0,0,0.65)] backdrop-blur-xl"

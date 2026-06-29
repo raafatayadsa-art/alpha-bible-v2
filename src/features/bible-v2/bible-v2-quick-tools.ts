@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { BarChart3, Bookmark, FilePen, Star } from "lucide-react";
+import { BarChart3, Bookmark, FilePen, History, LayoutGrid, Star } from "lucide-react";
 
 export type QuickToolTone = "gold" | "navy";
 
@@ -38,10 +38,10 @@ export const bibleV2QuickTools: BibleV2QuickToolDef[] = [
   },
   {
     id: "bookmarks",
-    label: "العلامات المرجعية",
+    label: "الآيات الملوّنة",
     icon: Bookmark,
     tone: "navy",
-    action: { kind: "soon" },
+    action: { kind: "navigate", to: "/bible/saved", search: { from: "bible", tab: "highlights" } },
   },
   {
     id: "journey",
@@ -49,5 +49,19 @@ export const bibleV2QuickTools: BibleV2QuickToolDef[] = [
     icon: BarChart3,
     tone: "gold",
     action: { kind: "navigate", to: "/bible/journey", search: { from: "bible" } },
+  },
+  {
+    id: "history",
+    label: "سجل القراءة",
+    icon: History,
+    tone: "navy",
+    action: { kind: "navigate", to: "/bible/history" },
+  },
+  {
+    id: "more",
+    label: "المزيد",
+    icon: LayoutGrid,
+    tone: "gold",
+    action: { kind: "navigate", to: "/more" },
   },
 ];

@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { LoaderCircle, Music, Plus, Trash2 } from "lucide-react";
 import { MESSAGING_GLASS_INNER } from "@/components/alpha/messaging-ui";
+import { PUBLISHER_GLASS_INPUT, PUBLISHER_TEXT_MUTED } from "./publisher-glass-chrome";
 import {
   mapPublisherUploadError,
   publisherAssetAccept,
@@ -95,8 +96,8 @@ export function PublisherAlbumExternalTracks({ publisherId, tracks, onChange, di
   return (
     <div className="space-y-3 text-right">
       <div className="rounded-[14px] border border-white/32 bg-white/42 px-3 py-2.5 backdrop-blur-sm">
-        <p className="text-[11px] font-extrabold text-[#3a2a18]">رفع ترانيم الألبوم</p>
-        <p className="mt-0.5 text-[10px] font-bold leading-relaxed text-[#8a6a3a]">
+        <p className="alpha-type-desc font-extrabold text-alpha-heading">رفع ترانيم الألبوم</p>
+        <p className="mt-0.5 alpha-type-caption font-bold leading-relaxed text-alpha-gold-deep">
           ارفع ملفات الصوت مباشرة — لا حاجة لإضافة ترانيم منفصلة أولاً. يمكنك اختيار عدة ملفات دفعة واحدة.
         </p>
       </div>
@@ -105,12 +106,12 @@ export function PublisherAlbumExternalTracks({ publisherId, tracks, onChange, di
         type="button"
         disabled={disabled || uploading}
         onClick={() => inputRef.current?.click()}
-        className="flex w-full items-center justify-center gap-2 rounded-[14px] border border-[#efe2c4]/90 bg-white/70 py-3 text-[12px] font-extrabold text-[#3a2a18] shadow-[inset_0_1px_2px_rgba(120,80,30,0.04)] backdrop-blur-sm transition active:scale-[0.99] disabled:opacity-60"
+        className="flex w-full items-center justify-center gap-2 rounded-[var(--alpha-radius-button)] border border-alpha/90 bg-white/70 py-3 alpha-type-desc font-extrabold text-alpha-heading shadow-[inset_0_1px_2px_rgba(120,80,30,0.04)] backdrop-blur-sm transition active:scale-[0.99] disabled:opacity-60"
       >
         {uploading ? (
-          <LoaderCircle className="h-4 w-4 animate-spin text-[#b8893a]" />
+          <LoaderCircle className="h-4 w-4 animate-spin text-alpha-gold" />
         ) : (
-          <Plus className="h-4 w-4 text-[#b8893a]" />
+          <Plus className="h-4 w-4 text-alpha-gold" />
         )}
         {uploading ? "جاري الرفع…" : "إضافة ملفات صوتية"}
       </button>
@@ -127,12 +128,12 @@ export function PublisherAlbumExternalTracks({ publisherId, tracks, onChange, di
         <div className="max-h-[min(46vh,300px)] space-y-2 overflow-y-auto">
           {tracks.map((track, index) => (
             <div key={track.id} className={`${MESSAGING_GLASS_INNER} flex items-start gap-2 p-2.5`}>
-              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] border border-white/35 bg-white/50 text-[#b8893a]">
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[var(--alpha-radius-button)] border border-white/35 bg-white/50 text-alpha-gold">
                 <Music className="h-4 w-4" />
               </span>
               <div className="min-w-0 flex-1 space-y-1.5">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-[9px] font-extrabold text-[#8a6a3a]">#{index + 1}</span>
+                  <span className="alpha-type-caption font-extrabold text-alpha-gold-deep">#{index + 1}</span>
                   <button
                     type="button"
                     onClick={() => removeTrack(track.id)}
@@ -145,16 +146,16 @@ export function PublisherAlbumExternalTracks({ publisherId, tracks, onChange, di
                 <input
                   value={track.title}
                   onChange={(e) => updateTrack(track.id, { title: e.target.value })}
-                  className="w-full rounded-xl border border-[#efe2c4]/90 bg-white/75 px-2.5 py-2 text-[11px] font-bold text-[#3a2a18] outline-none focus:border-[#4fd4a8]/60 focus:ring-2 focus:ring-[#4fd4a8]/20"
+                  className={PUBLISHER_GLASS_INPUT}
                   placeholder="اسم الترنيمة"
                 />
-                <p className="truncate text-[9px] font-bold text-[#9a7e5a]">{track.fileName}</p>
+                <p className={`truncate ${PUBLISHER_TEXT_MUTED}`}>{track.fileName}</p>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <p className="py-4 text-center text-[10px] font-bold text-[#9a7e5a]">لم تُرفع ترانيم بعد</p>
+        <p className={`py-4 text-center ${PUBLISHER_TEXT_MUTED}`}>لم تُرفع ترانيم بعد</p>
       )}
 
       {error ? <p className="text-center text-[10px] font-bold text-[#EF4444]">{error}</p> : null}

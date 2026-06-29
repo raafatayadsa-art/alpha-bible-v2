@@ -1,7 +1,12 @@
-/** ALPHA-093 — Organizer trust & reputation */
+/** ALPHA-093 — Organizer trust & reputation (local + Domain 10) */
 
 import type { OrganizerTrustStats } from "./trip-features-roadmap";
 import { getRegistrationsForPost } from "../post-registrations";
+import {
+  fetchOrganizerTrustStatsRemote,
+  isDomain10RemoteAvailable,
+  persistOrganizerTrustStatsRemote,
+} from "./trip-domain-api";
 
 const KEY = "alpha:093:organizer-trust";
 
@@ -18,6 +23,22 @@ function readAll(): OrganizerTrustStats[] {
 function writeAll(rows: OrganizerTrustStats[]) {
   if (typeof window === "undefined") return;
   localStorage.setItem(KEY, JSON.stringify(rows));
+}
+
+export async function syncOrganizerTrustFromDb(organizerUserId: string): Promise<void> {
+  if (!organizerUserId || isDomain10RemoteAvailable() === false) return;
+
+  const remote = await fetchOrganizerTrustStatsRemote(organizerUserId);
+  if (!remote) return;
+
+  const next: OrganizerTrustStats = {
+    organizerUserId,
+    tripsCompleted: remote.tripsCompleted,
+    attendanceRate: remote.attendanceRate,
+    cancellationRate: remote.cancellationRate,
+    commitmentScore: remote.commitmentScore,
+  };
+  writeAll([next, ...readAll().filter((s) => s.organizerUserId !== organizerUserId)]);
 }
 
 export function getOrganizerTrustStats(organizerUserId: string): OrganizerTrustStats {
@@ -48,5 +69,7 @@ export function recordTripCompletionForOrganizer(organizerUserId: string, postId
     commitmentScore: Math.min(100, 70 + tripsCompleted * 3 + Math.floor(attendanceRate / 10)),
   };
   writeAll([next, ...readAll().filter((s) => s.organizerUserId !== organizerUserId)]);
+
+  void persistOrganizerTrustStatsRemote(next);
   return next;
 }

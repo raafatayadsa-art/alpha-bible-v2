@@ -52,7 +52,7 @@ function saintCategoryId(s: Saint): Exclude<SaintCategory, "all"> | null {
   return null;
 }
 
-const ACCENTS = ["#6a4ab5", "#b8893a", "#3e7a55", "#3a6a9b"];
+const ACCENTS = ["var(--alpha-purple)", "var(--alpha-gold-deep)", "#3e7a55", "#3a6a9b"];
 
 function SynaxariumStatusPanel({
   title,
@@ -62,11 +62,11 @@ function SynaxariumStatusPanel({
   description?: string;
 }) {
   return (
-    <div className="mt-8 rounded-3xl border border-[#ead9b1] bg-white p-8 text-center shadow-[0_14px_30px_-22px_rgba(120,80,30,0.45)]">
-      <CopticCross className="mx-auto text-[#b8893a]" size={28} />
-      <h2 className="font-arabic-serif text-[18px] font-extrabold text-[#3a2a18] mt-4">{title}</h2>
+    <div className="mt-8 rounded-[var(--alpha-radius-card)] border border-alpha bg-white p-8 text-center shadow-[var(--alpha-shadow-featured)]">
+      <CopticCross className="mx-auto text-alpha-gold-deep" size={28} />
+      <h2 className="alpha-type-h1 font-arabic-serif text-alpha-heading mt-4">{title}</h2>
       {description ? (
-        <p className="text-[12.5px] text-[#6a543a] mt-3 leading-relaxed">{description}</p>
+        <p className="alpha-type-body text-alpha-muted mt-3 leading-relaxed">{description}</p>
       ) : null}
     </div>
   );
@@ -132,7 +132,7 @@ function SynaxariumHome() {
 
   if (isPending) {
     return (
-      <div ref={topRef} dir="rtl" className="relative min-h-dvh bg-[#faf8f3]">
+      <div ref={topRef} dir="rtl" className="relative min-h-dvh bg-alpha-base">
         <CopticWatermark />
         <AlphaHeaderShell>
           <AlphaHeader variant="internal" title="السنكسار" subtitle="سير القديسين وقراءات اليوم" onSearchClick={() => setSearchOpen(true)} />
@@ -147,7 +147,7 @@ function SynaxariumHome() {
 
   if (isError || saints.length === 0) {
     return (
-      <div ref={topRef} dir="rtl" className="relative min-h-dvh bg-[#faf8f3]">
+      <div ref={topRef} dir="rtl" className="relative min-h-dvh bg-alpha-base">
         <CopticWatermark />
         <AlphaHeaderShell>
           <AlphaHeader variant="internal" title="السنكسار" subtitle="سير القديسين وقراءات اليوم" onSearchClick={() => setSearchOpen(true)} />
@@ -164,7 +164,7 @@ function SynaxariumHome() {
   }
 
   return (
-    <div ref={topRef} dir="rtl" className="relative min-h-dvh bg-[#faf8f3]">
+    <div ref={topRef} dir="rtl" className="relative min-h-dvh bg-alpha-base">
       <CopticWatermark />
 
       {/* Header */}
@@ -176,11 +176,11 @@ function SynaxariumHome() {
           onSearchClick={() => setSearchOpen(true)}
           center={
             <div className="flex flex-col items-center -mt-1">
-              <CopticCross className="text-[#b8893a]" size={18} />
-              <h1 className="font-arabic-serif text-[20px] font-extrabold text-[#3a2a18] leading-tight">
+              <CopticCross className="text-alpha-gold-deep" size={18} />
+              <h1 className="font-arabic-serif text-[20px] font-extrabold text-alpha-heading leading-tight">
                 السنكسار
               </h1>
-              <p className="text-[10.5px] text-[#6a543a] -mt-0.5">سير القديسين وقراءات اليوم</p>
+              <p className="text-[10.5px] text-alpha-muted -mt-0.5">سير القديسين وقراءات اليوم</p>
             </div>
           }
         />
@@ -203,7 +203,7 @@ function SynaxariumHome() {
                     "inline-flex items-center gap-1.5 rounded-full px-3.5 h-9 text-[12px] font-bold whitespace-nowrap border transition-all active:scale-95",
                     isActive
                       ? "bg-gradient-to-l from-[#6a4ab5] to-[#8c6fd1] text-white border-transparent shadow-[0_6px_14px_-6px_rgba(106,74,181,0.55)]"
-                      : "bg-white text-[#3a2a18] border-[#ead9b1] shadow-[0_4px_10px_-8px_rgba(120,80,30,0.5)]",
+                      : "bg-white text-alpha-heading border-alpha shadow-[0_4px_10px_-8px_rgba(120,80,30,0.5)]",
                   )}
                 >
                   {c.label}
@@ -226,13 +226,13 @@ function SynaxariumHome() {
         ) : null}
 
         {today && albumOpen ? (
-          <section className="mt-4 rounded-2xl border border-[#ead9b1] bg-white/90 p-3">
+          <section className="mt-4 rounded-2xl border border-alpha bg-white/90 p-3">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-[13px] font-extrabold text-[#3a2a18]">ألبوم {today.name}</h3>
+              <h3 className="text-[13px] font-extrabold text-alpha-heading">ألبوم {today.name}</h3>
               <button
                 type="button"
                 onClick={() => setAlbumOpen(false)}
-                className="text-[11px] font-bold text-[#6a543a]"
+                className="text-[11px] font-bold text-alpha-muted"
               >
                 إغلاق
               </button>
@@ -246,7 +246,7 @@ function SynaxariumHome() {
 
         <div className="space-y-3">
           {upcoming.length === 0 ? (
-            <div className="rounded-2xl bg-white border border-[#ead9b1] p-6 text-center text-[12px] text-[#6a543a]">
+            <div className="rounded-2xl bg-white border border-alpha p-6 text-center text-[12px] text-alpha-muted">
               {active === "all"
                 ? "لا توجد سير إضافية بعد."
                 : "لا توجد سير ضمن هذا التصنيف بعد."}
@@ -267,7 +267,7 @@ function SynaxariumHome() {
                     style={{ background: accent, boxShadow: `0 0 0 3px ${accent}22` }}
                     aria-hidden
                   />
-                  <GlassSurface className="relative overflow-hidden p-0 bg-white border-[#ead9b1] shadow-[0_10px_24px_-20px_rgba(120,80,30,0.5)] transition-shadow duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] [@media(hover:hover)]:group-hover:shadow-[0_22px_40px_-22px_rgba(120,80,30,0.6)] group-focus-visible:shadow-[0_22px_40px_-22px_rgba(120,80,30,0.6)] group-active:shadow-[0_14px_28px_-20px_rgba(120,80,30,0.55)]">
+                  <GlassSurface className="relative overflow-hidden p-0 bg-white border-alpha shadow-[0_10px_24px_-20px_rgba(120,80,30,0.5)] transition-shadow duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] [@media(hover:hover)]:group-hover:shadow-[0_22px_40px_-22px_rgba(120,80,30,0.6)] group-focus-visible:shadow-[0_22px_40px_-22px_rgba(120,80,30,0.6)] group-active:shadow-[0_14px_28px_-20px_rgba(120,80,30,0.55)]">
                     <img
                       src={s.image}
                       alt=""
@@ -305,16 +305,16 @@ function SynaxariumHome() {
                           {s.copticDate.split(" ")[0]}
                         </div>
                         <div className="mx-auto mt-1 h-px w-6" style={{ background: `${accent}55` }} />
-                        <div className="text-[9px] text-[#6a543a] mt-1 leading-none line-clamp-1">
+                        <div className="text-[9px] text-alpha-muted mt-1 leading-none line-clamp-1">
                           {s.copticDate.split(" ").slice(1).join(" ")}
                         </div>
                       </div>
                       {/* center: name + summary */}
                       <div className="min-w-0 text-right">
-                        <div className="font-arabic-serif text-[15.5px] font-extrabold text-[#3a2a18] leading-tight line-clamp-1">
+                        <div className="font-arabic-serif text-[15.5px] font-extrabold text-alpha-heading leading-tight line-clamp-1">
                           {s.name}
                         </div>
-                        <div className="text-[12px] text-[#5a4630] line-clamp-2 mt-1 leading-relaxed">
+                        <div className="alpha-type-desc text-alpha-muted line-clamp-2 mt-1 leading-relaxed">
                           {s.summary}
                         </div>
                         <div
@@ -373,11 +373,11 @@ function SynaxariumHome() {
         </div>
 
         {/* Alpha watermark footer */}
-        <div className="mt-6 flex items-center justify-center gap-2 text-[10px] text-[#b8893a]/70 font-bold tracking-widest">
+        <div className="mt-6 flex items-center justify-center gap-2 text-[10px] text-alpha-gold-deep/70 font-bold tracking-widest">
           <span>Ⲁ</span>
-          <span className="h-px w-10 bg-[#ead9b1]" />
+          <span className="h-px w-10 bg-alpha-border" />
           <span>ALPHA · السنكسار</span>
-          <span className="h-px w-10 bg-[#ead9b1]" />
+          <span className="h-px w-10 bg-alpha-border" />
           <span>Ⲱ</span>
         </div>
       </main>
@@ -394,7 +394,7 @@ function SynaxariumHome() {
         onQueryChange={setQuery}
       >
         {searchResults.length === 0 ? (
-          <p className="text-center text-[12px] text-[#6a543a] py-6">لا توجد نتائج</p>
+          <p className="text-center text-[12px] text-alpha-muted py-6">لا توجد نتائج</p>
         ) : (
           searchResults.map((s) => (
             <button
@@ -404,14 +404,14 @@ function SynaxariumHome() {
                 setSearchOpen(false);
                 navigate({ to: "/synaxarium/$saintId", params: { saintId: s.id } });
               }}
-              className="w-full text-right flex items-center gap-3 rounded-2xl bg-[#faf8f3] border border-[#ead9b1] p-2.5 active:scale-[0.98] transition-transform"
+              className="w-full text-right flex items-center gap-3 rounded-2xl bg-alpha-base border border-alpha p-2.5 active:scale-[0.98] transition-transform"
             >
               <img src={s.image} alt="" className="h-12 w-12 rounded-xl object-cover" draggable={false} />
               <div className="min-w-0 flex-1">
-                <div className="text-[13px] font-extrabold text-[#3a2a18] leading-tight line-clamp-1">{s.name}</div>
-                <div className="text-[11px] text-[#6a543a] mt-0.5 line-clamp-1">{s.copticDate} · {s.title}</div>
+                <div className="text-[13px] font-extrabold text-alpha-heading leading-tight line-clamp-1">{s.name}</div>
+                <div className="text-[11px] text-alpha-muted mt-0.5 line-clamp-1">{s.copticDate} · {s.title}</div>
               </div>
-              <ChevronLeft className="h-4 w-4 text-[#b8893a]" />
+              <ChevronLeft className="h-4 w-4 text-alpha-gold-deep" />
             </button>
           ))
         )}
@@ -457,18 +457,18 @@ function QuickTile({
         {icon}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-[12px] font-extrabold text-[#3a2a18] leading-tight line-clamp-1">
+        <span className="block text-[12px] font-extrabold text-alpha-heading leading-tight line-clamp-1">
           {label}
         </span>
-        <span className="block text-[10.5px] text-[#6a543a] leading-tight mt-0.5 line-clamp-1">
+        <span className="block text-[10.5px] text-alpha-muted leading-tight mt-0.5 line-clamp-1">
           {sub}
         </span>
       </span>
-      <ChevronLeft className="h-3.5 w-3.5 text-[#b8893a]" />
+      <ChevronLeft className="h-3.5 w-3.5 text-alpha-gold-deep" />
     </>
   );
   const className =
-    "text-right rounded-2xl bg-white border border-[#ead9b1] p-3 flex items-center gap-2.5 shadow-[0_8px_18px_-12px_rgba(120,80,30,0.5)] active:scale-[0.98] transition-transform";
+    "text-right rounded-2xl bg-white border border-alpha p-3 flex items-center gap-2.5 shadow-[0_8px_18px_-12px_rgba(120,80,30,0.5)] active:scale-[0.98] transition-transform";
   if (to) {
     return (
       <Link to={to as any} params={params as any} className={className}>

@@ -1,9 +1,12 @@
 import { type ReactNode, useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Shield } from "lucide-react";
+import { MC } from "./platform-store";
 import { grantOwnerSession, isOwnerSessionActive } from "./owner-access-store";
+import { tryClaimFirstPlatformOwner, checkIsPlatformOwnerRpc } from "./platform-owner-api";
+import { fetchMyAdminPermissions } from "./admin-team/admin-team-api";
 import { OwnerAccessPinSheet } from "./OwnerAccessPinSheet";
-import { isPlatformOwnerSync, subscribeAuthContext } from "@/features/auth";
+import { isPlatformOwnerSync, refreshAuthContext, subscribeAuthContext, isFounderEmail, getAuthUserSync } from "@/features/auth";
 
 /** Blocks platform routes unless Owner PIN session is active. */
 export function PlatformAccessGate({ children }: { children: ReactNode }) {
@@ -18,20 +21,62 @@ export function PlatformAccessGate({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const tryOwnerBypass = () => {
+    const tryOwnerBypass = async () => {
       if (isOwnerSessionActive()) {
         setSessionActive(true);
         return;
       }
-      if (isPlatformOwnerSync()) {
+      const founder = isFounderEmail(getAuthUserSync()?.email);
+      if (founder && (isPlatformOwnerSync() || (await checkIsPlatformOwnerRpc()))) {
         grantOwnerSession();
         setSessionActive(true);
       }
     };
 
-    tryOwnerBypass();
-    return subscribeAuthContext(() => tryOwnerBypass());
+    void tryOwnerBypass();
+    return subscribeAuthContext(() => {
+      void tryOwnerBypass();
+    });
   }, []);
+
+  useEffect(() => {
+    if (sessionActive) return;
+    void (async () => {
+      await refreshAuthContext();
+      const founder = isFounderEmail(getAuthUserSync()?.email);
+      if (founder && (isPlatformOwnerSync() || (await checkIsPlatformOwnerRpc()))) {
+        grantOwnerSession();
+        setSessionActive(true);
+        return;
+      }
+      const perms = await fetchMyAdminPermissions();
+      if (perms.length > 0) {
+        grantOwnerSession();
+        setSessionActive(true);
+      }
+    })();
+  }, [sessionActive]);
+
+  useEffect(() => {
+    if (!sessionActive) return;
+    void (async () => {
+      if (!isPlatformOwnerSync()) {
+        await tryClaimFirstPlatformOwner();
+      }
+      await refreshAuthContext();
+      const founder = isFounderEmail(getAuthUserSync()?.email);
+      if (founder && (isPlatformOwnerSync() || (await checkIsPlatformOwnerRpc()))) {
+        grantOwnerSession();
+        setSessionActive(true);
+        return;
+      }
+      const perms = await fetchMyAdminPermissions();
+      if (perms.length > 0) {
+        grantOwnerSession();
+        setSessionActive(true);
+      }
+    })();
+  }, [sessionActive]);
 
   const openPin = () => setPinOpen(true);
 
@@ -43,25 +88,25 @@ export function PlatformAccessGate({ children }: { children: ReactNode }) {
         dir="rtl"
         className="flex min-h-dvh flex-col items-center justify-center px-6 text-center"
         style={{
-          background: "linear-gradient(180deg, #0a0e1a 0%, #12182a 100%)",
-          color: "#e2e8f0",
+          background: "#000000",
+          color: MC.text,
         }}
       >
         <div
           className="mb-4 grid h-16 w-16 place-items-center rounded-2xl border"
-          style={{ borderColor: "rgba(231,201,122,0.35)", background: "rgba(231,201,122,0.08)" }}
+          style={{ borderColor: `${MC.green}44`, background: `${MC.green}14` }}
         >
-          <Shield className="h-8 w-8" style={{ color: "#e7c97a" }} />
+          <Shield className="h-8 w-8" style={{ color: MC.green }} />
         </div>
         <h1 className="text-[16px] font-extrabold text-white">Alpha Control Center</h1>
-        <p className="mt-2 max-w-xs text-[11px] font-bold leading-relaxed text-slate-400">
+        <p className="mt-2 max-w-xs text-[11px] font-bold leading-relaxed" style={{ color: MC.muted }}>
           لوحة تحكم المالك — أدخل رمز الدخول (6 أرقام) للمتابعة.
         </p>
         <button
           type="button"
           onClick={openPin}
-          className="mt-5 rounded-full px-6 py-2.5 text-[12px] font-extrabold text-[#0a0e1a]"
-          style={{ background: "linear-gradient(160deg, #f0d78c, #e7c97a)" }}
+          className="mt-5 rounded-full px-6 py-2.5 text-[12px] font-extrabold text-black"
+          style={{ background: MC.green }}
         >
           إدخال رمز المالك
         </button>

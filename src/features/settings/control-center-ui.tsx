@@ -23,7 +23,7 @@ import alphaShieldImg from "@/assets/alpha-shield.png";
 
 export function GlassCard({
   children,
-  accent = "#b8893a",
+  accent = "var(--alpha-gold-deep)",
   className = "",
 }: {
   children: ReactNode;
@@ -33,7 +33,7 @@ export function GlassCard({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-[22px] border border-[#efe2c4]/90 bg-gradient-to-b from-[#fbf3e1]/96 to-[#f4ead8]/94 backdrop-blur-xl",
+        "relative overflow-hidden rounded-[var(--alpha-radius-card-compact)] border border-alpha/90 bg-gradient-to-b from-[color-mix(in_srgb,var(--alpha-bg-elevated)_96%,transparent)] to-[color-mix(in_srgb,var(--alpha-bg-base)_94%,transparent)] backdrop-blur-xl",
         className,
       )}
       style={{
@@ -43,7 +43,7 @@ export function GlassCard({
     >
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-1/2 rounded-t-[22px] bg-gradient-to-b from-white/45 to-transparent"
+        className="pointer-events-none absolute inset-x-0 top-0 h-1/2 rounded-t-[var(--alpha-radius-card-compact)] bg-gradient-to-b from-white/45 to-transparent"
       />
       <div className="relative">{children}</div>
     </div>
@@ -55,7 +55,7 @@ export function PremiumSectionCard({
   title,
   description,
   icon: Icon,
-  accent = "#b8893a",
+  accent = "var(--alpha-gold-deep)",
   isOpen,
   onToggle,
   children,
@@ -73,10 +73,10 @@ export function PremiumSectionCard({
     <div className={cn("mb-2.5 animate-in fade-in duration-300", isOpen && "mb-3.5")}>
       <div
         className={cn(
-          "relative overflow-hidden rounded-[22px] border backdrop-blur-xl transition-all duration-300 ease-out",
+          "relative overflow-hidden rounded-[var(--alpha-radius-card-compact)] border backdrop-blur-xl alpha-motion-standard",
           isOpen
-            ? "border-[#efe2c4]/95 bg-gradient-to-b from-[#fbf3e1]/98 to-[#f4ead8]/96"
-            : "border-[#efe2c4]/85 bg-gradient-to-b from-[#fbf3e1]/94 to-[#f4ead8]/92 hover:border-[#efe2c4]",
+            ? "border-alpha/95 bg-gradient-to-b from-[color-mix(in_srgb,var(--alpha-bg-elevated)_98%,transparent)] to-[color-mix(in_srgb,var(--alpha-bg-base)_96%,transparent)]"
+            : "border-alpha/85 bg-gradient-to-b from-[color-mix(in_srgb,var(--alpha-bg-elevated)_94%,transparent)] to-[color-mix(in_srgb,var(--alpha-bg-base)_92%,transparent)] hover:border-alpha",
         )}
         style={{
           boxShadow: isOpen
@@ -87,7 +87,7 @@ export function PremiumSectionCard({
         <div
           aria-hidden
           className={cn(
-            "pointer-events-none absolute inset-x-0 top-0 rounded-t-[22px] bg-gradient-to-b to-transparent transition-all duration-300",
+            "pointer-events-none absolute inset-x-0 top-0 rounded-t-[var(--alpha-radius-card-compact)] bg-gradient-to-b to-transparent transition-all alpha-motion-standard",
             isOpen ? "h-[58%] from-white/55" : "h-[48%] from-white/42",
           )}
         />
@@ -101,14 +101,14 @@ export function PremiumSectionCard({
             <Icon className="h-[22px] w-[22px]" style={{ color: accent }} strokeWidth={2.4} />
           </AlphaIcon3D>
           <div className="min-w-0 flex-1">
-            <h2 className="font-arabic-serif text-[15.5px] font-extrabold leading-snug text-[#2a1f12]">
+            <h2 className="alpha-type-h2 font-arabic-serif leading-snug text-alpha-section-purple">
               {title}
             </h2>
-            <p className="mt-1 text-[11px] font-medium leading-relaxed text-[#6a543a]">{description}</p>
+            <p className="alpha-type-desc mt-1 font-medium leading-relaxed text-alpha-muted">{description}</p>
           </div>
           <ChevronDown
             className={cn(
-              "h-5 w-5 shrink-0 text-[#c9a05a] transition-transform duration-300 ease-out",
+              "h-5 w-5 shrink-0 text-alpha-gold-deep transition-transform alpha-motion-standard",
               isOpen && "rotate-180",
             )}
           />
@@ -120,7 +120,7 @@ export function PremiumSectionCard({
           )}
         >
           <div className="overflow-hidden">
-            <div className="border-t border-[#efe2c4]/55 bg-white/10 px-4 pb-4 pt-3 backdrop-blur-sm [&>*:last-child]:mb-0">
+            <div className="border-t border-alpha/55 bg-white/10 px-4 pb-4 pt-3 backdrop-blur-sm [&>*:last-child]:mb-0">
               {children}
             </div>
           </div>
@@ -140,10 +140,10 @@ export function DarkModeToggle({
   const { t } = useTranslation("settings");
 
   return (
-    <div className="mb-3.5 flex items-center justify-between gap-4 rounded-[18px] border border-[#efe2c4]/40 bg-white/40 px-4 py-4 shadow-[0_2px_10px_-4px_rgba(120,80,30,0.08)] backdrop-blur-sm transition-all hover:bg-white/50">
+    <div className="mb-3.5 flex items-center justify-between gap-4 rounded-[var(--alpha-radius-button)] border border-alpha/40 bg-white/40 px-4 py-4 shadow-[var(--alpha-shadow-mini)] backdrop-blur-sm transition-all hover:bg-white/50">
       <div className="min-w-0 flex-1 text-right">
-        <p className="text-[13px] font-bold text-[#3a2a18]">{t("darkMode.title")}</p>
-        <p className="mt-0.5 text-[11px] text-[#6a543a] leading-snug">
+        <p className="alpha-type-body font-bold text-alpha-heading">{t("darkMode.title")}</p>
+        <p className="alpha-type-desc mt-0.5 text-alpha-muted leading-snug">
           {checked ? t("darkMode.enabled") : t("darkMode.disabled")}
         </p>
       </div>
@@ -185,7 +185,7 @@ export function LinkCard({
   return (
     <Link
       to={to}
-      className="flex items-center gap-3 rounded-[18px] px-3 py-3 transition hover:bg-white/40 active:scale-[0.99]"
+      className="flex items-center gap-3 rounded-[var(--alpha-radius-button)] px-3 py-3 transition hover:bg-white/40 active:scale-[0.99]"
     >
       <div
         className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]"
@@ -197,10 +197,10 @@ export function LinkCard({
         <Icon className="h-5 w-5" style={{ color: accent }} />
       </div>
       <div className="min-w-0 flex-1 text-right">
-        <p className="text-[13px] font-bold text-[#3a2a18]">{title}</p>
-        <p className="text-[10.5px] text-[#6a543a]">{subtitle}</p>
+        <p className="alpha-type-body font-bold text-alpha-heading">{title}</p>
+        <p className="alpha-type-desc text-alpha-muted">{subtitle}</p>
       </div>
-      <ChevronLeft className="h-4 w-4 shrink-0 text-[#b8893a]/70" />
+      <ChevronLeft className="h-4 w-4 shrink-0 text-alpha-gold-deep/70" />
     </Link>
   );
 }
@@ -211,7 +211,7 @@ export function PremiumLinkCard({
   icon: Icon,
   title,
   subtitle,
-  accent = "#3f9d6e",
+  accent = "var(--alpha-gold-deep)",
 }: {
   to: string;
   icon: LucideIcon;
@@ -224,8 +224,8 @@ export function PremiumLinkCard({
       <Link
         to={to}
         className={cn(
-          "relative flex w-full items-center gap-3.5 overflow-hidden rounded-[22px] border border-[#efe2c4]/85 bg-gradient-to-b from-[#fbf3e1]/94 to-[#f4ead8]/92 px-4 py-[18px] text-right backdrop-blur-xl transition-all duration-300 ease-out",
-          "hover:border-[#efe2c4] active:scale-[0.985]",
+          "relative flex w-full items-center gap-3.5 overflow-hidden rounded-[var(--alpha-radius-card-compact)] border border-alpha/85 bg-gradient-to-b from-[color-mix(in_srgb,var(--alpha-bg-elevated)_94%,transparent)] to-[color-mix(in_srgb,var(--alpha-bg-base)_92%,transparent)] px-4 py-[18px] text-right backdrop-blur-xl alpha-motion-standard",
+          "hover:border-alpha active:scale-[0.985]",
         )}
         style={{
           boxShadow: `0 14px 30px -22px rgba(120,80,30,0.38), 0 0 20px -16px ${accent}22, inset 0 1px 0 rgba(255,255,255,0.82)`,
@@ -233,18 +233,18 @@ export function PremiumLinkCard({
       >
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-[48%] rounded-t-[22px] bg-gradient-to-b from-white/42 to-transparent"
+          className="pointer-events-none absolute inset-x-0 top-0 h-[48%] rounded-t-[var(--alpha-radius-card-compact)] bg-gradient-to-b from-white/42 to-transparent"
         />
         <AlphaIcon3D color={accent} size={52} isOpen={false}>
           <Icon className="h-[22px] w-[22px]" style={{ color: accent }} strokeWidth={2.4} />
         </AlphaIcon3D>
         <div className="relative min-w-0 flex-1">
-          <h2 className="font-arabic-serif text-[15.5px] font-extrabold leading-snug text-[#2a1f12]">
+          <h2 className="alpha-type-h2 font-arabic-serif leading-snug text-alpha-section-purple">
             {title}
           </h2>
-          <p className="mt-1 text-[11px] font-medium leading-relaxed text-[#6a543a]">{subtitle}</p>
+          <p className="alpha-type-desc mt-1 font-medium leading-relaxed text-alpha-muted">{subtitle}</p>
         </div>
-        <ChevronLeft className="relative h-5 w-5 shrink-0 text-[#c9a05a]" />
+        <ChevronLeft className="relative h-5 w-5 shrink-0 text-alpha-gold-deep" />
       </Link>
     </div>
   );
@@ -262,10 +262,10 @@ export function ToggleRow({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <div className="mb-3.5 flex items-center justify-between gap-4 rounded-[18px] border border-[#efe2c4]/40 bg-white/40 px-4 py-4 shadow-[0_2px_10px_-4px_rgba(120,80,30,0.08)] backdrop-blur-sm transition-all hover:bg-white/50">
+    <div className="mb-3.5 flex items-center justify-between gap-4 rounded-[var(--alpha-radius-button)] border border-alpha/40 bg-white/40 px-4 py-4 shadow-[var(--alpha-shadow-mini)] backdrop-blur-sm transition-all hover:bg-white/50">
       <div className="min-w-0 flex-1 text-right">
-        <p className="text-[13px] font-bold text-[#3a2a18]">{label}</p>
-        {subtitle && <p className="mt-0.5 text-[11px] text-[#6a543a] leading-snug">{subtitle}</p>}
+        <p className="alpha-type-body font-bold text-alpha-heading">{label}</p>
+        {subtitle && <p className="alpha-type-desc mt-0.5 text-alpha-muted leading-snug">{subtitle}</p>}
       </div>
       <button
         type="button"
@@ -300,8 +300,8 @@ export function SelectRow({
   onChange: (v: string) => void;
 }) {
   return (
-    <div className="mb-3.5 rounded-[18px] border border-[#efe2c4]/40 bg-white/40 px-4 py-4 shadow-[0_2px_10px_-4px_rgba(120,80,30,0.08)] backdrop-blur-sm transition-all hover:bg-white/50">
-      <p className="mb-3 text-right text-[13px] font-bold text-[#3a2a18]">{label}</p>
+    <div className="mb-3.5 rounded-[var(--alpha-radius-button)] border border-alpha/40 bg-white/40 px-4 py-4 shadow-[var(--alpha-shadow-mini)] backdrop-blur-sm transition-all hover:bg-white/50">
+      <p className="mb-3 text-right alpha-type-body font-bold text-alpha-heading">{label}</p>
       <div className="flex flex-wrap justify-end gap-2">
         {options.map((o) => (
           <button
@@ -312,7 +312,7 @@ export function SelectRow({
               "rounded-xl px-3 py-2 text-[11px] font-bold transition active:scale-95",
               value === o.value
                 ? "bg-gradient-to-l from-[#1f6e54] to-[#3eb482] text-white shadow-sm"
-                : "border border-[#efe2c4] bg-white/60 text-[#6a543a]",
+                : "border border-alpha bg-white/60 text-alpha-muted",
             )}
           >
             {o.label}
@@ -333,13 +333,13 @@ export function ActionRow({ label, subtitle, onClick, danger }: {
     <button
       type="button"
       onClick={onClick}
-      className="mb-3.5 flex w-full items-center justify-between gap-4 rounded-[18px] border border-[#efe2c4]/40 bg-white/40 px-4 py-4 text-right shadow-[0_2px_10px_-4px_rgba(120,80,30,0.08)] backdrop-blur-sm transition-all hover:bg-white/50 active:scale-[0.99]"
+      className="mb-3.5 flex w-full items-center justify-between gap-4 rounded-[var(--alpha-radius-button)] border border-alpha/40 bg-white/40 px-4 py-4 text-right shadow-[var(--alpha-shadow-mini)] backdrop-blur-sm transition-all hover:bg-white/50 active:scale-[0.99]"
     >
       <div className="flex-1">
-        <p className={cn("text-[13px] font-bold", danger ? "text-[#EF4444]" : "text-[#3a2a18]")}>{label}</p>
-        {subtitle && <p className="mt-0.5 text-[11px] text-[#6a543a] leading-snug">{subtitle}</p>}
+        <p className={cn("alpha-type-body font-bold", danger ? "text-[#EF4444]" : "text-alpha-heading")}>{label}</p>
+        {subtitle && <p className="alpha-type-desc mt-0.5 text-alpha-muted leading-snug">{subtitle}</p>}
       </div>
-      <ChevronLeft className="h-5 w-5 shrink-0 text-[#b8893a]/60" />
+      <ChevronLeft className="h-5 w-5 shrink-0 text-alpha-gold-deep/60" />
     </button>
   );
 }
@@ -355,27 +355,27 @@ export function SettingsSearch({
 
   return (
     <div className="relative mb-4">
-      <Search className="pointer-events-none absolute end-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9a7e5a]" />
+      <Search className="pointer-events-none absolute end-3 top-1/2 h-4 w-4 -translate-y-1/2 text-alpha-gold-deep/70" />
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={t("searchPlaceholder")}
-        className="w-full rounded-2xl border border-[#efe2c4]/90 bg-white/65 py-2.5 pe-10 ps-3 text-[13px] font-semibold text-[#3a2a18] placeholder:text-[#9a7e5a]/80 shadow-[inset_0_1px_2px_rgba(120,80,30,0.04)] backdrop-blur-sm outline-none focus:border-[#4fd4a8]/50 focus:ring-2 focus:ring-[#4fd4a8]/20"
+        className="w-full rounded-2xl border border-alpha/90 bg-white/65 py-2.5 pe-10 ps-3 alpha-type-body font-semibold text-alpha-heading placeholder:text-alpha-gold-deep/80 shadow-[inset_0_1px_2px_rgba(120,80,30,0.04)] backdrop-blur-sm outline-none focus:border-[#4fd4a8]/50 focus:ring-2 focus:ring-[#4fd4a8]/20"
       />
     </div>
   );
 }
 
 export function Divider() {
-  return <div className="mx-3 h-px bg-[#efe2c4]/70" />;
+  return <div className="mx-3 h-px bg-alpha/70" />;
 }
 
 export function SectionLabel({ children }: { children: ReactNode }) {
   return (
     <div className="mb-3.5 mt-2 flex items-center gap-3">
-      <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[#efe2c4]/70" />
-      <p className="text-[11.5px] font-extrabold tracking-wide text-[#b8893a]">{children}</p>
-      <div className="h-px flex-1 bg-gradient-to-l from-transparent to-[#efe2c4]/70" />
+      <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[color-mix(in_srgb,var(--alpha-gold)_40%,transparent)]" />
+      <p className="alpha-type-desc font-extrabold tracking-wide text-alpha-section-purple">{children}</p>
+      <div className="h-px flex-1 bg-gradient-to-l from-transparent to-[color-mix(in_srgb,var(--alpha-gold)_40%,transparent)]" />
     </div>
   );
 }
@@ -463,7 +463,7 @@ function HeroStatChip({
 }) {
   return (
     <div
-      className="flex flex-col items-center gap-1.5 rounded-[18px] px-1.5 py-2.5 backdrop-blur-md transition-transform hover:scale-[1.02]"
+      className="flex flex-col items-center gap-1.5 rounded-[var(--alpha-radius-button)] px-1.5 py-2.5 backdrop-blur-md transition-transform hover:scale-[1.02]"
       style={{
         background: "linear-gradient(165deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.4) 100%)",
         border: "1px solid rgba(255,255,255,0.9)",
@@ -488,10 +488,10 @@ function HeroStatChip({
         <Icon className="relative h-4 w-4" style={{ color: accent, filter: "drop-shadow(0 2px 2px rgba(0,0,0,0.2))" }} strokeWidth={2.5} />
       </div>
       <div className="flex flex-col items-center w-full">
-        <span className="w-full truncate text-center font-arabic-serif text-[11px] font-extrabold leading-tight text-[#2a1f12]">
+        <span className="w-full truncate text-center font-arabic-serif alpha-type-desc font-extrabold leading-tight text-alpha-heading">
           {value}
         </span>
-        <span className="font-arabic-serif text-center text-[9px] font-bold text-[#8a6a3a]">{label}</span>
+        <span className="font-arabic-serif text-center alpha-type-caption font-bold text-alpha-muted">{label}</span>
       </div>
     </div>
   );
@@ -520,7 +520,7 @@ export function ControlCenterHero({
 
   return (
     <div
-      className="relative mb-3 overflow-hidden rounded-[22px] animate-in fade-in slide-in-from-bottom-2 duration-400"
+      className="relative mb-3 overflow-hidden rounded-[var(--alpha-radius-card-compact)] animate-in fade-in slide-in-from-bottom-2 duration-400"
       style={{
         background: "linear-gradient(160deg, #fcf6ea 0%, #f6edd9 50%, #ede2cb 100%)",
         border: "1px solid rgba(239,226,196,0.95)",
@@ -542,7 +542,7 @@ export function ControlCenterHero({
       {/* Top inner shine */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-[48%] rounded-t-[22px]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[48%] rounded-t-[var(--alpha-radius-card-compact)]"
         style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.5), transparent)" }}
       />
 
@@ -566,10 +566,10 @@ export function ControlCenterHero({
             />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[9px] font-extrabold uppercase tracking-[0.15em] text-[#a67c32]">
+            <p className="alpha-type-caption font-extrabold uppercase tracking-[0.15em] text-alpha-gold-deep">
               Alpha · Control Center
             </p>
-            <p className="mt-0.5 truncate font-arabic-serif text-[13.5px] font-extrabold leading-tight text-[#2a1f12]">
+            <p className="mt-0.5 truncate font-arabic-serif alpha-type-body font-extrabold leading-tight text-alpha-heading">
               {user.name || "مستخدم Alpha"}
             </p>
           </div>
@@ -617,7 +617,7 @@ export function ControlCenterHero({
                 boxShadow: `inset 0 1px 0 rgba(255,255,255,1), 0 3px 8px -4px rgba(63,157,110,0.25)`,
               }}
             >
-              <span className="font-arabic-serif text-[10.5px] font-bold text-[#2a1f12]">{badgeText}</span>
+              <span className="font-arabic-serif alpha-type-desc font-bold text-alpha-heading">{badgeText}</span>
               <span
                 className="font-arabic-serif text-[11px] font-extrabold tabular-nums"
                 style={{ color: scoreColor }}
@@ -681,13 +681,13 @@ function PasswordField({
 }) {
   return (
     <div className="px-3 py-2">
-      <label className="mb-1.5 block text-right text-[11.5px] font-bold text-[#3a2a18]">{label}</label>
+      <label className="mb-1.5 block text-right alpha-type-desc font-bold text-alpha-heading">{label}</label>
       <input
         type="password"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         autoComplete={autoComplete}
-        className="w-full rounded-xl border border-[#efe2c4]/90 bg-white/65 px-3 py-2.5 text-[13px] font-semibold text-[#3a2a18] placeholder:text-[#9a7e5a]/80 shadow-[inset_0_1px_2px_rgba(120,80,30,0.04)] backdrop-blur-sm outline-none focus:border-[#3f9d6e]/50 focus:ring-2 focus:ring-[#3f9d6e]/15"
+        className="w-full rounded-xl border border-alpha/90 bg-white/65 px-3 py-2.5 alpha-type-body font-semibold text-alpha-heading placeholder:text-alpha-gold-deep/80 shadow-[inset_0_1px_2px_rgba(120,80,30,0.04)] backdrop-blur-sm outline-none focus:border-[#3f9d6e]/50 focus:ring-2 focus:ring-[#3f9d6e]/15"
       />
     </div>
   );
@@ -736,9 +736,9 @@ export function PasswordChangeForm({
   };
 
   return (
-    <div className="mx-1.5 my-1 rounded-[18px] border border-[#efe2c4]/70 bg-white/25 p-1 backdrop-blur-sm">
-      <p className="px-3 pt-2.5 text-start text-[12px] font-extrabold text-[#2a1f12]">{t("password.title")}</p>
-      <p className="px-3 pb-1 text-start text-[10px] text-[#6a543a]">{t("password.lastUpdated")}</p>
+    <div className="mx-1.5 my-1 rounded-[var(--alpha-radius-button)] border border-alpha/70 bg-white/25 p-1 backdrop-blur-sm">
+      <p className="px-3 pt-2.5 text-start alpha-type-body font-extrabold text-alpha-heading">{t("password.title")}</p>
+      <p className="px-3 pb-1 text-start alpha-type-caption text-alpha-muted">{t("password.lastUpdated")}</p>
       <PasswordField
         label={t("password.current")}
         value={current}
@@ -796,7 +796,7 @@ export function ActiveSessionsList({
       {sessions.map((s) => (
         <div
           key={s.id}
-          className="flex items-center gap-3 rounded-[16px] px-3 py-2.5"
+          className="flex items-center gap-3 rounded-[var(--alpha-radius-mini)] px-3 py-2.5"
         >
           <div
             className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]"
@@ -808,10 +808,10 @@ export function ActiveSessionsList({
             <Smartphone className="h-4.5 w-4.5 text-[#4a86c1]" />
           </div>
           <div className="min-w-0 flex-1 text-start">
-            <p className="text-[12.5px] font-bold text-[#3a2a18]">
+            <p className="alpha-type-body font-bold text-alpha-heading">
               {t(`sessions.${s.id}.device`, { ns: "settings" })}
             </p>
-            <p className="text-[10px] text-[#6a543a]">
+            <p className="alpha-type-caption text-alpha-muted">
               {t(`sessions.${s.id}.detail`, { ns: "settings" })}
             </p>
           </div>
@@ -858,7 +858,7 @@ export function ThemeModePicker({
             type="button"
             onClick={() => onChange(o.id)}
             className={cn(
-              "flex w-full items-center gap-3 rounded-[18px] px-3 py-3 transition hover:bg-white/40 active:scale-[0.99]",
+              "flex w-full items-center gap-3 rounded-[var(--alpha-radius-button)] px-3 py-3 transition hover:bg-white/40 active:scale-[0.99]",
               active && "bg-white/45",
             )}
           >
@@ -871,14 +871,14 @@ export function ThemeModePicker({
                 borderColor: active ? "#d8a83a88" : "#d8a83a44",
               }}
             >
-              <Icon className="h-5 w-5 text-[#8a5a14]" />
+              <Icon className="h-5 w-5 text-alpha-gold-deep" />
             </div>
             <div className="min-w-0 flex-1 text-right">
-              <p className="text-[13px] font-bold text-[#3a2a18]">{o.label}</p>
-              <p className="text-[10.5px] text-[#6a543a]">{o.sub}</p>
+              <p className="alpha-type-body font-bold text-alpha-heading">{o.label}</p>
+              <p className="alpha-type-desc text-alpha-muted">{o.sub}</p>
             </div>
             {active && (
-              <span className="grid h-6 w-6 place-items-center rounded-full bg-[#d8a83a] text-white shadow-sm">
+              <span className="grid h-6 w-6 place-items-center rounded-full bg-[var(--alpha-gold)] text-white shadow-sm">
                 <Check className="h-3.5 w-3.5" />
               </span>
             )}

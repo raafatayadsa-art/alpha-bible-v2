@@ -58,6 +58,12 @@ import {
   type PublisherVideoItem,
 } from "../publisher-playback";
 import { PublisherHeroCarousel } from "./PublisherHeroCarousel";
+import {
+  PUBLISHER_TEXT_MUTED,
+  PUBLISHER_TEXT_REPORT,
+  PUBLISHER_TEXT_SUB,
+  PUBLISHER_TEXT_TITLE,
+} from "./publisher-glass-chrome";
 import { PublisherListenSection } from "./PublisherListenSection";
 import { PublisherMiniPlayer } from "./PublisherMiniPlayer";
 import { PublisherQrSheet } from "./PublisherQrSheet";
@@ -536,8 +542,8 @@ export function PublisherPublicPageView({ publisher, content, preview }: Props) 
 
       {!content.length ? (
         <div className="mx-5 mt-8 rounded-[22px] border border-dashed border-[rgba(93,50,145,0.18)] bg-white/70 px-4 py-10 text-center">
-          <p className="text-[13px] font-extrabold text-[#3a3258]">لا يوجد محتوى منشور بعد</p>
-          <p className="mt-1 text-[11px] font-bold text-[#6b658a]">ستظهر الترانيم والألبومات هنا فور اعتمادها.</p>
+          <p className="alpha-type-body font-extrabold text-[var(--alpha-publisher-ink)]">لا يوجد محتوى منشور بعد</p>
+          <p className="mt-1 alpha-type-desc font-bold text-[var(--alpha-publisher-muted)]">ستظهر الترانيم والألبومات هنا فور اعتمادها.</p>
         </div>
       ) : null}
 
@@ -657,7 +663,7 @@ function ReportChip({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex shrink-0 items-center gap-1 text-[9px] font-extrabold text-[#a8344f]"
+      className={`inline-flex shrink-0 items-center gap-1 ${PUBLISHER_TEXT_REPORT}`}
     >
       <ShieldAlert className="h-3.5 w-3.5" />
       بلاغ
@@ -712,8 +718,8 @@ function ContinueSection({
               ) : null}
             </div>
             <div className="min-w-0 flex-1 text-right">
-              <p className="truncate text-[14px] font-extrabold text-[#3a3258]">{entry.title}</p>
-              <p className="mt-0.5 truncate text-[11px] font-bold text-[#8a84a8]">
+              <p className="truncate alpha-type-h2 font-extrabold text-[var(--alpha-publisher-ink)]">{entry.title}</p>
+              <p className={`mt-0.5 truncate ${PUBLISHER_TEXT_MUTED}`}>
                 {PUBLISHER_CONTENT_KIND_LABELS[entry.contentKind]}
               </p>
             </div>
@@ -754,10 +760,10 @@ function ContinueSection({
               }}
             />
             <div className="mt-1.5 flex items-center justify-between gap-2">
-              <span className="text-[10px] font-bold tabular-nums text-[#8a84a8]" dir="ltr">
+              <span className="alpha-type-caption font-bold tabular-nums text-[var(--alpha-publisher-subtle)]" dir="ltr">
                 {formatDurationSeconds(safeDuration)}
               </span>
-              <span className="text-[10px] font-extrabold tabular-nums text-[#5D3291]" dir="ltr">
+              <span className="alpha-type-caption font-extrabold tabular-nums text-[var(--alpha-publisher-purple)]" dir="ltr">
                 {formatDurationSeconds(safeCurrent)}
               </span>
             </div>
@@ -769,7 +775,7 @@ function ContinueSection({
               disabled={preview || !item}
               onClick={onSkipBack}
               aria-label="رجوع 15 ثانية"
-              className="grid h-10 w-10 place-items-center rounded-full border border-[rgba(93,50,145,0.12)] bg-white/90 text-[#5D3291] transition active:scale-95 disabled:opacity-45"
+              className="grid h-10 w-10 place-items-center rounded-full border border-[rgba(93,50,145,0.12)] bg-white/90 text-[var(--alpha-publisher-purple)] transition active:scale-95 disabled:opacity-45"
             >
               <SkipBack className="h-4 w-4" />
             </button>
@@ -791,7 +797,7 @@ function ContinueSection({
               disabled={preview || !item}
               onClick={onSkipForward}
               aria-label="تقديم 15 ثانية"
-              className="grid h-10 w-10 place-items-center rounded-full border border-[rgba(93,50,145,0.12)] bg-white/90 text-[#5D3291] transition active:scale-95 disabled:opacity-45"
+              className="grid h-10 w-10 place-items-center rounded-full border border-[rgba(93,50,145,0.12)] bg-white/90 text-[var(--alpha-publisher-purple)] transition active:scale-95 disabled:opacity-45"
             >
               <SkipForward className="h-4 w-4" />
             </button>
@@ -913,13 +919,13 @@ function AlbumsSection({
                     <Disc3 className="h-4 w-4" />
                   </span>
                 </div>
-                <p className="mt-2 line-clamp-2 text-[11px] font-extrabold leading-tight text-[#3a3258]">{album.title}</p>
+                <p className={`mt-2 line-clamp-2 alpha-type-desc font-extrabold leading-tight ${PUBLISHER_TEXT_TITLE}`}>{album.title}</p>
               </Link>
               {showReport ? (
                 <button
                   type="button"
                   onClick={() => onReport(album)}
-                  className="mt-1 text-[9px] font-extrabold text-[#a8344f]"
+                  className={`mt-1 ${PUBLISHER_TEXT_REPORT}`}
                 >
                   بلاغ
                 </button>
@@ -972,7 +978,7 @@ function PlaylistsSection({
               <button
                 type="button"
                 onClick={() => onReport(item)}
-                className="mt-1 text-[9px] font-extrabold text-[#a8344f]"
+                className={`mt-1 ${PUBLISHER_TEXT_REPORT}`}
               >
                 بلاغ
               </button>
@@ -1025,11 +1031,11 @@ function VideosSection({
                   </span>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[13px] font-extrabold text-[#3a3258]">{item.title}</p>
+                  <p className="truncate alpha-type-body font-extrabold text-[var(--alpha-publisher-ink)]">{item.title}</p>
                   <p className="mt-0.5 text-[10px] font-bold text-[#f97316]">فيديو · اضغط للتشغيل</p>
                 </div>
                 {item.durationSeconds ? (
-                  <span className="shrink-0 text-[10px] font-bold tabular-nums text-[#8a84a8]" dir="ltr">
+                  <span className="shrink-0 alpha-type-caption font-bold tabular-nums text-[var(--alpha-publisher-subtle)]" dir="ltr">
                     {formatDurationSeconds(item.durationSeconds)}
                   </span>
                 ) : null}
@@ -1100,13 +1106,13 @@ function BooksSection({
           <article key={item.id} className="glass-card overflow-hidden rounded-3xl text-right">
             <img src={contentCover(item)} alt="" className="aspect-[3/4] w-full object-cover" />
             <div className="space-y-2 p-3">
-              <p className="line-clamp-2 text-[12px] font-extrabold text-[#3a3258]">{item.title}</p>
+              <p className="line-clamp-2 alpha-type-body font-extrabold text-[var(--alpha-publisher-ink)]">{item.title}</p>
               {item.mediaUrl ? (
                 <a
                   href={item.mediaUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-[10px] font-extrabold text-[#5D3291]"
+                  className="inline-flex items-center gap-1 alpha-type-desc font-extrabold text-[var(--alpha-publisher-purple)]"
                 >
                   <BookOpen className="h-3.5 w-3.5" />
                   فتح الكتاب
@@ -1140,9 +1146,9 @@ function ArticlesSection({
           <article key={item.id} className="glass-card rounded-3xl p-4 text-right">
             <div className="flex items-start gap-3">
               <div className="min-w-0 flex-1">
-                <p className="text-[13px] font-extrabold text-[#3a3258]">{item.title}</p>
+                <p className="alpha-type-body font-extrabold text-[var(--alpha-publisher-ink)]">{item.title}</p>
                 {item.description ? (
-                  <p className="mt-1 line-clamp-3 text-[11px] font-bold leading-relaxed text-[#6b658a]">{item.description}</p>
+                  <p className={`mt-1 line-clamp-3 alpha-type-desc font-bold leading-relaxed ${PUBLISHER_TEXT_SUB}`}>{item.description}</p>
                 ) : null}
               </div>
               <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[var(--gold)]/15 text-[var(--gold-deep)]">
@@ -1163,16 +1169,16 @@ function AboutSection({ publisher }: { publisher: PublisherRecord }) {
       <SectionHeader title="حول الناشر" />
       <div className="mx-5 glass-card rounded-3xl p-4 text-right">
         {publisher.bio ? (
-          <p className="text-[13px] font-bold leading-relaxed text-[#4a4568] whitespace-pre-line">{publisher.bio}</p>
+          <p className="alpha-type-body font-bold leading-relaxed text-[var(--alpha-publisher-ink)] whitespace-pre-line">{publisher.bio}</p>
         ) : (
-          <p className="text-center text-[11px] font-bold text-[#6b658a]">لا توجد نبذة بعد.</p>
+          <p className="text-center alpha-type-desc font-bold text-[var(--alpha-publisher-muted)]">لا توجد نبذة بعد.</p>
         )}
         {(publisher.phone || publisher.email || publisher.websiteUrl) ? (
           <div className="mt-4 space-y-2 border-t border-[rgba(93,50,145,0.1)] pt-4">
-            {publisher.phone ? <p className="text-[11px] font-bold text-[#4a4568]">هاتف: {publisher.phone}</p> : null}
-            {publisher.email ? <p className="text-[11px] font-bold text-[#4a4568]">بريد: {publisher.email}</p> : null}
+            {publisher.phone ? <p className="alpha-type-desc font-bold text-[var(--alpha-publisher-ink)]">هاتف: {publisher.phone}</p> : null}
+            {publisher.email ? <p className="alpha-type-desc font-bold text-[var(--alpha-publisher-ink)]">بريد: {publisher.email}</p> : null}
             {publisher.websiteUrl ? (
-              <a href={publisher.websiteUrl} target="_blank" rel="noopener noreferrer" className="block text-[11px] font-bold text-[#5D3291] underline">
+              <a href={publisher.websiteUrl} target="_blank" rel="noopener noreferrer" className={`block alpha-type-desc font-bold text-[var(--alpha-publisher-purple)] underline`}>
                 الموقع الرسمي
               </a>
             ) : null}
@@ -1234,7 +1240,7 @@ function MediaCard({
           {subtitle ? <p className="mt-0.5 truncate text-[11px] text-muted-foreground">{subtitle}</p> : null}
         </div>
         {durationLabel ? (
-          <span className="shrink-0 text-[10px] font-bold tabular-nums text-[#8a84a8]" dir="ltr">
+          <span className="shrink-0 alpha-type-caption font-bold tabular-nums text-[var(--alpha-publisher-subtle)]" dir="ltr">
             {durationLabel}
           </span>
         ) : null}
@@ -1251,7 +1257,7 @@ function MediaCard({
         <div className="mt-2 flex items-center justify-between gap-2 border-t border-[var(--gold)]/10 pt-2">
           {footer ?? <span />}
           {onLike ? (
-            <button type="button" onClick={onLike} aria-label="مفضلة" className="inline-flex items-center gap-1 text-[10px] font-extrabold text-[#5D3291]">
+            <button type="button" onClick={onLike} aria-label="مفضلة" className="inline-flex items-center gap-1 alpha-type-desc font-extrabold text-[var(--alpha-publisher-purple)]">
               <Heart className={`h-4 w-4 ${liked ? "fill-[#e85d7a] text-[#e85d7a]" : ""}`} />
               {liked ? "في المفضلة" : "أضف للمفضلة"}
             </button>

@@ -38,6 +38,7 @@ export type ChurchDashboardRecord = {
 
 export type ChurchDashboardContact = {
   id: string;
+  userId: string | null;
   name: string;
   role: string;
   roleType: ContactRoleType;
@@ -149,6 +150,7 @@ function mapContact(row: RoleRow): ChurchDashboardContact {
   const roleKey = (row.role_key ?? row.role_type ?? "servant") as ContactRoleType;
   return {
     id: String(row.id),
+    userId: row.user_id ? String(row.user_id) : null,
     name: row.role_name ?? row.display_name ?? row.title ?? "",
     role: row.title,
     roleType: roleKey,

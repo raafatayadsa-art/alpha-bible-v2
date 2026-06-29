@@ -1,12 +1,10 @@
 ﻿import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState, useCallback } from "react";
 import {
-  Menu, Sparkles, Share2, Bookmark, ChevronLeft,
-  Play, Pause, X, Calendar,
+  Share2, Bookmark, ChevronLeft,
+  Play, Pause, X, Calendar, Sparkles,
 } from "lucide-react";
 import { BottomDock } from "@/components/bible/BottomDock";
-import { useAlphaNavigation } from "@/components/navigation/AlphaNavigationProvider";
-import { AlphaNotificationButton } from "@/components/navigation/AlphaNotificationButton";
 import { AlphaConnectHomeCard } from "@/components/alpha/AlphaConnectHomeCard";
 import { ChurchDirectoryHomeCard } from "@/components/home/ChurchDirectoryHomeCard";
 import { KholagyHomeCard } from "@/components/home/KholagyHomeCard";
@@ -14,6 +12,8 @@ import { HomeVerseHeroStack } from "@/components/home/HomeVerseHeroStack";
 import { HomeJourneyDiscover, type JourneyDiscoverItem } from "@/components/home/HomeJourneyDiscover";
 import { SmartContextCard } from "@/features/smart-context";
 import { ProfileSettingsMenu } from "@/features/profile/ProfileSettingsMenu";
+import { AlphaNotificationButton } from "@/components/navigation/AlphaNotificationButton";
+import { useAlphaAuth } from "@/features/auth";
 import { usePlatformModules, type PlatformModuleKey } from "@/lib/platform-modules";
 import { openAlphaShareSheet } from "@/lib/alpha-share-sheet";
 
@@ -97,7 +97,12 @@ function useSavedSet(key: string) {
     setSet((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id); else next.add(id);
-      try { localStorage.setItem(key, JSON.stringify(Array.from(next))); } catch {}
+      try {
+        localStorage.setItem(key, JSON.stringify(Array.from(next)));
+        void import("@/lib/user-sync-scheduler").then(({ scheduleUserDataSync }) =>
+          scheduleUserDataSync({ delayMs: 1500, extraKey: key }),
+        );
+      } catch {}
       return next;
     });
   };
@@ -126,6 +131,7 @@ const HOME_CARD_MODULE: Record<string, PlatformModuleKey | undefined> = {
   katameros: "katameros",
   synaxarium: "synaxarium",
   church: "community",
+  community: "community",
   audio: "audio",
   kids: "kids",
   meditation: "meditations",
@@ -137,9 +143,9 @@ const HOME_CARD_MODULE: Record<string, PlatformModuleKey | undefined> = {
 
 function HomeScreen() {
   const greeting = useGreeting();
-  const userName = "رافت";
+  const { user, isAuthenticated } = useAlphaAuth();
+  const userName = user?.displayName?.split(/\s+/)[0] ?? "صديقي";
   const { isModuleEnabled } = usePlatformModules();
-  const { openNavHub } = useAlphaNavigation();
   const dockVisible = useHideOnScroll();
 
   type PrimaryCard = JourneyDiscoverItem;
@@ -149,6 +155,7 @@ function HomeScreen() {
     { key: "kholagy", title: "الخولاجي المقدس", sub: "تسبحة وأوشيات", image: dailyHymn, to: "/kholagy", accent: "#7a5cb0" },
     { key: "katameros", title: "القطمارس", sub: "قراءات اليوم", image: cardKatameros, to: "/katameros", accent: "#4a9e6e" },
     { key: "synaxarium", title: "السنكسار", sub: "سير القديسين", image: cardSynaxarium, to: "/synaxarium", accent: "#a85450" },
+    { key: "community", title: "مجتمعي", sub: "نشاط روحي مع أصدقائك", image: cardChurch, to: "/community", accent: "#1f8a5a" },
     { key: "church", title: "كنيستك معاك", sub: "خدمات وفعاليات", image: cardChurch, to: "/church", accent: "#5b8fd1" },
     { key: "audio", title: "الصوتيات", sub: "ترانيم وقراءات", image: cardAudio, to: "/audio", accent: "#c44569" },
     { key: "kids", title: "الأطفال", sub: "قصص وأنشطة", image: cardChildren, to: "/kids", accent: "#e8b84a" },
@@ -164,43 +171,42 @@ function HomeScreen() {
   ];
   const filterHomeCards = <T extends { key: string }>(items: T[]) =>
     items.filter((item) => {
+      if (!isAuthenticated && (item.key === "community" || item.key === "church")) return false;
       const moduleKey = HOME_CARD_MODULE[item.key];
       return moduleKey ? isModuleEnabled(moduleKey) : true;
     });
 
   const visiblePrimary = filterHomeCards(primary);
-  const visibleDaily = filterHomeCards(daily);
+  const visibleDaily = filterHomeCards(daily).filter(
+    (item) => isAuthenticated || item.key !== "cont",
+  );
 
   return (
-    <div dir="rtl" className="relative min-h-screen w-full overflow-x-clip">
+    <div dir="rtl" className="alpha-home-screen relative min-h-screen w-full overflow-x-clip">
       <CopticWatermark />
 
       <div className="relative mx-auto w-full max-w-[var(--alpha-content-max-width)] px-4 pb-36">
         {/* Top bar */}
         <header className="relative z-50 flex items-center gap-2 pt-[max(env(safe-area-inset-top),12px)] pb-2">
-          <button
-            type="button"
-            aria-label="القائمة"
-            data-alpha-edge-ignore
-            onClick={() => openNavHub()}
-            className="alpha-chrome-btn relative z-[60] grid h-11 w-11 shrink-0 touch-manipulation place-items-center rounded-full active:scale-95 transition"
-          >
-            <Menu className="h-5 w-5 text-alpha" />
-          </button>
+          <ProfileSettingsMenu
+            menuAlign="start"
+            trigger="avatar"
+            avatarSize="lg"
+            avatarVariant="home-premium"
+          />
           <div className="flex min-w-0 flex-1 flex-col items-center overflow-hidden">
-            <div className="flex min-w-0 items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 shrink-0 text-alpha-heading" />
-              <h1 className="whitespace-nowrap text-[15px] font-extrabold text-alpha-heading [word-break:keep-all]">
-                {greeting} يا {userName}
-              </h1>
-              <span className="text-[14px]">☀️</span>
-            </div>
-            <p className="mt-0.5 text-[11px] text-alpha-heading-muted">نعمة الرب معك اليوم</p>
+            <h1 className="alpha-home-greeting-title whitespace-nowrap font-extrabold text-alpha-heading [word-break:keep-all]">
+              {isAuthenticated ? `${greeting} يا ${userName}` : "مرحبًا بك في ألفا"}
+            </h1>
+            <p className="alpha-home-greeting-sub mt-0.5 text-alpha-heading-muted">
+              {isAuthenticated ? "نعمة الرب معك اليوم" : "اقرأ واستكشف الكتاب المقدس"}
+            </p>
           </div>
-          <div className="flex shrink-0 items-center gap-1.5">
-            <ProfileSettingsMenu menuAlign="end" />
-            <AlphaNotificationButton />
-          </div>
+          {isAuthenticated ? (
+            <AlphaNotificationButton className="relative z-[60] shrink-0 border-[var(--alpha-gold-bright)]/45 text-[var(--alpha-gold-deep)] shadow-[0_0_14px_rgba(231,201,122,0.22)]" />
+          ) : (
+            <span className="h-11 w-11 shrink-0" aria-hidden />
+          )}
         </header>
 
         {/* HERO — fixed verse card + peeking cards behind */}
@@ -212,9 +218,11 @@ function HomeScreen() {
         {visiblePrimary.length > 0 ? <HomeJourneyDiscover items={visiblePrimary} /> : null}
 
         {/* Smart Context Card */}
-        <section className="mt-4 px-1">
-          <SmartContextCard />
-        </section>
+        {isAuthenticated ? (
+          <section className="mt-4 px-1">
+            <SmartContextCard />
+          </section>
+        ) : null}
 
         {/* KHOLAGY */}
         {isModuleEnabled("kholagy") ? (
@@ -224,17 +232,19 @@ function HomeScreen() {
         ) : null}
 
         {/* Alpha Connect gateway */}
-        <section className="mt-5 px-1">
-          <AlphaConnectHomeCard />
-        </section>
+        {isAuthenticated && isModuleEnabled("messaging") ? (
+          <section className="mt-5 px-1">
+            <AlphaConnectHomeCard />
+          </section>
+        ) : null}
 
         {/* DAILY */}
         {visibleDaily.length > 0 ? (
         <section className="mt-5">
           <div className="mb-2.5 flex items-center justify-between px-1">
-            <h2 className="flex items-center gap-1.5 text-[14px] font-extrabold tracking-tight text-alpha-heading">
+            <h2 className="alpha-home-section-title flex items-center gap-1.5 font-extrabold tracking-tight text-alpha-heading">
               <span className="text-alpha-gold-bright">
-                <CopticCross size={14} />
+                <CopticCross size={16} />
               </span>
               تابع رحلتك الروحية
             </h2>
@@ -256,16 +266,16 @@ function HomeScreen() {
         ) : null}
 
         {/* CHURCH NEWS */}
-        {isModuleEnabled("community") ? (
+        {isAuthenticated && isModuleEnabled("community") ? (
         <section className="mt-4">
           <div className="mb-3 flex items-center justify-between px-1">
-            <h2 className="flex items-center gap-1.5 text-[14px] font-extrabold tracking-tight text-alpha-heading">
+            <h2 className="alpha-home-section-title flex items-center gap-1.5 font-extrabold tracking-tight text-alpha-heading">
               <span className="text-alpha-gold-bright">
-                <CopticCross size={14} />
+                <CopticCross size={16} />
               </span>
               أخبار كنيستك
             </h2>
-            <span className="text-[11px] font-bold text-alpha-heading-muted">عرض الكل</span>
+            <span className="alpha-home-section-meta font-bold text-alpha-heading-muted">عرض الكل</span>
           </div>
           <div className="flex flex-col gap-3.5">
             <FeaturedNewsCard
@@ -297,7 +307,7 @@ function HomeScreen() {
         ) : null}
 
         {/* CHURCH DIRECTORY */}
-        {isModuleEnabled("community") ? (
+        {isAuthenticated && isModuleEnabled("community") ? (
           <section className="mt-5 pb-1">
             <ChurchDirectoryHomeCard />
           </section>
@@ -621,7 +631,7 @@ function Coverflow<T>({
               filter: absEff >= 1.6 ? "blur(1.5px)" : "none",
               willChange: "transform, opacity",
               pointerEvents: isFront ? "auto" : "none",
-              borderRadius: 24,
+              borderRadius: "var(--alpha-radius-featured)",
             }}
           >
             <div className="relative" style={{ filter: isFront ? "none" : "brightness(0.82) saturate(0.9)" }}>
@@ -629,7 +639,7 @@ function Coverflow<T>({
               {!isFront && (
                 <div
                   aria-hidden
-                  className="pointer-events-none absolute inset-0 rounded-[24px]"
+                  className="pointer-events-none absolute inset-0 rounded-[var(--alpha-radius-featured)]"
                   style={{
                     background:
                       effective > 0
@@ -673,7 +683,7 @@ function HeroCardView({
 }) {
   return (
     <article
-      className="relative h-[252px] w-full overflow-hidden rounded-[32px] border border-white/15 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.8),0_0_0_1px_rgba(231,201,122,0.15)]"
+      className="alpha-home-hero-card relative h-[252px] w-full overflow-hidden border border-white/15"
       style={{
         background: "#0a0612",
       }}
@@ -687,8 +697,8 @@ function HeroCardView({
           src={card.image}
           alt=""
           draggable={false}
-          className="absolute inset-0 h-full w-full object-cover"
-          style={{ filter: "saturate(1.05)" }}
+          className="absolute inset-0 h-full w-full object-cover alpha-media-polish"
+          style={{ filter: undefined }}
         />
         {/* dark gradient for legibility */}
         <div
@@ -702,7 +712,7 @@ function HeroCardView({
         {/* accent glow border */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 rounded-[32px]"
+          className="pointer-events-none absolute inset-0 rounded-[var(--alpha-radius-hero)]"
           style={{
             boxShadow: `inset 0 0 40px ${card.accent}33, inset 0 1px 0 rgba(255,255,255,0.15)`,
           }}
@@ -720,19 +730,19 @@ function HeroCardView({
       {/* badge */}
       <div className="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/35 backdrop-blur-md px-3 py-1.5">
         <Sparkles className="h-3 w-3" style={{ color: card.accent }} />
-        <span className="text-[11px] font-bold text-white">{card.badge}</span>
+        <span className="alpha-type-caption font-bold text-white">{card.badge}</span>
       </div>
 
       {/* body */}
       <div className="absolute inset-x-0 bottom-0 z-10 px-5 pb-3.5 pt-4 pointer-events-none">
         <p
-          className="text-right font-extrabold text-white leading-[1.55] text-[14px] line-clamp-3"
+          className="alpha-type-h2 text-right !text-white leading-[1.55] line-clamp-3"
           style={{ textShadow: "0 2px 8px rgba(0,0,0,0.7)" }}
         >
           {card.body}
         </p>
         {card.meta && (
-          <p className="mt-1 text-right text-[11.5px] font-bold" style={{ color: card.accent }}>
+          <p className="alpha-type-desc mt-1 text-right font-bold" style={{ color: card.accent }}>
             {card.meta}
           </p>
         )}
@@ -788,25 +798,25 @@ function HeroCardView({
 function DailyCard({ title, sub, image, accent }: { title: string; sub: string; image: string; accent: string }) {
   return (
     <div
-      className="relative h-[130px] w-full overflow-hidden rounded-[22px] border border-white/12"
+      className="alpha-home-daily-card relative h-[130px] w-full overflow-hidden border border-white/12"
       style={{
         boxShadow: `0 14px 28px -16px rgba(0,0,0,0.75), inset 0 0 20px ${accent}22, inset 0 1px 0 rgba(255,255,255,0.12)`,
         background: "#0a0612",
       }}
     >
-      <img src={image} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+      <img src={image} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover alpha-media-polish" loading="lazy" />
       <div
         aria-hidden
         className="absolute inset-0"
         style={{ background: "linear-gradient(270deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0.10) 100%)" }}
       />
       <div className="absolute inset-y-0 right-0 flex flex-col justify-center px-3.5 text-right max-w-[60%]">
-        <h3 className="text-[14px] font-extrabold text-white leading-tight" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.7)" }}>
+        <h3 className="text-[17px] font-extrabold text-white leading-tight" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.7)" }}>
           {title}
         </h3>
-        <p className="text-[11px] text-white/80 mt-0.5">{sub}</p>
+        <p className="mt-0.5 text-[13px] font-medium !text-white/80">{sub}</p>
         <div
-          className="mt-1.5 inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold text-white border"
+          className="alpha-tag mt-1.5 inline-flex w-fit items-center gap-1 !text-white border"
           style={{ background: `${accent}30`, borderColor: `${accent}66` }}
         >
           افتح
@@ -825,13 +835,13 @@ function FeaturedNewsCard({
 }) {
   return (
     <article
-      className="relative h-[150px] w-full overflow-hidden rounded-[24px] border border-white/12"
+      className="alpha-home-featured-card relative h-[150px] w-full overflow-hidden border border-white/12"
       style={{
         boxShadow: `0 18px 36px -20px rgba(0,0,0,0.8), 0 0 0 1px ${accent}22, inset 0 0 24px ${accent}1a, inset 0 1px 0 rgba(255,255,255,0.12)`,
         background: "#0a0612",
       }}
     >
-      <img src={image} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+      <img src={image} alt="" className="absolute inset-0 h-full w-full object-cover alpha-media-polish" loading="lazy" />
       <div
         aria-hidden
         className="absolute inset-0"
@@ -842,25 +852,25 @@ function FeaturedNewsCard({
       />
       {/* category badge */}
       <div
-        className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-extrabold text-white backdrop-blur-md"
+        className="absolute top-3 right-3 alpha-tag inline-flex items-center gap-1 !text-white backdrop-blur-md"
         style={{ background: `${accent}33`, borderColor: `${accent}80` }}
       >
         <Sparkles className="h-2.5 w-2.5" />
         {category}
       </div>
       {/* date badge */}
-      <div className="absolute top-3 left-3 inline-flex items-center gap-1 rounded-full border border-white/20 bg-black/40 backdrop-blur-md px-2.5 py-1 text-[10px] font-bold text-white/90">
+      <div className="absolute top-3 left-3 alpha-tag inline-flex items-center gap-1 !text-white/90 border-white/20 bg-black/40 backdrop-blur-md">
         <Calendar className="h-2.5 w-2.5" />
         {date}
       </div>
       <div className="absolute inset-x-0 bottom-0 px-4 pb-3.5 pt-4 text-right">
         <h3
-          className="text-[15px] font-extrabold leading-tight text-white"
+          className="text-[17px] font-extrabold leading-tight text-white"
           style={{ textShadow: "0 1px 6px rgba(0,0,0,0.85)" }}
         >
           {title}
         </h3>
-        <p className="mt-1 text-[11.5px] leading-snug text-white/85 line-clamp-2">{sub}</p>
+        <p className="mt-1 text-[13px] font-medium leading-snug !text-white/85 line-clamp-2">{sub}</p>
       </div>
     </article>
   );
@@ -885,7 +895,7 @@ function MiniPlayer({ dockVisible }: { dockVisible: boolean }) {
   return (
     <div
       aria-label="مشغل الوسائط"
-      className="fixed inset-x-0 z-40 transition-all duration-300 ease-out"
+      className="fixed inset-x-0 z-40 alpha-motion-standard"
       style={{
         bottom: `calc(env(safe-area-inset-bottom, 0px) + ${dockVisible ? 92 : 16}px)`,
         opacity: 1,
@@ -893,19 +903,18 @@ function MiniPlayer({ dockVisible }: { dockVisible: boolean }) {
     >
       <div className="mx-auto w-full max-w-[var(--alpha-content-max-width)] px-4">
         <div
-          className="relative flex items-center gap-3 overflow-hidden rounded-[20px] border border-[#efe2c4] bg-gradient-to-r from-[#fbf3e1]/95 to-[#f4ead8]/95 px-2.5 py-2 backdrop-blur-2xl"
-          style={{ boxShadow: "0 18px 36px -16px rgba(120,80,30,0.35), inset 0 1px 0 rgba(255,255,255,0.8)" }}
+          className="alpha-home-mini-player alpha-glass-interactive relative flex items-center gap-3 overflow-hidden px-2.5 py-2"
         >
           {/* artwork */}
-          <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-[12px] border border-[#efe2c4]">
-            <img src={dailyHymn} alt="" className="h-full w-full object-cover" />
-            <div className="pointer-events-none absolute inset-0" style={{ boxShadow: "inset 0 0 18px rgba(231,201,122,0.35)" }} />
+          <div className="alpha-home-mini-player__art relative h-11 w-11 shrink-0 overflow-hidden">
+            <img src={dailyHymn} alt="" className="h-full w-full object-cover alpha-media-polish" />
+            <div className="pointer-events-none absolute inset-0" style={{ boxShadow: "inset 0 0 18px color-mix(in srgb, var(--alpha-gold) 35%, transparent)" }} />
           </div>
           {/* title + progress */}
           <div className="flex-1 min-w-0">
             <div className="overflow-hidden">
               <div
-                className="whitespace-nowrap text-[12.5px] font-bold text-alpha-heading"
+                className="alpha-type-body whitespace-nowrap font-bold text-alpha-heading"
                 style={{
                   display: "inline-block",
                   paddingInlineStart: "100%",
@@ -915,14 +924,10 @@ function MiniPlayer({ dockVisible }: { dockVisible: boolean }) {
                 {title} · {title}
               </div>
             </div>
-            <div className="mt-1.5 h-[3px] w-full overflow-hidden rounded-full bg-[#ecdcb6]">
+            <div className="mt-1.5 h-[3px] w-full overflow-hidden rounded-full bg-alpha-progress-track">
               <div
-                className="h-full rounded-full"
-                style={{
-                  width: `${progress}%`,
-                  background: "linear-gradient(90deg,#e7c97a,#d88a2a)",
-                  boxShadow: "0 0 8px rgba(231,201,122,0.5)",
-                }}
+                className="alpha-progress-gold h-full rounded-full"
+                style={{ width: `${progress}%` }}
               />
             </div>
           </div>
@@ -930,8 +935,7 @@ function MiniPlayer({ dockVisible }: { dockVisible: boolean }) {
           <button
             aria-label={playing ? "إيقاف" : "تشغيل"}
             onClick={() => setPlaying((p) => !p)}
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-[#1a1230] active:scale-95 transition"
-            style={{ background: "linear-gradient(180deg,#f0d78c,#d88a2a)", boxShadow: "0 6px 14px -4px rgba(231,201,122,0.6)" }}
+            className="alpha-play-btn-gold grid h-10 w-10 shrink-0 place-items-center rounded-full active:scale-95 alpha-motion-standard"
           >
             {playing ? <Pause className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current" />}
           </button>

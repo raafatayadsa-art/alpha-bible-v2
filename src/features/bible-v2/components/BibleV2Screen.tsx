@@ -1,19 +1,18 @@
 import bgWatermark from "@/features/bible-lavoble/assets/bg-watermark.jpg";
-import { newTestamentRef, oldTestamentRef } from "../assets";
+import { newTestamentCardBg, oldTestamentCardBg } from "../assets";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { BibleV2ContinueReading } from "./BibleV2ContinueReading";
 import { BibleV2Header } from "./BibleV2Header";
 import { BibleV2QuickTools } from "./BibleV2QuickTools";
 import { BibleV2SearchRow } from "./BibleV2SearchRow";
 import { BibleV2TestamentCard, type BibleV2TestamentData } from "./BibleV2TestamentCard";
-import { BibleV2VerseCard } from "./BibleV2VerseCard";
 
 const testamentCards: BibleV2TestamentData[] = [
   {
     id: "old",
     title: "العهد القديم",
     subtitle: "الكتب التي كتبت قبل\nميلاد السيد المسيح",
-    image: oldTestamentRef,
+    image: oldTestamentCardBg,
     tone: "gold",
     badgeInImage: true,
   },
@@ -21,7 +20,7 @@ const testamentCards: BibleV2TestamentData[] = [
     id: "new",
     title: "العهد الجديد",
     subtitle: "الكتب التي كتبت بعد\nميلاد السيد المسيح",
-    image: newTestamentRef,
+    image: newTestamentCardBg,
     tone: "blue",
     badgeInImage: true,
   },
@@ -46,9 +45,7 @@ export function BibleV2Screen() {
 
       <div className="relative z-10 mx-auto max-w-[var(--alpha-content-max-width)] pb-32">
         <BibleV2Header />
-        <div className="mt-1">
-          <BibleV2VerseCard />
-        </div>
+        <BibleV2ContinueReading placement="hero" />
         <BibleV2SearchRow />
         <div className="mx-3.5 mt-5 flex items-stretch gap-3.5 [perspective:900px]">
           {testamentCards.map((card) => (
@@ -56,7 +53,6 @@ export function BibleV2Screen() {
           ))}
         </div>
         <BibleV2QuickTools />
-        <BibleV2ContinueReading />
       </div>
 
       <BottomDock />

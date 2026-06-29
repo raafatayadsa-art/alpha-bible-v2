@@ -184,39 +184,25 @@ export function JournalComposeSheet({
       <button
         type="button"
         aria-label="إغلاق"
-        className="absolute inset-0 bg-black/65 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/35 backdrop-blur-sm"
         onClick={onClose}
       />
       <div
-        className="relative z-10 max-h-[92vh] overflow-hidden rounded-t-[28px] border-t border-x shadow-2xl"
+        className="relative z-10 flex max-h-[92vh] flex-col overflow-hidden rounded-t-[28px] border-t border-x shadow-2xl"
         style={{
-          borderColor: `${accent}44`,
-          background: "linear-gradient(180deg, #0a0818 0%, #050814 100%)",
+          borderColor: `${accent}55`,
+          background: "linear-gradient(180deg, #FAF7F2 0%, #F5EFE4 100%)",
         }}
       >
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={!body.trim()}
-          className="flex w-full items-center justify-center gap-2 border-b py-3.5 text-[14px] font-bold transition active:scale-[0.99] disabled:opacity-40"
-          style={{
-            borderColor: `${accent}44`,
-            background: `linear-gradient(180deg, ${accent} 0%, ${kind === "meditation" ? "#5a9e78" : "#4a8ec8"} 100%)`,
-            color: "#0a1020",
-          }}
-        >
-          حفظ {kind === "meditation" ? "التأمل" : "الملاحظة"}
-        </button>
-
         <div
           className="flex items-center justify-between gap-3 border-b px-4 py-3"
-          style={{ borderColor: "rgba(255,255,255,0.08)" }}
+          style={{ borderColor: "rgba(212,175,55,0.25)" }}
         >
           <button
             type="button"
             onClick={onClose}
-            className="grid h-9 w-9 place-items-center rounded-full border"
-            style={{ borderColor: "rgba(255,255,255,0.12)", color: JOURNAL_VAULT.textMuted }}
+            className="grid h-9 w-9 place-items-center rounded-full border bg-white/80"
+            style={{ borderColor: "rgba(212,175,55,0.35)", color: JOURNAL_VAULT.textMuted }}
           >
             <X className="h-4 w-4" />
           </button>
@@ -226,7 +212,7 @@ export function JournalComposeSheet({
           <div className="h-9 w-9" aria-hidden />
         </div>
 
-        <div className="overflow-y-auto px-4 pb-[max(env(safe-area-inset-bottom),20px)] pt-3">
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-3 pb-3">
           {kind === "meditation" ? (
             <JournalComposeMenuChip
               label="وصف التأمل"
@@ -280,8 +266,8 @@ export function JournalComposeSheet({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder={kind === "meditation" ? "عنوان التأمل" : "عنوان الملاحظة (اختياري)"}
-            className="mb-3 w-full rounded-xl border bg-black/30 px-3 py-2.5 text-[13px] outline-none"
-            style={{ borderColor: "rgba(255,255,255,0.12)", color: JOURNAL_VAULT.text }}
+            className="mb-3 w-full rounded-xl border bg-white/85 px-3 py-2.5 text-[13px] outline-none"
+            style={{ borderColor: "rgba(212,175,55,0.3)", color: JOURNAL_VAULT.text }}
           />
 
           <textarea
@@ -293,13 +279,32 @@ export function JournalComposeSheet({
                 : "اكتب ملاحظتك… للدراسة والمراجعة"
             }
             rows={7}
-            className="mb-4 w-full resize-none rounded-xl border bg-black/30 px-3 py-3 font-arabic-serif text-[15px] leading-[1.85] outline-none"
-            style={{ borderColor: `${accent}33`, color: JOURNAL_VAULT.text }}
+            className="mb-4 w-full resize-none rounded-xl border bg-white/85 px-3 py-3 font-arabic-serif text-[15px] leading-[1.85] outline-none"
+            style={{ borderColor: `${accent}44`, color: JOURNAL_VAULT.text }}
           />
 
           <JournalComposeBibleSearch />
 
           <JournalReferencePicker value={refValue} onChange={setRefValue} locked={Boolean(lockedRef)} />
+        </div>
+
+        <div
+          className="shrink-0 border-t px-4 pt-3 pb-[max(env(safe-area-inset-bottom),16px)]"
+          style={{ borderColor: "rgba(212,175,55,0.25)", background: "rgba(255,255,255,0.72)" }}
+        >
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={!body.trim()}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-[14px] font-bold transition active:scale-[0.99] disabled:opacity-40"
+            style={{
+              background: `linear-gradient(180deg, ${accent} 0%, ${kind === "meditation" ? "#5a9e78" : "#4a8ec8"} 100%)`,
+              color: "#FAF7F2",
+              boxShadow: `0 8px 24px ${kind === "meditation" ? JOURNAL_VAULT.meditationGlow : "rgba(110,181,240,0.35)"}`,
+            }}
+          >
+            حفظ {kind === "meditation" ? "التأمل" : "الملاحظة"}
+          </button>
         </div>
       </div>
     </div>

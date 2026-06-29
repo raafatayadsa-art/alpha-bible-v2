@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { FormEvent, ReactNode } from "react";
-import { useNavigate, Link } from "@tanstack/react-router";
+import { useNavigate, Link, useSearch } from "@tanstack/react-router";
 import { ArrowRight, Mail, LockKeyhole, Eye, EyeOff, LoaderCircle, UserRound, ShieldCheck, Users, HandHeart, Crown } from "lucide-react";
 import bgWatermark from "@/assets/bg-watermark.jpg";
 import { AlphaWatermark } from "@/components/alpha/AlphaWatermark";
@@ -9,20 +9,26 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { signInWithOAuthProvider } from "@/lib/auth/oauth";
+import { mapLoginError } from "@/lib/auth/sign-up";
 import { AlphaOfficialLogo } from "@/components/brand/AlphaOfficialLogo";
+import { clearGuestMode, continueAsGuest } from "@/features/auth/guest-mode";
 
-function arabicAuthError(message: string) {
-  const normalized = message.toLowerCase();
-  if (normalized.includes("invalid login credentials")) return "البريد الإلكتروني أو كلمة المرور غير صحيحة.";
-  if (normalized.includes("email not confirmed")) return "يرجى تأكيد بريدك الإلكتروني أولًا ثم المحاولة مجددًا.";
-  if (normalized.includes("user already registered")) return "يوجد حساب مسجّل بالفعل بهذا البريد الإلكتروني.";
-  if (normalized.includes("password should be")) return "يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.";
-  if (normalized.includes("rate limit") || normalized.includes("too many")) return "محاولات كثيرة. يرجى الانتظار قليلًا ثم المحاولة مجددًا.";
-  if (normalized.includes("network") || normalized.includes("fetch")) return "تعذر الاتصال بالخدمة. تحقق من الإنترنت وحاول مرة أخرى.";
-  return "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.";
+function arabicAuthError(message: string, context?: { afterRegistration?: boolean }) {
+  return mapLoginError(message, context);
 }
 
-function AuthShell({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
+export function AuthShell({
+  title,
+  subtitle,
+  children,
+  hideBack = false,
+}: {
+  title: string;
+  subtitle: string;
+  children: ReactNode;
+  hideBack?: boolean;
+}) {
   const navigate = useNavigate();
   return (
     <main dir="rtl" className="relative min-h-screen overflow-x-hidden bg-alpha-cream font-sans text-alpha-navy">
@@ -32,9 +38,11 @@ function AuthShell({ title, subtitle, children }: { title: string; subtitle: str
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-8 pt-[max(env(safe-area-inset-top),12px)]">
         <header className="relative flex flex-col items-center pt-2">
-          <Button variant="ghost" size="icon" onClick={() => navigate({ to: "/" })} aria-label="الرجوع إلى الرئيسية" className="absolute right-0 top-2 h-11 w-11 rounded-2xl bg-alpha-paper text-alpha-navy shadow-md ring-1 ring-alpha-gold/30 backdrop-blur-md">
-            <ArrowRight className="h-5 w-5" />
-          </Button>
+          {!hideBack ? (
+            <Button variant="ghost" size="icon" onClick={() => navigate({ to: "/" })} aria-label="الرجوع إلى الرئيسية" className="absolute right-0 top-2 h-11 w-11 rounded-2xl bg-alpha-paper text-alpha-navy shadow-md ring-1 ring-alpha-gold/30 backdrop-blur-md">
+              <ArrowRight className="h-5 w-5" />
+            </Button>
+          ) : null}
           
           <AlphaOfficialLogo size="lg" />
           <div className="mt-2 text-[15px] font-bold tracking-[0.2em] text-alpha-gold-dark leading-none">ALPHA</div>
@@ -45,7 +53,7 @@ function AuthShell({ title, subtitle, children }: { title: string; subtitle: str
         </header>
 
         <section className="mt-6 text-center">
-          <h1 className="text-3xl font-bold leading-tight">{title}</h1>
+          <h1 className="font-arabic-serif text-3xl font-extrabold leading-tight text-alpha-section-purple">{title}</h1>
           <p className="mt-2 text-sm leading-6 text-alpha-muted">{subtitle}</p>
           <div className="mx-auto mt-3 flex w-32 items-center gap-2 text-alpha-gold">
             <span className="h-px flex-1 bg-gradient-to-l from-transparent to-alpha-gold" />
@@ -54,7 +62,7 @@ function AuthShell({ title, subtitle, children }: { title: string; subtitle: str
           </div>
         </section>
 
-        <div className="mt-6 rounded-[28px] border border-alpha-gold/25 bg-alpha-paper p-5 shadow-xl backdrop-blur-xl sm:p-6">
+        <div className="mt-6 rounded-[var(--alpha-radius-card)] border border-alpha-gold/25 bg-alpha-paper p-5 shadow-xl backdrop-blur-xl sm:p-6">
           {children}
         </div>
 
@@ -66,10 +74,10 @@ function AuthShell({ title, subtitle, children }: { title: string; subtitle: str
   );
 }
 
-function Field({ label, icon, children }: { label: string; icon: ReactNode; children: ReactNode }) {
+export function Field({ label, icon, children }: { label: string; icon: ReactNode; children: ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-sm font-bold text-alpha-navy">{label}</span>
+      <span className="mb-2 block text-sm font-extrabold text-alpha-section-green">{label}</span>
       <div className="relative">
         <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-alpha-gold-dark">{icon}</span>
         {children}
@@ -78,16 +86,40 @@ function Field({ label, icon, children }: { label: string; icon: ReactNode; chil
   );
 }
 
-const inputClass = "h-12 rounded-xl border-alpha-gold/25 bg-background/75 pr-11 text-base text-alpha-navy shadow-sm placeholder:text-alpha-muted/60 focus-visible:ring-alpha-gold";
+export const inputClass = "h-12 rounded-[var(--alpha-radius-input)] border-alpha-gold/25 bg-background/75 pr-11 text-base text-alpha-navy shadow-sm placeholder:text-alpha-muted/60 focus-visible:ring-alpha-gold";
 
 export function AlphaLoginScreen() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const { registered, oauth, oauthError, email: emailFromSearch, redirect } = useSearch({ from: "/login" });
+  const [email, setEmail] = useState(() => emailFromSearch ?? "");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [oauthLoading, setOauthLoading] = useState<"google" | "apple" | null>(null);
+  const [guestLoading, setGuestLoading] = useState(false);
+
+  const successMessage =
+    registered === "confirm"
+      ? "تم إنشاء الحساب. افتح رابط التأكيد في بريدك الإلكتروني، ثم سجّل الدخول هنا."
+      : registered === "1"
+        ? "تم إنشاء حسابك بنجاح. سجّل دخولك بنفس البريد وكلمة المرور."
+        : null;
+
+  const afterRegistration = registered === "confirm" || registered === "1";
+
+  const handleOAuth = async (provider: "google" | "apple") => {
+    if (loading || oauthLoading) return;
+    setError("");
+    setOauthLoading(provider);
+    try {
+      await signInWithOAuthProvider(provider);
+    } catch (caught) {
+      setError(arabicAuthError(caught instanceof Error ? caught.message : ""));
+      setOauthLoading(null);
+    }
+  };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -97,15 +129,36 @@ export function AlphaLoginScreen() {
       const { data, error: signInError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (signInError) throw signInError;
       if (!data.user) throw new Error("Missing user");
+      clearGuestMode();
       window.localStorage.setItem("alpha_remember_me", remember ? "1" : "0");
-      await supabase.from("profiles").upsert({ id: data.user.id }, { onConflict: "id", ignoreDuplicates: true });
-      const { completePendingChurchJoin } = await import("@/features/church/church-membership-api");
-      const joinedChurchId = await completePendingChurchJoin();
-      await navigate({ to: joinedChurchId ? "/church" : "/" });
+      const { ensureUserProfileRow, resolvePostAuthPath } = await import("@/features/auth/profile-completion-api");
+      const { refreshAuthContext } = await import("@/features/auth/auth-context");
+      await ensureUserProfileRow();
+      await refreshAuthContext();
+      const target = redirect ?? (await resolvePostAuthPath());
+      await navigate({ to: target });
     } catch (caught) {
-      setError(arabicAuthError(caught instanceof Error ? caught.message : ""));
+      setError(
+        arabicAuthError(caught instanceof Error ? caught.message : "", {
+          afterRegistration: registered === "confirm",
+        }),
+      );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGuest = async () => {
+    if (loading || oauthLoading || guestLoading) return;
+    setError("");
+    setGuestLoading(true);
+    try {
+      await continueAsGuest();
+      await navigate({ to: "/home" });
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "تعذّر الدخول كضيف.");
+    } finally {
+      setGuestLoading(false);
     }
   };
 
@@ -130,18 +183,65 @@ export function AlphaLoginScreen() {
           <Link to="/forgot-password" className="font-bold text-alpha-gold-dark underline-offset-4 hover:underline">نسيت كلمة المرور؟</Link>
         </div>
 
-        {error ? <div role="alert" className="rounded-xl border border-destructive/25 bg-destructive/10 px-3 py-2.5 text-sm font-medium leading-6 text-destructive">{error}</div> : null}
+        {error || oauth === "failed" ? (
+          <div role="alert" className="rounded-xl border border-destructive/25 bg-destructive/10 px-3 py-2.5 text-sm font-medium leading-6 text-destructive">
+            {error ||
+              (oauthError ? mapLoginError(oauthError) : "تعذّر إكمال تسجيل الدخول عبر Google أو Apple. حاول مرة أخرى.")}
+          </div>
+        ) : null}
 
-        <Button type="submit" disabled={loading} className="h-12 w-full rounded-xl bg-alpha-navy text-base font-bold text-primary-foreground shadow-lg hover:bg-alpha-navy/90">
+        {successMessage ? (
+          <div role="status" className="rounded-xl border border-alpha-gold/30 bg-alpha-gold/10 px-3 py-2.5 text-sm font-medium leading-6 text-alpha-gold-dark">
+            {successMessage}
+          </div>
+        ) : null}
+
+        <Button type="submit" disabled={loading} className="alpha-auth-cta h-12 w-full rounded-xl text-base font-extrabold shadow-lg hover:opacity-95">
           {loading ? <><LoaderCircle className="animate-spin" /> جارٍ تسجيل الدخول...</> : "تسجيل الدخول"}
         </Button>
       </form>
 
       <div className="my-5 flex items-center gap-3 text-xs text-alpha-muted"><span className="h-px flex-1 bg-alpha-gold/25" /><span>أو</span><span className="h-px flex-1 bg-alpha-gold/25" /></div>
-      <Button asChild variant="outline" className="h-12 w-full rounded-xl border-alpha-gold/35 bg-background/55 font-bold text-alpha-navy hover:bg-alpha-gold/10">
+
+      <div className="grid grid-cols-2 gap-2.5">
+        <Button
+          type="button"
+          variant="outline"
+          disabled={loading || oauthLoading !== null}
+          onClick={() => void handleOAuth("apple")}
+          className="h-11 rounded-xl border-alpha-gold/35 bg-background/55 text-xs font-bold text-alpha-navy hover:bg-alpha-gold/10"
+        >
+          {oauthLoading === "apple" ? <LoaderCircle className="h-4 w-4 animate-spin" /> : "Apple"}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          disabled={loading || oauthLoading !== null}
+          onClick={() => void handleOAuth("google")}
+          className="h-11 rounded-xl border-alpha-gold/35 bg-background/55 text-xs font-bold text-alpha-navy hover:bg-alpha-gold/10"
+        >
+          {oauthLoading === "google" ? <LoaderCircle className="h-4 w-4 animate-spin" /> : "Google"}
+        </Button>
+      </div>
+
+      <Button asChild variant="outline" className="mt-3 h-12 w-full rounded-xl border-alpha-gold/35 bg-background/55 font-bold text-alpha-navy hover:bg-alpha-gold/10">
         <Link to="/register"><UserRound /> إنشاء حساب جديد</Link>
       </Button>
-      <Button type="button" variant="ghost" disabled className="mt-3 h-11 w-full rounded-xl border border-dashed border-alpha-muted/25 bg-muted/30 text-alpha-muted/60">المتابعة كضيف <span className="text-[10px]">(قريبًا)</span></Button>
+      <Button
+        type="button"
+        variant="ghost"
+        disabled={loading || oauthLoading !== null || guestLoading}
+        onClick={() => void handleGuest()}
+        className="mt-3 h-11 w-full rounded-xl border border-dashed border-alpha-gold/35 bg-background/40 font-bold text-alpha-navy hover:bg-alpha-gold/10"
+      >
+        {guestLoading ? (
+          <>
+            <LoaderCircle className="animate-spin" /> جارٍ الدخول...
+          </>
+        ) : (
+          "المتابعة كضيف"
+        )}
+      </Button>
 
       <p className="mt-5 text-center text-xs leading-6 text-alpha-muted">بالمتابعة، أنت توافق على <span className="font-bold text-alpha-gold-dark">الشروط والأحكام</span> و<span className="font-bold text-alpha-gold-dark">سياسة الخصوصية</span>.</p>
     </AuthShell>
@@ -180,7 +280,10 @@ export function AlphaRegisterScreen() {
       setError(arabicAuthError(signUpError.message));
     } else {
       if (data.user && data.session) {
-        await supabase.from("profiles").upsert({ id: data.user.id, display_name: name.trim() || null });
+        const { ensureUserProfileRow } = await import("@/features/auth/profile-completion-api");
+        const { refreshAuthContext } = await import("@/features/auth/auth-context");
+        await ensureUserProfileRow();
+        await refreshAuthContext();
       }
       setMessage("تم إنشاء الحساب. تحقق من بريدك الإلكتروني لتأكيد الحساب ثم سجّل الدخول.");
     }
@@ -210,7 +313,7 @@ export function AlphaRegisterScreen() {
 
         {/* Role selector */}
         <div>
-          <span className="mb-2 block text-sm font-bold text-alpha-navy">دورك في الكنيسة</span>
+          <span className="mb-2 block text-sm font-extrabold text-alpha-section-purple">دورك في الكنيسة</span>
           <div className="grid grid-cols-3 gap-2">
             {CHURCH_ROLES.map(({ key, label, desc, Icon }) => (
               <button
@@ -220,11 +323,11 @@ export function AlphaRegisterScreen() {
                 className={cn(
                   "flex flex-col items-center gap-1.5 rounded-2xl border px-2 py-3 text-center transition-all",
                   role === key
-                    ? "border-alpha-gold bg-alpha-gold/12 text-alpha-navy shadow-sm ring-1 ring-alpha-gold/40"
-                    : "border-alpha-gold/25 bg-background/55 text-alpha-muted hover:border-alpha-gold/50",
+                    ? "alpha-chip-selected-green shadow-sm ring-1 ring-[color-mix(in_srgb,var(--alpha-accent-green)_35%,transparent)]"
+                    : "alpha-chip-unselected hover:border-[color-mix(in_srgb,var(--alpha-accent-green)_30%,var(--alpha-border))]",
                 )}
               >
-                <Icon className={cn("h-5 w-5", role === key ? "text-alpha-gold-dark" : "text-alpha-muted")} />
+                <Icon className={cn("h-5 w-5", role === key ? "text-alpha-accent-green" : "text-alpha-muted")} />
                 <span className="text-[13px] font-bold leading-none">{label}</span>
                 <span className="text-[10px] leading-tight opacity-75">{desc}</span>
               </button>
@@ -235,7 +338,7 @@ export function AlphaRegisterScreen() {
         {error ? <div role="alert" className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive">{error}</div> : null}
         {message ? <div role="status" className="rounded-xl bg-alpha-gold/10 p-3 text-sm leading-6 text-alpha-gold-dark">{message}</div> : null}
 
-        <Button type="submit" disabled={loading} className="h-12 w-full rounded-xl bg-alpha-navy font-bold text-primary-foreground shadow-lg hover:bg-alpha-navy/90">
+        <Button type="submit" disabled={loading} className="alpha-auth-cta-green h-12 w-full rounded-xl font-extrabold shadow-lg hover:opacity-95">
           {loading ? <><LoaderCircle className="animate-spin" /> جارٍ الإنشاء...</> : <><ShieldCheck /> إنشاء الحساب</>}
         </Button>
         <Button asChild variant="ghost" className="w-full text-alpha-gold-dark">
@@ -262,7 +365,7 @@ export function AlphaForgotPasswordScreen() {
       <Field label="البريد الإلكتروني" icon={<Mail className="h-5 w-5" />}><Input type="email" dir="ltr" required maxLength={255} value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} placeholder="name@example.com" /></Field>
       {error ? <div role="alert" className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive">{error}</div> : null}
       {message ? <div role="status" className="rounded-xl bg-alpha-gold/10 p-3 text-sm leading-6 text-alpha-gold-dark">{message}</div> : null}
-      <Button type="submit" disabled={loading} className="h-12 w-full rounded-xl bg-alpha-navy font-bold text-primary-foreground">{loading ? <LoaderCircle className="animate-spin" /> : <Mail />} إرسال رابط الاستعادة</Button>
+      <Button type="submit" disabled={loading} className="alpha-auth-cta h-12 w-full rounded-xl font-extrabold">{loading ? <LoaderCircle className="animate-spin" /> : <Mail />} إرسال رابط الاستعادة</Button>
       <Button asChild variant="ghost" className="w-full text-alpha-gold-dark"><Link to="/login">العودة لتسجيل الدخول</Link></Button>
     </form>
   </AuthShell>;
@@ -289,7 +392,7 @@ export function AlphaResetPasswordScreen() {
     <form onSubmit={handleSubmit} className="space-y-4">
       <Field label="كلمة المرور الجديدة" icon={<LockKeyhole className="h-5 w-5" />}><Input type="password" dir="ltr" required minLength={6} maxLength={72} value={password} onChange={(e) => setPassword(e.target.value)} className={inputClass} placeholder="6 أحرف على الأقل" /></Field>
       {error ? <div role="alert" className="rounded-xl bg-destructive/10 p-3 text-sm leading-6 text-destructive">{error}</div> : null}
-      <Button type="submit" disabled={loading} className="h-12 w-full rounded-xl bg-alpha-navy font-bold text-primary-foreground">{loading ? <LoaderCircle className="animate-spin" /> : <ShieldCheck />} حفظ كلمة المرور</Button>
+      <Button type="submit" disabled={loading} className="alpha-auth-cta-green h-12 w-full rounded-xl font-extrabold">{loading ? <LoaderCircle className="animate-spin" /> : <ShieldCheck />} حفظ كلمة المرور</Button>
     </form>
   </AuthShell>;
 }

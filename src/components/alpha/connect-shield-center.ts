@@ -1,11 +1,10 @@
 import type { ShieldRole } from "./AlphaShield";
+import { getDisplayShieldRoleSync } from "@/features/auth";
 import {
-  alphaRoleToChannelMemberShield,
   getChannelState,
   resolveChannelMemberShieldRole,
   type ChannelMember,
 } from "./connect-channel-state";
-import { connectEffectiveAlphaRole } from "./connect-alpha-access";
 import type { ConnectChannel } from "./connect-channels-registry";
 import { getCurrentUser } from "@/features/church/current-user";
 import { resolvedMemberChurchName } from "@/features/church/member-church-api";
@@ -45,7 +44,7 @@ const MEMBER_JOIN_LABELS: Record<string, string> = {
 export type ShieldCenterSnapshot = {
   name: string;
   avatar: string;
-  shieldRole: ShieldRole;
+  shieldRole: ShieldRole | null;
   shieldType: string;
   churchRank: string;
   churchName: string;
@@ -91,14 +90,14 @@ export function buildShieldCenterSnapshot(
 
   const shieldRole = resolveChannelMemberShieldRole({
     ...viewerMember,
-    shieldRole: viewerMember.shieldRole ?? alphaRoleToChannelMemberShield(connectEffectiveAlphaRole()),
+    shieldRole: viewerMember.shieldRole ?? getDisplayShieldRoleSync() ?? undefined,
   });
 
   return {
     name: viewerMember.name,
     avatar: viewerMember.avatar,
     shieldRole,
-    shieldType: SHIELD_TYPE_LABELS[shieldRole],
+    shieldType: shieldRole ? SHIELD_TYPE_LABELS[shieldRole] : "—",
     churchRank: churchRankFor(viewerMember),
     churchName: resolvedMemberChurchName(DEFAULT_CHURCH_NAME),
     currentChannel: channel.name,

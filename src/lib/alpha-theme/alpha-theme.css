@@ -270,17 +270,40 @@
 
 :root,
 [data-theme="light"] {
-  --alpha-membership-border: rgba(184, 137, 58, 0.35);
+  --alpha-membership-border: rgba(184, 137, 58, 0.42);
   --alpha-membership-bg: linear-gradient(
-    155deg,
-    rgba(253, 251, 247, 0.98) 0%,
-    rgba(251, 243, 225, 0.96) 55%,
-    rgba(244, 234, 216, 0.94) 100%
+    148deg,
+    rgba(255, 252, 245, 0.98) 0%,
+    rgba(251, 243, 225, 0.97) 38%,
+    rgba(244, 234, 216, 0.95) 72%,
+    rgba(236, 220, 182, 0.92) 100%
   );
-  --alpha-membership-shadow: 0 18px 40px -16px rgba(120, 80, 30, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.85);
-  --alpha-membership-title: var(--alpha-text);
-  --alpha-membership-sub: var(--alpha-gold-deep);
+  --alpha-membership-shadow:
+    0 22px 46px -18px rgba(120, 80, 30, 0.28),
+    0 0 0 1px rgba(231, 201, 122, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  --alpha-membership-title: var(--alpha-accent-purple-deep);
+  --alpha-membership-sub: var(--alpha-accent-green-deep);
   --alpha-membership-muted: var(--alpha-text-muted);
+  --alpha-membership-glow: rgba(231, 201, 122, 0.22);
+  --alpha-membership-accent-line: rgba(184, 137, 58, 0.28);
+
+  /* Accent palette — selections, section titles, field hierarchy */
+  --alpha-accent-green: #2d9a6a;
+  --alpha-accent-green-deep: #1f8a5a;
+  --alpha-accent-green-soft: rgba(31, 138, 90, 0.18);
+  --alpha-accent-purple: #6b5fad;
+  --alpha-accent-purple-deep: #574d94;
+  --alpha-accent-purple-soft: rgba(107, 95, 173, 0.16);
+  --alpha-field-label: #7a6548;
+  --alpha-field-value: #2d6a4f;
+  --alpha-field-value-alt: #574d94;
+
+  /* Legacy auth aliases (Tailwind @theme) */
+  --alpha-cream: var(--alpha-bg-base);
+  --alpha-navy: var(--alpha-text);
+  --alpha-paper: var(--alpha-surface-solid);
+  --alpha-gold-dark: var(--alpha-gold-deep);
   --alpha-profile-ledger-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.72) 0%, rgba(251, 243, 225, 0.55) 100%);
   --alpha-profile-ledger-border: rgba(239, 226, 196, 0.85);
   --alpha-profile-ledger-text: var(--alpha-text);
@@ -289,17 +312,32 @@
 
 [data-theme="dark"],
 .dark {
-  --alpha-membership-border: rgba(240, 215, 140, 0.16);
+  --alpha-membership-border: rgba(240, 215, 140, 0.22);
   --alpha-membership-bg: linear-gradient(
-    155deg,
-    rgba(26, 16, 8, 0.94) 0%,
-    rgba(18, 12, 8, 0.92) 55%,
-    rgba(30, 20, 12, 0.9) 100%
+    148deg,
+    rgba(36, 24, 14, 0.96) 0%,
+    rgba(26, 18, 10, 0.94) 45%,
+    rgba(20, 14, 8, 0.92) 100%
   );
-  --alpha-membership-shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --alpha-membership-shadow:
+    0 22px 46px -18px rgba(0, 0, 0, 0.62),
+    0 0 0 1px rgba(231, 201, 122, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
   --alpha-membership-title: rgba(255, 255, 255, 0.92);
-  --alpha-membership-sub: rgba(240, 215, 140, 0.8);
-  --alpha-membership-muted: rgba(255, 255, 255, 0.4);
+  --alpha-membership-sub: rgba(240, 215, 140, 0.85);
+  --alpha-membership-muted: rgba(255, 255, 255, 0.42);
+  --alpha-membership-glow: rgba(240, 215, 140, 0.14);
+  --alpha-membership-accent-line: rgba(240, 215, 140, 0.18);
+
+  --alpha-accent-green: #4ecf97;
+  --alpha-accent-green-deep: #3aab79;
+  --alpha-accent-green-soft: rgba(78, 207, 151, 0.16);
+  --alpha-accent-purple: #9b8fd4;
+  --alpha-accent-purple-deep: #b8aee8;
+  --alpha-accent-purple-soft: rgba(155, 143, 212, 0.14);
+  --alpha-field-label: rgba(255, 255, 255, 0.48);
+  --alpha-field-value: rgba(160, 220, 190, 0.92);
+  --alpha-field-value-alt: rgba(196, 184, 232, 0.92);
   --alpha-profile-ledger-bg: linear-gradient(180deg, rgba(240, 215, 140, 0.02) 0%, rgba(0, 0, 0, 0.35) 100%);
   --alpha-profile-ledger-border: rgba(240, 215, 140, 0.1);
   --alpha-profile-ledger-text: rgba(255, 255, 255, 0.85);
@@ -329,6 +367,67 @@
 
 .text-alpha-profile-ledger-muted {
   color: var(--alpha-profile-ledger-muted);
+}
+
+.text-alpha-section-green {
+  color: var(--alpha-accent-green-deep);
+}
+
+.text-alpha-section-purple {
+  color: var(--alpha-accent-purple-deep);
+}
+
+.text-alpha-field-label {
+  color: var(--alpha-field-label);
+}
+
+.text-alpha-field-value {
+  color: var(--alpha-field-value);
+}
+
+.text-alpha-field-value-purple {
+  color: var(--alpha-field-value-alt);
+}
+
+.alpha-chip-selected-green {
+  border: 1px solid color-mix(in srgb, var(--alpha-accent-green-deep) 55%, var(--alpha-border));
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--alpha-accent-green) 26%, white),
+    color-mix(in srgb, var(--alpha-accent-green) 10%, white)
+  );
+  color: var(--alpha-accent-green-deep);
+  box-shadow: 0 2px 10px -4px rgba(31, 138, 90, 0.28);
+}
+
+.alpha-chip-unselected {
+  border: 1px solid color-mix(in srgb, var(--alpha-border) 80%, transparent);
+  background: rgba(255, 255, 255, 0.38);
+  color: var(--alpha-text-muted);
+}
+
+.alpha-auth-cta {
+  background: linear-gradient(135deg, var(--alpha-accent-purple) 0%, #8c6fd1 100%);
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow:
+    0 14px 28px -12px rgba(107, 95, 173, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.alpha-auth-cta-green {
+  background: linear-gradient(135deg, var(--alpha-accent-green) 0%, var(--alpha-accent-green-deep) 100%);
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow:
+    0 14px 28px -12px rgba(31, 138, 90, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.alpha-auth-cta:disabled,
+.alpha-auth-cta-green:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 /* Coptic ledger glyphs — brown on light, gold glow on dark */

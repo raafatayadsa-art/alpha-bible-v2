@@ -19,6 +19,8 @@ import {
   myWaitlistEntry,
   waitlistPosition,
   subscribeTripWaitlist,
+  subscribeTripWaitlistRealtime,
+  syncTripWaitlistFromDb,
   countWaiting,
 } from "./trip-reservations/trip-waitlist";
 import {
@@ -285,6 +287,10 @@ export function ReservePopup({
   const waitlistPos = waitlistEntry ? waitlistPosition(waitlistEntry) : null;
 
   useEffect(() => subscribeTripWaitlist(() => setWaitlistTick((n) => n + 1)), [postId]);
+  useEffect(() => {
+    void syncTripWaitlistFromDb(postId);
+    return subscribeTripWaitlistRealtime(postId);
+  }, [postId]);
 
   const familySeats =
     bookingMode === "family"
@@ -456,14 +462,17 @@ export function ReservePopup({
                     bookedAt: new Date().toISOString(),
                   });
                   if (emergencyName.trim() && emergencyPhone.trim()) {
-                    saveEmergencyContact({
-                      registrationId: res.row.id,
-                      name: emergencyName.trim(),
-                      phone: emergencyPhone.trim(),
-                      relation: emergencyRelation.trim() || "قريب",
-                    });
+                    saveEmergencyContact(
+                      {
+                        registrationId: res.row.id,
+                        name: emergencyName.trim(),
+                        phone: emergencyPhone.trim(),
+                        relation: emergencyRelation.trim() || "قريب",
+                      },
+                      postId,
+                    );
                   }
-                  initTripWallet({ registrationId: res.row.id, amountDue: effectiveSeats * 200 });
+                  initTripWallet({ registrationId: res.row.id, postId, amountDue: effectiveSeats * 200 });
                 }
                 setBusy(false);
                 if (!res.ok) setError(res.error ?? "تعذّر الحجز");

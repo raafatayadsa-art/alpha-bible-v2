@@ -189,7 +189,7 @@ function KatamerosHome() {
           searchContext={{ katamerosReadings: readings }}
           center={
             <div className="flex flex-col items-center -mt-1">
-              <CopticCross className="text-[#b8893a]" size={18} />
+              <CopticCross className="text-alpha-gold-deep" size={18} />
               <h1 className="font-arabic-serif text-[20px] font-extrabold text-alpha-heading leading-tight">
                 القطمارس
               </h1>
@@ -204,22 +204,22 @@ function KatamerosHome() {
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 110px)" }}
       >
         {/* Hero card */}
-        <div className="relative mt-3 overflow-hidden rounded-3xl border border-white/40 shadow-[0_20px_40px_-20px_rgba(120,80,30,0.6)] min-h-[190px]">
+        <div className="relative mt-3 overflow-hidden rounded-[var(--alpha-radius-card)] border border-white/40 shadow-[var(--alpha-shadow-hero)] min-h-[190px]">
           <div className="absolute inset-0">
-            <img src={katamerosHero} alt="" className="h-full w-full object-cover" />
+            <img src={katamerosHero} alt="" className="h-full w-full object-cover alpha-media-polish" />
             <div className="absolute inset-0 bg-gradient-to-b from-[#3a2a18]/70 via-[#3a2a18]/40 to-[#2a1a08]/80" />
-            <div className="absolute inset-0 bg-[#b8893a]/10 mix-blend-overlay" />
+            <div className="absolute inset-0 bg-alpha-gold-deep/10 mix-blend-overlay" />
           </div>
 
           <div className="relative flex min-h-[190px] flex-col">
             <div className="p-4 pb-3">
               <div className="flex w-full items-start justify-between gap-3">
                 <div className="min-w-0 flex-1 text-right">
-                  <h2 className="font-arabic-serif text-[17px] font-extrabold text-[#fdfbf7] leading-tight drop-shadow-md line-clamp-2">
+                  <h2 className="alpha-type-h2 font-arabic-serif text-[#fdfbf7] leading-tight drop-shadow-md line-clamp-2">
                     {day.occasion}
                   </h2>
                   {day.liturgicalDay ? (
-                    <p className="text-[9.5px] text-[#f0dfaa]/75 mt-1 drop-shadow-sm line-clamp-1">
+                    <p className="alpha-type-caption text-alpha-gold-bright/75 mt-1 drop-shadow-sm line-clamp-1">
                       {day.liturgicalDay}
                     </p>
                   ) : null}
@@ -309,11 +309,11 @@ function KatamerosHome() {
           </>
         ) : null}
 
-        <div className="mt-6 flex items-center justify-center gap-2 text-[10px] text-[#b8893a]/70 font-bold tracking-widest">
+        <div className="mt-6 flex items-center justify-center gap-2 text-[10px] text-alpha-gold-deep/70 font-bold tracking-widest">
           <span>Ⲁ</span>
-          <span className="h-px w-10 bg-[#ead9b1]" />
+          <span className="h-px w-10 bg-alpha-border" />
           <span>ALPHA · القطمارس</span>
-          <span className="h-px w-10 bg-[#ead9b1]" />
+          <span className="h-px w-10 bg-alpha-border" />
           <span>Ⲱ</span>
         </div>
       </main>
@@ -386,7 +386,7 @@ function KatamerosReadingDetail({
       <header
         className={cn(
           "sticky top-0 z-20 border-0 shadow-none pt-[max(env(safe-area-inset-top),8px)] px-4 pb-2",
-          curvePreview === "c" ? "bg-[#f4ead8]/97 backdrop-blur-md" : "bg-transparent",
+          curvePreview === "c" ? "bg-[color-mix(in_srgb,var(--alpha-bg-base)_97%,transparent)] backdrop-blur-md" : "bg-transparent",
         )}
       >
         <div className="mx-auto max-w-[var(--alpha-content-narrow-width)] rounded-2xl border border-alpha/65 bg-alpha-surface/80 backdrop-blur-md px-3 py-2.5 shadow-[0_8px_22px_-14px_rgba(120,80,30,0.32),inset_0_1px_0_rgba(255,255,255,0.7)]">
@@ -429,9 +429,9 @@ function KatamerosReadingDetail({
             </h1>
             <p className="text-[11px] text-alpha-muted mt-1">{reading.source}</p>
             <div className="mt-3 flex items-center gap-2 w-full max-w-[200px] mx-auto">
-              <span className="h-px flex-1 bg-[#ead9b1]/80" />
-              <CopticCross className="text-[#b8893a]" size={12} />
-              <span className="h-px flex-1 bg-[#ead9b1]/80" />
+              <span className="h-px flex-1 bg-alpha-border/80" />
+              <CopticCross className="text-alpha-gold-deep" size={12} />
+              <span className="h-px flex-1 bg-alpha-border/80" />
             </div>
           </div>
 
@@ -525,7 +525,7 @@ function KatamerosPageShell({
           searchContext={searchContext}
           center={
             <div className="flex flex-col items-center -mt-1">
-              <CopticCross className="text-[#b8893a]" size={18} />
+              <CopticCross className="text-alpha-gold-deep" size={18} />
               <h1 className="font-arabic-serif text-[20px] font-extrabold text-alpha-heading leading-tight">
                 القطمارس
               </h1>
@@ -554,7 +554,7 @@ function KatamerosStatusPanel({
 }) {
   return (
     <div className="mt-8 rounded-3xl border border-alpha/65 bg-alpha-surface/65 backdrop-blur-md p-8 text-center shadow-[0_14px_32px_-16px_rgba(120,80,30,0.38),inset_0_1px_0_rgba(255,255,255,0.72)]">
-      <CopticCross className="mx-auto text-[#b8893a]" size={28} />
+      <CopticCross className="mx-auto text-alpha-gold-deep" size={28} />
       <h2 className="font-arabic-serif text-[18px] font-extrabold text-alpha-heading mt-4">{title}</h2>
       {description ? (
         <p className="text-[12.5px] text-alpha-muted mt-3 leading-relaxed">{description}</p>

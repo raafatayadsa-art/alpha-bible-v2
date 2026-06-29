@@ -1,26 +1,23 @@
 import type { ShieldRole } from "@/components/alpha/AlphaShield";
 import type { AlphaRole } from "@/features/auth";
+import {
+  getAlphaRoleContextSync,
+  getAuthUserSync,
+  getDisplayShieldRoleSync,
+  getRoleLabelSync,
+  roleLabelFromContext,
+} from "@/features/auth";
 
-export function alphaRoleToShieldRole(role: AlphaRole): ShieldRole {
-  if (role === "owner") return "official";
-  if (role === "priest") return "priest";
-  if (role === "servant") return "servant";
-  return "member";
+export function alphaRoleToShieldRole(_role: AlphaRole): ShieldRole | null {
+  return getDisplayShieldRoleSync();
 }
 
-export function roleLabelAr(role: AlphaRole): string {
-  switch (role) {
-    case "owner":
-      return "عضو Alpha الرسمي";
-    case "priest":
-      return "كاهن";
-    case "servant":
-      return "خادم";
-    case "member":
-      return "عضو عادي";
-    default:
-      return "زائر";
-  }
+export function roleLabelAr(_role: AlphaRole): string {
+  return getRoleLabelSync();
+}
+
+export function resolveProfileRoleLabel(): string {
+  return roleLabelFromContext(getAlphaRoleContextSync(), getAuthUserSync()?.email ?? null);
 }
 
 export const SHIELD_ASSET: Record<ShieldRole, string> = {

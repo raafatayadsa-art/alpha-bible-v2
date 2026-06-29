@@ -7,6 +7,13 @@ import {
   type PublisherLegalAckState,
 } from "../publisher-legal-terms";
 import { PublisherLegalTermsSheet } from "./PublisherLegalTermsSheet";
+import {
+  PUBLISHER_CONSENT_CARD,
+  PUBLISHER_TERMS_CHIP,
+  PUBLISHER_TEXT_ACCENT_CAPTION,
+  PUBLISHER_TEXT_SUB,
+  PUBLISHER_TEXT_TITLE,
+} from "./publisher-glass-chrome";
 
 type Props = {
   checked: boolean;
@@ -31,22 +38,22 @@ export function PublisherCopyrightConsent({ checked, onChange, disabled, variant
 
   return (
     <>
-      <div className="rounded-[18px] border border-[rgba(93,50,145,0.14)] bg-[#faf8f5] p-3 space-y-2.5">
+      <div className={PUBLISHER_CONSENT_CARD}>
         <div className="flex items-center justify-between gap-2">
           <button
             type="button"
             onClick={() => setTermsOpen(true)}
-            className="inline-flex shrink-0 items-center gap-1 rounded-full border border-[#5D3291]/25 px-2.5 py-1 text-[9px] font-extrabold text-[#5D3291]"
+            className={PUBLISHER_TERMS_CHIP}
           >
             <FileText className="h-3 w-3" />
             الشروط كاملة
           </button>
-          <p className="flex-1 text-right text-[10px] font-extrabold text-[#5D3291]">
+          <p className={`flex-1 text-right ${PUBLISHER_TEXT_ACCENT_CAPTION}`}>
             {variant === "application" ? "إقرار الناشر — Version 1.0" : "إقرار حقوق النشر — Version 1.0"}
           </p>
         </div>
 
-        <p className="text-right text-[10px] font-bold leading-relaxed text-[#6b658a]">
+        <p className={`text-right ${PUBLISHER_TEXT_SUB} leading-relaxed`}>
           {variant === "application"
             ? "بإنشاء صفحة ناشر فإنك تقر بقراءة شروط النشر وحقوق الملكية الفكرية والالتزام بها."
             : "قبل رفع المحتوى، أكّد الإقرارات التالية وفق شروط Alpha للناشرين."}
@@ -65,7 +72,7 @@ export function PublisherCopyrightConsent({ checked, onChange, disabled, variant
                 onChange={(e) => toggleAck(item.id, e.target.checked)}
                 className="mt-0.5 h-4 w-4 shrink-0 accent-[#5D3291]"
               />
-              <span className="flex-1 text-right text-[10px] font-extrabold leading-relaxed text-[#3a3258]">
+              <span className={`flex-1 text-right ${PUBLISHER_TEXT_TITLE} text-[10px] leading-relaxed`}>
                 {item.label}
               </span>
             </label>

@@ -33,6 +33,9 @@ function safeWrite(key: string, value: unknown) {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(key, JSON.stringify(value));
+    void import("@/lib/user-sync-scheduler").then(({ scheduleUserDataSync }) =>
+      scheduleUserDataSync({ debounced: true, delayMs: 4000, extraKey: key }),
+    );
   } catch { /* ignore */ }
 }
 

@@ -6,6 +6,8 @@ import {
   msUntilOfferExpiry,
   myWaitlistEntry,
   subscribeTripWaitlist,
+  subscribeTripWaitlistRealtime,
+  syncTripWaitlistFromDb,
   type TripWaitlistEntry,
 } from "../trip-waitlist";
 
@@ -29,7 +31,13 @@ export function WaitlistOfferBanner({ postId }: { postId: string }) {
       setEntry(mine?.status === "offered" ? mine : undefined);
     };
     refresh();
-    return subscribeTripWaitlist(refresh);
+    const offLocal = subscribeTripWaitlist(refresh);
+    void syncTripWaitlistFromDb(postId).then(refresh);
+    const offRealtime = subscribeTripWaitlistRealtime(postId);
+    return () => {
+      offLocal();
+      offRealtime();
+    };
   }, [postId]);
 
   useEffect(() => {

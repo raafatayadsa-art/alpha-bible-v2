@@ -1,0 +1,45 @@
+---
+description: ALPHA-121 database domain classification — required before any new Supabase table or migration
+globs: supabase/**/*.sql
+alwaysApply: false
+---
+
+# ALPHA-121 — Database Permission Domains
+
+**Status:** Approved · **Ticket:** ALPHA-121 · **Doc:** `docs/ALPHA-121_DATABASE_ARCHITECTURE_V1.md`
+
+## Rule
+
+Every table in `public` belongs to **exactly one** of 10 domains. No table outside this classification.
+
+Before `CREATE TABLE` in a migration:
+
+1. State the domain in the migration header comment (e.g. `-- DOMAIN-07 Publisher Platform`).
+2. Add `COMMENT ON TABLE ... IS 'DOMAIN-XX ...'` when creating the table.
+3. Enable RLS and policies scoped to that domain's permission model.
+4. Cross-domain links only via explicit FKs — no duplicated data.
+
+## Domains (short)
+
+| # | Domain | Examples |
+|---|--------|----------|
+| 01 | Authentication & Identity | `user_profiles`, `alpha_identities` |
+| 02 | Church System | `churches`, `church_memberships` |
+| 03 | Church Community | `church_posts`, `prayer_requests` |
+| 04 | Alpha Connect | `alpha_connect_*` |
+| 05 | Spiritual Content | `bible_verses`, `agpeya_*`, `synaxarium_*` |
+| 06 | Library & Dictionary | `alpha_dictionary`, `bible_encyclopedia` |
+| 07 | Publisher Platform | `publishers`, `publisher_content_items` |
+| 08 | Platform Management | `platform_*`, `support_tickets` |
+| 09 | User Progress | `users_progress`, `saved_verses` |
+| 10 | Operations & Reservations | planned — not deployed |
+
+## Identity split (Domain 01)
+
+- `user_profiles` — social: `@username`, display_name, avatar (ALPHA-122)
+- `user_identity_profiles` — verification/KYC/trust
+- Never merge; never use deprecated `profiles`
+
+## Full table list
+
+See `docs/ALPHA-121_DATABASE_ARCHITECTURE_V1.md` for production-synced inventory.

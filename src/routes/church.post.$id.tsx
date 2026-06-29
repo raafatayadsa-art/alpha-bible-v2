@@ -578,7 +578,7 @@ function DarkPostActionArea({ post, tone }: { post: ChurchPost; tone: string }) 
                 <span>حجوزاتك: {(mine?.seats ?? 0).toLocaleString("ar-EG")}</span>
                 <span>المحجوز: {count.toLocaleString("ar-EG")}{remaining != null ? ` · متاح ${remaining.toLocaleString("ar-EG")}` : ""}</span>
               </div>
-              {mine ? <TripWalletStrip registrationId={mine.id} /> : null}
+              {mine ? <TripWalletStrip postId={post.id} registrationId={mine.id} /> : null}
               <button
                 type="button"
                 onClick={() => setPopup("reserve")}

@@ -34,6 +34,7 @@ export function finalizePostTrip(post: ChurchPost) {
       kind: post.details?.places?.includes("دير") ? "monastery" : "trip",
       title: post.title,
       completedAt: new Date().toISOString(),
+      postId: post.id,
     });
   }
 }

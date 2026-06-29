@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Users } from "lucide-react";
+import { COMMUNITY_HUB_PATH } from "@/features/community/community-routes";
 import type { ChurchPageStatus } from "../page-status";
 import { CHURCH_DIR } from "@/features/church-directory/tokens";
 
@@ -18,19 +19,19 @@ export function ChurchCommunityHubLink({ pageStatus, isMember }: Props) {
     >
       <div className="flex items-center justify-between gap-3">
         <Link
-          to="/church"
+          to={COMMUNITY_HUB_PATH}
           className="inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-2.5 text-[12px] font-extrabold text-white active:scale-[0.98]"
           style={{ background: `linear-gradient(160deg, #7b4cb8, ${CHURCH_DIR.purple})` }}
         >
           <Users className="h-4 w-4" />
-          {isMember ? "افتح مجتمع الكنيسة" : "استكشف مجتمع الكنيسة"}
+          {isMember ? "افتح مجتمعي" : "استكشف مجتمعي"}
         </Link>
         <div className="text-right">
           <p className="text-[12px] font-extrabold" style={{ color: CHURCH_DIR.text }}>
-            مجتمع الكنيسة
+            مجتمعي
           </p>
           <p className="mt-0.5 text-[10px] font-bold" style={{ color: CHURCH_DIR.sub }}>
-            منشورات · أحداث · خدمات
+            أصدقاء · صلاة · نشاط روحي
           </p>
         </div>
       </div>

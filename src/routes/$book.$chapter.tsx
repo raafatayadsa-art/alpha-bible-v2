@@ -1,14 +1,15 @@
 import { createFileRoute, useNavigate, useRouter, useRouterState } from "@tanstack/react-router";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Bookmark,
-  BookmarkCheck,
   ChevronLeft,
-  FilePen,
   Headphones,
+  History,
   Share2,
+  Users,
 } from "lucide-react";
+import { shareSpiritualMomentToCommunity } from "@/features/community";
 import { CopticWatermark } from "@/components/coptic";
 import { chaptersQueryOptions, versesQueryOptions } from "@/lib/bible";
 import type { BibleVerse } from "@/integrations/supabase/client";
@@ -16,16 +17,21 @@ import { displayName } from "@/lib/bible-books";
 import { chapterOrdinalBadge, chapterWithNumber } from "@/lib/bible-labels";
 import {
   AutoScrollControls,
+  BooksQuickPickerSheet,
   BottomDock,
   ChapterReadingScrollRail,
   HighlightedWord,
   MeaningSheet,
   ReferenceIndicator,
+  ReaderAudioSheet,
+  ReaderAudioMiniBar,
   VerseSkeleton,
   DictionaryLookupSheet,
   DictionaryResultsSheet,
   ReaderArticleProgress,
   type MeaningSheetData,
+  VerseActionSheet,
+  type VerseActionTarget,
 } from "@/components/bible";
 import { chapterKey, updateSession, useSavedChapters, useSavedVerses, useTypographyPrefs, verseKey } from "@/lib/reading-state";
 import { stashJournalVersePrefill } from "@/lib/bible-journal-prefill";
@@ -51,6 +57,14 @@ import { setChapterDictState } from "@/lib/chapter-dict-store";
 import { normalizeEntityTab, isPersonEntity, isPlaceEntity } from "@/lib/entity-category";
 import { useResolvedTheme } from "@/lib/alpha-theme";
 import { useSettings } from "@/features/settings/settings-store";
+import { isRedLetterVerse } from "@/lib/bible-reading-display";
+import {
+  getVerseHighlight,
+  setVerseHighlight,
+  VERSE_HIGHLIGHTS_CHANGED,
+  highlightStyles,
+  type VerseHighlightColor,
+} from "@/lib/verse-highlights";
 
 /**
  * HMR_EPOCH — bumps on every hot-module reload of this file (and indirectly
@@ -256,13 +270,19 @@ function ScriptureReader() {
   });
   const freshNavRef = useRef<{ book: string; chapter: number; anchor: ChapterScrollAnchor } | null>(null);
 
-  const { patch } = useSettings();
+  const { patch, state: settingsState } = useSettings();
   const spiritualMode = useResolvedTheme() === "dark";
   const [sheet, setSheet] = useState<MeaningSheetData | null>(null);
   const [lookupRow, setLookupRow] = useState<LookupDictionaryRow | null>(null);
   const [lookupChoices, setLookupChoices] = useState<LookupDictionaryRow[] | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [activeVerse, setActiveVerse] = useState<string | null>(null);
+  const [verseActionSheet, setVerseActionSheet] = useState<VerseActionTarget | null>(null);
+  const [booksPickerOpen, setBooksPickerOpen] = useState(false);
+  const [audioSheetOpen, setAudioSheetOpen] = useState(false);
+  const [audioPlaying, setAudioPlaying] = useState(false);
+  const [audioBarVisible, setAudioBarVisible] = useState(false);
+  const [highlightTick, setHighlightTick] = useState(0);
   const [pulsingVerseId, setPulsingVerseId] = useState<string | null>(null);
   const [readingVerse, setReadingVerse] = useState(1);
 
@@ -444,8 +464,20 @@ function ScriptureReader() {
     else verseElementsRef.current.delete(num);
   }, []);
 
-  const onVerseActive = useCallback((id: string) => {
-    setActiveVerse(id);
+  useEffect(() => {
+    setVerseActionSheet(null);
+  }, [book, ch]);
+
+  const onVersePress = useCallback(
+    (payload: VerseActionTarget) => {
+      setActiveVerse(payload.verseId);
+      setVerseActionSheet(payload);
+    },
+    [],
+  );
+
+  const closeVerseActionSheet = useCallback(() => {
+    setVerseActionSheet(null);
   }, []);
 
   const onSelectWordStable = useCallback((word: string, entry?: DictionaryEntry) => {
@@ -497,6 +529,24 @@ function ScriptureReader() {
     });
   }, [bookName, book, ch, spiritualMode]);
 
+  const handleShareChapterToCommunity = useCallback(() => {
+    const ref = chapterWithNumber(book, ch);
+    const sample = verses.data?.[0];
+    const sampleText =
+      (sample as { verse_text?: string } | undefined)?.verse_text?.trim() ||
+      `${ref} — الكتاب المقدس`;
+    shareSpiritualMomentToCommunity({
+      kind: "reading",
+      reading: {
+        reference: ref,
+        text: sampleText,
+        bookRoute: book,
+        chapter: ch,
+        verse: (sample as { verse_number?: number } | undefined)?.verse_number ?? 1,
+      },
+    });
+  }, [book, ch, verses.data]);
+
   const handleToggleChapterSave = useCallback(() => {
     const added = toggleChapter({ book, bookName, chapter: ch });
     setToast(added ? "تم حفظ الإصحاح" : "تمت إزالة الحفظ");
@@ -504,9 +554,23 @@ function ScriptureReader() {
   }, [toggleChapter, book, bookName, ch]);
 
   const handleListen = useCallback(() => {
-    setToast("الاستماع الصوتي — قريباً");
-    window.setTimeout(() => setToast(null), 1800);
+    setAudioSheetOpen(true);
+    setAudioBarVisible(true);
   }, []);
+
+  useEffect(() => {
+    const sync = () => setHighlightTick((t) => t + 1);
+    window.addEventListener(VERSE_HIGHLIGHTS_CHANGED, sync);
+    return () => window.removeEventListener(VERSE_HIGHLIGHTS_CHANGED, sync);
+  }, []);
+
+  const persistSession = useCallback(
+    (session: Parameters<typeof updateSession>[0]) => {
+      if (!settingsState.bibleSaveLastRead) return;
+      updateSession(session);
+    },
+    [settingsState.bibleSaveLastRead],
+  );
 
   useEffect(() => {
     verseElementsRef.current.clear();
@@ -558,11 +622,80 @@ function ScriptureReader() {
           book: v.book,
           chapter: String(v.chapter),
           verse: String(v.verse),
+          from: "reader",
         },
       });
     },
     [navigate],
   );
+
+  const handleVerseShareCommunity = useCallback(() => {
+    if (!verseActionSheet) return;
+    shareSpiritualMomentToCommunity({
+      kind: "reading",
+      reading: {
+        reference: `${displayName(verseActionSheet.bookName || verseActionSheet.book)} ${verseActionSheet.chapter}:${verseActionSheet.verse}`,
+        text: verseActionSheet.text,
+        bookRoute: verseActionSheet.book,
+        chapter: verseActionSheet.chapter,
+        verse: verseActionSheet.verse,
+      },
+    });
+    setVerseActionSheet(null);
+  }, [verseActionSheet]);
+
+  const handleVerseMeditate = useCallback(() => {
+    if (!verseActionSheet) return;
+    onAddJournalNote({
+      book: verseActionSheet.book,
+      bookName: verseActionSheet.bookName,
+      chapter: verseActionSheet.chapter,
+      verse: verseActionSheet.verse,
+      text: verseActionSheet.text,
+      kind: "meditation",
+    });
+    setVerseActionSheet(null);
+  }, [verseActionSheet, onAddJournalNote]);
+
+  const handleVerseNote = useCallback(() => {
+    if (!verseActionSheet) return;
+    onAddJournalNote({
+      book: verseActionSheet.book,
+      bookName: verseActionSheet.bookName,
+      chapter: verseActionSheet.chapter,
+      verse: verseActionSheet.verse,
+      text: verseActionSheet.text,
+      kind: "note",
+    });
+    setVerseActionSheet(null);
+  }, [verseActionSheet, onAddJournalNote]);
+
+  const handleVerseHighlight = useCallback(
+    (color: VerseHighlightColor | null) => {
+      if (!verseActionSheet) return;
+      setVerseHighlight(verseActionSheet.verseId, color, {
+        text: verseActionSheet.text,
+        bookName: verseActionSheet.bookName,
+      });
+      setHighlightTick((t) => t + 1);
+    },
+    [verseActionSheet],
+  );
+
+  const handleVerseToggleSave = useCallback(() => {
+    if (!verseActionSheet) return;
+    onToggleSaveVerse({
+      book: verseActionSheet.book,
+      bookName: verseActionSheet.bookName,
+      chapter: verseActionSheet.chapter,
+      verse: verseActionSheet.verse,
+      text: verseActionSheet.text,
+    });
+    const nextSaved = !verseActionSheet.saved;
+    setVerseActionSheet((prev) => (prev ? { ...prev, saved: nextSaved } : null));
+    setToast(nextSaved ? "تم حفظ الآية" : "تمت إزالة الحفظ");
+    window.setTimeout(() => setToast(null), 1800);
+  }, [verseActionSheet, onToggleSaveVerse]);
 
   const isNT = useMemo(() => {
     return [
@@ -723,7 +856,7 @@ function ScriptureReader() {
             setReadingVerse(1);
           }
           const metrics = scrollMetrics(root);
-          updateSession({
+          persistSession({
             book,
             bookName,
             chapter: ch,
@@ -778,7 +911,7 @@ function ScriptureReader() {
       const now = Date.now();
       if (now - lastSavedAt.current < 1200) return;
       lastSavedAt.current = now;
-      updateSession({
+      persistSession({
         book,
         bookName,
         chapter: ch,
@@ -873,7 +1006,7 @@ function ScriptureReader() {
       {/* Cinematic dark cloud atmosphere — soft spiritual bloom (no top bowl) */}
       {spiritualMode && (
         <>
-          <div aria-hidden className="pointer-events-none fixed inset-0 z-0 bg-[#08131f]/88" />
+          <div aria-hidden className="pointer-events-none fixed inset-0 z-0 bg-[color-mix(in_srgb,var(--alpha-bg-base)_88%,transparent)]" />
           {/* drifting cloud diffusion layer — subtle cinematic navy haze */}
           <div
             aria-hidden
@@ -899,13 +1032,21 @@ function ScriptureReader() {
           className={cn(
             "sticky top-0 z-40 w-full min-w-0 overflow-hidden rounded-b-[1.35rem] border-x border-b",
             spiritualMode
-              ? "border-white/10 bg-[#0b1a2c] text-[#e8e2cf] shadow-[0_10px_28px_-16px_rgba(0,0,0,0.5)]"
-              : "border-[#c79356]/25 bg-[#fbf3e1] text-[#3a2410] shadow-[0_10px_24px_-14px_rgba(120,90,40,0.32)]",
+              ? "border-white/10 bg-[color-mix(in_srgb,var(--alpha-bg-elevated)_95%,transparent)] text-[var(--alpha-reader-text-soft)] shadow-[var(--alpha-shadow-featured)]"
+              : "border-alpha-gold-deep/25 bg-[color-mix(in_srgb,var(--alpha-bg-elevated)_95%,transparent)] text-[var(--alpha-reader-text)] shadow-[var(--alpha-shadow-featured)]",
           )}
           style={{ paddingTop: "max(env(safe-area-inset-top), 10px)" }}
         >
           <div className="alpha-toolbar-row relative min-h-11 justify-between px-3 pb-1 pt-0.5" dir="ltr">
             <div className="alpha-toolbar-row__leading">
+              <button
+                type="button"
+                aria-label="مشاركة مع المجتمع الكنسي"
+                onClick={handleShareChapterToCommunity}
+                className={chapterHeaderBtnClass(spiritualMode)}
+              >
+                <Users className="h-5 w-5" strokeWidth={2} />
+              </button>
               <button
                 type="button"
                 aria-label="مشاركة"
@@ -928,16 +1069,21 @@ function ScriptureReader() {
               <p
                 className={cn(
                   "text-[11px] font-extrabold leading-none tracking-[0.12em]",
-                  spiritualMode ? "text-[#c79356]" : "text-[#b8893a]",
+                  spiritualMode ? "text-alpha-gold-deep" : "text-alpha-gold-deep",
                 )}
               >
                 {isNT ? "العهد الجديد" : "العهد القديم"}
               </p>
-              <div className="mt-0.5 flex max-w-full items-center justify-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setBooksPickerOpen(true)}
+                className="mt-0.5 flex max-w-full items-center justify-center gap-1.5 text-center active:opacity-80"
+                aria-label={`${bookName} — اختر سفراً`}
+              >
                 <h1
                   className={cn(
                     "truncate font-arabic-serif text-[clamp(1rem,4.2vw,1.125rem)] font-extrabold leading-tight",
-                    spiritualMode ? "text-[#f3e6c4]" : "text-[#3a2a18]",
+                    spiritualMode ? "text-[var(--alpha-reader-text-soft)]" : "text-alpha-heading",
                   )}
                 >
                   {bookName}
@@ -947,17 +1093,25 @@ function ScriptureReader() {
                     className={cn(
                       "shrink-0 rounded-full px-1.5 py-0.5 text-[8px] font-bold leading-none",
                       spiritualMode
-                        ? "bg-[#f0d78c]/20 text-[#f0d78c]"
-                        : "bg-[#5a3d92]/10 text-[#5a3d92]",
+                        ? "bg-alpha-gold-bright/20 text-alpha-gold-bright"
+                        : "bg-[color-mix(in_srgb,var(--alpha-purple)_10%,transparent)] text-[var(--alpha-purple)]",
                     )}
                   >
                     محفوظ
                   </span>
                 ) : null}
-              </div>
+              </button>
             </div>
 
             <div className="alpha-toolbar-row__trailing">
+              <button
+                type="button"
+                aria-label="سجل التاريخ"
+                onClick={() => void navigate({ to: "/bible/history" })}
+                className={chapterHeaderBtnClass(spiritualMode)}
+              >
+                <History className="h-5 w-5" strokeWidth={2} />
+              </button>
               <button
                 type="button"
                 aria-label="استماع"
@@ -999,7 +1153,7 @@ function ScriptureReader() {
             ref={articleRef}
             className={cn(
               "mt-3 w-full min-w-0 font-arabic-serif tracking-[0.2px] transition-[font-size,line-height] duration-200 space-y-3.5",
-              spiritualMode ? "text-[#f3e6c4]" : "text-[#3a2a18]",
+              spiritualMode ? "text-[var(--alpha-reader-text-soft)]" : "text-alpha-heading",
             )}
             style={{ fontSize: `${fontSize}px`, lineHeight, wordSpacing: "0.06em" }}
           >
@@ -1014,14 +1168,15 @@ function ScriptureReader() {
               verseCardClass={verseCardClass}
               matchedSet={matchedSet}
               dictIndex={dictIndex}
-              dictRenderKey={dictRenderKey}
+              dictRenderKey={`${dictRenderKey}-${highlightTick}`}
               isSaved={isSaved}
               registerVerseElement={registerVerseElement}
-              onVerseActive={onVerseActive}
-              onToggleSaveVerse={onToggleSaveVerse}
-              onAddJournalNote={onAddJournalNote}
+              onVersePress={onVersePress}
               onSelectWord={onSelectWordStable}
               onOpenCrossRef={onOpenCrossRef}
+              showVerseNumbers={settingsState.bibleShowVerseNumbers}
+              showFootnotes={settingsState.bibleShowFootnotes}
+              showRedLetters={settingsState.bibleShowRedLetters}
             />
           </article>
         )}
@@ -1030,7 +1185,7 @@ function ScriptureReader() {
         <nav
           className={cn(
             "mt-8 flex w-full min-w-0 items-center justify-between border-t pt-5 text-[12px]",
-            spiritualMode ? "border-white/10" : "border-[#efe2c4]",
+            spiritualMode ? "border-white/10" : "border-alpha",
           )}
         >
           {prev ? (
@@ -1093,6 +1248,42 @@ function ScriptureReader() {
       <BottomDock hidden={chromeHidden} spiritualMode={spiritualMode} />
 
       <MeaningSheet data={sheet} onClose={() => setSheet(null)} />
+      <VerseActionSheet
+        target={verseActionSheet}
+        spiritualMode={spiritualMode}
+        highlightColor={verseActionSheet ? getVerseHighlight(verseActionSheet.verseId) : null}
+        onClose={closeVerseActionSheet}
+        onShareCommunity={handleVerseShareCommunity}
+        onMeditate={handleVerseMeditate}
+        onAddNote={handleVerseNote}
+        onToggleSave={handleVerseToggleSave}
+        onHighlight={handleVerseHighlight}
+      />
+      <BooksQuickPickerSheet
+        open={booksPickerOpen}
+        onClose={() => setBooksPickerOpen(false)}
+        testament={isNT ? "new" : "old"}
+        currentBook={book}
+        currentChapter={ch}
+        onOpenHistory={() => void navigate({ to: "/bible/history" })}
+      />
+      <ReaderAudioSheet
+        open={audioSheetOpen}
+        onClose={() => setAudioSheetOpen(false)}
+        bookName={bookName}
+        chapter={ch}
+        spiritualMode={spiritualMode}
+        onPlayingChange={setAudioPlaying}
+      />
+      <ReaderAudioMiniBar
+        visible={settingsState.bibleShowAudioBar && audioBarVisible}
+        playing={audioPlaying}
+        label={`${bookName} ${ch}`}
+        progress={12}
+        spiritualMode={spiritualMode}
+        onTogglePlay={() => setAudioPlaying((v) => !v)}
+        onOpenControls={() => setAudioSheetOpen(true)}
+      />
       <DictionaryLookupSheet row={lookupRow} onClose={() => setLookupRow(null)} />
       <DictionaryResultsSheet
         rows={lookupChoices}
@@ -1131,18 +1322,12 @@ type ChapterVerseListProps = {
   dictRenderKey: string;
   isSaved: (id: string) => boolean;
   registerVerseElement: (num: number, el: HTMLElement | null) => void;
-  onVerseActive: (id: string) => void;
-  onToggleSaveVerse: (v: Parameters<ReturnType<typeof useSavedVerses>["toggle"]>[0]) => void;
-  onAddJournalNote: (v: {
-    book: string;
-    bookName: string;
-    chapter: number;
-    verse: number;
-    text: string;
-    kind?: "note" | "meditation";
-  }) => void;
+  onVersePress: (payload: VerseActionTarget) => void;
   onSelectWord: (word: string, entry?: DictionaryEntry) => void;
   onOpenCrossRef: (num: number) => void;
+  showVerseNumbers: boolean;
+  showFootnotes: boolean;
+  showRedLetters: boolean;
 };
 
 const ChapterVerseList = memo(function ChapterVerseList({
@@ -1159,11 +1344,12 @@ const ChapterVerseList = memo(function ChapterVerseList({
   dictRenderKey,
   isSaved,
   registerVerseElement,
-  onVerseActive,
-  onToggleSaveVerse,
-  onAddJournalNote,
+  onVersePress,
   onSelectWord,
   onOpenCrossRef,
+  showVerseNumbers,
+  showFootnotes,
+  showRedLetters,
 }: ChapterVerseListProps) {
   const seenChapterWordsRef = useRef(new Set<string>());
 
@@ -1176,7 +1362,9 @@ const ChapterVerseList = memo(function ChapterVerseList({
       {verses.map((v, i) => {
         const num = v?.verse_number ?? i + 1;
         const id = verseKey(book, ch, num);
-        const showRef = i > 0 && i % 7 === 3;
+        const showRef = showFootnotes && i > 0 && i % 7 === 3;
+        const highlightColor = getVerseHighlight(id);
+        const hlStyle = highlightStyles(highlightColor, spiritualMode);
         return (
           <VerseCard
             key={`${id}::${dictRenderKey}`}
@@ -1191,10 +1379,11 @@ const ChapterVerseList = memo(function ChapterVerseList({
             saved={isSaved(id)}
             spiritualMode={spiritualMode}
             surfaceClass={verseCardClass}
+            highlightStyle={hlStyle}
+            showVerseNumber={showVerseNumbers}
+            showRedLetters={showRedLetters}
             registerVerseElement={registerVerseElement}
-            onVerseActive={onVerseActive}
-            onToggleSaveVerse={onToggleSaveVerse}
-            onAddJournalNote={onAddJournalNote}
+            onVersePress={onVersePress}
             onSelectWord={onSelectWord}
             matchedSet={matchedSet}
             dictIndex={dictIndex}
@@ -1222,10 +1411,11 @@ const VerseCard = memo(function VerseCard({
   saved,
   spiritualMode,
   surfaceClass,
+  highlightStyle,
+  showVerseNumber,
+  showRedLetters,
   registerVerseElement,
-  onVerseActive,
-  onToggleSaveVerse,
-  onAddJournalNote,
+  onVersePress,
   onSelectWord,
   matchedSet,
   dictIndex,
@@ -1244,17 +1434,11 @@ const VerseCard = memo(function VerseCard({
   saved: boolean;
   spiritualMode: boolean;
   surfaceClass: string;
+  highlightStyle?: CSSProperties;
+  showVerseNumber: boolean;
+  showRedLetters: boolean;
   registerVerseElement: (num: number, el: HTMLElement | null) => void;
-  onVerseActive: (id: string) => void;
-  onToggleSaveVerse: (v: Parameters<ReturnType<typeof useSavedVerses>["toggle"]>[0]) => void;
-  onAddJournalNote: (v: {
-    book: string;
-    bookName: string;
-    chapter: number;
-    verse: number;
-    text: string;
-    kind?: "note" | "meditation";
-  }) => void;
+  onVersePress: (payload: VerseActionTarget) => void;
   onSelectWord: (word: string, entry?: DictionaryEntry) => void;
   matchedSet: Set<string>;
   dictIndex: DictionaryIndex;
@@ -1270,32 +1454,29 @@ const VerseCard = memo(function VerseCard({
   );
 
   const onTap = useCallback(() => {
-    onVerseActive(verseId);
-  }, [onVerseActive, verseId]);
-
-  const onToggleSave = useCallback(() => {
-    onToggleSaveVerse({
+    onVersePress({
+      verseId,
       book,
       bookName,
       chapter,
       verse: verseNum,
       text,
+      saved,
     });
-  }, [onToggleSaveVerse, book, bookName, chapter, verseNum, text]);
-
-  const onOpenJournal = useCallback(() => {
-    onAddJournalNote({ book, bookName, chapter, verse: verseNum, text });
-  }, [onAddJournalNote, book, bookName, chapter, verseNum, text]);
+  }, [onVersePress, verseId, book, bookName, chapter, verseNum, text, saved]);
 
   const onOpenRef = useCallback(() => {
     onOpenCrossRef(verseNum);
   }, [onOpenCrossRef, verseNum]);
+
+  const redLetter = showRedLetters && isRedLetterVerse(book, text);
 
   return (
     <div
       ref={verseRef}
       data-verse-num={verseNum}
       onClick={onTap}
+      style={highlightStyle}
       className={cn(
         "group relative w-full min-w-0 cursor-pointer rounded-2xl border px-3.5 py-3",
         !isPulsing && "transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
@@ -1309,19 +1490,27 @@ const VerseCard = memo(function VerseCard({
       )}
     >
       <div className="flex items-start gap-2.5">
-        <span
+        {showVerseNumber ? (
+          <span
+            className={cn(
+              "shrink-0 mt-0.5 min-w-[18px] text-center text-[15px] font-extrabold tabular-nums font-arabic-serif leading-none pt-[2px]",
+              isPulsing
+                ? "text-alpha-gold-bright drop-shadow-[0_0_10px_rgba(240,215,140,0.85)]"
+                : spiritualMode
+                  ? "text-alpha-gold-bright"
+                  : "text-alpha-gold-deep",
+            )}
+          >
+            {verseNum}
+          </span>
+        ) : null}
+        <p
           className={cn(
-            "shrink-0 mt-0.5 min-w-[18px] text-center text-[15px] font-extrabold tabular-nums font-arabic-serif leading-none pt-[2px]",
-            isPulsing
-              ? "text-[#f0d78c] drop-shadow-[0_0_10px_rgba(240,215,140,0.85)]"
-              : spiritualMode
-                ? "text-[#f0d78c]"
-                : "text-[#a87a35]",
+            "flex-1 min-w-0",
+            redLetter &&
+              (spiritualMode ? "text-[#ff8a8a]" : "text-[#c0392b]"),
           )}
         >
-          {verseNum}
-        </span>
-        <p className="flex-1 min-w-0">
           <VerseHighlighted
             text={text}
             matchedSet={matchedSet}
@@ -1340,45 +1529,16 @@ const VerseCard = memo(function VerseCard({
             />
           )}
         </p>
-        <div className="flex shrink-0 flex-col items-center gap-1">
-          <button
-            type="button"
-            aria-label="ملاحظة أو تأمل على هذه الآية"
-            onClick={(e) => {
-              e.stopPropagation();
-              onOpenJournal();
-            }}
-            className={cn(
-              "grid h-7 w-7 place-items-center rounded-full border transition-all active:scale-90",
-              spiritualMode
-                ? "bg-[#6eb5f0]/15 border-[#6eb5f0]/35 text-[#8fd4ff] opacity-80 group-hover:opacity-100"
-                : "bg-[#e8f4ff] border-[#9ec8ef] text-[#4a7eb8] opacity-80 group-hover:opacity-100",
-            )}
-          >
-            <FilePen className="h-3.5 w-3.5" />
-          </button>
-          <button
-            type="button"
-            aria-label={saved ? "إزالة من المحفوظات" : "حفظ الآية"}
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleSave();
-            }}
-            className={cn(
-              "grid h-7 w-7 place-items-center rounded-full border transition-all active:scale-90",
-              saved
-                ? spiritualMode
-                  ? "bg-[#e7c97a]/20 border-[#e7c97a]/45 text-[#f0d78c]"
-                  : "bg-gradient-to-br from-[#fff1c7] to-[#e7c07a] border-transparent text-[#7a4a26]"
-                : spiritualMode
-                  ? "bg-white/5 border-white/10 text-[#c79356] opacity-70 group-hover:opacity-100"
-                  : "bg-white/70 border-[#efe2c4] text-[#b8893a] opacity-70 group-hover:opacity-100",
-            )}
-          >
-            {saved ? <BookmarkCheck className="h-3.5 w-3.5" /> : <Bookmark className="h-3.5 w-3.5" />}
-          </button>
-        </div>
       </div>
+      {saved ? (
+        <Bookmark
+          className={cn(
+            "pointer-events-none absolute left-3 top-3 h-3.5 w-3.5 fill-current opacity-80",
+            spiritualMode ? "text-[#f0d78c]" : "text-[#c79356]",
+          )}
+          aria-hidden
+        />
+      ) : null}
     </div>
   );
 });

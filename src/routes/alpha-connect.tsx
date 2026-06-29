@@ -75,7 +75,7 @@ import {
   type ConnectAudioSelection,
 } from "@/components/alpha/connect-audio-output";
 import { currentUserName, getCurrentUser } from "@/features/church/current-user";
-import { subscribeAuthContext } from "@/features/auth";
+import { subscribeAuthContext, getDisplayShieldRoleSync } from "@/features/auth";
 import {
   buildIdentityQrPayload,
   deriveAlphaIdShort,
@@ -84,7 +84,6 @@ import {
 } from "@/features/identity/alpha-identity";
 import { ConnectChannelInviteSheet, ConnectChannelSettings } from "@/components/alpha/ConnectChannelSettings";
 import {
-  alphaRoleToChannelMemberShield,
   getChannelState,
   inviteMembersToChannel,
   joinChannelViaInvite,
@@ -576,7 +575,7 @@ function AlphaConnect() {
         name: currentUser.name?.trim() || "مستخدم Alpha",
         avatar: currentUser.avatarUrl || avatarMina,
         role: "super_admin",
-        shieldRole: alphaRoleToChannelMemberShield(connectEffectiveAlphaRole()),
+        shieldRole: getDisplayShieldRoleSync() ?? undefined,
       });
       saveChannelState(activeChannelId, state);
       refreshChannelState();
@@ -644,7 +643,7 @@ function AlphaConnect() {
       id: currentUserId,
       name: currentUser.name?.trim() || currentUserName(),
       avatar: currentUser.avatarUrl || avatarMina,
-      shieldRole: alphaRoleToChannelMemberShield(connectEffectiveAlphaRole()),
+      shieldRole: getDisplayShieldRoleSync() ?? undefined,
     });
     if (result.status === "joined" || result.status === "already") {
       setMode("groups");
@@ -1296,7 +1295,7 @@ function IndividualProfileCard() {
       <AlphaIdentityRow
         className="glass-strong mb-4 w-full rounded-2xl px-3 py-2.5"
         name={displayName}
-        role={alphaRoleToChannelMemberShield(connectEffectiveAlphaRole())}
+        role={getDisplayShieldRoleSync()}
         avatar={avatar}
         avatarSize="sm"
         avatarRing="green"

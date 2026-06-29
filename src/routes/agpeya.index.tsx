@@ -43,28 +43,28 @@ const ACCENTS: Record<NonNullable<AgpeyaPrayer["accent"]>, AccentTokens> = {
   dawn: {
     card: "bg-gradient-to-br from-[#fff3d0] via-[#ffe7b0] to-[#fcd887] border-[#e7c075]/55",
     iconBg: "bg-white/85",
-    iconColor: "text-[#c98a1f]",
-    title: "text-[#6e4715]",
-    meta: "text-[#8a5a1f]",
-    chev: "bg-white/85 text-[#8a5a1f]",
+    iconColor: "text-alpha-gold-deep",
+    title: "text-alpha-gold-deep",
+    meta: "text-alpha-gold-deep/85",
+    chev: "bg-white/85 text-alpha-gold-deep",
     Icon: Sun,
   },
   midmorning: {
     card: "bg-gradient-to-br from-[#fff7e0] via-[#fceec3] to-[#f6dd97] border-[#e7c779]/55",
     iconBg: "bg-white/85",
-    iconColor: "text-[#caa23a]",
-    title: "text-[#6e4f14]",
-    meta: "text-[#8a6a22]",
-    chev: "bg-white/85 text-[#8a6a22]",
+    iconColor: "text-alpha-gold-bright",
+    title: "text-alpha-gold-deep",
+    meta: "text-alpha-gold-deep/85",
+    chev: "bg-white/85 text-alpha-gold-deep",
     Icon: Sun,
   },
   noon: {
     card: "bg-gradient-to-br from-[#fff5dd] via-[#fbe6b4] to-[#f3cd80] border-[#e0a64a]/55",
     iconBg: "bg-white/85",
-    iconColor: "text-[#c98a2a]",
-    title: "text-[#6e4115]",
-    meta: "text-[#8a5a1f]",
-    chev: "bg-white/85 text-[#8a5a1f]",
+    iconColor: "text-alpha-gold",
+    title: "text-alpha-gold-deep",
+    meta: "text-alpha-gold-deep/85",
+    chev: "bg-white/85 text-alpha-gold-deep",
     Icon: Sun,
   },
   evening: {
@@ -79,19 +79,19 @@ const ACCENTS: Record<NonNullable<AgpeyaPrayer["accent"]>, AccentTokens> = {
   compline: {
     card: "bg-gradient-to-br from-[#ece4f5] via-[#dccdee] to-[#c4afe0] border-[#a98cd1]/55",
     iconBg: "bg-white/85",
-    iconColor: "text-[#7a4fcc]",
-    title: "text-[#3c2566]",
-    meta: "text-[#5a3a92]",
-    chev: "bg-white/85 text-[#5a3a92]",
+    iconColor: "text-[var(--alpha-purple)]",
+    title: "text-[var(--alpha-purple)]",
+    meta: "text-[color-mix(in_srgb,var(--alpha-purple)_75%,var(--alpha-text-muted))]",
+    chev: "bg-white/85 text-[var(--alpha-purple)]",
     Icon: Moon,
   },
   veil: {
     card: "bg-gradient-to-br from-[#1f3a6e] via-[#1a2f5e] to-[#0f1f44] border-white/15 text-white",
     iconBg: "bg-white/15 backdrop-blur",
-    iconColor: "text-[#f0d78c]",
+    iconColor: "text-alpha-gold-bright",
     title: "text-white",
     meta: "text-white/75",
-    chev: "bg-white/15 text-[#f0d78c]",
+    chev: "bg-white/15 text-alpha-gold-bright",
     Icon: MoonStar,
   },
   midnight: {
@@ -132,9 +132,9 @@ function PrayerCard({ p }: { p: AgpeyaPrayer }) {
       to="/agpeya/$prayerId"
       params={{ prayerId: p.id }}
       className={cn(
-        "group relative block rounded-[26px] border p-5 pt-6 min-h-[168px]",
-        "shadow-[0_18px_34px_-18px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.6)]",
-        "transition-transform duration-200 active:scale-[0.97]",
+        "group relative block rounded-[var(--alpha-radius-card)] border p-5 pt-6 min-h-[168px]",
+        "shadow-[var(--alpha-shadow-featured),inset_0_1px_0_rgba(255,255,255,0.6)]",
+        "alpha-motion-spring active:scale-[0.97]",
         tokens.card,
       )}
     >
@@ -163,10 +163,10 @@ function PrayerCard({ p }: { p: AgpeyaPrayer }) {
 function SectionTitle({ title }: { title: string }) {
   return (
     <div className="mt-6 mb-3 flex items-center gap-2 px-1" aria-hidden={false}>
-      <span className="text-[#b8893a]/65 text-[12px] font-bold leading-none" aria-hidden>Ⲁ</span>
-      <h2 className="font-arabic-serif text-[15px] font-bold text-[#5b3a18]">{title}</h2>
-      <span className="h-px flex-1 bg-[#ead9b1]" aria-hidden />
-      <span className="text-[#b8893a]/65 text-[12px] font-bold leading-none" aria-hidden>Ⲱ</span>
+      <span className="text-alpha-gold-deep/65 alpha-type-body font-bold leading-none" aria-hidden>Ⲁ</span>
+      <h2 className="alpha-type-h2 font-arabic-serif text-alpha-heading">{title}</h2>
+      <span className="h-px flex-1 bg-alpha-border" aria-hidden />
+      <span className="text-alpha-gold-deep/65 alpha-type-body font-bold leading-none" aria-hidden>Ⲱ</span>
     </div>
   );
 }
@@ -208,7 +208,7 @@ function AgpeyaHome() {
           <img
             src={headerStill}
             alt=""
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-cover alpha-media-polish"
             width={1024} height={512}
           />
           {/* warm wash + bottom fade to page bg */}
@@ -226,24 +226,24 @@ function AgpeyaHome() {
               type="button"
               onClick={goBack}
               aria-label="رجوع"
-              className="grid h-10 w-10 place-items-center rounded-full bg-white/85 backdrop-blur-md border border-white/70 text-[#5b3a18] shadow-[0_6px_14px_-8px_rgba(120,80,30,0.35)] active:scale-95 transition-transform"
+              className="grid h-10 w-10 place-items-center rounded-full bg-white/85 backdrop-blur-md border border-white/70 text-alpha-heading shadow-[var(--alpha-shadow-mini)] active:scale-95 alpha-motion-spring"
             >
               <ChevronLeft className="h-[18px] w-[18px] -scale-x-100" />
             </button>
             <div className="pt-1 text-center">
-              <h1 className="font-arabic-serif text-[26px] font-extrabold leading-tight text-[#5b3a18] drop-shadow-[0_1px_0_rgba(255,255,255,0.7)]">
+              <h1 className="font-arabic-serif text-[26px] font-extrabold leading-tight text-alpha-heading drop-shadow-[0_1px_0_rgba(255,255,255,0.7)]">
                 الأجبية
               </h1>
-              <p className="mt-0.5 text-[12px] font-medium text-[#8a5a1f]">صلوات السواعي اليومية</p>
+              <p className="alpha-type-desc mt-0.5 font-medium text-alpha-gold-deep">صلوات السواعي اليومية</p>
             </div>
             <Link
               to="/agpeya/saved"
               aria-label="المحفوظات"
-              className="relative grid h-10 w-10 place-items-center rounded-full bg-white/85 backdrop-blur-md border border-white/70 text-[#5b3a18] shadow-[0_6px_14px_-8px_rgba(120,80,30,0.35)] active:scale-95"
+              className="relative grid h-10 w-10 place-items-center rounded-full bg-white/85 backdrop-blur-md border border-white/70 text-alpha-heading shadow-[var(--alpha-shadow-mini)] active:scale-95"
             >
               <Bookmark className="h-[18px] w-[18px]" />
               {saved.length > 0 && (
-                <span className="absolute -top-1 -left-1 grid h-4 min-w-4 px-1 place-items-center rounded-full bg-[#b87a22] text-[9.5px] font-bold text-white">
+                <span className="absolute -top-1 -left-1 grid h-4 min-w-4 px-1 place-items-center rounded-full bg-alpha-gold-deep alpha-type-caption font-bold text-white">
                   {saved.length}
                 </span>
               )}
@@ -254,13 +254,13 @@ function AgpeyaHome() {
 
       <main className="relative mx-auto max-w-[var(--alpha-content-max-width)] px-4 -mt-10">
         {/* ===== Hero — current prayer ===== */}
-        <section className="relative overflow-hidden rounded-[26px] border border-white/70 bg-[#fff7e7] shadow-[0_22px_44px_-22px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.85)]">
+        <section className="alpha-card-featured relative overflow-hidden !p-0 border border-white/70 bg-[color-mix(in_srgb,var(--alpha-bg-elevated)_95%,#fff7e7)]">
           <div className="grid grid-cols-[42%_1fr] items-stretch">
             <div className="relative">
               <img
                 src={heroSunrise}
                 alt=""
-                className="absolute inset-0 h-full w-full object-cover"
+                className="absolute inset-0 h-full w-full object-cover alpha-media-polish"
                 width={1024} height={768}
               />
               <div
@@ -268,20 +268,20 @@ function AgpeyaHome() {
                 className="absolute inset-0"
                 style={{ background: "linear-gradient(270deg, rgba(255,247,231,0.85) 0%, rgba(255,247,231,0) 55%)" }}
               />
-              <span className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-white/90 backdrop-blur-md border border-white/70 px-2.5 py-1 text-[10.5px] font-bold text-[#8a5a1f] shadow">
+              <span className="alpha-tag absolute top-3 right-3 inline-flex items-center gap-1.5 backdrop-blur-md border border-white/70 bg-white/90 !text-alpha-gold-deep shadow">
                 <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#3eb482]" />
                 الصلاة الحالية
               </span>
             </div>
             <div className="relative p-4 pl-5 pr-3 flex flex-col justify-center">
-              <h2 className="font-arabic-serif text-[24px] font-extrabold leading-tight text-[#6e4115]">
+              <h2 className="alpha-type-h1 font-arabic-serif leading-tight text-alpha-gold-deep">
                 {current.title}
               </h2>
               {current.description && (
-                <p className="mt-1.5 text-[12.5px] leading-snug text-[#7a5a32]">{current.description}</p>
+                <p className="alpha-type-desc mt-1.5 leading-snug text-alpha-muted">{current.description}</p>
               )}
               {metaLine && (
-                <div className="mt-2 flex items-center gap-1.5 text-[11.5px] font-semibold text-[#8a5a1f]">
+                <div className="alpha-type-desc mt-2 flex items-center gap-1.5 font-semibold text-alpha-gold-deep">
                   <Clock className="h-3 w-3" />
                   <span className="truncate">{metaLine}</span>
                 </div>
@@ -289,7 +289,7 @@ function AgpeyaHome() {
               <Link
                 to="/agpeya/$prayerId"
                 params={{ prayerId: current.id }}
-                className="mt-3 inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-br from-[#e7b35a] via-[#d99a3a] to-[#b87a22] px-4 py-2.5 text-[13px] font-bold text-white shadow-[0_10px_20px_-10px_rgba(184,122,34,0.7),inset_0_1px_0_rgba(255,255,255,0.3)] active:scale-[0.97] transition-transform"
+                className="alpha-btn-primary mt-3 inline-flex items-center justify-center gap-2 !min-h-0 px-4 py-2.5 alpha-type-body active:scale-[0.97] alpha-motion-spring"
               >
                 <ChevronRight className="h-3.5 w-3.5 -scale-x-100" />
                 {last && last.prayerId === current.id && (last.scrollPercent ?? 0) > 0.02
@@ -306,18 +306,18 @@ function AgpeyaHome() {
             <Link
               to="/agpeya/$prayerId"
               params={{ prayerId: last.prayerId }}
-              className="flex flex-1 items-center justify-between rounded-2xl bg-white/75 backdrop-blur-md border border-[#c79356]/35 px-4 py-3 text-[#5b3a18] shadow-[0_6px_16px_-12px_rgba(120,80,30,0.4)] active:scale-[0.98] transition-transform"
+              className="flex flex-1 items-center justify-between rounded-[var(--alpha-radius-dock-tab)] bg-white/75 backdrop-blur-md border border-alpha-gold-deep/35 px-4 py-3 text-alpha-heading shadow-[var(--alpha-shadow-mini)] active:scale-[0.98] alpha-motion-spring"
             >
               <div className="flex items-center gap-2.5 min-w-0">
-                <BookOpen className="h-4 w-4 text-[#8a5a1f] shrink-0" />
+                <BookOpen className="h-4 w-4 text-alpha-gold-deep shrink-0" />
                 <div className="min-w-0">
-                  <div className="text-[10.5px] text-[#8a5a1f]/80">متابعة القراءة</div>
-                  <div className="font-arabic-serif text-[14px] font-bold leading-tight truncate">
+                  <div className="alpha-type-desc text-alpha-gold-deep/80">متابعة القراءة</div>
+                  <div className="alpha-type-h2 font-arabic-serif leading-tight truncate">
                     {AGPEYA_PRAYERS.find((p) => p.id === last.prayerId)?.title ?? "آخر صلاة"}
                   </div>
                 </div>
               </div>
-              <span className="text-[11px] font-semibold text-[#8a5a1f] shrink-0">
+              <span className="alpha-type-desc font-semibold text-alpha-gold-deep shrink-0">
                 {Math.round((last.scrollPercent || 0) * 100)}%
               </span>
             </Link>
@@ -325,7 +325,7 @@ function AgpeyaHome() {
               type="button"
               aria-label="إخفاء متابعة القراءة"
               onClick={() => { clearLastOpenedPrayer(); setLast(null); }}
-              className="grid w-9 place-items-center rounded-2xl border border-[#c79356]/35 bg-white/60 text-[#8a5a1f] active:scale-95"
+              className="grid w-9 place-items-center rounded-[var(--alpha-radius-dock-tab)] border border-alpha-gold-deep/35 bg-white/60 text-alpha-gold-deep active:scale-95"
             >
               <X className="h-4 w-4" />
             </button>

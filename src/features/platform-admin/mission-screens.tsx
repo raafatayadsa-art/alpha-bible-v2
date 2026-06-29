@@ -1,14 +1,28 @@
-import { useEffect, useState } from "react";
-import { Fingerprint, History, Lock, ShieldAlert } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import {
+  Ban,
+  Fingerprint,
+  History,
+  Lock,
+  MessageSquareOff,
+  RefreshCw,
+  Settings,
+  ShieldAlert,
+  Siren,
+  UserX,
+  Wrench,
+} from "lucide-react";
+import {
+  COMMAND_ICONS,
   CyberBtn,
   CyberPanel,
   CyberSearch,
-  CyberToggle,
   MissionSubShell,
+  ModuleControlRow,
   PrivacyStrip,
 } from "./mission-control-ui";
 import { usePlatformStore } from "./platform-store";
+import { subscribePlatformSync, broadcastPlatformLiveUpdate } from "./platform-control-sync";
 import { setOwnerPin, revokeOwnerSession } from "./owner-access-store";
 import {
   fetchAiRules,
@@ -28,53 +42,6 @@ import {
 import { usePlatformDashboard } from "./use-platform-dashboard";
 import { MC } from "./platform-store";
 
-export function ModuleControlScreen() {
-  const { modules, toggleModule, addAudit, dbSynced } = usePlatformStore();
-  const [busyKey, setBusyKey] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const onToggle = async (key: (typeof modules)[number]["key"], labelAr: string, wasEnabled: boolean) => {
-    setError(null);
-    setBusyKey(key);
-    const ok = await toggleModule(key);
-    if (ok) {
-      addAudit(wasEnabled ? `إيقاف ${labelAr}` : `تشغيل ${labelAr}`, "Owner action");
-    } else {
-      setError("تعذّر حفظ حالة الموديول في قاعدة البيانات.");
-    }
-    setBusyKey(null);
-  };
-
-  return (
-    <MissionSubShell title="Module Control" titleEn="إدارة الموديولات">
-      <PrivacyStrip>تشغيل/إيقاف الموديولات — عند الإيقاف يختفي الموديول من التطبيق لجميع المستخدمين.</PrivacyStrip>
-      {error ? (
-        <p className="mb-2 text-[11px] font-bold text-red-400">{error}</p>
-      ) : null}
-      <p className="mb-2 text-[10px] font-bold text-slate-500">
-        {modules.length} موديول · {dbSynced ? "متزامن مع قاعدة البيانات" : "جاري التحميل من قاعدة البيانات…"}
-      </p>
-      <div className="space-y-2">
-        {modules.length ? (
-          modules.map((m) => (
-            <CyberToggle
-              key={m.key}
-              label={`${m.labelAr} · ${m.label}`}
-              checked={m.enabled}
-              onChange={() => void onToggle(m.key, m.labelAr, m.enabled)}
-            />
-          ))
-        ) : (
-          <p className="rounded-lg border border-slate-700/60 bg-black/30 px-3 py-4 text-center text-[12px] font-bold text-slate-400">
-            لا توجد موديولات للعرض — تحقق من اتصال Supabase.
-          </p>
-        )}
-      </div>
-      {busyKey ? <p className="mt-2 text-[10px] text-slate-500">جاري الحفظ في قاعدة البيانات…</p> : null}
-    </MissionSubShell>
-  );
-}
-
 export function PrivacySecurityScreen() {
   const [metrics, setMetrics] = useState<PrivacyMetrics | null>(null);
 
@@ -83,27 +50,27 @@ export function PrivacySecurityScreen() {
   }, []);
 
   const items = [
-    { label: "الكلمات المحظورة", value: metrics?.blockedWords ?? "—" },
-    { label: "البلاغات الأمنية", value: metrics?.securityReports ?? "—" },
-    { label: "المستخدمون المقيدون", value: metrics?.restrictedUsers ?? "—" },
-    { label: "الحسابات المحظورة", value: metrics?.blockedAccounts ?? "—" },
-    { label: "سجل المخالفات", value: metrics?.violations ?? "—" },
+    { labelAr: "الكلمات المحظورة", labelEn: "Blocked Words", value: metrics?.blockedWords ?? "—", icon: Ban, accent: MC.red },
+    { labelAr: "البلاغات الأمنية", labelEn: "Security Reports", value: metrics?.securityReports ?? "—", icon: ShieldAlert, accent: MC.amber },
+    { labelAr: "المستخدمون المقيدون", labelEn: "Restricted Users", value: metrics?.restrictedUsers ?? "—", icon: UserX, accent: MC.purple },
+    { labelAr: "الحسابات المحظورة", labelEn: "Blocked Accounts", value: metrics?.blockedAccounts ?? "—", icon: Lock, accent: MC.red },
+    { labelAr: "سجل المخالفات", labelEn: "Violations Log", value: metrics?.violations ?? "—", icon: History, accent: MC.cyan },
   ];
 
   return (
     <MissionSubShell title="Privacy & Security" titleEn="الخصوصية والأمان">
       <PrivacyStrip>Owner لا يرى رسائل أو منشورات أو بيانات أعضاء — إدارة سياسات المنصة فقط.</PrivacyStrip>
-      <div className="space-y-2">
+      <div className="space-y-3">
         {items.map((item) => (
-          <CyberPanel key={item.label} glow={MC.green}>
-            <div className="flex items-center justify-between">
-              <span className="text-[14px] font-extrabold tabular-nums text-slate-100">{item.value}</span>
-              <div className="flex items-center gap-2">
-                <Lock className="h-4 w-4" style={{ color: MC.green }} />
-                <span className="text-[12px] font-bold text-slate-200">{item.label}</span>
-              </div>
-            </div>
-          </CyberPanel>
+          <ModuleControlRow
+            key={item.labelAr}
+            labelAr={item.labelAr}
+            labelEn={item.labelEn}
+            scopeAr="مؤشرات أمنية عامة — بدون بيانات خاصة"
+            icon={item.icon}
+            accent={item.accent}
+            metricValue={String(item.value)}
+          />
         ))}
       </div>
     </MissionSubShell>
@@ -162,11 +129,15 @@ export function AIControlScreen() {
   return (
     <MissionSubShell title="AI Control" titleEn="AI Control">
       <PrivacyStrip>AI moderation on platform level — no private data training.</PrivacyStrip>
-      <div className="space-y-2">
+      <div className="space-y-3">
         {rules.map((s) => (
-          <CyberToggle
+          <ModuleControlRow
             key={s.key}
-            label={`${s.labelAr} · Queue ${s.queueCount}`}
+            labelAr={s.labelAr}
+            labelEn={s.label}
+            scopeAr={`طابور المراجعة: ${s.queueCount} عنصر`}
+            icon={COMMAND_ICONS.ai}
+            accent={MC.purple}
             checked={s.enabled}
             onChange={() => toggle(s.key, !s.enabled)}
           />
@@ -192,12 +163,17 @@ export function AnalyticsScreen() {
   return (
     <MissionSubShell title="Analytics" titleEn="التحليلات">
       <PrivacyStrip>تقارير عامة فقط — بدون بيانات شخصية.</PrivacyStrip>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {tiles.map((t) => (
-          <CyberPanel key={t.label} glow={MC.cyan}>
-            <p className="text-[10px] text-slate-500">{t.label}</p>
-            <p className="text-[18px] font-extrabold tabular-nums text-slate-100">{t.value}</p>
-          </CyberPanel>
+          <ModuleControlRow
+            key={t.label}
+            labelAr={t.label}
+            labelEn="Analytics"
+            scopeAr="إحصائية عامة للمنصة"
+            icon={COMMAND_ICONS.analytics}
+            accent={MC.cyan}
+            metricValue={t.value}
+          />
         ))}
       </div>
     </MissionSubShell>
@@ -205,13 +181,52 @@ export function AnalyticsScreen() {
 }
 
 export function AuditLogsScreen() {
-  const { auditLog } = usePlatformStore();
+  const { auditLog, refreshAuditLog } = usePlatformStore();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    void refreshAuditLog().finally(() => setLoading(false));
+  }, [refreshAuditLog]);
+
+  const handleRefresh = () => {
+    setLoading(true);
+    void refreshAuditLog().finally(() => setLoading(false));
+  };
 
   return (
     <MissionSubShell title="Audit Logs" titleEn="سجل العمليات">
       <PrivacyStrip>كل عملية إدارية: المسؤول · التاريخ · الوقت · السبب.</PrivacyStrip>
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <span className="text-[9px] font-bold tabular-nums" style={{ color: MC.muted }}>
+          {loading ? "…" : `${auditLog.length} سجل`}
+        </span>
+        <button
+          type="button"
+          aria-label="تحديث السجل"
+          disabled={loading}
+          onClick={handleRefresh}
+          className="flex items-center gap-1.5 rounded-[10px] border px-2.5 py-1.5 text-[9px] font-extrabold transition active:scale-95 disabled:opacity-50"
+          style={{ borderColor: MC.panelBorder, color: MC.cyan, background: MC.panel }}
+        >
+          <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+          تحديث
+        </button>
+      </div>
       <div className="space-y-2">
-        {auditLog.map((e) => (
+        {loading ? (
+          [0, 1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="h-20 animate-pulse rounded-[14px] border"
+              style={{ borderColor: MC.panelBorder, background: "rgba(0,0,0,0.2)" }}
+            />
+          ))
+        ) : auditLog.length === 0 ? (
+          <CyberPanel glow={MC.steel}>
+            <p className="text-center text-[11px] font-bold text-slate-400">لا توجد سجلات تدقيق بعد</p>
+          </CyberPanel>
+        ) : (
+          auditLog.map((e) => (
           <CyberPanel key={e.id} glow={e.scanMeta ? MC.cyan : MC.steel}>
             <p className="text-[12px] font-extrabold text-slate-200">{e.action}</p>
             <div className="mt-2 space-y-0.5 text-[10px]">
@@ -228,7 +243,8 @@ export function AuditLogsScreen() {
               )}
             </div>
           </CyberPanel>
-        ))}
+          ))
+        )}
       </div>
     </MissionSubShell>
   );
@@ -237,13 +253,34 @@ export function AuditLogsScreen() {
 export function SystemSettingsScreen() {
   const [settings, setSettings] = useState<PlatformSettings | null>(null);
 
-  useEffect(() => {
+  const loadSettings = useCallback(() => {
     void fetchPlatformSettings().then(setSettings);
+    if (typeof window !== "undefined") {
+      try {
+        const cached = localStorage.getItem("ab:mc-platform-settings");
+        if (cached) setSettings(JSON.parse(cached) as PlatformSettings);
+      } catch {
+        /* ignore */
+      }
+    }
   }, []);
 
+  useEffect(() => {
+    loadSettings();
+    return subscribePlatformSync(() => loadSettings());
+  }, [loadSettings]);
+
   const patch = (p: Partial<PlatformSettings>) => {
-    setSettings((prev) => (prev ? { ...prev, ...p } : prev));
-    void patchPlatformSettingsDb(p);
+    setSettings((prev) => {
+      const next = prev ? { ...prev, ...p } : prev;
+      if (next && typeof window !== "undefined") {
+        localStorage.setItem("ab:mc-platform-settings", JSON.stringify(next));
+      }
+      return next;
+    });
+    void patchPlatformSettingsDb(p).then((ok) => {
+      if (ok) broadcastPlatformLiveUpdate();
+    });
   };
 
   if (!settings) {
@@ -259,19 +296,31 @@ export function SystemSettingsScreen() {
   return (
     <MissionSubShell title="System Settings" titleEn="إعدادات النظام" navActive="profile">
       <PrivacyStrip>إعدادات المنصة العامة — بدون الوصول للمحتوى الخاص.</PrivacyStrip>
-      <div className="space-y-2">
-        <CyberToggle
-          label="تفعيل التسجيل"
+      <div className="space-y-3">
+        <ModuleControlRow
+          labelAr="تفعيل التسجيل"
+          labelEn="Registration"
+          scopeAr="السماح بإنشاء حسابات جديدة"
+          icon={Settings}
+          accent={MC.green}
           checked={settings.registrationEnabled}
           onChange={() => patch({ registrationEnabled: !settings.registrationEnabled })}
         />
-        <CyberToggle
-          label="التحقق مطلوب"
+        <ModuleControlRow
+          labelAr="التحقق مطلوب"
+          labelEn="Verification Required"
+          scopeAr="يتطلب تأكيد الهوية قبل الاستخدام الكامل"
+          icon={ShieldAlert}
+          accent={MC.cyan}
           checked={settings.verificationRequired}
           onChange={() => patch({ verificationRequired: !settings.verificationRequired })}
         />
-        <CyberToggle
-          label="السماح بكنائس جديدة"
+        <ModuleControlRow
+          labelAr="السماح بكنائس جديدة"
+          labelEn="New Churches"
+          scopeAr="فتح طلبات تسجيل كنائس جديدة"
+          icon={COMMAND_ICONS.churches}
+          accent={MC.purple}
           checked={settings.allowNewChurches}
           onChange={() => patch({ allowNewChurches: !settings.allowNewChurches })}
         />
@@ -295,12 +344,17 @@ export function AlphaLibraryScreen() {
   return (
     <MissionSubShell title="Alpha Library" titleEn="مكتبة Alpha">
       <PrivacyStrip>وثائق وسياسات عامة — بدون محتوى خاص.</PrivacyStrip>
-      <div className="space-y-2">
+      <div className="space-y-3">
         {docs.map((d) => (
-          <CyberPanel key={d.id} glow={MC.green}>
-            <p className="text-[12px] font-bold text-slate-200">{d.title}</p>
-            <p className="text-[9px] text-slate-500">{d.category} · {d.description}</p>
-          </CyberPanel>
+          <ModuleControlRow
+            key={d.id}
+            labelAr={d.title}
+            labelEn={d.category}
+            scopeAr={d.description}
+            icon={COMMAND_ICONS.library}
+            accent={MC.green}
+            metricValue="وثيقة"
+          />
         ))}
       </div>
     </MissionSubShell>
@@ -341,7 +395,15 @@ export function OwnerSecurityScreen() {
       </CyberPanel>
 
       <div className="space-y-2">
-        <CyberToggle label="Face ID" checked={false} onChange={() => window.alert("Face ID — قريباً")} />
+        <ModuleControlRow
+          labelAr="Face ID"
+          labelEn="Biometric Login"
+          scopeAr="تسجيل دخول بالبصمة — قريباً"
+          icon={Fingerprint}
+          accent={MC.cyan}
+          checked={false}
+          onChange={() => window.alert("Face ID — قريباً")}
+        />
         <CyberPanel glow={MC.electric}>
           <div className="flex items-center gap-2">
             <Fingerprint className="h-4 w-4" style={{ color: MC.cyan }} />
@@ -384,15 +446,47 @@ export function EmergencyCenterScreen() {
       >
         لن يتم الوصول إلى أي بيانات خاصة أثناء تنفيذ أوامر الطوارئ.
       </div>
-      <div className="space-y-2">
-        <CyberToggle label="Maintenance Mode" checked={emergency.maintenance} onChange={() => toggle("maintenance", "Maintenance Mode")} />
-        <CyberToggle label="Disable Registration" checked={emergency.disableRegistration} onChange={() => toggle("disableRegistration", "Disable Registration")} />
-        <CyberToggle label="Disable Messaging" checked={emergency.disableMessaging} onChange={() => toggle("disableMessaging", "Disable Messaging")} />
-        <CyberToggle label="Disable Community" checked={emergency.disableCommunity} onChange={() => toggle("disableCommunity", "Disable Community")} />
+      <div className="space-y-3">
+        <ModuleControlRow
+          labelAr="وضع الصيانة"
+          labelEn="Maintenance Mode"
+          scopeAr="إظهار شاشة صيانة للمستخدمين"
+          icon={Wrench}
+          accent={MC.amber}
+          checked={emergency.maintenance}
+          onChange={() => toggle("maintenance", "Maintenance Mode")}
+        />
+        <ModuleControlRow
+          labelAr="إيقاف التسجيل"
+          labelEn="Disable Registration"
+          scopeAr="منع إنشاء حسابات جديدة فوراً"
+          icon={UserX}
+          accent={MC.red}
+          checked={emergency.disableRegistration}
+          onChange={() => toggle("disableRegistration", "Disable Registration")}
+        />
+        <ModuleControlRow
+          labelAr="إيقاف الرسائل"
+          labelEn="Disable Messaging"
+          scopeAr="تعطيل Alpha Connect والمراسلة"
+          icon={MessageSquareOff}
+          accent={MC.red}
+          checked={emergency.disableMessaging}
+          onChange={() => toggle("disableMessaging", "Disable Messaging")}
+        />
+        <ModuleControlRow
+          labelAr="إيقاف المجتمع"
+          labelEn="Disable Community"
+          scopeAr="إخفاء المنشورات والتفاعل الاجتماعي"
+          icon={Siren}
+          accent={MC.red}
+          checked={emergency.disableCommunity}
+          onChange={() => toggle("disableCommunity", "Disable Community")}
+        />
         <CyberBtn
           label="Emergency Lockdown"
           variant="danger"
-          className="w-full"
+          className="w-full !min-h-[52px] !text-[14px]"
           onClick={() => {
             patchEmergency({ lockdown: !emergency.lockdown });
             addAudit("Emergency Lockdown", "Critical");

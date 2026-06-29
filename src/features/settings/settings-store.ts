@@ -47,6 +47,9 @@ export type SettingsState = {
   bibleAutoscrollSpeed: number;
   biblePreferredTranslation: string;
   bibleShowVerseNumbers: boolean;
+  bibleShowFootnotes: boolean;
+  bibleShowRedLetters: boolean;
+  bibleShowAudioBar: boolean;
   prayerReminder: boolean;
   prayerSilentMode: boolean;
   prayerBedtimeReminder: boolean;
@@ -96,6 +99,9 @@ export const DEFAULT_SETTINGS: SettingsState = {
   bibleAutoscrollSpeed: 2,
   biblePreferredTranslation: "coptic",
   bibleShowVerseNumbers: true,
+  bibleShowFootnotes: true,
+  bibleShowRedLetters: true,
+  bibleShowAudioBar: true,
   prayerReminder: true,
   prayerSilentMode: true,
   prayerBedtimeReminder: true,
@@ -124,6 +130,9 @@ function write(state: SettingsState) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     applyAlphaThemeFromMode(state.themeMode);
     window.dispatchEvent(new CustomEvent("ab:settings", { detail: state }));
+    void import("@/lib/user-sync-scheduler").then(({ scheduleUserDataSync }) =>
+      scheduleUserDataSync({ delayMs: 2000, extraKey: STORAGE_KEY }),
+    );
   } catch { /* ignore */ }
 }
 

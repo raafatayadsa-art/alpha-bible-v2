@@ -5,6 +5,16 @@ import {
   type PublisherCopyrightReportKind,
 } from "../publisher-legal";
 import { submitPublisherCopyrightReport } from "../publisher-legal-api";
+import {
+  PUBLISHER_GLASS_INPUT,
+  PUBLISHER_GLASS_LABEL,
+  PUBLISHER_REPORT_FIELD,
+  PUBLISHER_REPORT_SHEET,
+  PUBLISHER_SHEET_OVERLAY,
+  PUBLISHER_TEXT_ERROR,
+  PUBLISHER_TEXT_SUB,
+  PUBLISHER_TEXT_TITLE,
+} from "./publisher-glass-chrome";
 
 type Props = {
   contentId: string | null;
@@ -39,11 +49,11 @@ export function PublisherCopyrightReportSheet({ contentId, contentTitle, onClose
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-end justify-center bg-black/55 backdrop-blur-sm"
+      className={PUBLISHER_SHEET_OVERLAY}
       onClick={onClose}
     >
       <div
-        className="flex w-full max-w-sm max-h-[min(82dvh,520px)] flex-col overflow-hidden rounded-t-[22px] border border-b-0 border-[rgba(93,50,145,0.14)] bg-white shadow-[0_-16px_48px_rgba(0,0,0,0.22)]"
+        className={PUBLISHER_REPORT_SHEET}
         style={{ marginBottom: DOCK_OFFSET }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -54,21 +64,21 @@ export function PublisherCopyrightReportSheet({ contentId, contentTitle, onClose
             </button>
             <div className="flex items-center gap-1.5">
               <ShieldAlert className="h-4 w-4 text-[#a8344f]" />
-              <p className="text-[13px] font-extrabold text-[#3a3258]">بلاغ حقوق نشر</p>
+              <p className={PUBLISHER_TEXT_TITLE}>بلاغ حقوق نشر</p>
             </div>
             <span className="w-9" />
           </div>
 
           {contentTitle ? (
-            <p className="mb-3 text-right text-[11px] font-bold text-[#6b658a]">{contentTitle}</p>
+            <p className={`mb-3 text-right ${PUBLISHER_TEXT_SUB}`}>{contentTitle}</p>
           ) : null}
 
           <label className="mb-2 block text-right">
-            <span className="mb-1 block text-[10px] font-extrabold text-[#6b658a]">نوع البلاغ</span>
+            <span className={`mb-1 block ${PUBLISHER_GLASS_LABEL}`}>نوع البلاغ</span>
             <select
               value={kind}
               onChange={(e) => setKind(e.target.value as PublisherCopyrightReportKind)}
-              className="w-full rounded-xl border px-3 py-2 text-[12px] font-bold"
+              className={PUBLISHER_REPORT_FIELD}
             >
               {(Object.keys(PUBLISHER_COPYRIGHT_REPORT_KIND_LABELS) as PublisherCopyrightReportKind[]).map((k) => (
                 <option key={k} value={k}>
@@ -79,17 +89,17 @@ export function PublisherCopyrightReportSheet({ contentId, contentTitle, onClose
           </label>
 
           <label className="block text-right">
-            <span className="mb-1 block text-[10px] font-extrabold text-[#6b658a]">التفاصيل</span>
+            <span className={`mb-1 block ${PUBLISHER_GLASS_LABEL}`}>التفاصيل</span>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
               placeholder="اشرح المشكلة والأدلة المتاحة…"
-              className="w-full resize-none rounded-xl border px-3 py-2 text-[12px] font-bold"
+              className={`resize-none ${PUBLISHER_GLASS_INPUT}`}
             />
           </label>
 
-          {feedback ? <p className="mt-2 text-center text-[10px] font-bold text-[#a8344f]">{feedback}</p> : null}
+          {feedback ? <p className={`mt-2 ${PUBLISHER_TEXT_ERROR}`}>{feedback}</p> : null}
         </div>
 
         <div className="shrink-0 border-t border-[rgba(93,50,145,0.08)] bg-white p-4 pt-3">
@@ -97,7 +107,7 @@ export function PublisherCopyrightReportSheet({ contentId, contentTitle, onClose
             type="button"
             disabled={saving || description.trim().length < 10}
             onClick={() => void submit()}
-            className="inline-flex w-full items-center justify-center gap-1 rounded-full py-3 text-[12px] font-extrabold text-white disabled:opacity-60"
+            className="inline-flex w-full items-center justify-center gap-1 rounded-full py-3 alpha-type-body font-extrabold text-white disabled:opacity-60"
             style={{ background: "linear-gradient(160deg, #a8344f, #7a2840)" }}
           >
             {saving ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <ShieldAlert className="h-4 w-4" />}

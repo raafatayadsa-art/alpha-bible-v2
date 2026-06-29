@@ -4,11 +4,11 @@ import { cn } from "@/lib/utils";
 
 export const HERO_STACK_LABELS = ["آية اليوم", "القطمارس", "قديس اليوم", "مناسبة"] as const;
 
-/** Approved Alpha hero-card accent — reuse on Synaxarium / shared surfaces */
-export const ALPHA_HERO_ACCENT = "#e7c97a";
+/** Approved Alpha hero-card accent — use sparingly (active/primary only) */
+export const ALPHA_HERO_ACCENT = "var(--alpha-gold)";
 
-const HERO_GOLD = "#f0d78c";
-const HERO_GOLD_BRIGHT = "#ffd86a";
+const HERO_GOLD = "var(--alpha-gold-bright)";
+const HERO_GOLD_BRIGHT = "var(--alpha-gold-bright)";
 
 /** Publisher hero — dark glass so gold glow reads through */
 export const PUBLISHER_HERO_FOLLOW_BLUE = "#5b9fd8";
@@ -236,6 +236,9 @@ export function readHeroMap(key: string): Record<string, number> {
 export function writeHeroMap(key: string, map: Record<string, number>) {
   try {
     localStorage.setItem(key, JSON.stringify(map));
+    void import("@/lib/user-sync-scheduler").then(({ scheduleUserDataSync }) =>
+      scheduleUserDataSync({ delayMs: 1500, extraKey: key }),
+    );
   } catch { /* ignore */ }
 }
 
@@ -250,6 +253,9 @@ export function readHeroSet(key: string): Set<string> {
 export function writeHeroSet(key: string, set: Set<string>) {
   try {
     localStorage.setItem(key, JSON.stringify(Array.from(set)));
+    void import("@/lib/user-sync-scheduler").then(({ scheduleUserDataSync }) =>
+      scheduleUserDataSync({ delayMs: 1500, extraKey: key }),
+    );
   } catch { /* ignore */ }
 }
 
@@ -271,6 +277,7 @@ export function HeroSpiritLedgerCell({
   glyphEdge = "start",
   notifyPulse = false,
   notifyPulseTone = "gold",
+  activePulse = false,
   valueHidden = false,
   surface = "default",
 }: {
@@ -297,6 +304,8 @@ export function HeroSpiritLedgerCell({
   /** Continuous activity ring — e.g. unread messages / missed calls */
   notifyPulse?: boolean;
   notifyPulseTone?: "gold" | "blue" | "red";
+  /** Steady gold ring when liked / active meditate */
+  activePulse?: boolean;
   /** Hide numeric count when glyph is pinned to the edge (icon-only cells) */
   valueHidden?: boolean;
   /** Lighter glass on publisher hero ledger rows */
@@ -509,7 +518,7 @@ export function HeroSpiritLedgerCell({
         </Tag>
       );
 
-      if (notifyPulse) {
+      if (notifyPulse || activePulse) {
         return (
           <div
             className={`hero-ledger-pulse-wrap hero-ledger-pulse-wrap--${notifyPulseTone} relative flex min-w-0 flex-1`}
@@ -531,51 +540,89 @@ export function HeroSpiritLedgerRow({
   meditated,
   onMeditate,
   onBroadcast,
+  onCommunity,
   meditateLabel = "تأمّل",
   meditateSublabel = "وقف مع الآية",
   broadcastLabel = "انتشار",
   broadcastSublabel = "حمل البركة",
+  communityLabel = "مجتمعي",
+  communitySublabel = "شارك الآية",
   meditateLeadingIcon,
   meditateLeadingIconColor,
+  meditateActivePulse,
   className,
+  hideMeditate,
 }: {
   accent: string;
   meditations: number;
   broadcasts: number;
   meditated: boolean;
-  onMeditate: () => void;
+  onMeditate?: () => void;
   onBroadcast?: () => void;
+  onCommunity?: () => void;
   meditateLabel?: string;
   meditateSublabel?: string;
   broadcastLabel?: string;
   broadcastSublabel?: string;
+  communityLabel?: string;
+  communitySublabel?: string;
   meditateLeadingIcon?: LucideIcon;
   meditateLeadingIconColor?: string;
+  meditateActivePulse?: boolean;
   className?: string;
+  hideMeditate?: boolean;
 }) {
+  const compact = Boolean(onCommunity);
+
+  const meditateCell = hideMeditate ? null : (
+    <HeroSpiritLedgerCell
+      glyph="Ⲁ"
+      label={meditateLabel}
+      sublabel={meditateSublabel}
+      value={meditations}
+      active={meditated}
+      accent={accent}
+      variant="meditate"
+      onClick={onMeditate!}
+      leadingIcon={meditateLeadingIcon}
+      leadingIconColor={meditateLeadingIconColor}
+      compact={compact}
+      activePulse={meditateActivePulse && meditated}
+    />
+  );
+
   return (
     <>
       <HeroLedgerStyles />
       <div
-        className={cn("mt-1.5 flex items-stretch gap-4 rounded-xl border px-1.5 py-1", className)}
+        className={cn(
+          "mt-1.5 flex items-stretch rounded-xl border px-1 py-1",
+          compact ? "gap-1" : "gap-4",
+          className,
+        )}
         style={{
           borderColor: `${accent}33`,
           background: "rgba(0,0,0,0.28)",
           backdropFilter: "blur(8px)",
         }}
       >
-        <HeroSpiritLedgerCell
-          glyph="Ⲁ"
-          label={meditateLabel}
-          sublabel={meditateSublabel}
-          value={meditations}
-          active={meditated}
-          accent={accent}
-          variant="meditate"
-          onClick={onMeditate}
-          leadingIcon={meditateLeadingIcon}
-          leadingIconColor={meditateLeadingIconColor}
-        />
+        {meditateCell}
+        {onCommunity ? (
+          <>
+            <div aria-hidden className="my-1.5 w-px shrink-0 bg-gradient-to-b from-transparent via-[#1f8a5a]/35 to-transparent" />
+            <HeroSpiritLedgerCell
+              glyph="Ⲙ"
+              label={communityLabel}
+              sublabel={communitySublabel}
+              value={0}
+              accent="#1f8a5a"
+              variant="broadcast"
+              onClick={onCommunity}
+              compact={compact}
+              valueHidden
+            />
+          </>
+        ) : null}
         <div aria-hidden className="my-1.5 w-px shrink-0 bg-gradient-to-b from-transparent via-[#e7c97a]/35 to-transparent" />
         <HeroSpiritLedgerCell
           glyph="Ⲱ"
@@ -585,6 +632,7 @@ export function HeroSpiritLedgerRow({
           accent={accent}
           variant="broadcast"
           onClick={onBroadcast}
+          compact={compact}
         />
       </div>
     </>
@@ -1092,6 +1140,7 @@ export function AlphaHeroActionBar({
   toggleIcon: ToggleIcon = Bookmark,
   compact,
   hideShare,
+  hideToggle,
   className,
 }: {
   badge: string;
@@ -1104,6 +1153,7 @@ export function AlphaHeroActionBar({
   toggleIcon?: LucideIcon;
   compact?: boolean;
   hideShare?: boolean;
+  hideToggle?: boolean;
   className?: string;
 }) {
   if (compact) {
@@ -1132,17 +1182,21 @@ export function AlphaHeroActionBar({
       >
         <HeroBadgeEmblem label={badge} />
       </div>
-      <AlphaHeroToggleButton
-        active={toggled}
-        accent={accent}
-        onClick={onToggle}
-        label={toggleLabel}
-      >
-        <ToggleIcon
-          className={`h-[15px] w-[15px] ${toggled ? "fill-white text-white" : "text-white"}`}
-          strokeWidth={2.3}
-        />
-      </AlphaHeroToggleButton>
+      {hideToggle ? (
+        <span className="h-9 w-9 shrink-0" aria-hidden />
+      ) : (
+        <AlphaHeroToggleButton
+          active={toggled}
+          accent={accent}
+          onClick={onToggle}
+          label={toggleLabel}
+        >
+          <ToggleIcon
+            className={`h-[15px] w-[15px] ${toggled ? "fill-white text-white" : "text-white"}`}
+            strokeWidth={2.3}
+          />
+        </AlphaHeroToggleButton>
+      )}
     </div>
   );
 }
@@ -1157,6 +1211,7 @@ export function HeroCardTopBar({
   shareLabel,
   compact,
   hideShare,
+  hideToggle,
 }: {
   badge: string;
   accent: string;
@@ -1167,6 +1222,7 @@ export function HeroCardTopBar({
   shareLabel?: string;
   compact?: boolean;
   hideShare?: boolean;
+  hideToggle?: boolean;
 }) {
   return (
     <AlphaHeroActionBar
@@ -1179,6 +1235,7 @@ export function HeroCardTopBar({
       toggleLabel={saveLabel ?? (saved ? "إزالة الحفظ" : "حفظ")}
       compact={compact}
       hideShare={hideShare}
+      hideToggle={hideToggle}
     />
   );
 }
@@ -1197,7 +1254,7 @@ export function HeroProgressRail({
   const progress = ((index + 1) / total) * 100;
 
   return (
-    <div className="mt-3 px-1">
+    <div className="relative z-20 mt-3 px-1">
       <div
         className="relative h-[3px] overflow-hidden rounded-full"
         style={{ background: "rgba(120,80,30,0.14)" }}
@@ -1221,8 +1278,12 @@ export function HeroProgressRail({
               type="button"
               aria-label={labels[i] ?? `بطاقة ${i + 1}`}
               aria-current={active ? "step" : undefined}
-              onClick={() => onSelect?.(i)}
-              className="group flex flex-col items-center gap-1 rounded-lg px-0.5 py-1 transition active:scale-[0.97]"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onSelect?.(i);
+              }}
+              className="group flex flex-col items-center gap-1 rounded-lg px-0.5 py-1 transition active:scale-[0.97] touch-manipulation"
             >
               <span
                 className="h-1 w-full max-w-[28px] rounded-full transition-all duration-400"
@@ -1237,7 +1298,7 @@ export function HeroProgressRail({
               <span
                 className="text-[9px] font-extrabold leading-tight transition-colors duration-300"
                 style={{
-                  color: active ? "#5a1f2a" : "rgba(90,31,42,0.45)",
+                  color: active ? "#3a2a18" : "rgba(58,42,24,0.45)",
                 }}
               >
                 {labels[i]}

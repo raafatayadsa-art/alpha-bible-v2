@@ -1,39 +1,91 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "@tanstack/react-router";
-import { Settings, UserPen } from "lucide-react";
+import { Settings, User, UserPen, UserRound, LayoutGrid } from "lucide-react";
+import { AvatarWithDisplayShield } from "@/components/alpha/AvatarWithDisplayShield";
+import { getDisplayShieldRoleSync, subscribeAuthContext, useAlphaAuth } from "@/features/auth";
 import { cn } from "@/lib/utils";
 import { useResolvedTheme } from "@/lib/alpha-theme";
+import {
+  profileAvatarInitials,
+  resolveProfileDisplayAvatar,
+  useProfileUser,
+} from "./profile-user-store";
+
+type MenuRoute = "/profile" | "/profile/edit" | "/profile/personal" | "/more" | "/settings" | "/login";
+
+const MENU_WIDTH = 228;
+const VIEWPORT_PAD = 10;
+
+function computeAnchoredMenuLeft(rect: DOMRect, menuWidth: number): number {
+  const maxLeft = window.innerWidth - menuWidth - VIEWPORT_PAD;
+  // Align menu start with button start (avatar sits on visual left in RTL home).
+  let left = rect.left;
+  if (left + menuWidth > window.innerWidth - VIEWPORT_PAD) {
+    left = rect.right - menuWidth;
+  }
+  return Math.max(VIEWPORT_PAD, Math.min(left, maxLeft));
+}
 
 export function ProfileSettingsMenu({
   menuAlign = "start",
   variant,
+  trigger = "settings",
+  avatarSize = "md",
+  avatarVariant = "default",
+  showSettingsMenuItem = true,
 }: {
   menuAlign?: "start" | "end";
   variant?: "light" | "dark";
+  trigger?: "settings" | "avatar";
+  avatarSize?: "md" | "lg";
+  avatarVariant?: "default" | "home-premium";
+  showSettingsMenuItem?: boolean;
 }) {
   const resolvedDark = useResolvedTheme() === "dark";
   const tone = variant ?? (resolvedDark ? "dark" : "light");
   const [open, setOpen] = useState(false);
+  const [shieldTick, setShieldTick] = useState(0);
   const btnRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({});
   const navigate = useNavigate();
+  const { user, isAuthenticated, loading, refresh } = useAlphaAuth();
+  const { state: profileUser } = useProfileUser();
+
+  const avatarUrl = useMemo(
+    () => resolveProfileDisplayAvatar(profileUser.customAvatarUrl, user?.avatarUrl),
+    [profileUser.customAvatarUrl, user?.avatarUrl],
+  );
+
+  useEffect(() => {
+    if (isAuthenticated) void refresh();
+  }, [isAuthenticated, refresh]);
+
+  useEffect(() => subscribeAuthContext(() => setShieldTick((n) => n + 1)), []);
+
+  const initials = useMemo(
+    () => profileAvatarInitials(user?.displayName ?? "Alpha"),
+    [user?.displayName],
+  );
+
+  const avatarDim = avatarSize === "lg" ? "h-14 w-14" : "h-11 w-11";
+  const avatarTextSize = avatarSize === "lg" ? "text-[13px]" : "text-[11px]";
 
   const updateMenuPosition = () => {
     const btn = btnRef.current;
     if (!btn) return;
     const rect = btn.getBoundingClientRect();
-    const menuW = 196;
     const left =
-      menuAlign === "end"
-        ? Math.min(rect.right - menuW, window.innerWidth - menuW - 8)
-        : Math.max(8, rect.left);
+      menuAlign === "end" || trigger === "avatar"
+        ? computeAnchoredMenuLeft(rect, MENU_WIDTH)
+        : Math.max(VIEWPORT_PAD, Math.min(rect.left, window.innerWidth - MENU_WIDTH - VIEWPORT_PAD));
+
     setMenuStyle({
       position: "fixed",
-      top: rect.bottom + 8,
+      top: rect.bottom + 10,
       left,
-      width: menuW,
+      width: MENU_WIDTH,
       zIndex: 10060,
     });
   };
@@ -47,7 +99,7 @@ export function ProfileSettingsMenu({
       window.removeEventListener("resize", updateMenuPosition);
       window.removeEventListener("scroll", updateMenuPosition, true);
     };
-  }, [open, menuAlign]);
+  }, [open, menuAlign, trigger]);
 
   useEffect(() => {
     if (!open) return;
@@ -64,7 +116,7 @@ export function ProfileSettingsMenu({
     };
   }, [open]);
 
-  const goTo = (to: "/profile/personal" | "/settings") => {
+  const goTo = (to: MenuRoute) => {
     setOpen(false);
     void navigate({ to });
   };
@@ -74,67 +126,169 @@ export function ProfileSettingsMenu({
       ? "grid h-11 w-11 place-items-center rounded-full border border-white/20 bg-black/35 text-white shadow-sm backdrop-blur-xl active:scale-95 transition-transform touch-manipulation"
       : "alpha-chrome-btn relative z-[60] grid h-11 w-11 touch-manipulation place-items-center rounded-full active:scale-95 transition";
 
+  const avatarBtnClass = cn(
+    "relative z-[1] shrink-0 touch-manipulation overflow-visible rounded-full active:scale-95 transition-transform",
+    avatarDim,
+    avatarVariant === "home-premium"
+      ? "border-[2.5px] border-[var(--alpha-gold-bright)] bg-white/90 shadow-[0_0_18px_rgba(231,201,122,0.35),0_8px_20px_-10px_rgba(120,80,30,0.4)] backdrop-blur-xl"
+      : cn(
+          "relative z-[60] border-[2.5px]",
+          tone === "dark"
+            ? "border-[#f0d78c]/60 bg-black/35 shadow-md backdrop-blur-xl"
+            : "border-[#e7c97a]/90 bg-white/85 shadow-[0_8px_18px_-10px_rgba(120,80,30,0.45)] backdrop-blur-xl",
+        ),
+  );
+
+  const menuItemClass = (extra?: string) =>
+    cn(
+      "flex w-full items-center gap-3 px-4 py-3.5 text-right transition-colors",
+      tone === "dark" ? "active:bg-white/8" : "active:bg-white/10",
+      extra,
+    );
+
+  const menuIconClass = (accent: "gold" | "blue" | "green") =>
+    cn(
+      "h-[18px] w-[18px] shrink-0",
+      accent === "gold" &&
+        "text-[#ffe9a8] drop-shadow-[0_0_6px_rgba(255,220,120,0.85),0_0_14px_rgba(231,196,88,0.55)]",
+      accent === "blue" &&
+        "text-[#9fd0ff] drop-shadow-[0_0_6px_rgba(120,190,255,0.85),0_0_14px_rgba(74,134,193,0.55)]",
+      accent === "green" &&
+        "text-[#8ef0b8] drop-shadow-[0_0_6px_rgba(120,240,180,0.85),0_0_14px_rgba(63,157,110,0.55)]",
+    );
+
+  const menuLabelClass = cn(
+    "text-[15px] font-extrabold leading-snug text-[#f0d78c] drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]",
+  );
+
   const menu = open ? (
     <div
       ref={menuRef}
       style={menuStyle}
       className={cn(
-        "overflow-hidden rounded-[16px] border backdrop-blur-md shadow-[0_16px_40px_-12px_rgba(42,31,69,0.45)]",
+        "overflow-hidden rounded-[var(--alpha-radius-dock-tab)] border backdrop-blur-xl shadow-[var(--alpha-shadow-featured)] animate-in fade-in slide-in-from-top-1 duration-150",
         tone === "dark"
-          ? "border-white/12 bg-[#120c08]/96"
-          : "border-alpha bg-alpha-surface-glass",
+          ? "border-[#f0d78c]/22 bg-[color-mix(in_srgb,#1a1208_94%,transparent)]"
+          : "border-[#e7c97a]/35 bg-[color-mix(in_srgb,#2a1f12_92%,transparent)] shadow-[0_16px_40px_rgba(40,28,12,0.28)]",
       )}
       role="menu"
     >
-      <button
-        type="button"
-        role="menuitem"
-        onClick={() => goTo("/profile/personal")}
-        className={cn(
-          "flex w-full items-center gap-2.5 px-3.5 py-3 text-right transition-colors",
-          tone === "dark" ? "active:bg-white/8" : "active:bg-[var(--alpha-bg-elevated)]",
-        )}
-      >
-        <UserPen className="h-4 w-4 shrink-0 text-[#4a86c1]" />
-        <span className={cn("text-[12px] font-extrabold", tone === "dark" ? "text-white/90" : "text-alpha")}>
-          تعديل الملف الشخصي
-        </span>
+      {trigger === "avatar" && isAuthenticated ? (
+        <>
+          <button type="button" role="menuitem" onClick={() => goTo("/profile")} className={menuItemClass()}>
+            <UserRound className={menuIconClass("gold")} strokeWidth={2.2} />
+            <span className={menuLabelClass}>الملف الشخصي</span>
+          </button>
+          <div className={cn("h-px", tone === "dark" ? "bg-white/10" : "bg-[#f0d78c]/18")} />
+        </>
+      ) : null}
+      {trigger !== "avatar" ? (
+        <>
+          <button type="button" role="menuitem" onClick={() => goTo("/profile/edit")} className={menuItemClass()}>
+            <UserPen className={menuIconClass("blue")} strokeWidth={2.2} />
+            <span className={menuLabelClass}>
+              {isAuthenticated ? "تعديل الملف الشخصي" : "تعديل الملف / تسجيل الدخول"}
+            </span>
+          </button>
+          <div className={cn("h-px", tone === "dark" ? "bg-white/10" : "bg-[#f0d78c]/18")} />
+        </>
+      ) : null}
+      <button type="button" role="menuitem" onClick={() => goTo("/more")} className={menuItemClass()}>
+        <LayoutGrid className={menuIconClass("gold")} strokeWidth={2.2} />
+        <span className={menuLabelClass}>المزيد</span>
       </button>
-      <div className={cn("h-px", tone === "dark" ? "bg-white/10" : "bg-alpha-border")} />
-      <button
-        type="button"
-        role="menuitem"
-        onClick={() => goTo("/settings")}
-        className={cn(
-          "flex w-full items-center gap-2.5 px-3.5 py-3 text-right transition-colors",
-          tone === "dark" ? "active:bg-white/8" : "active:bg-[var(--alpha-bg-elevated)]",
-        )}
-      >
-        <Settings className="h-4 w-4 shrink-0 text-[#3f9d6e]" />
-        <span className={cn("text-[12px] font-extrabold", tone === "dark" ? "text-white/90" : "text-alpha")}>
-          الإعدادات
-        </span>
-      </button>
+      <div className={cn("h-px", tone === "dark" ? "bg-white/10" : "bg-[#f0d78c]/18")} />
+      {showSettingsMenuItem ? (
+        <button type="button" role="menuitem" onClick={() => goTo("/settings")} className={menuItemClass()}>
+          <Settings className={menuIconClass("green")} strokeWidth={2.2} />
+          <span className={menuLabelClass}>الإعدادات</span>
+        </button>
+      ) : null}
     </div>
   ) : null;
 
+  const handleTriggerClick = (e: MouseEvent) => {
+    e.stopPropagation();
+    if (trigger === "avatar" && !isAuthenticated && !loading) {
+      void navigate({ to: "/login" });
+      return;
+    }
+    setOpen((v) => !v);
+  };
+
+  const displayShieldRole = getDisplayShieldRoleSync();
+  void shieldTick;
+
+  const avatarInner =
+    trigger === "avatar" ? (
+      isAuthenticated && !loading ? (
+        <AvatarWithDisplayShield
+          userName={user?.displayName ?? "Alpha"}
+          userAvatar={avatarUrl || undefined}
+          shieldRole={displayShieldRole}
+          shieldSize={avatarSize === "lg" ? "md" : "sm"}
+          avatarClassName={avatarDim}
+        >
+          {avatarUrl ? (
+            <img src={avatarUrl} alt="" className="h-full w-full object-cover" draggable={false} />
+          ) : (
+            <span
+              className={cn(
+                "grid h-full w-full place-items-center font-extrabold",
+                avatarTextSize,
+                avatarVariant === "home-premium"
+                  ? "bg-gradient-to-br from-[#fdfbf7] via-[#f4ead8] to-[#e7c97a]/40 text-[var(--alpha-gold-deep)]"
+                  : tone === "dark"
+                    ? "bg-gradient-to-br from-[#5a3d92]/80 to-[#3a2560] text-[#f0d78c]"
+                    : "bg-gradient-to-br from-[#f4ead8] to-[#e7c97a]/35 text-[#5a1f2a]",
+              )}
+            >
+              {initials}
+            </span>
+          )}
+        </AvatarWithDisplayShield>
+      ) : loading ? (
+        <span className="h-6 w-6 animate-pulse rounded-full bg-[#e7c97a]/35" aria-hidden />
+      ) : (
+        <span
+          className={cn(
+            "grid h-full w-full place-items-center",
+            tone === "dark" ? "bg-white/10 text-white/85" : "bg-[#f4ead8] text-[#6a543a]",
+          )}
+        >
+          <User className="h-6 w-6" strokeWidth={2.1} />
+        </span>
+      )
+    ) : (
+      <Settings className={cn("h-5 w-5", tone === "light" && "text-alpha")} />
+    );
+
+  const triggerButton = (
+    <button
+      ref={btnRef}
+      type="button"
+      aria-label={trigger === "avatar" ? "الملف الشخصي" : "الإعدادات"}
+      aria-expanded={open}
+      aria-haspopup="menu"
+      data-alpha-edge-ignore
+      onClick={handleTriggerClick}
+      className={trigger === "avatar" ? avatarBtnClass : btnClass}
+    >
+      {avatarInner}
+    </button>
+  );
+
   return (
     <>
-      <button
-        ref={btnRef}
-        type="button"
-        aria-label="الإعدادات"
-        aria-expanded={open}
-        aria-haspopup="menu"
-        data-alpha-edge-ignore
-        onClick={(e) => {
-          e.stopPropagation();
-          setOpen((v) => !v);
-        }}
-        className={btnClass}
-      >
-        <Settings className={cn("h-5 w-5", tone === "light" && "text-alpha")} />
-      </button>
+      {trigger === "avatar" && avatarVariant === "home-premium" ? (
+        <div className={cn("alpha-home-avatar-shell relative shrink-0", avatarDim)}>
+          <span className="alpha-home-avatar-pulse-ring" aria-hidden />
+          <span className="alpha-home-avatar-pulse-ring alpha-home-avatar-pulse-ring--delay" aria-hidden />
+          {triggerButton}
+        </div>
+      ) : (
+        triggerButton
+      )}
       {typeof document !== "undefined" ? createPortal(menu, document.body) : null}
     </>
   );

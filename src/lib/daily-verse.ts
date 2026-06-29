@@ -191,21 +191,20 @@ function pickIndexForDay(dayKey: string, size: number): number {
   return (h >>> 0) % size;
 }
 
-/** Today's verse from `daily_verses` (stable per calendar day). */
-export async function fetchTodaysDailyVerse(): Promise<DailyVerseData | null> {
+async function fetchActiveDailyVerseRows(): Promise<DailyVerseRow[]> {
   const { data, error } = await supabase
     .from("daily_verses")
     .select("id, reference, verse_text, category, is_active")
     .eq("is_active", true)
     .order("created_at", { ascending: true });
 
-  if (error || !data?.length) return null;
+  if (error || !data?.length) return [];
+  return data as DailyVerseRow[];
+}
 
-  const dayKey = new Date().toISOString().slice(0, 10);
-  const row = data[pickIndexForDay(dayKey, data.length)] as DailyVerseRow;
+async function dailyVerseFromRow(row: DailyVerseRow): Promise<DailyVerseData | null> {
   const resolved = await resolveVerseFromReference(row.reference, row.verse_text);
   if (!resolved) return null;
-
   return {
     id: row.id,
     text: resolved.text,
@@ -215,4 +214,58 @@ export async function fetchTodaysDailyVerse(): Promise<DailyVerseData | null> {
     verse: resolved.verse,
     category: row.category,
   };
+}
+
+export type DailyVerseScheduleItem = {
+  dayKey: string;
+  reference: string;
+  isToday: boolean;
+  weekdayLabel: string;
+};
+
+const AR_WEEKDAY_SHORT = ["أحد", "إث", "ث", "ر", "خ", "ج", "س"] as const;
+
+function dayKeyOffset(base: Date, offsetDays: number): string {
+  const d = new Date(base);
+  d.setDate(d.getDate() + offsetDays);
+  return d.toISOString().slice(0, 10);
+}
+
+/** Verse for a specific calendar day (YYYY-MM-DD) from the daily_verses pool. */
+export async function fetchDailyVerseForDay(dayKey: string): Promise<DailyVerseData | null> {
+  const rows = await fetchActiveDailyVerseRows();
+  if (!rows.length) return null;
+  const row = rows[pickIndexForDay(dayKey, rows.length)];
+  return dailyVerseFromRow(row);
+}
+
+/** Seven-day window (−3…+3) showing which reference is scheduled per day. */
+export async function fetchDailyVerseWeekSchedule(
+  anchor = new Date(),
+): Promise<DailyVerseScheduleItem[]> {
+  const rows = await fetchActiveDailyVerseRows();
+  if (!rows.length) return [];
+
+  const todayKey = anchor.toISOString().slice(0, 10);
+  const items: DailyVerseScheduleItem[] = [];
+
+  for (let offset = -3; offset <= 3; offset++) {
+    const dayKey = dayKeyOffset(anchor, offset);
+    const row = rows[pickIndexForDay(dayKey, rows.length)]!;
+    const d = new Date(`${dayKey}T12:00:00`);
+    items.push({
+      dayKey,
+      reference: row.reference,
+      isToday: dayKey === todayKey,
+      weekdayLabel: AR_WEEKDAY_SHORT[d.getDay()] ?? "—",
+    });
+  }
+
+  return items;
+}
+
+/** Today's verse from `daily_verses` (stable per calendar day). */
+export async function fetchTodaysDailyVerse(): Promise<DailyVerseData | null> {
+  const dayKey = new Date().toISOString().slice(0, 10);
+  return fetchDailyVerseForDay(dayKey);
 }

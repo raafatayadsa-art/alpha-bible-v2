@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 import { CopticCross } from "@/components/coptic";
+import { KatamerosDateStrip } from "@/features/katameros/components/KatamerosDateStrip";
+import { katamerosDayQueryOptions } from "@/features/katameros";
 import { openAlphaShareSheet } from "@/lib/alpha-share-sheet";
 import { parseVerseReference } from "@/lib/bible-labels";
 import { resolveBibleRouteBookParam } from "@/lib/bible-book-names";
@@ -18,9 +20,10 @@ import {
 } from "./hero-card-chrome";
 import { navigateHeroCard, resolveHeroVerseLink } from "./hero-stack-data";
 import { fetchTodaysDailyVerse } from "@/lib/daily-verse";
+import { LOGIN_REQUIRED_AR, useCanUsePersonalFeatures } from "@/features/auth";
 import artVerse from "@/assets/home/art-verse.jpg";
 
-const VERSE_ACCENT = "#e7c97a";
+const VERSE_ACCENT = "var(--alpha-gold)";
 
 type VerseData = {
   text: string;
@@ -59,6 +62,8 @@ export function PremiumVerseHeroCard({
   variant = "front",
 }: PremiumVerseHeroCardProps) {
   const navigate = useNavigate();
+  const personalOn = useCanUsePersonalFeatures();
+  const katameros = useQuery(katamerosDayQueryOptions());
   const [verse, setVerse] = useState<VerseData | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [meditations, setMeditations] = useState(0);
@@ -68,7 +73,8 @@ export function PremiumVerseHeroCard({
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+
+    void (async () => {
       try {
         const daily = await fetchTodaysDailyVerse();
         if (!cancelled && daily) {
@@ -79,39 +85,12 @@ export function PremiumVerseHeroCard({
             chapter: daily.chapter,
             verse: daily.verse,
           });
-          return;
         }
       } catch {
-        /* fallback below */
-      }
-
-      try {
-        const { data: bv } = await supabase
-          .from("bible_verses")
-          .select("book_name,chapter_number,verse_number,verse_text")
-          .eq("book_name", "سفر المزامير")
-          .eq("chapter_number", 46)
-          .eq("verse_number", 1)
-          .maybeSingle();
-        if (!cancelled && bv) {
-          const row = bv as {
-            book_name: string;
-            chapter_number: number;
-            verse_number: number;
-            verse_text: string;
-          };
-          setVerse({
-            text: row.verse_text,
-            reference: `مزامير ${row.chapter_number}:${row.verse_number}`,
-            bookRoute: row.book_name,
-            chapter: row.chapter_number,
-            verse: row.verse_number,
-          });
-        }
-      } catch {
-        /* ignore */
+        /* keep fallback copy */
       }
     })();
+
     return () => {
       cancelled = true;
     };
@@ -149,6 +128,10 @@ export function PremiumVerseHeroCard({
   );
 
   const onToggleSaved = useCallback(() => {
+    if (!personalOn) {
+      setToast(LOGIN_REQUIRED_AR);
+      return;
+    }
     if (!parsed || !readerBook) {
       setToast("تعذّر حفظ الآية — مرجع غير واضح");
       return;
@@ -162,7 +145,7 @@ export function PremiumVerseHeroCard({
       id: saveId,
     });
     setToast(saved ? "تمت إزالة الآية" : "تم حفظ الآية");
-  }, [parsed, toggle, body, saveId, saved, readerBook]);
+  }, [parsed, toggle, body, saveId, saved, readerBook, personalOn]);
 
   const onToggleMeditation = useCallback(() => {
     const likeMap = readHeroMap(LIKE_KEY);
@@ -232,15 +215,15 @@ export function PremiumVerseHeroCard({
           }
         }}
         aria-label={linkTo && variant === "front" ? "آية اليوم — افتح الكتاب المقدس" : "آية اليوم"}
-        className={`relative w-full overflow-hidden rounded-[26px] border ${linkTo && variant === "front" ? "cursor-pointer" : ""}`}
+        className={`alpha-home-daily-card relative w-full overflow-hidden border ${linkTo && variant === "front" ? "cursor-pointer alpha-home-hero-card" : ""}`}
         style={{
           height: cardHeight,
-          borderRadius: isPeek ? 22 : 26,
-          borderColor: "rgba(231,201,122,0.42)",
-          background: "#07040f",
+          borderRadius: isPeek ? "var(--alpha-radius-card-compact)" : "var(--alpha-radius-card)",
+          borderColor: "color-mix(in srgb, var(--alpha-gold) 42%, transparent)",
+          background: "var(--alpha-bg-cinematic)",
           boxShadow: isPeek
             ? "0 16px 36px -14px rgba(0,0,0,0.5)"
-            : "0 24px 48px -14px rgba(0,0,0,0.72), 0 0 0 1px rgba(231,201,122,0.14), 0 0 36px rgba(231,201,122,0.1)",
+            : "var(--alpha-shadow-hero)",
         }}
       >
         <img
@@ -250,7 +233,7 @@ export function PremiumVerseHeroCard({
           fetchPriority="high"
           loading="eager"
           decoding="async"
-          className="absolute inset-0 h-full w-full object-cover object-[center_30%]"
+          className="absolute inset-0 h-full w-full object-cover object-[center_30%] alpha-media-polish"
         />
         <div
           aria-hidden
@@ -262,19 +245,31 @@ export function PremiumVerseHeroCard({
         />
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-[1px] rounded-[25px]"
+          className="pointer-events-none absolute inset-[1px] rounded-[calc(var(--alpha-radius-card)-1px)]"
           style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.18), inset 0 0 32px rgba(231,201,122,0.08)" }}
         />
 
         <HeroCardTopBar
           badge="آية اليوم"
           accent={VERSE_ACCENT}
-          saved={saved}
+          saved={personalOn ? saved : false}
           compact={isPeek}
           hideShare
+          hideToggle={!personalOn}
           saveLabel={saved ? "إزالة الحفظ" : "حفظ الآية"}
           onToggleSave={onToggleSaved}
         />
+
+        {!isPeek && personalOn && (katameros.data?.copticDate || katameros.data?.gregorianDate) ? (
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-center px-4 pt-3">
+            <KatamerosDateStrip
+              copticDate={katameros.data.copticDate}
+              gregorianDate={katameros.data.gregorianDate}
+              variant="image-hero"
+              align="center"
+            />
+          </div>
+        ) : null}
 
         <div className={`absolute inset-x-0 bottom-0 z-10 px-4 ${isPeek ? "pb-3 pt-12" : "pb-3 pt-14"}`}>
           <p
@@ -289,11 +284,11 @@ export function PremiumVerseHeroCard({
           {!isPeek ? (
           <>
           <div className="mt-1.5 flex items-center justify-end gap-2">
-            <span aria-hidden className="h-px flex-1 max-w-[40px] bg-gradient-to-l from-[#e7c97a]/60 to-transparent" />
-            <p className="text-[11px] font-extrabold tracking-wide" style={{ color: VERSE_ACCENT }}>
+            <span aria-hidden className="h-px flex-1 max-w-[40px] bg-gradient-to-l from-[var(--alpha-gold)]/60 to-transparent" />
+            <p className="alpha-type-desc font-extrabold tracking-wide" style={{ color: VERSE_ACCENT }}>
               {ref}
             </p>
-            <CopticCross size={8} className="text-[#e7c97a]/70" />
+            <CopticCross size={8} className="text-alpha-gold/70" />
           </div>
 
           <HeroSpiritLedgerRow
@@ -306,7 +301,7 @@ export function PremiumVerseHeroCard({
           />
           </>
           ) : (
-            <p className="mt-1 text-right text-[10px] font-extrabold" style={{ color: VERSE_ACCENT }}>
+            <p className="alpha-type-caption mt-1 text-right font-extrabold" style={{ color: VERSE_ACCENT }}>
               {ref}
             </p>
           )}
@@ -314,7 +309,7 @@ export function PremiumVerseHeroCard({
       </article>
 
       {toast ? (
-        <p className="absolute -bottom-7 inset-x-0 text-center text-[11px] font-bold text-[#7a4a26] animate-in fade-in">
+        <p className="absolute -bottom-7 inset-x-0 text-center alpha-type-desc font-bold text-alpha-gold-deep animate-in fade-in">
           {toast}
         </p>
       ) : null}

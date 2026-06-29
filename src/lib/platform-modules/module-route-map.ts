@@ -10,11 +10,11 @@ export const MODULE_ROUTE_PREFIXES: Record<PlatformModuleKey, string[]> = {
   audio: ["/publisher", "/audiov2", "/audio"],
   kids: ["/kids"],
   meditations: ["/meditations"],
-  community: ["/profile/church", "/prayer-requests", "/churches-directory", "/church-feed-lab", "/church"],
+  community: ["/community", "/my-community", "/profile/church", "/prayer-requests", "/churches-directory", "/church-feed-lab", "/church"],
   messaging: ["/alpha-connect", "/messages", "/personal-call", "/profile/messages", "/call"],
-  trips: ["/church/post"],
+  trips: [],
   reservations: [],
-  donations: [],
+  donations: ["/donate"],
 };
 
 const ORDERED: { key: PlatformModuleKey; prefix: string }[] = Object.entries(MODULE_ROUTE_PREFIXES)
@@ -50,6 +50,7 @@ export const NAV_ITEM_MODULE_KEY: Record<string, PlatformModuleKey | undefined> 
   katameros: "katameros",
   synaxarium: "synaxarium",
   church: "community",
+  community: "community",
   audio: "audio",
   kids: "kids",
   meditations: "meditations",

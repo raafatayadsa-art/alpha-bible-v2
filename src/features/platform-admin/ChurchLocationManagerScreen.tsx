@@ -79,8 +79,7 @@ function ChurchLocationCard({
       className="clm-card-shell relative overflow-hidden rounded-[14px] border px-2.5 py-2"
       style={{
         borderColor: verified ? `${MC.green}40` : `${PP_GOLD}20`,
-        background:
-          "linear-gradient(155deg, rgba(22, 30, 52, 0.78) 0%, rgba(10, 12, 22, 0.92) 100%)",
+        background: MC.panel,
         boxShadow: verified
           ? `0 8px 24px -12px ${MC.green}22, inset 0 1px 0 rgba(255,255,255,0.06)`
           : `0 8px 22px -14px rgba(80,175,255,0.12), inset 0 1px 0 rgba(255,255,255,0.05)`,
@@ -137,7 +136,7 @@ function ChurchLocationCard({
             />
             <div
               aria-hidden
-              className="my-1 w-px shrink-0 bg-gradient-to-b from-transparent via-[#e7c97a]/30 to-transparent"
+              className="my-1 w-px shrink-0 bg-gradient-to-b from-transparent via-[#34C759]/30 to-transparent"
             />
             <button
               type="button"
@@ -198,7 +197,7 @@ function AutoVerifyReportDialog({
         className="w-full max-w-md max-h-[85vh] overflow-y-auto rounded-[20px] border p-4 text-right"
         style={{
           borderColor: `${PP_GOLD}36`,
-          background: "linear-gradient(155deg, rgba(22, 30, 52, 0.96) 0%, rgba(8, 10, 20, 0.98) 100%)",
+          background: MC.panel,
         }}
       >
         <div className="mb-3 flex items-start justify-between gap-2">

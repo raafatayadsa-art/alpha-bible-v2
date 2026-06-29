@@ -23,7 +23,7 @@ export function QuickAccessCard({
   onClick?: () => void;
 }) {
   return (
-    <Pressable to={to} params={params} onClick={onClick} ariaLabel={title} className="rounded-[22px]">
+    <Pressable to={to} params={params} onClick={onClick} ariaLabel={title} className="rounded-[var(--alpha-radius-card-compact)]">
       <GlassSurface tone={tone === "purple" ? "purple" : "warm"} className="h-full p-3 text-right">
         {bookId ? (
           <div className="h-[38px] w-[38px]">
@@ -38,11 +38,11 @@ export function QuickAccessCard({
             <BookIcon className="h-full w-full" />
           </div>
         )}
-        <h3 className="mt-2 text-[11.5px] font-extrabold text-[#3a2a18] leading-tight [word-break:keep-all]">
+        <h3 className="alpha-type-body mt-2 font-extrabold text-alpha-heading leading-tight [word-break:keep-all]">
           {title}
         </h3>
         {subtitle && (
-          <p className="mt-0.5 text-[9.5px] leading-snug text-[#6a543a] line-clamp-2">
+          <p className="alpha-type-caption mt-0.5 leading-snug text-alpha-description line-clamp-2">
             {subtitle}
           </p>
         )}

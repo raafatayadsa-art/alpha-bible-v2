@@ -144,10 +144,10 @@ export function PublisherHeroCarousel({
     <section className="px-5 pt-0" aria-label="كروت الهيرو">
       <div className="relative flex flex-col items-center">
         <div className="relative z-20 -mb-6 flex flex-col items-center">
-          <p className="mb-1.5 max-w-[220px] truncate text-center text-[11px] font-extrabold text-[#5a4218]">
+          <p className="mb-1.5 max-w-[220px] truncate text-center alpha-type-desc font-extrabold text-alpha-heading">
             {publisher.name}
           </p>
-          <div className="grid h-[58px] w-[58px] place-items-center overflow-hidden rounded-full bg-[#F4EEE6] p-0.5 shadow-[0_10px_28px_-12px_rgba(120,80,30,0.45)] ring-[3px] ring-[var(--gold)]/45">
+          <div className="grid h-[58px] w-[58px] place-items-center overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--alpha-bg-elevated)_92%,transparent)] p-0.5 shadow-[var(--alpha-shadow-featured)] ring-[3px] ring-[var(--gold)]/45">
             <img src={choralLogo} alt="" className="h-full w-full rounded-full object-cover" />
           </div>
         </div>

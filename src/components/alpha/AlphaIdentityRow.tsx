@@ -19,7 +19,7 @@ import {
 
 export type AlphaIdentityRowProps = {
   name: string;
-  role: ShieldRole;
+  role: ShieldRole | null;
   avatar: string;
   avatarAlt?: string;
   avatarSize?: AlphaIdentityAvatarSize;

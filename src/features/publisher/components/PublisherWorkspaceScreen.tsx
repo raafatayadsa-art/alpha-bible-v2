@@ -101,6 +101,16 @@ import { PublisherProfileSheet } from "./PublisherProfileSheet";
 
 import { PublisherHeroSheet } from "./PublisherHeroSheet";
 
+import {
+  PUBLISHER_CHIP_BTN,
+  PUBLISHER_CONTENT_ROW,
+  PUBLISHER_INNER_TAB_BAR,
+  PUBLISHER_OUTLINE_BTN,
+  PUBLISHER_TEXT_MUTED,
+  PUBLISHER_TEXT_SUB,
+  PUBLISHER_TEXT_TITLE,
+} from "./publisher-glass-chrome";
+
 import cardChurch from "@/assets/home/card-church.jpg";
 
 
@@ -399,7 +409,7 @@ export function PublisherWorkspaceScreen({ publisherId }: Props) {
 
     return (
 
-      <p className="py-16 text-center text-[13px] font-extrabold text-[#3a3258]">
+      <p className="py-16 text-center alpha-type-body font-extrabold text-[#3a3258]">
 
         لم نجد مساحة الناشر أو لا تملك صلاحية الدخول.
 
@@ -487,9 +497,9 @@ export function PublisherWorkspaceScreen({ publisherId }: Props) {
 
           <div className="min-w-0 flex-1 text-right">
 
-            <p className="text-[10px] font-bold text-[#8a84a8]">{PUBLISHER_TYPE_LABELS[publisher.publisherType]}</p>
+            <p className="alpha-type-caption font-bold text-[#8a84a8]">{PUBLISHER_TYPE_LABELS[publisher.publisherType]}</p>
 
-            <p className="truncate text-[16px] font-extrabold text-[#3a3258]">{publisher.name}</p>
+            <p className="truncate alpha-type-h2 font-extrabold text-[#3a3258]">{publisher.name}</p>
 
             <p className="mt-0.5 text-[10px] font-extrabold text-[#5D3291]">
 
@@ -609,7 +619,7 @@ export function PublisherWorkspaceScreen({ publisherId }: Props) {
 
           <div
 
-            className="no-scrollbar flex gap-1 overflow-x-auto rounded-2xl border border-[rgba(93,50,145,0.12)] bg-[#faf8fc] p-1"
+            className={PUBLISHER_INNER_TAB_BAR}
 
             aria-label="إعدادات الصفحة"
 
@@ -689,7 +699,7 @@ export function PublisherWorkspaceScreen({ publisherId }: Props) {
 
         <PanelCard>
 
-          <p className="py-6 text-center text-[11px] font-bold text-[#6b658a]">
+          <p className="py-6 text-center alpha-type-desc font-bold text-[#6b658a]">
 
             لا تملك صلاحية تعديل إعدادات الصفحة.
 
@@ -991,7 +1001,7 @@ function ContentPanel({
 
             key={item.id}
 
-            className="flex items-center gap-2 rounded-2xl border border-[rgba(93,50,145,0.1)] bg-[#faf8fc] px-3 py-2.5"
+            className={PUBLISHER_CONTENT_ROW}
 
           >
 
@@ -1027,9 +1037,9 @@ function ContentPanel({
 
             <div className="min-w-0 flex-1 text-right">
 
-              <p className="truncate text-[12px] font-extrabold text-[#3a3258]">{item.title}</p>
+              <p className="truncate alpha-type-body font-extrabold text-[#3a3258]">{item.title}</p>
 
-              <p className="text-[10px] font-bold text-[#6b658a]">
+              <p className="alpha-type-caption font-bold text-[#6b658a]">
 
                 {PUBLISHER_CONTENT_KIND_LABELS[item.contentKind]}
 
@@ -1037,7 +1047,7 @@ function ContentPanel({
 
               </p>
 
-              <p className="mt-0.5 text-[9px] font-bold text-[#8a84a8]">{publisherContentDateLabel(item)}</p>
+              <p className="mt-0.5 alpha-type-caption font-bold text-[#8a84a8]">{publisherContentDateLabel(item)}</p>
 
             </div>
 
@@ -1051,7 +1061,7 @@ function ContentPanel({
 
             <FileEdit className="mx-auto mb-2 h-8 w-8 text-[#5D3291]/40" />
 
-            <p className="text-[11px] font-extrabold text-[#3a3258]">لا يوجد محتوى بعد</p>
+            <p className="alpha-type-desc font-extrabold text-[#3a3258]">لا يوجد محتوى بعد</p>
 
             {canManageContent ? (
 
@@ -1113,7 +1123,7 @@ function WorkspaceQuickActions({
 
         params={{ publisherId }}
 
-        className="inline-flex items-center justify-center gap-1 rounded-2xl border border-[rgba(93,50,145,0.18)] bg-white/95 py-2.5 text-[11px] font-extrabold text-[#5D3291] shadow-sm active:scale-[0.99]"
+        className={PUBLISHER_OUTLINE_BTN}
 
       >
 
@@ -1129,7 +1139,7 @@ function WorkspaceQuickActions({
 
         onClick={onQr}
 
-        className="inline-flex items-center justify-center gap-1 rounded-2xl border border-[rgba(93,50,145,0.18)] bg-white/95 py-2.5 text-[11px] font-extrabold text-[#5D3291] shadow-sm active:scale-[0.99]"
+        className={PUBLISHER_OUTLINE_BTN}
 
       >
 
@@ -1147,7 +1157,7 @@ function WorkspaceQuickActions({
 
           onClick={onHero}
 
-          className="col-span-2 inline-flex items-center justify-center gap-1 rounded-2xl border border-[var(--gold)]/35 bg-gradient-to-l from-[var(--gold)]/12 to-white py-2.5 text-[11px] font-extrabold text-[#5a4218] shadow-sm active:scale-[0.99]"
+          className="col-span-2 inline-flex items-center justify-center gap-1 rounded-2xl border border-[var(--gold)]/35 bg-gradient-to-l from-[var(--gold)]/12 to-white py-2.5 alpha-type-desc font-extrabold text-alpha-heading shadow-sm active:scale-[0.99]"
 
         >
 
@@ -1197,7 +1207,7 @@ function PanelEditButton({ label, onClick }: { label: string; onClick: () => voi
 
       onClick={onClick}
 
-      className="inline-flex shrink-0 items-center gap-1 rounded-full border border-[#5D3291]/20 bg-white px-3 py-1.5 text-[10px] font-extrabold text-[#5D3291] active:scale-[0.98]"
+      className={PUBLISHER_CHIP_BTN}
 
     >
 
@@ -1239,7 +1249,7 @@ function ProfileSummaryPanel({
 
       <div className="min-w-0 flex-1 text-right">
 
-        <p className="text-[14px] font-extrabold text-[#3a3258]">{publisher.name}</p>
+        <p className="alpha-type-h2 font-extrabold text-[#3a3258]">{publisher.name}</p>
 
         <p className="mt-1 line-clamp-3 text-[11px] font-bold leading-relaxed text-[#6b658a]">
 
@@ -1247,7 +1257,7 @@ function ProfileSummaryPanel({
 
         </p>
 
-        <p className="mt-2 text-[10px] font-bold text-[#8a84a8]">
+        <p className="mt-2 alpha-type-caption font-bold text-[#8a84a8]">
 
           {[publisher.phone, publisher.email, publisher.websiteUrl].filter(Boolean).join(" · ") || "لا توجد بيانات تواصل"}
 
@@ -1281,7 +1291,7 @@ function HeroSummaryPanel({
 
     <div className="space-y-3">
 
-      <p className="text-right text-[11px] font-bold text-[#6b658a]">
+      <p className="text-right alpha-type-desc font-bold text-[#6b658a]">
 
         {configuredCount
 
@@ -1305,7 +1315,7 @@ function HeroSummaryPanel({
 
             <span className="text-[10px] font-black text-[#5D3291]">{i + 1}</span>
 
-            <p className="min-w-0 flex-1 truncate text-right text-[11px] font-extrabold text-[#3a3258]">{slide.title}</p>
+            <p className="min-w-0 flex-1 truncate text-right alpha-type-desc font-extrabold text-[#3a3258]">{slide.title}</p>
 
           </div>
 
@@ -1313,7 +1323,7 @@ function HeroSummaryPanel({
 
         {heroSlides.length > 6 ? (
 
-          <p className="text-center text-[10px] font-bold text-[#8a84a8]">+{heroSlides.length - 6} كروت أخرى</p>
+          <p className="text-center alpha-type-caption font-bold text-[#8a84a8]">+{heroSlides.length - 6} كروت أخرى</p>
 
         ) : null}
 
@@ -1361,9 +1371,9 @@ function PanelCard({
 
           <div className="text-right">
 
-            <h2 className="text-[13px] font-extrabold text-[#3a3258]">{title}</h2>
+            <h2 className="alpha-type-body font-extrabold text-[#3a3258]">{title}</h2>
 
-            {subtitle ? <p className="text-[10px] font-bold text-[#8a84a8]">{subtitle}</p> : null}
+            {subtitle ? <p className="alpha-type-caption font-bold text-[#8a84a8]">{subtitle}</p> : null}
 
           </div>
 
@@ -1443,9 +1453,9 @@ function StatChip({ label, value }: { label: string; value: string }) {
 
     <div className="rounded-xl bg-white/80 px-2 py-2 text-center">
 
-      <p className="text-[13px] font-extrabold text-[#3a3258]">{value}</p>
+      <p className="alpha-type-body font-extrabold text-[#3a3258]">{value}</p>
 
-      <p className="text-[9px] font-bold text-[#8a84a8]">{label}</p>
+      <p className="alpha-type-caption font-bold text-[#8a84a8]">{label}</p>
 
     </div>
 

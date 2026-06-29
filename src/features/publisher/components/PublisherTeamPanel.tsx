@@ -6,6 +6,16 @@ import {
   removePublisherTeamMember,
   updatePublisherTeamMember,
 } from "../publisher-team-api";
+import {
+  PUBLISHER_ACCENT_ICON_MD,
+  PUBLISHER_MEMBER_CARD,
+  PUBLISHER_PERM_ROW,
+  PUBLISHER_PURPLE_GRADIENT,
+  PUBLISHER_TEXT_FEEDBACK,
+  PUBLISHER_TEXT_MUTED,
+  PUBLISHER_TEXT_SUB,
+  PUBLISHER_TEXT_TITLE,
+} from "./publisher-glass-chrome";
 
 type DraftPerms = {
   canEditProfile: boolean;
@@ -65,18 +75,18 @@ export function PublisherTeamPanel({ publisherId, onAddClick, refreshKey = 0 }: 
         <button
           type="button"
           onClick={onAddClick}
-          className="inline-flex items-center gap-1 rounded-xl px-3 py-2 text-[11px] font-extrabold text-white active:scale-[0.98]"
-          style={{ background: "linear-gradient(160deg, #7b4cb8, #5D3291)" }}
+          className="inline-flex items-center gap-1 rounded-xl px-3 py-2 alpha-type-desc font-extrabold text-white active:scale-[0.98]"
+          style={{ background: PUBLISHER_PURPLE_GRADIENT }}
         >
           <UserPlus className="h-3.5 w-3.5" />
           إضافة مساعد
         </button>
         <div className="flex items-center gap-2 text-right">
           <div>
-            <p className="text-[12px] font-extrabold text-[#3a3258]">فريق المساعدين</p>
-            <p className="text-[10px] font-bold text-[#6b658a]">{members.length} مساعد</p>
+            <p className={PUBLISHER_TEXT_TITLE}>فريق المساعدين</p>
+            <p className={PUBLISHER_TEXT_SUB}>{members.length} مساعد</p>
           </div>
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#5D3291]/10 text-[#5D3291]">
+          <span className={PUBLISHER_ACCENT_ICON_MD}>
             <Users className="h-4 w-4" />
           </span>
         </div>
@@ -91,20 +101,20 @@ export function PublisherTeamPanel({ publisherId, onAddClick, refreshKey = 0 }: 
           {members.map((member) => (
             <div
               key={member.id}
-              className="rounded-2xl border border-[rgba(93,50,145,0.1)] bg-[#faf8fc] px-3 py-3"
+              className={PUBLISHER_MEMBER_CARD}
             >
               <div className="mb-2 flex items-center justify-between gap-2">
                 <button
                   type="button"
                   disabled={saving}
                   onClick={() => void removeMember(member.id)}
-                  className="rounded-lg px-2 py-1 text-[10px] font-extrabold text-[#a8344f] hover:bg-red-50"
+                  className="rounded-lg px-2 py-1 alpha-type-caption font-extrabold text-[#a8344f] hover:bg-red-50"
                 >
                   إزالة
                 </button>
                 <div className="min-w-0 text-right">
-                  <p className="truncate text-[12px] font-extrabold text-[#3a3258]">{member.displayName}</p>
-                  <p className="truncate text-[9px] font-bold text-[#8a84a8]" dir="ltr">
+                  <p className={`truncate ${PUBLISHER_TEXT_TITLE}`}>{member.displayName}</p>
+                  <p className={`truncate ${PUBLISHER_TEXT_MUTED}`} dir="ltr">
                     {member.userId.slice(0, 8)}…
                   </p>
                 </div>
@@ -120,12 +130,12 @@ export function PublisherTeamPanel({ publisherId, onAddClick, refreshKey = 0 }: 
       ) : (
         <div className="rounded-2xl border border-dashed border-[rgba(93,50,145,0.16)] px-4 py-10 text-center">
           <Users className="mx-auto mb-2 h-8 w-8 text-[#5D3291]/35" />
-          <p className="text-[11px] font-extrabold text-[#3a3258]">لا يوجد مساعدون بعد</p>
-          <p className="mt-1 text-[10px] font-bold text-[#6b658a]">اضغط «إضافة مساعد» لدعوة أول مساعد.</p>
+          <p className={`${PUBLISHER_TEXT_TITLE} text-[11px]`}>لا يوجد مساعدون بعد</p>
+          <p className={`mt-1 ${PUBLISHER_TEXT_SUB}`}>اضغط «إضافة مساعد» لدعوة أول مساعد.</p>
         </div>
       )}
 
-      {feedback ? <p className="text-center text-[11px] font-bold text-[#5D3291]">{feedback}</p> : null}
+      {feedback ? <p className={PUBLISHER_TEXT_FEEDBACK}>{feedback}</p> : null}
     </div>
   );
 }
@@ -146,7 +156,7 @@ function PermissionToggles({
       {keys.map((key) => (
         <label
           key={key}
-          className="flex items-center justify-between gap-2 rounded-xl border border-[rgba(93,50,145,0.08)] bg-white px-2.5 py-2"
+          className={`${PUBLISHER_PERM_ROW} bg-white`}
         >
           <input
             type="checkbox"
@@ -155,7 +165,7 @@ function PermissionToggles({
             onChange={(e) => onToggle(key, e.target.checked)}
             className="h-4 w-4 accent-[#5D3291]"
           />
-          <span className="flex-1 text-right text-[10px] font-extrabold text-[#3a3258]">
+          <span className={`flex-1 text-right ${PUBLISHER_TEXT_TITLE} text-[10px]`}>
             {PUBLISHER_TEAM_PERMISSION_LABELS[key]}
           </span>
         </label>

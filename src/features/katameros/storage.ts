@@ -17,7 +17,12 @@ function safeRead(): ProgressMap {
 
 function safeWrite(v: ProgressMap) {
   if (typeof window === "undefined") return;
-  try { window.localStorage.setItem(KEY, JSON.stringify(v)); } catch { /* ignore */ }
+  try {
+    window.localStorage.setItem(KEY, JSON.stringify(v));
+    void import("@/lib/user-sync-scheduler").then(({ scheduleUserDataSync }) =>
+      scheduleUserDataSync({ debounced: true, delayMs: 4000, extraKey: KEY }),
+    );
+  } catch { /* ignore */ }
 }
 
 export function useKatamerosProgress(dayId: string) {

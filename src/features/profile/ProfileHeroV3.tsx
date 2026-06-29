@@ -25,8 +25,8 @@ function ProfileStatCell({
       className={cn(
         "flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl px-1.5 py-2.5",
         isDark
-          ? "border border-[#f0d78c]/14 bg-gradient-to-b from-[#f0d78c]/[0.04] to-black/50"
-          : "border border-alpha bg-alpha-surface shadow-[0_4px_14px_-10px_rgba(120,80,30,0.12)]",
+          ? "border border-alpha-gold-bright/14 bg-gradient-to-b from-alpha-gold-bright/[0.04] to-black/50"
+          : "border border-alpha bg-alpha-surface shadow-[var(--alpha-shadow-mini)]",
       )}
     >
       <div className="flex items-center gap-1.5">
@@ -48,7 +48,7 @@ function ProfileStatCell({
           {value}
         </span>
       </div>
-      <p className="text-[9.5px] font-extrabold leading-none" style={{ color: accent }}>
+      <p className="alpha-type-caption font-extrabold leading-none" style={{ color: accent }}>
         {label}
       </p>
     </div>
@@ -59,7 +59,7 @@ type Props = {
   name: string;
   avatarUrl: string;
   verified: boolean;
-  shieldRole: ShieldRole;
+  shieldRole: ShieldRole | null;
   churchName: string;
   diocese?: string | null;
   joinLabel: string | null;
@@ -71,6 +71,8 @@ type Props = {
   alphaId?: string;
   bio?: string | null;
   birthDate?: string | null;
+  /** Shown directly under display name — e.g. المؤسس */
+  identityLabel?: string | null;
   showChurch?: boolean;
   showStatsLedger?: boolean;
   showTripStat?: boolean;
@@ -94,6 +96,7 @@ export function ProfileHeroV3({
   alphaId,
   bio,
   birthDate,
+  identityLabel,
   showChurch = true,
   showStatsLedger = true,
   showTripStat = true,
@@ -172,12 +175,12 @@ export function ProfileHeroV3({
               {avatarUrl ? (
                 <img src={avatarUrl} alt="" className="h-full w-full object-cover object-center" />
               ) : (
-                <span className="grid h-full w-full place-items-center text-[28px] font-extrabold text-[#f0d78c]">
+                <span className="grid h-full w-full place-items-center text-[28px] font-extrabold text-alpha-gold-bright">
                   {name.charAt(0)}
                 </span>
               )}
             </div>
-            {verified ? (
+            {verified && shieldRole ? (
               <span className="absolute -bottom-0.5 -left-0.5 z-10 scale-[0.92]">
                 <AlphaShield
                   role={shieldRole}
@@ -198,6 +201,16 @@ export function ProfileHeroV3({
           >
             {name}
           </h1>
+          {identityLabel?.trim() ? (
+            <p
+              className={cn(
+                "mt-0.5 text-[12px] font-extrabold tracking-wide",
+                isDark ? "text-alpha-gold-bright" : "text-alpha-gold-deep",
+              )}
+            >
+              {identityLabel.trim()}
+            </p>
+          ) : null}
           <p className={cn("mt-1 text-[11.5px] font-bold", isDark ? "text-white/65" : "text-alpha-muted")}>
             {showChurch
               ? diocese?.trim() && diocese !== "—"
@@ -209,7 +222,7 @@ export function ProfileHeroV3({
             <p
               className={cn(
                 "mt-1 font-mono text-[10px] font-bold tracking-wide",
-                isDark ? "text-[#f0d78c]/80" : "text-alpha-glyph",
+                isDark ? "text-alpha-gold-bright/80" : "text-alpha-glyph",
               )}
             >
               {alphaId}

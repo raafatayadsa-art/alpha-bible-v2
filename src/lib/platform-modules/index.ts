@@ -13,6 +13,7 @@ export {
   isModuleEnabledInList,
   notifyPlatformModulesChanged,
   patchCachedPlatformModule,
+  replacePlatformModulesCache,
   purgeLegacyPlatformModuleCaches,
   syncPlatformModulesFromServer,
   ALWAYS_ENABLED_MODULE_KEYS,

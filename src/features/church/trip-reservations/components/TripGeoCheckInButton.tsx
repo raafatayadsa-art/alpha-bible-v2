@@ -1,13 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MapPin, Check } from "lucide-react";
-import { hasCheckedIn, performGeoCheckIn } from "../trip-geo-checkin";
+import { hasCheckedIn, performGeoCheckIn, syncTripGeoFromDb } from "../trip-geo-checkin";
 import { myRegistration } from "../../post-registrations";
 
 export function TripGeoCheckInButton({ postId }: { postId: string }) {
   const reg = myRegistration(postId, "trip");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [, setTick] = useState(0);
   const checked = reg ? hasCheckedIn(reg.id) : false;
+
+  useEffect(() => {
+    void syncTripGeoFromDb(postId).then(() => setTick((n) => n + 1));
+  }, [postId]);
 
   if (!reg) return null;
 

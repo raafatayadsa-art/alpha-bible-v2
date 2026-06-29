@@ -1,45 +1,60 @@
 import { useCallback, useEffect, useState } from "react";
 import type { ScanAuditMeta } from "./scan-store";
 import {
+  ensureModulesSeededDb,
   fetchAuditLog,
   fetchEmergency,
   fetchModules,
   insertAuditDb,
   patchEmergencyDb,
   toggleModuleDb,
+  saveModulesDb,
 } from "./platform-api";
-import { fetchPlatformModulesPublic, mergeOwnerModuleStates, notifyPlatformModulesChanged, OWNER_MODULE_DEFAULTS, patchCachedPlatformModule } from "@/lib/platform-modules";
+import { broadcastPlatformLiveUpdate } from "./platform-control-sync";
+import {
+  fetchPlatformModulesPublic,
+  getCachedPlatformModules,
+  mergeOwnerModuleStates,
+  notifyPlatformModulesChanged,
+  OWNER_MODULE_DEFAULTS,
+  patchCachedPlatformModule,
+  replacePlatformModulesCache,
+  syncPlatformModulesFromServer,
+} from "@/lib/platform-modules";
 
-/** Luxury Owner Control palette — isolated from Alpha Bible cream UI. */
+/** Supabase-inspired Owner Control palette — black surfaces, neon green primary. */
 export const MC = {
-  bg: "#080c18",
-  midnight: "#0f1628",
-  panel: "linear-gradient(155deg, rgba(22, 30, 52, 0.92) 0%, rgba(10, 14, 26, 0.96) 100%)",
-  panelBorder: "rgba(196, 165, 116, 0.14)",
-  purple: "#8b7ab8",
-  gold: "#c4a574",
-  white: "#f5f0e8",
-  green: "#4a8f6e",
-  red: "#b85c58",
-  blue: "#5a7aa8",
-  steel: "#6b7a94",
-  cyan: "#7a9ab8",
-  electric: "#5a7aa8",
-  amber: "#c4a574",
-  text: "#f0ebe3",
-  muted: "#8a94a8",
-  grid: "rgba(139, 122, 184, 0.04)",
+  bg: "#000000",
+  midnight: "#000000",
+  panel: "#1C1C1E",
+  panelBorder: "rgba(255, 255, 255, 0.06)",
+  primary: "#34C759",
+  purple: "#BF5AF2",
+  gold: "#34C759",
+  white: "#FFFFFF",
+  green: "#34C759",
+  greenBright: "#30D158",
+  red: "#FF375F",
+  blue: "#0A84FF",
+  steel: "#8E8E93",
+  cyan: "#0A84FF",
+  electric: "#0A84FF",
+  amber: "#FF9F0A",
+  pink: "#FF375F",
+  text: "#FFFFFF",
+  muted: "#8E8E93",
+  grid: "rgba(52, 199, 89, 0.03)",
 } as const;
 
 export const PLATFORM_STATS = {
-  users: 12458,
-  usersDelta: "+125 today",
-  churches: 356,
-  churchesDelta: "+3 this week",
-  priests: 125,
-  priestsDelta: "+3 this week",
-  servants: 1256,
-  servantsDelta: "+18 today",
+  users: 0,
+  usersDelta: "",
+  churches: 0,
+  churchesDelta: "",
+  priests: 0,
+  priestsDelta: "",
+  servants: 0,
+  servantsDelta: "",
 } as const;
 
 export type PlatformModuleKey =
@@ -82,10 +97,7 @@ const EMERGENCY_KEY = "ab:mc-emergency";
 
 const DEFAULT_MODULES = OWNER_MODULE_DEFAULTS;
 
-const DEFAULT_AUDIT: AuditLogEntry[] = [
-  { id: "1", action: "اعتماد كنيسة", admin: "Owner", reason: "مستندات مكتملة", timestamp: Date.now() - 86400000 },
-  { id: "2", action: "تعليق موديول", admin: "Owner", reason: "صيانة", timestamp: Date.now() - 172800000 },
-];
+const DEFAULT_AUDIT: AuditLogEntry[] = [];
 
 function readJson<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
@@ -112,6 +124,29 @@ function readModulesCache(): ModuleState[] {
   return mergeOwnerModuleStates(Array.isArray(raw) ? raw : DEFAULT_MODULES);
 }
 
+function modulesFromPublicCache(): ModuleState[] {
+  return mergeOwnerModuleStates(
+    getCachedPlatformModules().map((m) => ({
+      key: m.key,
+      label: m.label,
+      labelAr: m.labelAr,
+      enabled: m.enabled,
+    })),
+  );
+}
+
+function persistModules(next: ModuleState[]) {
+  writeJson(MODULES_KEY, next);
+  replacePlatformModulesCache(
+    next.map((m) => ({
+      key: m.key,
+      label: m.label,
+      labelAr: m.labelAr,
+      enabled: m.enabled,
+    })),
+  );
+}
+
 export function usePlatformStore() {
   const [modules, setModules] = useState<ModuleState[]>(() => readModulesCache());
   const [auditLog, setAuditLog] = useState<AuditLogEntry[]>(() => readJson(AUDIT_KEY, DEFAULT_AUDIT));
@@ -129,6 +164,7 @@ export function usePlatformStore() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      await ensureModulesSeededDb();
       const [remoteModules, remoteAudit, remoteEmergency] = await Promise.all([
         fetchModules(),
         fetchAuditLog(),
@@ -138,7 +174,7 @@ export function usePlatformStore() {
       if (remoteModules?.length) {
         const merged = mergeOwnerModuleStates(remoteModules);
         setModules(merged);
-        writeJson(MODULES_KEY, merged);
+        persistModules(merged);
         setDbSynced(true);
       } else {
         setModules((prev) => mergeOwnerModuleStates(prev));
@@ -158,7 +194,7 @@ export function usePlatformStore() {
   }, []);
 
   useEffect(() => {
-    const sync = () => {
+    const syncMcStore = () => {
       setModules(readModulesCache());
       setAuditLog(readJson(AUDIT_KEY, DEFAULT_AUDIT));
       setEmergency(
@@ -171,11 +207,16 @@ export function usePlatformStore() {
         }),
       );
     };
-    window.addEventListener("ab:mc-store", sync);
-    window.addEventListener("ab:platform-modules", sync);
+    const syncFromPublicModules = () => {
+      const merged = modulesFromPublicCache();
+      setModules(merged);
+      persistModules(merged);
+    };
+    window.addEventListener("ab:mc-store", syncMcStore);
+    window.addEventListener("ab:platform-modules", syncFromPublicModules);
     return () => {
-      window.removeEventListener("ab:mc-store", sync);
-      window.removeEventListener("ab:platform-modules", sync);
+      window.removeEventListener("ab:mc-store", syncMcStore);
+      window.removeEventListener("ab:platform-modules", syncFromPublicModules);
     };
   }, []);
 
@@ -205,6 +246,7 @@ export function usePlatformStore() {
 
     await fetchPlatformModulesPublic();
     notifyPlatformModulesChanged();
+    broadcastPlatformLiveUpdate();
     return true;
   }, [modules]);
 
@@ -212,7 +254,9 @@ export function usePlatformStore() {
     setEmergency((prev) => {
       const next = { ...prev, ...patch };
       writeJson(EMERGENCY_KEY, next);
-      void patchEmergencyDb(patch);
+      void patchEmergencyDb(patch).then((ok) => {
+        if (ok) broadcastPlatformLiveUpdate();
+      });
       return next;
     });
   }, []);
@@ -237,5 +281,41 @@ export function usePlatformStore() {
     })();
   }, []);
 
-  return { modules, auditLog, emergency, toggleModule, patchEmergency, addAudit, dbSynced };
+  const refreshAuditLog = useCallback(async (): Promise<boolean> => {
+    const remote = await fetchAuditLog();
+    if (remote === null) return false;
+    setAuditLog(remote);
+    writeJson(AUDIT_KEY, remote);
+    return true;
+  }, []);
+
+  const saveModules = useCallback(async (draft: ModuleState[]): Promise<{ ok: boolean; error?: string }> => {
+    const baseline = readModulesCache();
+    const changes = draft.filter((d) => {
+      const current = baseline.find((m) => m.key === d.key);
+      return current != null && current.enabled !== d.enabled;
+    });
+    if (!changes.length) return { ok: true };
+
+    await ensureModulesSeededDb();
+
+    const result = await saveModulesDb(
+      changes.map((c) => ({ key: c.key, enabled: c.enabled })),
+    );
+    if (!result.ok) {
+      console.warn("[platform-modules] save failed for", result.failed, result.error);
+      return { ok: false, error: result.error };
+    }
+
+    const merged = mergeOwnerModuleStates(draft);
+    setModules(merged);
+    persistModules(merged);
+    notifyPlatformModulesChanged();
+    void syncPlatformModulesFromServer();
+    broadcastPlatformLiveUpdate();
+
+    return { ok: true };
+  }, []);
+
+  return { modules, auditLog, emergency, toggleModule, saveModules, patchEmergency, addAudit, refreshAuditLog, dbSynced };
 }

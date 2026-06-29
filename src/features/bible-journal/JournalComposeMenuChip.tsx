@@ -90,8 +90,8 @@ export function JournalComposeMenuChip({
         onClick={() => setOpen((v) => !v)}
         className="flex w-full items-center justify-between gap-2 rounded-2xl border px-3 py-2.5 text-right transition active:scale-[0.99]"
         style={{
-          borderColor: open || selectedId ? `${accent}55` : "rgba(255,255,255,0.12)",
-          background: open || selectedId ? `${accent}14` : "rgba(0,0,0,0.3)",
+          borderColor: open || selectedId ? `${accent}55` : "rgba(212,175,55,0.28)",
+          background: open || selectedId ? `${accent}14` : "rgba(255,255,255,0.85)",
         }}
       >
         <ChevronDown
@@ -113,7 +113,7 @@ export function JournalComposeMenuChip({
           className="absolute left-0 right-0 top-[calc(100%+6px)] z-20 max-h-[min(280px,42vh)] overflow-y-auto overscroll-contain rounded-2xl border py-1 shadow-xl"
           style={{
             borderColor: `${accent}44`,
-            background: "linear-gradient(180deg, #0f0c1c 0%, #080612 100%)",
+            background: "linear-gradient(180deg, #FAF7F2 0%, #F5EFE4 100%)",
           }}
         >
           {items.map((item) => {

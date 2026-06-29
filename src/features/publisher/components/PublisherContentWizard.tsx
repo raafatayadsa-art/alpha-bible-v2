@@ -12,6 +12,19 @@ import { publisherSelectableAlbumHymns } from "../publisher-content-ui";
 import { PublisherAlbumTracksPicker } from "./PublisherAlbumTracksPicker";
 import { PublisherAssetUpload } from "./PublisherAssetUpload";
 import { PublisherCopyrightConsent } from "./PublisherCopyrightConsent";
+import {
+  PUBLISHER_EMAIL_INPUT,
+  PUBLISHER_PURPLE_BTN_BACK,
+  PUBLISHER_PURPLE_BTN_SOLID,
+  PUBLISHER_PURPLE_GRADIENT,
+  PUBLISHER_SHEET_FOOTER_BORDER,
+  PUBLISHER_SHEET_HEADER_BORDER,
+  PUBLISHER_SHEET_OVERLAY,
+  PUBLISHER_SHEET_PANEL,
+  PUBLISHER_TEXT_ACCENT_CAPTION,
+  PUBLISHER_TEXT_SUB,
+  PUBLISHER_TEXT_TITLE,
+} from "./publisher-glass-chrome";
 
 type Props = {
   open: boolean;
@@ -171,18 +184,18 @@ export function PublisherContentWizard({
   const titleText = isEdit ? `تعديل ${kindLabel}` : `إضافة ${kindLabel}`;
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-end justify-center bg-black/55 p-3 backdrop-blur-sm sm:items-center">
+    <div className={PUBLISHER_SHEET_OVERLAY}>
       <div
-        className="flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-[22px] border border-[rgba(93,50,145,0.14)] bg-[#fbf7f0]"
+        className={PUBLISHER_SHEET_PANEL}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex shrink-0 items-center justify-between border-b border-[rgba(93,50,145,0.1)] px-4 py-3">
+        <div className={`flex shrink-0 items-center justify-between ${PUBLISHER_SHEET_HEADER_BORDER} px-4 py-3`}>
           <button type="button" onClick={onClose} className="grid h-9 w-9 place-items-center rounded-full border bg-white">
             <X className="h-4 w-4" />
           </button>
           <div className="text-right">
-            <p className="text-[13px] font-extrabold text-[#3a3258]">{titleText}</p>
-            <p className="text-[10px] font-bold text-[#5D3291]">
+            <p className={PUBLISHER_TEXT_TITLE}>{titleText}</p>
+            <p className={PUBLISHER_TEXT_ACCENT_CAPTION}>
               {steps[step]} · {step + 1}/{steps.length}
             </p>
           </div>
@@ -194,7 +207,7 @@ export function PublisherContentWizard({
             <span
               key={i}
               className="h-1 flex-1 rounded-full"
-              style={{ background: i <= step ? "linear-gradient(90deg, #7b4cb8, #5D3291)" : "rgba(93,50,145,0.12)" }}
+              style={{ background: i <= step ? PUBLISHER_PURPLE_GRADIENT : "rgba(93,50,145,0.12)" }}
             />
           ))}
         </div>
@@ -203,28 +216,28 @@ export function PublisherContentWizard({
           {current === "meta" ? (
             <>
               <label className="block text-right">
-                <span className="text-[10px] font-extrabold text-[#5D3291]">العنوان</span>
+                <span className={PUBLISHER_TEXT_ACCENT_CAPTION}>العنوان</span>
                 <input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="mt-1 w-full rounded-2xl border px-3 py-2.5 text-[12px] font-bold"
+                  className={`mt-1 ${PUBLISHER_EMAIL_INPUT}`}
                 />
               </label>
               <label className="block text-right">
-                <span className="text-[10px] font-extrabold text-[#5D3291]">الوصف</span>
+                <span className={PUBLISHER_TEXT_ACCENT_CAPTION}>الوصف</span>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={3}
-                  className="mt-1 w-full rounded-2xl border px-3 py-2.5 text-[12px] font-bold"
+                  className={`mt-1 resize-none ${PUBLISHER_EMAIL_INPUT}`}
                 />
               </label>
               {kind === "album" ? (
                 <div className="text-right">
-                  <span className="text-[10px] font-extrabold text-[#5D3291]">تاريخ الإصدار</span>
+                  <span className={PUBLISHER_TEXT_ACCENT_CAPTION}>تاريخ الإصدار</span>
                   <AlphaDatePicker value={releaseDate} onChange={setReleaseDate} />
                   {releaseDate ? (
-                    <p className="mt-1 text-[10px] font-bold text-[#6b658a]">{formatAlphaDateDisplay(releaseDate)}</p>
+                    <p className={`mt-1 ${PUBLISHER_TEXT_SUB}`}>{formatAlphaDateDisplay(releaseDate)}</p>
                   ) : null}
                 </div>
               ) : null}
@@ -278,22 +291,22 @@ export function PublisherContentWizard({
           {current === "done" ? (
             <div className="space-y-3 py-8 text-center">
               <CheckCircle2 className="mx-auto h-16 w-16 text-emerald-600" />
-              <p className="text-[15px] font-extrabold text-[#3a3258]">
+              <p className={`${PUBLISHER_TEXT_TITLE} alpha-type-h2`}>
                 {isEdit ? "تم حفظ التعديلات" : "تم إرسال المحتوى للمراجعة"}
               </p>
-              <p className="text-[11px] font-bold text-[#6b658a]">سيظهر للجميع بعد اعتماد Alpha.</p>
+              <p className={PUBLISHER_TEXT_SUB}>سيظهر للجميع بعد اعتماد Alpha.</p>
             </div>
           ) : null}
 
-          {error ? <p className="text-center text-[11px] font-bold text-red-600">{error}</p> : null}
+          {error ? <p className="text-center alpha-type-desc font-bold text-red-600">{error}</p> : null}
         </div>
 
-        <div className="flex shrink-0 gap-2 border-t border-[rgba(93,50,145,0.1)] px-4 py-3">
+        <div className={`flex shrink-0 gap-2 ${PUBLISHER_SHEET_FOOTER_BORDER} px-4 py-3`}>
           {step > 0 && current !== "done" ? (
             <button
               type="button"
               onClick={() => setStep((s) => s - 1)}
-              className="inline-flex flex-1 items-center justify-center gap-1 rounded-full border py-2.5 text-[12px] font-extrabold text-[#5D3291]"
+              className={PUBLISHER_PURPLE_BTN_BACK}
             >
               <ChevronRight className="h-4 w-4" />
               السابق
@@ -304,8 +317,8 @@ export function PublisherContentWizard({
               type="button"
               disabled={!canNext}
               onClick={() => setStep((s) => s + 1)}
-              className="inline-flex flex-1 items-center justify-center gap-1 rounded-full py-2.5 text-[12px] font-extrabold text-white disabled:opacity-50"
-              style={{ background: "linear-gradient(160deg, #7b4cb8, #5D3291)" }}
+              className={`${PUBLISHER_PURPLE_BTN_SOLID} flex-1 disabled:opacity-50`}
+              style={{ background: PUBLISHER_PURPLE_GRADIENT }}
             >
               التالي
               <ChevronLeft className="h-4 w-4" />
@@ -316,8 +329,8 @@ export function PublisherContentWizard({
               type="button"
               disabled={!legalConsent || submitting}
               onClick={() => void submit()}
-              className="inline-flex flex-1 items-center justify-center gap-1 rounded-full py-2.5 text-[12px] font-extrabold text-white disabled:opacity-50"
-              style={{ background: "linear-gradient(160deg, #7b4cb8, #5D3291)" }}
+              className={`${PUBLISHER_PURPLE_BTN_SOLID} flex-1 disabled:opacity-50`}
+              style={{ background: PUBLISHER_PURPLE_GRADIENT }}
             >
               {submitting ? "جاري الإرسال…" : isEdit ? "حفظ التعديلات" : "إرسال للمراجعة"}
             </button>
@@ -326,8 +339,8 @@ export function PublisherContentWizard({
             <button
               type="button"
               onClick={onClose}
-              className="w-full rounded-full py-2.5 text-[12px] font-extrabold text-white"
-              style={{ background: "linear-gradient(160deg, #7b4cb8, #5D3291)" }}
+              className={`${PUBLISHER_PURPLE_BTN_SOLID} w-full`}
+              style={{ background: PUBLISHER_PURPLE_GRADIENT }}
             >
               إغلاق
             </button>

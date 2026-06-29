@@ -13,6 +13,7 @@ import {
   writeHeroSet,
 } from "./hero-card-chrome";
 import type { VerseSharePayload } from "./PremiumVerseHeroCard";
+import { LOGIN_REQUIRED_AR, useCanUsePersonalFeatures } from "@/features/auth";
 
 const SAVED_KEY = "alpha.hero.saved-cards";
 
@@ -42,6 +43,7 @@ function engagementDayId(cardId: string) {
 
 export function HeroDailyCard({ card, variant, onBrandedShare }: HeroDailyCardProps) {
   const navigate = useNavigate();
+  const personalOn = useCanUsePersonalFeatures();
   const isFront = variant === "front";
   const isPeek = !isFront;
   const h = isFront ? 268 : 228;
@@ -85,6 +87,10 @@ export function HeroDailyCard({ card, variant, onBrandedShare }: HeroDailyCardPr
   );
 
   const onToggleSaved = useCallback(() => {
+    if (!personalOn) {
+      setToast(LOGIN_REQUIRED_AR);
+      return;
+    }
     const set = readHeroSet(SAVED_KEY);
     if (set.has(card.id)) {
       set.delete(card.id);
@@ -96,9 +102,13 @@ export function HeroDailyCard({ card, variant, onBrandedShare }: HeroDailyCardPr
       setToast("تم الحفظ");
     }
     writeHeroSet(SAVED_KEY, set);
-  }, [card.id]);
+  }, [card.id, personalOn]);
 
   const onToggleMeditation = useCallback(() => {
+    if (!personalOn) {
+      setToast(LOGIN_REQUIRED_AR);
+      return;
+    }
     const likeMap = readHeroMap(likeKey);
     const likedSet = readHeroSet(likedKey);
     const base = seedHeroCount(card.id, 7);
@@ -115,7 +125,7 @@ export function HeroDailyCard({ card, variant, onBrandedShare }: HeroDailyCardPr
     }
     writeHeroMap(likeKey, likeMap);
     writeHeroSet(likedKey, likedSet);
-  }, [meditated, eid, card.id, likeKey, likedKey]);
+  }, [meditated, eid, card.id, likeKey, likedKey, personalOn]);
 
   const onShare = useCallback(() => {
     const shareMap = readHeroMap(shareKey);
@@ -162,14 +172,14 @@ export function HeroDailyCard({ card, variant, onBrandedShare }: HeroDailyCardPr
           }
         }}
         aria-label={card.title}
-        className={`relative w-full overflow-hidden border ${isFront ? "cursor-pointer" : ""}`}
+        className={`alpha-home-daily-card relative w-full overflow-hidden border ${isFront ? "cursor-pointer alpha-home-hero-card !rounded-[var(--alpha-radius-card)]" : ""}`}
         style={{
           height: h,
-          borderRadius: isFront ? 26 : 22,
+          borderRadius: isFront ? "var(--alpha-radius-card)" : "var(--alpha-radius-card-compact)",
           borderColor: `${card.accent}66`,
-          background: "#07040f",
+          background: "var(--alpha-bg-cinematic)",
           boxShadow: isFront
-            ? `0 24px 48px -14px rgba(0,0,0,0.72), 0 0 0 1px ${card.accent}24, 0 0 36px ${card.accent}18`
+            ? `var(--alpha-shadow-hero), 0 0 36px ${card.accent}18`
             : "0 16px 36px -14px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)",
         }}
       >
@@ -178,7 +188,7 @@ export function HeroDailyCard({ card, variant, onBrandedShare }: HeroDailyCardPr
           alt=""
           draggable={false}
           loading="lazy"
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-cover alpha-media-polish"
         />
         <div
           aria-hidden
@@ -190,7 +200,7 @@ export function HeroDailyCard({ card, variant, onBrandedShare }: HeroDailyCardPr
         />
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-[1px] rounded-[25px]"
+          className="pointer-events-none absolute inset-[1px] rounded-[calc(var(--alpha-radius-card)-1px)]"
           style={{ boxShadow: `inset 0 1px 0 rgba(255,255,255,0.16), inset 0 0 28px ${card.accent}12` }}
         />
 
@@ -218,8 +228,8 @@ export function HeroDailyCard({ card, variant, onBrandedShare }: HeroDailyCardPr
 
         <div className={`absolute inset-x-0 bottom-0 z-10 px-4 ${isPeek ? "pb-3 pt-10" : "pb-3 pt-12"}`}>
           <p
-            className={`text-right font-extrabold leading-tight text-white ${
-              isPeek ? "text-[12px] line-clamp-2" : "text-[17px] line-clamp-2"
+            className={`alpha-type-h2 text-right font-extrabold leading-tight text-white ${
+              isPeek ? "line-clamp-2" : "line-clamp-2"
             }`}
             style={{ textShadow: "0 2px 14px rgba(0,0,0,0.85)" }}
           >
@@ -228,7 +238,7 @@ export function HeroDailyCard({ card, variant, onBrandedShare }: HeroDailyCardPr
 
           {!isPeek ? (
             <>
-              <p className="mt-1 text-right text-[12px] font-medium leading-snug text-white/82 line-clamp-2">
+              <p className="alpha-type-body mt-1 text-right font-medium leading-snug !text-white/82 line-clamp-2">
                 {card.subtitle}
               </p>
               <div className="mt-1.5 flex items-center justify-end gap-2">
@@ -237,7 +247,7 @@ export function HeroDailyCard({ card, variant, onBrandedShare }: HeroDailyCardPr
                   className="h-px flex-1 max-w-[40px]"
                   style={{ background: `linear-gradient(to left, ${card.accent}99, transparent)` }}
                 />
-                <p className="text-[10px] font-bold tracking-wide" style={{ color: card.accent }}>
+                <p className="alpha-type-caption font-bold tracking-wide" style={{ color: card.accent }}>
                   {card.badge}
                 </p>
                 <span style={{ color: card.accent }}>
@@ -250,10 +260,11 @@ export function HeroDailyCard({ card, variant, onBrandedShare }: HeroDailyCardPr
                 broadcasts={broadcasts}
                 meditated={meditated}
                 onMeditate={onToggleMeditation}
+                onBroadcast={() => void onShare()}
               />
             </>
           ) : (
-            <p className="mt-1 text-right text-[9px] font-bold line-clamp-1" style={{ color: card.accent }}>
+            <p className="alpha-type-caption mt-1 text-right font-bold line-clamp-1" style={{ color: card.accent }}>
               {card.subtitle}
             </p>
           )}
@@ -261,7 +272,7 @@ export function HeroDailyCard({ card, variant, onBrandedShare }: HeroDailyCardPr
       </article>
 
       {toast ? (
-        <p className="absolute -bottom-7 inset-x-0 text-center text-[11px] font-bold text-[#7a4a26] animate-in fade-in">
+        <p className="absolute -bottom-7 inset-x-0 text-center alpha-type-desc font-bold text-alpha-gold-deep animate-in fade-in">
           {toast}
         </p>
       ) : null}

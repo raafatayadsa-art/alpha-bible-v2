@@ -1,27 +1,102 @@
 import { Link } from "@tanstack/react-router";
-import { ChevronLeft } from "lucide-react";
-import { CopticCross, CopticMiniCross } from "@/components/coptic";
-import continueBook from "@/features/bible-lavoble/assets/continue-book.jpg";
+import { BookOpen, ChevronLeft, Sparkles } from "lucide-react";
+import readingHero from "@/assets/home/art-readings.jpg";
+import { CopticCross } from "@/components/coptic";
 import { useCurrentSession } from "@/lib/reading-state";
 import { continueReadingDestination, resolveContinueReadingView } from "@/lib/continue-reading-nav";
 import { bibleV2Tokens } from "../tokens";
 
-function ReadingProgressBar({ value }: { value: number }) {
+function ContinueReadingStyles() {
+  return (
+    <style>{`
+      @keyframes continueGlowPulse {
+        0%, 100% { opacity: 0.45; transform: scale(1); }
+        50% { opacity: 0.72; transform: scale(1.06); }
+      }
+      @keyframes continueShimmer {
+        0% { transform: translateX(-120%) skewX(-12deg); }
+        100% { transform: translateX(220%) skewX(-12deg); }
+      }
+      .continue-glass-glow { animation: continueGlowPulse 5s ease-in-out infinite; }
+      .continue-glass-shimmer::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.28) 50%, transparent 60%);
+        animation: continueShimmer 7s ease-in-out infinite;
+        pointer-events: none;
+      }
+    `}</style>
+  );
+}
+
+function ProgressRing({ value, size = 62 }: { value: number; size?: number }) {
+  const clamped = Math.min(100, Math.max(0, value));
+  const stroke = 4.5;
+  const radius = (size - stroke * 2) / 2;
+  const center = size / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (clamped / 100) * circumference;
+
+  return (
+    <div className="relative shrink-0" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="-rotate-90" aria-hidden>
+        <defs>
+          <linearGradient id="continueRingGold" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor={bibleV2Tokens.goldSoft} />
+            <stop offset="55%" stopColor={bibleV2Tokens.gold} />
+            <stop offset="100%" stopColor={bibleV2Tokens.goldDeep} />
+          </linearGradient>
+          <filter id="continueRingGlow">
+            <feGaussianBlur stdDeviation="2" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+        <circle
+          cx={center}
+          cy={center}
+          r={radius}
+          fill="none"
+          stroke="rgba(255,255,255,0.22)"
+          strokeWidth={stroke}
+        />
+        <circle
+          cx={center}
+          cy={center}
+          r={radius}
+          fill="none"
+          stroke="url(#continueRingGold)"
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          filter="url(#continueRingGlow)"
+          className="transition-[stroke-dashoffset] duration-700 ease-out"
+        />
+      </svg>
+      <div className="absolute inset-0 grid place-items-center">
+        <span className="text-[13px] font-black tabular-nums text-white drop-shadow-[0_1px_6px_rgba(0,0,0,0.45)]">
+          {clamped}%
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function LuminousProgressBar({ value }: { value: number }) {
   const clamped = Math.min(100, Math.max(0, value));
 
   return (
-    <div className="mt-3">
-      <div className="mb-2 flex items-center justify-between gap-2 text-[10px] font-bold">
-        <span style={{ color: bibleV2Tokens.textMuted }}>تقدم القراءة في هذا الإصحاح</span>
-        <span style={{ color: bibleV2Tokens.goldDeep }}>{clamped}%</span>
-      </div>
+    <div className="mt-4" dir="ltr">
       <div
-        className="relative h-2.5 overflow-visible rounded-full border border-[#ead9b1]/90"
+        className="relative h-1.5 overflow-hidden rounded-full"
         style={{
-          background: "linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(237,224,200,0.75) 100%)",
-          boxShadow: "inset 0 1px 3px rgba(120,90,40,0.12)",
+          background: "rgba(255,255,255,0.18)",
+          boxShadow: "inset 0 1px 2px rgba(0,0,0,0.12)",
         }}
-        dir="ltr"
         role="progressbar"
         aria-valuenow={clamped}
         aria-valuemin={0}
@@ -29,137 +104,143 @@ function ReadingProgressBar({ value }: { value: number }) {
         aria-label="تقدم القراءة في هذا الإصحاح"
       >
         <div
-          className="relative h-full rounded-full transition-[width] duration-500 ease-out"
+          className="relative h-full rounded-full transition-[width] duration-700 ease-out"
           style={{
             width: `${clamped}%`,
-            background: `linear-gradient(90deg, ${bibleV2Tokens.goldSoft} 0%, ${bibleV2Tokens.gold} 55%, ${bibleV2Tokens.goldDeep} 100%)`,
-            boxShadow: "0 0 10px rgba(212,175,55,0.35), inset 0 1px 0 rgba(255,255,255,0.45)",
+            background: `linear-gradient(90deg, ${bibleV2Tokens.goldSoft} 0%, ${bibleV2Tokens.gold} 50%, ${bibleV2Tokens.goldDeep} 100%)`,
+            boxShadow: "0 0 14px rgba(212,175,55,0.55), inset 0 1px 0 rgba(255,255,255,0.5)",
           }}
-        >
-          <span
-            aria-hidden
-            className="absolute inset-y-0 right-0 w-2 rounded-full"
-            style={{ background: "radial-gradient(circle, rgba(255,255,255,0.85) 0%, transparent 70%)" }}
-          />
-        </div>
+        />
         <span
           aria-hidden
-          className="absolute top-1/2 z-10 grid h-5 w-5 -translate-y-1/2 place-items-center rounded-full border-2 border-white bg-gradient-to-br from-[#f5e6b8] to-[#c49a3a] shadow-[0_2px_8px_rgba(120,80,30,0.35)]"
-          style={{ left: `calc(${clamped}% - 10px)` }}
-        >
-          <CopticMiniCross size={8} className="text-[#5a4010]" />
-        </span>
+          className="absolute top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full border border-white/80 bg-[#f5e6b8] shadow-[0_0_10px_rgba(212,175,55,0.8)]"
+          style={{ left: `calc(${clamped}% - 5px)` }}
+        />
       </div>
     </div>
   );
 }
 
-export function BibleV2ContinueReading() {
+export function BibleV2ContinueReading({ placement = "hero" }: { placement?: "hero" | "footer" }) {
   const session = useCurrentSession();
   const data = resolveContinueReadingView(session);
   const destination = continueReadingDestination(data, { booksRoute: "/books" });
+  const sectionClass = placement === "hero" ? "relative mx-4 mt-2" : "relative mx-4 mt-7 mb-1";
 
   return (
-    <section className="relative mx-4 mt-7 mb-1">
-      <article
-        className="relative overflow-hidden rounded-[28px] border-2 border-[#d4af37]/45 backdrop-blur-sm"
+    <section className={sectionClass} dir="rtl">
+      <ContinueReadingStyles />
+
+      <Link
+        {...destination}
+        className="group relative block overflow-hidden rounded-[32px] transition duration-300 active:scale-[0.985]"
         style={{
-          background:
-            "linear-gradient(180deg, #fbf3e1 0%, #f5ead8 48%, #f0e4cc 100%)",
           boxShadow: [
-            "inset 0 1px 0 rgba(255,255,255,0.95)",
-            "inset 0 0 0 1px rgba(255,255,255,0.55)",
-            `0 22px 46px -18px ${bibleV2Tokens.shadowCard}`,
-            `0 8px 24px -12px ${bibleV2Tokens.shadowWarm}`,
+            "0 0 0 1px rgba(255,255,255,0.35)",
+            "0 28px 56px -22px rgba(30,43,84,0.38)",
+            "0 12px 28px -14px rgba(212,175,55,0.22)",
+            "inset 0 1px 0 rgba(255,255,255,0.25)",
           ].join(", "),
         }}
+        aria-label={`${data.ctaLabel} — ${data.reference}`}
       >
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-3 rounded-[22px] border border-[#d4af37]/18"
+        <img
+          src={readingHero}
+          alt=""
+          loading="eager"
+          draggable={false}
+          className="absolute inset-0 h-full w-full object-cover object-[center_30%] transition duration-700 group-hover:scale-[1.04]"
         />
+
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-[0.07]"
+          className="absolute inset-0"
           style={{
-            backgroundImage:
-              "radial-gradient(circle at 20% 15%, #b8893a 0.5px, transparent 0.6px), radial-gradient(circle at 80% 85%, #b8893a 0.5px, transparent 0.6px)",
-            backgroundSize: "28px 28px",
+            background:
+              "linear-gradient(165deg, rgba(30,43,84,0.15) 0%, rgba(20,28,52,0.55) 42%, rgba(12,18,38,0.82) 100%)",
           }}
         />
 
-        <div className="pointer-events-none absolute left-3 top-3 text-[#b8893a]/35" aria-hidden>
-          <CopticMiniCross size={12} />
-        </div>
-        <div className="pointer-events-none absolute right-3 top-3 text-[#b8893a]/35" aria-hidden>
-          <CopticMiniCross size={12} />
-        </div>
-        <div className="pointer-events-none absolute left-1/2 top-2.5 -translate-x-1/2" aria-hidden>
-          <CopticCross size={14} className="text-[#b8893a]/55" />
-        </div>
+        <span
+          aria-hidden
+          className="continue-glass-glow pointer-events-none absolute -left-8 top-6 h-32 w-32 rounded-full blur-3xl"
+          style={{ background: "radial-gradient(circle, rgba(212,175,55,0.42) 0%, transparent 70%)" }}
+        />
+        <span
+          aria-hidden
+          className="continue-glass-glow pointer-events-none absolute -right-6 bottom-10 h-28 w-28 rounded-full blur-3xl"
+          style={{
+            background: "radial-gradient(circle, rgba(143,180,255,0.28) 0%, transparent 70%)",
+            animationDelay: "2.5s",
+          }}
+        />
 
-        <div className="relative px-4 pb-4 pt-8">
-          <div className="flex items-stretch gap-3" dir="rtl">
-            <div className="relative w-[34%] shrink-0 self-center">
-              <div
-                className="relative mx-auto aspect-[4/5] w-full max-w-[108px]"
-                style={{
-                  filter: "drop-shadow(0 16px 24px rgba(30,43,84,0.35)) drop-shadow(0 6px 10px rgba(0,0,0,0.18))",
-                }}
-              >
-                <img
-                  src={continueBook}
-                  alt=""
-                  loading="lazy"
-                  draggable={false}
-                  className="h-full w-full object-contain object-bottom"
-                />
+        <div className="continue-glass-shimmer relative m-3 overflow-hidden rounded-[26px] border border-white/30 p-4 backdrop-blur-2xl">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(145deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.08) 48%, rgba(255,255,255,0.14) 100%)",
+            }}
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-4 top-0 h-px"
+            style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.75), transparent)" }}
+          />
+
+          <div className="relative flex items-start gap-3.5">
+            <ProgressRing value={data.progressPercent} />
+
+            <div className="min-w-0 flex-1 pt-0.5 text-right">
+              <div className="flex items-center justify-end gap-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-[#f5e6b8]/90" strokeWidth={2.2} />
+                <span className="text-[10px] font-bold tracking-[0.12em] text-white/75">
+                  استمر من حيث توقفت
+                </span>
               </div>
-            </div>
 
-            <div
-              className="min-w-0 flex-1 rounded-[20px] border border-[#ead9b1]/80 px-3 py-3 text-right"
-              style={{
-                background:
-                  "linear-gradient(145deg, rgba(255,255,255,0.72) 0%, rgba(250,247,242,0.42) 100%)",
-                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -8px 16px rgba(120,90,40,0.04)",
-              }}
-            >
-              <h3 className="text-center text-[15px] font-extrabold leading-tight" style={{ color: bibleV2Tokens.navy }}>
-                استمر في القراءة
+              <h3 className="mt-1.5 font-arabic-serif text-[19px] font-extrabold leading-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.35)]">
+                {data.reference}
               </h3>
 
-              <div className="mt-2 flex items-center justify-center gap-1.5">
-                <span className="h-1 w-1 rotate-45 rounded-[1px] bg-[#d4af37]/70" aria-hidden />
-                <p className="text-[13px] font-extrabold tracking-tight" style={{ color: bibleV2Tokens.navy }}>
-                  {data.reference}
-                </p>
-                <span className="h-1 w-1 rotate-45 rounded-[1px] bg-[#d4af37]/70" aria-hidden />
-              </div>
-
-              <p className="mt-2 line-clamp-3 text-[10.5px] leading-[1.75] text-[#4a3a24]/90">
+              <p className="mt-2 line-clamp-2 text-[11px] leading-[1.85] text-white/78">
                 {data.preview}
               </p>
             </div>
           </div>
 
-          <ReadingProgressBar value={data.progressPercent} />
+          <LuminousProgressBar value={data.progressPercent} />
 
-          <Link
-            {...destination}
-            className="mt-4 flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 text-white transition active:scale-[0.98]"
+          <div
+            className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-white/25 px-3.5 py-2.5"
             style={{
-              background: `linear-gradient(180deg, ${bibleV2Tokens.navySoft} 0%, ${bibleV2Tokens.navy} 100%)`,
-              boxShadow: "0 10px 24px -8px rgba(30,43,84,0.45), inset 0 1px 0 rgba(255,255,255,0.18)",
+              background: "linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.08) 100%)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.35)",
             }}
-            aria-label={`${data.ctaLabel} — ${data.reference}`}
           >
-            <ChevronLeft className="h-4 w-4 shrink-0 opacity-90" />
-            <span className="text-[13px] font-bold">{data.ctaLabel}</span>
-            <CopticCross size={14} className="shrink-0 text-[#d4af37]" />
-          </Link>
+            <span className="inline-flex items-center gap-1.5 text-[12px] font-bold text-white/90">
+              <BookOpen className="h-4 w-4 text-[#f5e6b8]" strokeWidth={2.2} />
+              {data.ctaLabel}
+            </span>
+            <span
+              className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-bold text-white transition group-hover:gap-2"
+              style={{
+                background: `linear-gradient(135deg, ${bibleV2Tokens.gold} 0%, ${bibleV2Tokens.goldDeep} 100%)`,
+                boxShadow: "0 6px 18px -4px rgba(212,175,55,0.55), inset 0 1px 0 rgba(255,255,255,0.35)",
+              }}
+            >
+              اقرأ الآن
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </span>
+          </div>
         </div>
-      </article>
+
+        <div className="pointer-events-none absolute left-1/2 top-3 -translate-x-1/2" aria-hidden>
+          <CopticCross size={13} className="text-white/45 drop-shadow-[0_0_8px_rgba(212,175,55,0.5)]" />
+        </div>
+      </Link>
     </section>
   );
 }

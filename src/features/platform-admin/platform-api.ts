@@ -3,10 +3,14 @@ import { ensureAudioPublisherPublished } from "@/features/publisher/publisher-di
 import { fetchAuthUser, getAuthUserSync } from "@/features/auth";
 import type { ApprovalItem, ApprovalKind, ApprovalPriority, ApprovalStatus } from "./types";
 import type { AuditLogEntry, EmergencyFlags, ModuleState, PlatformModuleKey } from "./platform-store";
-import { mergeOwnerModuleStates } from "@/lib/platform-modules";
+import { mergeOwnerModuleStates, OWNER_MODULE_DEFAULTS } from "@/lib/platform-modules";
 import type { ScanAuditMeta, TrustProfile } from "./scan-store";
 
 let dbReadyCache: boolean | null = null;
+
+export function resetPlatformDbReadyCache() {
+  dbReadyCache = null;
+}
 
 /** Current reviewer label for audit + approval patches (auth user). */
 export async function getCurrentPlatformAdmin(): Promise<string> {
@@ -333,17 +337,18 @@ export async function fetchDashboardStats(): Promise<DashboardStats | null> {
     };
   }
 
-  if (!(await checkPlatformDbReady())) return null;
-  const { data, error } = await supabase.from("platform_dashboard_stats").select("*").eq("id", 1).maybeSingle();
-  if (error || !data) return null;
+  if (liveErr) {
+    console.warn("[platform] platform_live_dashboard_stats unavailable", liveErr.message);
+  }
+
   return {
-    users: data.user_count,
-    churches: data.church_count,
-    priests: data.priest_count,
-    servants: data.servant_count,
-    messages: data.message_count,
-    requests: data.request_count,
-    reports: data.report_count,
+    users: 0,
+    churches: 0,
+    priests: 0,
+    servants: 0,
+    messages: 0,
+    requests: 0,
+    reports: 0,
   };
 }
 
@@ -743,20 +748,155 @@ export async function approveAllPendingDb(): Promise<boolean> {
 
 export async function fetchModules(): Promise<ModuleState[] | null> {
   if (!(await checkPlatformDbReady())) return null;
+
+  const fromRpc = await fetchModulesViaRpc();
+  if (fromRpc?.length) return mergeOwnerModuleStates(fromRpc);
+
   const { data, error } = await supabase.from("platform_modules").select("*").order("key");
-  if (error || !data) return null;
+  if (error || !data?.length) return fromRpc ? mergeOwnerModuleStates(fromRpc) : null;
   return mergeOwnerModuleStates(
     data.map((r) => ({
       key: r.key as PlatformModuleKey,
       label: r.label,
       labelAr: r.label_ar,
-      enabled: r.enabled === true,
+      enabled: asPlatformBool(r.enabled),
     })),
   );
 }
 
+async function fetchModulesViaRpc(): Promise<ModuleState[] | null> {
+  const { data, error } = await supabase.rpc("platform_fetch_modules");
+  if (error || data == null) return null;
+  const rows = Array.isArray(data) ? data : [data];
+  if (!rows.length) return null;
+  return rows.map((r) => {
+    const row = r as { key: string; label: string; label_ar: string; enabled: unknown };
+    return {
+      key: row.key as PlatformModuleKey,
+      label: row.label,
+      labelAr: row.label_ar,
+      enabled: asPlatformBool(row.enabled),
+    };
+  });
+}
+
+function asPlatformBool(value: unknown): boolean {
+  return value === true || value === "true" || value === 1 || value === "1";
+}
+
+type ModuleSaveRow = { key: string; enabled: unknown };
+
+function parseModuleSaveRows(data: unknown): ModuleSaveRow[] {
+  if (!data) return [];
+  if (Array.isArray(data)) return data as ModuleSaveRow[];
+  if (typeof data === "string") {
+    try {
+      const parsed = JSON.parse(data) as unknown;
+      return Array.isArray(parsed) ? (parsed as ModuleSaveRow[]) : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+function moduleSaveRowMatches(rows: ModuleSaveRow[], key: PlatformModuleKey, enabled: boolean): boolean {
+  const row = rows.find((r) => r.key === key);
+  if (!row) return false;
+  return asPlatformBool(row.enabled) === enabled;
+}
+
+/** Seeds module rows via security-definer RPC (no-op if migration not deployed). */
+export async function ensureModulesSeededDb(): Promise<boolean> {
+  if (!(await checkPlatformDbReady())) return false;
+  const { error } = await supabase.rpc("platform_ensure_modules_seeded");
+  if (!error) return true;
+  console.warn("[platform-modules] ensure seed RPC unavailable", error.message);
+  return false;
+}
+
+async function saveModulesBatchRpc(
+  updates: { key: PlatformModuleKey; enabled: boolean }[],
+): Promise<{ ok: boolean; rows: ModuleSaveRow[]; error?: string }> {
+  const { data, error } = await supabase.rpc("platform_save_modules", {
+    p_updates: updates,
+  });
+  if (error) {
+    return { ok: false, rows: [], error: error.message };
+  }
+  const rows = parseModuleSaveRows(data);
+  if (!rows.length) {
+    return { ok: false, rows, error: "batch empty response" };
+  }
+  const ok = updates.every((u) => moduleSaveRowMatches(rows, u.key, u.enabled));
+  return ok ? { ok: true, rows } : { ok: false, rows, error: "batch verify mismatch" };
+}
+
+/** Raw DB read for changed keys only — uses security-definer RPC when RLS blocks SELECT. */
+export async function verifyModuleWritesDb(
+  updates: { key: PlatformModuleKey; enabled: boolean }[],
+): Promise<{ ok: boolean; error?: string }> {
+  if (!updates.length) return { ok: true };
+  if (!(await checkPlatformDbReady())) {
+    return { ok: false, error: "قاعدة البيانات غير متاحة" };
+  }
+
+  const keys = updates.map((u) => u.key);
+
+  const { data: rpcData, error: rpcError } = await supabase.rpc("platform_verify_modules", {
+    p_keys: keys,
+  });
+  if (!rpcError && rpcData != null) {
+    const rows = parseModuleSaveRows(rpcData);
+    if (rows.length > 0) {
+      for (const expected of updates) {
+        if (!moduleSaveRowMatches(rows, expected.key, expected.enabled)) {
+          return {
+            ok: false,
+            error: `لم يُحفظ الموديول «${expected.key}» (المتوقع: ${expected.enabled ? "مفعّل" : "موقوف"})`,
+          };
+        }
+      }
+      return { ok: true };
+    }
+  }
+
+  const { data, error } = await supabase
+    .from("platform_modules")
+    .select("key, enabled")
+    .in("key", keys);
+
+  if (error) {
+    return {
+      ok: false,
+      error: rpcError?.message ?? error.message,
+    };
+  }
+  if (!data?.length) {
+    return {
+      ok: false,
+      error:
+        "لم يُعثر على صفوف الموديولات — شغّل supabase/migrations/20260629170000_platform_modules_read_verify_rpc.sql على Supabase",
+    };
+  }
+
+  for (const expected of updates) {
+    const row = data.find((r) => r.key === expected.key);
+    if (!row || asPlatformBool(row.enabled) !== expected.enabled) {
+      return {
+        ok: false,
+        error: `لم يُحفظ الموديول «${expected.key}» (المتوقع: ${expected.enabled ? "مفعّل" : "موقوف"})`,
+      };
+    }
+  }
+
+  return { ok: true };
+}
+
 export async function toggleModuleDb(key: PlatformModuleKey, enabled: boolean): Promise<boolean> {
   if (!(await checkPlatformDbReady())) return false;
+
+  await ensureModulesSeededDb();
 
   const { data: rpcRows, error: rpcErr } = await supabase.rpc("platform_toggle_module", {
     p_key: key,
@@ -764,8 +904,9 @@ export async function toggleModuleDb(key: PlatformModuleKey, enabled: boolean): 
   });
 
   if (!rpcErr && rpcRows != null) {
-    const row = (Array.isArray(rpcRows) ? rpcRows[0] : rpcRows) as { enabled?: boolean } | undefined;
-    if (row && row.enabled === enabled) return true;
+    const rows = Array.isArray(rpcRows) ? rpcRows : [rpcRows];
+    const row = rows[0] as { enabled?: unknown } | undefined;
+    if (row && asPlatformBool(row.enabled) === enabled) return true;
   }
 
   if (rpcErr) {
@@ -779,11 +920,87 @@ export async function toggleModuleDb(key: PlatformModuleKey, enabled: boolean): 
     .select("key, enabled")
     .maybeSingle();
 
-  if (error) {
-    console.warn("[platform-modules] direct update failed", error.message);
+  if (!error && data && asPlatformBool(data.enabled) === enabled) return true;
+
+  const fallback = OWNER_MODULE_DEFAULTS.find((m) => m.key === key);
+  if (!fallback) return false;
+
+  const { data: upserted, error: upsertErr } = await supabase
+    .from("platform_modules")
+    .upsert(
+      {
+        key,
+        label: fallback.label,
+        label_ar: fallback.labelAr,
+        enabled,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "key" },
+    )
+    .select("key, enabled")
+    .single();
+
+  if (upsertErr) {
+    console.warn("[platform-modules] upsert failed", upsertErr.message);
+    return false;
   }
 
-  return !error && data?.enabled === enabled;
+  return asPlatformBool(upserted?.enabled) === enabled;
+}
+
+export type SaveModulesResult = {
+  ok: boolean;
+  failed: PlatformModuleKey[];
+  error?: string;
+};
+
+/** Persist multiple module toggles (only changed keys). */
+export async function saveModulesDb(
+  updates: { key: PlatformModuleKey; enabled: boolean }[],
+): Promise<SaveModulesResult> {
+  if (!updates.length) return { ok: true, failed: [] };
+
+  resetPlatformDbReadyCache();
+  await ensureModulesSeededDb();
+
+  const batch = await saveModulesBatchRpc(updates);
+  if (batch.ok) {
+    return { ok: true, failed: [] };
+  }
+
+  if (batch.error && !batch.error.includes("verify mismatch") && !batch.error.includes("empty response")) {
+    console.warn("[platform-modules] batch RPC failed", batch.error);
+  }
+
+  const failed: PlatformModuleKey[] = [];
+  for (const { key, enabled } of updates) {
+    const success = await toggleModuleDb(key, enabled);
+    if (!success) failed.push(key);
+  }
+
+  if (failed.length) {
+    return {
+      ok: false,
+      failed,
+      error:
+        batch.error?.includes("Could not find the function")
+          ? "دالة الحفظ غير موجودة على Supabase — شغّل RUN_PLATFORM_MODULES_SAVE_FIX.sql"
+          : failed.length === updates.length
+            ? `تعذّر الكتابة: ${failed.join(", ")}`
+            : `فشل حفظ: ${failed.join(", ")}`,
+    };
+  }
+
+  const verified = await verifyModuleWritesDb(updates);
+  if (!verified.ok) {
+    return {
+      ok: false,
+      failed: updates.map((u) => u.key),
+      error: verified.error ?? "فشل التحقق من الحفظ في قاعدة البيانات",
+    };
+  }
+
+  return { ok: true, failed: [] };
 }
 
 export async function fetchEmergency(): Promise<EmergencyFlags | null> {

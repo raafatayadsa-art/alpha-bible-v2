@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import {
   PUBLISHER_GLASS_SHEET_BACKDROP,
   PUBLISHER_GLASS_SHEET_OVERLAY,
+  PUBLISHER_ADD_CONTENT_ICON,
 } from "./publisher-glass-chrome";
 
 export type AddContentChoice = "album" | "hymn" | "video" | "book" | "other";
@@ -34,7 +35,7 @@ export function PublisherAddContentSheet({ open, onClose, onSelect }: Props) {
       <button type="button" aria-label="إغلاق" onClick={onClose} className={PUBLISHER_GLASS_SHEET_BACKDROP} />
       <div className={cn("relative z-[1] w-full max-w-[360px] overflow-hidden", MESSAGING_GLASS_SHELL)}>
         <div className="relative flex h-12 items-center justify-center border-b border-white/25 px-4">
-          <p className="text-[14px] font-bold text-[#1F2937]">إضافة محتوى</p>
+          <p className="alpha-type-body font-bold text-alpha-heading">إضافة محتوى</p>
           <button
             type="button"
             onClick={onClose}
@@ -60,12 +61,12 @@ export function PublisherAddContentSheet({ open, onClose, onSelect }: Props) {
                   "flex w-full items-center gap-3 px-3 py-3 text-right transition active:scale-[0.99]",
                 )}
               >
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] border border-white/40 bg-white/55 text-[#b8893a]">
+                <span className={cn(PUBLISHER_ADD_CONTENT_ICON, "h-10 w-10 rounded-[var(--alpha-radius-button)]")}>
                   <Icon className="h-5 w-5" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[12px] font-extrabold text-[#1F2937]">{opt.label}</span>
-                  <span className="mt-0.5 block text-[10px] font-bold text-[#8a6a3a]">{opt.hint}</span>
+                  <span className="block alpha-type-desc font-extrabold text-alpha-heading">{opt.label}</span>
+                  <span className="mt-0.5 block alpha-type-caption font-bold text-alpha-gold-deep">{opt.hint}</span>
                 </span>
               </button>
             );

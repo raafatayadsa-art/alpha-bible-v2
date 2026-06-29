@@ -1,0 +1,137 @@
+/* ALPHA-123 — Premium auth experience (Sign Up + Username onboarding) */
+
+.alpha-auth-premium {
+  --alpha-auth-glass-bg: rgba(255, 252, 245, 0.72);
+  --alpha-auth-glass-border: rgba(231, 201, 122, 0.42);
+  --alpha-auth-glass-shadow:
+    0 24px 48px -18px rgba(120, 80, 30, 0.22),
+    0 0 0 1px rgba(255, 255, 255, 0.65) inset;
+}
+
+.alpha-auth-premium-bg {
+  background:
+    radial-gradient(120% 70% at 50% -8%, rgba(255, 224, 160, 0.28), transparent 58%),
+    radial-gradient(80% 50% at 88% 12%, rgba(231, 201, 122, 0.18), transparent 55%),
+    linear-gradient(180deg, #fbf3e1 0%, #f4ead8 42%, #efe2c4 100%);
+}
+
+.alpha-auth-premium-hero {
+  transition:
+    opacity 400ms var(--alpha-ease-standard, cubic-bezier(0.22, 1, 0.36, 1)),
+    transform 400ms var(--alpha-ease-standard, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+.alpha-auth-premium-scrolled .alpha-auth-premium-hero {
+  opacity: 0.55;
+  transform: scale(0.96) translateY(-6px);
+}
+
+.alpha-auth-glass-card {
+  background: var(--alpha-auth-glass-bg);
+  border: 1px solid var(--alpha-auth-glass-border);
+  box-shadow: var(--alpha-auth-glass-shadow);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-radius: var(--alpha-radius-card, 26px);
+  transition:
+    transform 220ms var(--alpha-ease-spring, cubic-bezier(0.34, 1.25, 0.64, 1)),
+    box-shadow 220ms var(--alpha-ease-standard, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+.alpha-auth-glass-card:focus-within {
+  transform: translateY(-2px);
+  box-shadow:
+    0 28px 52px -16px rgba(120, 80, 30, 0.26),
+    0 0 0 1px rgba(255, 255, 255, 0.75) inset,
+    0 0 32px -8px rgba(231, 201, 122, 0.2);
+}
+
+.alpha-auth-field {
+  height: 3rem;
+  border-radius: var(--alpha-radius-input, 18px);
+  border: 1px solid rgba(231, 201, 122, 0.45);
+  background: rgba(255, 255, 255, 0.88);
+  padding-inline-start: 2.75rem;
+  padding-inline-end: 2.75rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--alpha-text-primary, #3a2a18);
+  box-shadow: inset 0 1px 2px rgba(120, 80, 30, 0.04);
+  outline: none;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.alpha-auth-field:focus {
+  border-color: rgba(184, 137, 58, 0.75);
+  box-shadow:
+    inset 0 1px 2px rgba(120, 80, 30, 0.04),
+    0 0 0 3px rgba(231, 201, 122, 0.22);
+}
+
+.alpha-auth-field-icon {
+  position: absolute;
+  inset-inline-start: 0.875rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(184, 137, 58, 0.85);
+  pointer-events: none;
+}
+
+.alpha-auth-gold-btn {
+  background: var(--alpha-btn-primary-bg, linear-gradient(160deg, #e7c97a, #b8893a));
+  color: var(--alpha-btn-primary-text, #3a2a18);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow:
+    0 14px 28px -12px rgba(184, 137, 58, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+.alpha-auth-gold-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.alpha-auth-strength-bar {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.alpha-auth-strength-segment {
+  flex: 1;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(231, 201, 122, 0.25);
+  transition: background 200ms ease;
+}
+
+.alpha-auth-strength-segment.is-active.weak {
+  background: #d97706;
+}
+
+.alpha-auth-strength-segment.is-active.medium {
+  background: #b8893a;
+}
+
+.alpha-auth-strength-segment.is-active.strong {
+  background: #1f8a5a;
+}
+
+@keyframes alpha-auth-success-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.alpha-auth-success-overlay {
+  animation: alpha-auth-success-pop 480ms var(--alpha-ease-spring, cubic-bezier(0.34, 1.25, 0.64, 1));
+}

@@ -1,4 +1,6 @@
 -- ALPHA-099: Alpha Connect & Nearby Members System
+-- NOTE (ALPHA-121): Superseded on production by 20260627170000_alpha_121_connect_domain_deploy.sql
+-- (uses user_profiles instead of legacy profiles; production-safe RLS)
 
 create table if not exists public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,

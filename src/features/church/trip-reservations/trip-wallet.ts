@@ -1,6 +1,13 @@
-/** ALPHA-095 — Trip wallet & payment tracking */
+/** ALPHA-095 — Trip wallet & payment tracking (local + Domain 10 `trip_payments`) */
 
 import type { TripPaymentLedger } from "./trip-features-roadmap";
+import { getMemberProfile, getRegistrationsForPost } from "../post-registrations";
+import {
+  fetchTripWalletLedger,
+  persistOrganizerTripPayment as persistOrganizerTripPaymentRemote,
+  persistTripPaymentRemote,
+  persistTripWalletInit,
+} from "./trip-domain-api";
 
 const KEY = "alpha:095:trip-wallet";
 
@@ -19,8 +26,29 @@ function writeAll(rows: TripPaymentLedger[]) {
   localStorage.setItem(KEY, JSON.stringify(rows));
 }
 
+export function upsertTripWalletLedger(ledger: TripPaymentLedger) {
+  writeAll([ledger, ...readAll().filter((l) => l.registrationId !== ledger.registrationId)]);
+}
+
+export async function syncTripWalletFromDb(opts: {
+  postId: string;
+  registrationId: string;
+}): Promise<void> {
+  const reg = getRegistrationsForPost(opts.postId, "trip").find((r) => r.id === opts.registrationId);
+  const userId = reg?.userId ?? getMemberProfile().id;
+  if (!userId) return;
+
+  const remote = await fetchTripWalletLedger({
+    postId: opts.postId,
+    userId,
+    registrationId: opts.registrationId,
+  });
+  if (remote) upsertTripWalletLedger(remote);
+}
+
 export function initTripWallet(input: {
   registrationId: string;
+  postId: string;
   amountDue: number;
   currency?: string;
 }): TripPaymentLedger {
@@ -33,11 +61,29 @@ export function initTripWallet(input: {
     currency: input.currency ?? "EGP",
     payments: [],
   };
-  writeAll([ledger, ...readAll()]);
+  upsertTripWalletLedger(ledger);
+
+  const reg = getRegistrationsForPost(input.postId, "trip").find((r) => r.id === input.registrationId);
+  const userId = reg?.userId ?? getMemberProfile().id;
+  if (userId) {
+    void persistTripWalletInit({
+      postId: input.postId,
+      registrationId: input.registrationId,
+      userId,
+      amountDue: input.amountDue,
+      currency: input.currency,
+    });
+  }
+
   return ledger;
 }
 
-export function recordTripPayment(registrationId: string, amount: number, note?: string) {
+export function recordTripPayment(
+  registrationId: string,
+  amount: number,
+  note?: string,
+  postId?: string,
+) {
   const ledger = readAll().find((l) => l.registrationId === registrationId);
   if (!ledger) return null;
   const payment = { at: new Date().toISOString(), amount, note };
@@ -46,7 +92,14 @@ export function recordTripPayment(registrationId: string, amount: number, note?:
     amountPaid: ledger.amountPaid + amount,
     payments: [payment, ...ledger.payments],
   };
-  writeAll([next, ...readAll().filter((l) => l.registrationId !== registrationId)]);
+  upsertTripWalletLedger(next);
+
+  if (postId) {
+    const reg = getRegistrationsForPost(postId, "trip").find((r) => r.id === registrationId);
+    const userId = reg?.userId ?? getMemberProfile().id;
+    if (userId) void persistTripPaymentRemote({ postId, userId, amount, note });
+  }
+
   return next;
 }
 
@@ -60,4 +113,20 @@ export function walletRemaining(ledger: TripPaymentLedger): number {
 
 export function isPaymentDue(ledger: TripPaymentLedger): boolean {
   return walletRemaining(ledger) > 0;
+}
+
+export async function recordOrganizerTripPayment(opts: {
+  postId: string;
+  registrationId: string;
+  targetUserId: string;
+  amount: number;
+  note?: string;
+}): Promise<boolean> {
+  recordTripPayment(opts.registrationId, opts.amount, opts.note, opts.postId);
+  return persistOrganizerTripPaymentRemote({
+    postId: opts.postId,
+    targetUserId: opts.targetUserId,
+    amount: opts.amount,
+    note: opts.note,
+  });
 }

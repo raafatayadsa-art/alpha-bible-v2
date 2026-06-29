@@ -31,10 +31,15 @@ export type FamilyBookingMeta = {
 const PROFILE_KEY = "alpha:086:family-profile";
 const META_KEY = "alpha:086:family-booking-meta";
 
-const DEFAULT_MEMBERS: Omit<FamilyMember, "id">[] = [
-  { name: "", relation: "زوج/زوجة" },
-  { name: "", relation: "ابن/ابنة" },
-];
+export function clearFamilyProfileStorage() {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(PROFILE_KEY);
+    localStorage.removeItem(META_KEY);
+  } catch {
+    /* ignore */
+  }
+}
 
 export function getFamilyProfile(): FamilyProfile {
   const profile = getMemberProfile();
@@ -45,13 +50,18 @@ export function getFamilyProfile(): FamilyProfile {
     const raw = localStorage.getItem(PROFILE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as FamilyProfile;
-      if (parsed.userId === profile.id) return parsed;
+      if (parsed.userId === profile.id) {
+        return {
+          ...parsed,
+          members: Array.isArray(parsed.members) ? parsed.members.filter((m) => m.name?.trim()) : [],
+        };
+      }
     }
   } catch { /* ignore */ }
   return {
     userId: profile.id,
-    householdName: `أسرة ${profile.name || "المستخدم"}`,
-    members: DEFAULT_MEMBERS.map((m, i) => ({ ...m, id: `fm-${i}` })),
+    householdName: "",
+    members: [],
   };
 }
 

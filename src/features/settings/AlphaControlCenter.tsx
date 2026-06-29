@@ -1,11 +1,12 @@
 import { useCallback, useMemo, useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import {
   Bell,
   BookOpen,
   Church,
   Clock,
+  ChevronLeft,
   Cloud,
   Eye,
   Headphones,
@@ -42,6 +43,7 @@ import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { useLocale } from "@/lib/i18n/use-locale";
 import { usePlatformModules } from "@/lib/platform-modules";
 import { useResolvedTheme } from "@/lib/alpha-theme";
+import { signOutAllDevices, signOutCurrentDevice } from "@/features/auth";
 
 function sectionVisible(query: string, keywords: unknown): boolean {
   if (!query.trim()) return true;
@@ -59,6 +61,7 @@ export function AlphaControlCenter() {
   const [openSection, setOpenSection] = useState<string | null>(null);
   const [ownerPinOpen, setOwnerPinOpen] = useState(false);
   const [ownerPinTarget, setOwnerPinTarget] = useState("/platform");
+  const [logoutBusy, setLogoutBusy] = useState<"local" | "global" | null>(null);
   const score = computeSecurityScore(state);
   const scoreLabelKey = securityLabelKey(score);
   const isDark = useResolvedTheme() === "dark";
@@ -129,6 +132,32 @@ export function AlphaControlCenter() {
 
   const sectionOpen = useCallback((id: string) => openSection === id, [openSection]);
 
+  const handleLogoutThisDevice = useCallback(async () => {
+    if (logoutBusy) return;
+    setLogoutBusy("local");
+    try {
+      await signOutCurrentDevice();
+      await navigate({ to: "/login", replace: true });
+    } catch (error) {
+      console.error("[settings] sign out failed", error);
+    } finally {
+      setLogoutBusy(null);
+    }
+  }, [logoutBusy, navigate]);
+
+  const handleLogoutAllDevices = useCallback(async () => {
+    if (logoutBusy) return;
+    setLogoutBusy("global");
+    try {
+      await signOutAllDevices();
+      await navigate({ to: "/login", replace: true });
+    } catch (error) {
+      console.error("[settings] global sign out failed", error);
+    } finally {
+      setLogoutBusy(null);
+    }
+  }, [logoutBusy, navigate]);
+
   return (
     <div dir={dir} className="relative min-h-screen w-full overflow-x-hidden">
       <ControlCenterScreenBackground />
@@ -145,6 +174,17 @@ export function AlphaControlCenter() {
         )}
 
         <SettingsSearch value={search} onChange={setSearch} />
+
+        <Link
+          to="/settings/reading"
+          className="mb-3 flex items-center justify-between rounded-[var(--alpha-radius-button)] border border-alpha/45 bg-white/50 px-4 py-3 text-right backdrop-blur-sm active:scale-[0.99]"
+        >
+          <ChevronLeft className="h-4 w-4 text-alpha-muted" />
+          <div>
+            <p className="text-[13px] font-extrabold text-alpha-heading">إعدادات القراءة السريعة</p>
+            <p className="text-[10px] font-semibold text-alpha-muted">خط · حواشي · حفظ آخر قراءة</p>
+          </div>
+        </Link>
 
         {sectionVisible(search, t("sections.trustKeywords", { returnObjects: true }) as string[]) && (
           <PremiumLinkCard
@@ -168,7 +208,7 @@ export function AlphaControlCenter() {
               isOpen={sectionOpen("language")}
               onToggle={handleToggle}
             >
-              <LanguageSwitcher className="mb-3.5 border-[#efe2c4]/40 bg-white/40 px-4 py-4 shadow-[0_2px_10px_-4px_rgba(120,80,30,0.08)] backdrop-blur-sm transition-all hover:bg-white/50" />
+              <LanguageSwitcher className="mb-3.5 border-alpha/40 bg-white/40 px-4 py-4 shadow-[var(--alpha-shadow-mini)] backdrop-blur-sm transition-all hover:bg-white/50" />
             </PremiumSectionCard>
           )}
 
@@ -262,7 +302,12 @@ export function AlphaControlCenter() {
               <SectionLabel>{t("labels.devicesAndSessions")}</SectionLabel>
               <ActionRow label={t("rows.registeredDevices.label")} subtitle={t("rows.registeredDevices.subtitle")} />
               <ActionRow label={t("rows.lastLogin.label")} subtitle={t("rows.lastLogin.subtitle")} />
-              <ActionRow label={t("rows.logoutAllDevices.label")} subtitle={t("rows.logoutAllDevices.subtitle")} danger />
+              <ActionRow
+                label={t("rows.logoutAllDevices.label")}
+                subtitle={t("rows.logoutAllDevices.subtitle")}
+                danger
+                onClick={() => void handleLogoutAllDevices()}
+              />
 
               <SectionLabel>{t("labels.securityGuarantees")}</SectionLabel>
               <ActionRow label={t("rows.howWeProtect.label")} subtitle={t("rows.howWeProtect.subtitle")} />
@@ -437,8 +482,8 @@ export function AlphaControlCenter() {
                 }}
                 className="mx-4 mb-2 flex w-[calc(100%-2rem)] flex-col items-center gap-0.5 rounded-2xl border-2 border-[var(--gold)]/45 bg-gradient-to-l from-[var(--gold)]/12 to-white px-4 py-3 active:scale-[0.98]"
               >
-                <span className="text-[11px] font-extrabold text-[#5a4218]">النشر المباشر للناشرين</span>
-                <span className="text-center text-[10px] font-bold text-[#8a6a3a]">
+                <span className="alpha-type-desc font-extrabold text-alpha-heading">النشر المباشر للناشرين</span>
+                <span className="text-center alpha-type-caption font-bold text-alpha-muted">
                   اختر الناشرين الموثوقين — محتوى جديد بدون تحقق يدوي
                 </span>
               </button>
@@ -469,8 +514,18 @@ export function AlphaControlCenter() {
               isOpen={sectionOpen("logout")}
               onToggle={handleToggle}
             >
-              <ActionRow label={t("rows.logoutThisDevice.label")} subtitle={t("rows.logoutThisDevice.subtitle")} danger />
-              <ActionRow label={t("rows.logoutAllDevicesAction.label")} subtitle={t("rows.logoutAllDevicesAction.subtitle")} danger />
+              <ActionRow
+                label={t("rows.logoutThisDevice.label")}
+                subtitle={t("rows.logoutThisDevice.subtitle")}
+                danger
+                onClick={() => void handleLogoutThisDevice()}
+              />
+              <ActionRow
+                label={t("rows.logoutAllDevicesAction.label")}
+                subtitle={t("rows.logoutAllDevicesAction.subtitle")}
+                danger
+                onClick={() => void handleLogoutAllDevices()}
+              />
             </PremiumSectionCard>
           )}
         </div>
@@ -489,10 +544,10 @@ export function AlphaControlCenter() {
           >
             {ALPHA_OFFICIAL_SLOGAN}
           </p>
-          <p className="mt-2.5 text-[11px] font-semibold text-[#8a5a14]">
+          <p className="mt-2.5 alpha-type-desc font-semibold text-alpha-gold-deep">
             Alpha Coptic
           </p>
-          <p className="mt-0.5 text-[10px] text-[#9a7e5a]">
+          <p className="mt-0.5 alpha-type-caption text-alpha-muted">
             Version 1.0
           </p>
         </div>

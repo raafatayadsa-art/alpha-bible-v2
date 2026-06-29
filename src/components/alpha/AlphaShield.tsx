@@ -157,10 +157,11 @@ export function ShieldImage({
   px,
   className = "",
 }: {
-  role: ShieldRole;
+  role: ShieldRole | null;
   px: number;
   className?: string;
 }) {
+  if (!role) return null;
   const cfg = SHIELD_CONFIG[role];
   return (
     <span
@@ -195,7 +196,7 @@ function FlyingShield({
   duration,
   onSettled,
 }: {
-  role: ShieldRole;
+  role: ShieldRole | null;
   transform: FlyTransform;
   animate: boolean;
   duration: number;
@@ -233,7 +234,7 @@ function VerificationCard({
   originRect,
   profileInfo,
 }: {
-  role: ShieldRole;
+  role: ShieldRole | null;
   onClose: () => void;
   userName?: string;
   userAvatar?: string;
@@ -392,7 +393,7 @@ function VerificationCard({
             <p className="text-[13px] font-bold text-[#1F2937]">{cfg.label}</p>
             <p className="mt-0.5 text-[9.5px] text-[#6B7280]">{cfg.status}</p>
             {profileInfo?.roleLabel ? (
-              <p className="mt-1 text-[10px] font-extrabold text-[#b8893a]">{profileInfo.roleLabel}</p>
+              <p className="mt-1 text-[10.5px] font-extrabold text-[#b8893a]">{profileInfo.roleLabel}</p>
             ) : null}
           </div>
 
@@ -475,7 +476,7 @@ function VerificationCard({
   );
 }
 
-const SHIELD_SIZES = { sm: 28, md: 36, lg: 48, xl: 92 } as const;
+const SHIELD_SIZES = { xs: 14, sm: 28, md: 36, lg: 48, xl: 92 } as const;
 export type AlphaShieldSize = keyof typeof SHIELD_SIZES;
 
 // ─────────────────────────────────────────────────────────────
@@ -492,7 +493,7 @@ export function AlphaShield({
   profileInfo,
   className,
 }: {
-  role: ShieldRole;
+  role: ShieldRole | null;
   size?: AlphaShieldSize;
   userName?: string;
   userAvatar?: string;
@@ -509,6 +510,8 @@ export function AlphaShield({
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => setMounted(true), []);
+
+  if (!role) return null;
 
   const px = SHIELD_SIZES[size];
 

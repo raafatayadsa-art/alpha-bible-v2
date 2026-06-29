@@ -17,14 +17,6 @@ export function PlatformModuleGate({ children }: { children: ReactNode }) {
     }
   }, [blocked, navigate]);
 
-  if (loading && moduleKey != null) {
-    return (
-      <div className="grid min-h-[40dvh] place-items-center px-6 text-center text-sm text-[#6a5488]">
-        جاري التحميل…
-      </div>
-    );
-  }
-
   if (blocked) return null;
   return <>{children}</>;
 }

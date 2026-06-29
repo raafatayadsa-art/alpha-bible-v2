@@ -8,15 +8,15 @@ import { cn } from "@/lib/utils";
  */
 
 export const palette = {
-  bg: "#f4ead8",
-  surface: "#fbf3e1",
-  surfaceBorder: "#efe2c4",
-  ink: "#3a2a18",
-  inkSoft: "#6a543a",
-  gold: "#b8893a",
-  goldDeep: "#7a4a26",
-  goldLight: "#e7c97a",
-  purple: "#6a4ab5",
+  bg: "var(--alpha-bg-base)",
+  surface: "var(--alpha-bg-elevated)",
+  surfaceBorder: "var(--alpha-border)",
+  ink: "var(--alpha-text)",
+  inkSoft: "var(--alpha-text-muted)",
+  gold: "var(--alpha-gold-deep)",
+  goldDeep: "var(--alpha-gold-deep)",
+  goldLight: "var(--alpha-gold)",
+  purple: "var(--alpha-purple)",
   purpleSoft: "#a78bd9",
 } as const;
 
@@ -40,7 +40,7 @@ export function Pressable({
   as?: "auto" | "div";
 }) {
   const base = cn(
-    "block w-full text-right transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c79356]/60 rounded-[inherit]",
+    "block w-full text-right alpha-motion-spring active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--alpha-gold-deep)]/60 rounded-[inherit]",
     className,
   );
   if (to) {
@@ -71,15 +71,14 @@ export function GlassSurface({
 }) {
   const toneClass =
     tone === "purple"
-      ? "bg-gradient-to-br from-[#efe7fb]/90 to-[#fbf3e1]/80"
+      ? "bg-gradient-to-br from-[color-mix(in_srgb,var(--alpha-purple)_12%,var(--alpha-bg-elevated))] to-[color-mix(in_srgb,var(--alpha-bg-elevated)_90%,transparent)]"
       : tone === "ivory"
       ? "bg-white/85"
-      : "bg-[#fbf3e1]/85";
+      : "bg-[color-mix(in_srgb,var(--alpha-bg-elevated)_85%,transparent)]";
   return (
     <div
       className={cn(
-        "rounded-3xl border border-white/70 backdrop-blur-xl",
-        "shadow-[0_14px_36px_-22px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.75)]",
+        "rounded-[var(--alpha-radius-card)] border border-white/70 backdrop-blur-xl shadow-[var(--alpha-shadow-featured)]",
         toneClass,
         className,
       )}
@@ -101,9 +100,9 @@ export function SectionHeader({
   return (
     <div className="mb-2.5 flex items-end justify-between gap-3 px-1">
       <div>
-        <h2 className="text-[14px] font-extrabold text-[#3a2a18] leading-none">{title}</h2>
+        <h2 className="alpha-type-h2 text-alpha-heading leading-none">{title}</h2>
         {caption && (
-          <p className="mt-1 text-[11px] text-[#6a543a]">{caption}</p>
+          <p className="alpha-type-desc mt-1 text-alpha-description">{caption}</p>
         )}
       </div>
       {action}
@@ -125,24 +124,24 @@ export function ProgressBar({
   const v = Math.max(0, Math.min(100, value));
   const bar =
     tone === "purple"
-      ? "from-[#a78bd9] to-[#6a4ab5]"
-      : "from-[#e7c97a] via-[#c79356] to-[#7a4a26]";
+      ? "from-[#a78bd9] to-[var(--alpha-purple)]"
+      : "from-[var(--alpha-gold)] via-[var(--alpha-gold-deep)] to-[var(--alpha-gold-deep)]";
   return (
     <div className={cn("flex items-center gap-2", className)}>
       <div
-        className="h-1.5 flex-1 rounded-full bg-[#ecdcb6] overflow-hidden"
+        className="h-1.5 flex-1 rounded-full bg-alpha-progress-track overflow-hidden"
         role="progressbar"
         aria-valuenow={v}
         aria-valuemin={0}
         aria-valuemax={100}
       >
         <div
-          className={cn("h-full rounded-full bg-gradient-to-r transition-[width] duration-500", bar)}
-          style={{ width: `${v}%` }}
+          className={cn("h-full rounded-full bg-gradient-to-r alpha-motion-standard transition-[width]", bar)}
+          style={{ width: `${v}%`, transitionDuration: "500ms" }}
         />
       </div>
       {showLabel && (
-        <span className="text-[11px] font-bold text-[#7a4a26] tabular-nums">{Math.round(v)}%</span>
+        <span className="alpha-type-desc font-bold text-alpha-gold-deep tabular-nums">{Math.round(v)}%</span>
       )}
     </div>
   );
@@ -152,7 +151,7 @@ export function PlaceholderArt({
   label,
   tone = "gold",
   className = "",
-  rounded = "rounded-2xl",
+  rounded = "rounded-[var(--alpha-radius-dock-tab)]",
 }: {
   label?: string;
   tone?: "gold" | "purple" | "ivory";
@@ -171,7 +170,7 @@ export function PlaceholderArt({
         "relative overflow-hidden bg-gradient-to-br",
         grad,
         rounded,
-        "shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_8px_22px_-14px_rgba(120,80,30,0.45)]",
+        "shadow-[var(--alpha-shadow-normal)]",
         className,
       )}
       aria-hidden={!label}
@@ -185,7 +184,7 @@ export function PlaceholderArt({
       />
       {label && (
         <div className="absolute inset-0 grid place-items-center px-3 text-center">
-          <span className="font-arabic-serif text-[15px] font-bold text-[#3a2a18]/70 leading-tight">
+          <span className="alpha-type-h2 font-arabic-serif text-alpha-heading/70 leading-tight">
             {label}
           </span>
         </div>
@@ -205,14 +204,14 @@ export function IconBadge({
 }) {
   const bg =
     tone === "purple"
-      ? "bg-gradient-to-br from-[#efe7fb] to-[#cdb8ef] text-[#4a2f8a]"
+      ? "bg-gradient-to-br from-[color-mix(in_srgb,var(--alpha-purple)_14%,white)] to-[#cdb8ef] text-[var(--alpha-purple)]"
       : tone === "ivory"
-      ? "bg-white text-[#3a2a18]"
-      : "bg-gradient-to-br from-[#fff1c7] to-[#e7c07a] text-[#7a4a26]";
+      ? "bg-white text-alpha-heading"
+      : "bg-gradient-to-br from-[color-mix(in_srgb,var(--alpha-gold)_22%,white)] to-[var(--alpha-gold)] text-alpha-gold-deep";
   return (
     <div
       className={cn(
-        "grid place-items-center rounded-2xl border border-white/70 shadow-[0_6px_14px_-10px_rgba(120,80,30,0.4),inset_0_1px_0_rgba(255,255,255,0.8)]",
+        "grid place-items-center rounded-[var(--alpha-radius-dock-tab)] border border-white/70 shadow-[var(--alpha-shadow-normal)]",
         bg,
       )}
       style={{ height: size, width: size }}
@@ -240,6 +239,10 @@ export function BackButton({
   const router = useRouter();
 
   const handleBack = React.useCallback(() => {
+    if (onBack) {
+      onBack();
+      return;
+    }
     const idx =
       typeof window !== "undefined"
         ? (((window.history.state as Record<string, unknown>)?.idx as number) ?? 0)
@@ -248,7 +251,6 @@ export function BackButton({
       router.history.back();
       return;
     }
-    if (onBack) { onBack(); return; }
     if (to) {
       void router.navigate({ to: to as any, params: params as any });
       return;
@@ -260,10 +262,10 @@ export function BackButton({
     <span
       aria-label={label}
       className={cn(
-        "inline-grid h-9 w-9 place-items-center rounded-full border backdrop-blur-xl active:scale-90 transition-transform",
+        "inline-grid h-9 w-9 place-items-center rounded-full border backdrop-blur-xl active:scale-90 alpha-motion-spring",
         tone === "dark"
-          ? "bg-[#0e1a2e]/55 border-white/10 text-[#f3e6c4]"
-          : "bg-white/70 border-[#efe2c4] text-[#3a2a18]",
+          ? "bg-[color-mix(in_srgb,var(--alpha-bg-base)_55%,transparent)] border-white/10 text-[var(--alpha-reader-text-soft)]"
+          : "bg-white/70 border-alpha text-alpha-heading",
       )}
     >
       <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -271,7 +273,7 @@ export function BackButton({
       </svg>
     </span>
   ) : (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-white/80 border border-[#efe2c4] px-3 py-1.5 text-[12px] font-bold text-[#3a2a18] shadow-[0_6px_14px_-10px_rgba(120,80,30,0.35)]">
+    <span className="alpha-type-body inline-flex items-center gap-1.5 rounded-full bg-white/80 border border-alpha px-3 py-1.5 font-bold text-alpha-heading shadow-[var(--alpha-shadow-normal)]">
       <span aria-hidden>→</span>
       {label}
     </span>
@@ -282,7 +284,7 @@ export function BackButton({
       type="button"
       aria-label={label}
       onClick={handleBack}
-      className="inline-block active:scale-95 transition-transform"
+      className="inline-block active:scale-95 alpha-motion-spring"
     >
       {inner}
     </button>

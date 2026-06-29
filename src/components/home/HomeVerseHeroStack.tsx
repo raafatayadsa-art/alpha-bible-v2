@@ -162,7 +162,7 @@ export function HomeVerseHeroStack({ linkTo = "/bible", onBrandedShare }: HomeVe
         index={index}
         total={total}
         labels={HERO_STACK_LABELS}
-        onSelect={setIndex}
+        onSelect={(i) => setIndex(i)}
       />
     </div>
   );

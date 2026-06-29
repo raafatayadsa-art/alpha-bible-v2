@@ -1,9 +1,11 @@
 import { supabase } from "@/integrations/supabase/client";
+import { fetchUserProfileRow, type UserProfileRow } from "./profile-completion-api";
 
 export type AlphaAuthUser = {
   id: string;
   email: string | null;
   displayName: string;
+  username: string | null;
   avatarUrl: string | null;
 };
 
@@ -26,38 +28,37 @@ function mapUser(
     email?: string | null;
     user_metadata?: Record<string, unknown>;
   },
-  profileDisplayName?: string | null,
+  profile?: UserProfileRow | null,
 ): AlphaAuthUser {
   const meta = user.user_metadata ?? {};
   const avatarUrl =
+    profile?.avatar_url ||
     (typeof meta.avatar_url === "string" && meta.avatar_url) ||
     (typeof meta.picture === "string" && meta.picture) ||
     null;
   return {
     id: user.id,
     email: user.email ?? null,
-    displayName: resolveDisplayName(meta, profileDisplayName),
+    displayName: resolveDisplayName(meta, profile?.display_name),
+    username: profile?.username ?? null,
     avatarUrl: avatarUrl ?? AVATAR_FALLBACK,
   };
 }
 
-async function fetchProfileDisplayName(userId: string): Promise<string | null> {
-  try {
-    const { data, error } = await supabase.from("profiles").select("display_name").eq("id", userId).maybeSingle();
-    if (error || !data) return null;
-    return typeof data.display_name === "string" ? data.display_name : null;
-  } catch {
-    return null;
-  }
-}
-
-/** Load session from Supabase Auth (persisted). */
+/** Load session from Supabase Auth (persisted). Uses local session first for mobile. */
 export async function fetchAuthUser(): Promise<AlphaAuthUser | null> {
   try {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) return null;
-    const profileDisplayName = await fetchProfileDisplayName(data.user.id);
-    return mapUser(data.user, profileDisplayName);
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !sessionData.session?.user) return null;
+
+    const sessionUser = sessionData.session.user;
+    let profile: UserProfileRow | null = null;
+    try {
+      profile = await fetchUserProfileRow(sessionUser.id);
+    } catch {
+      /* profile row optional for first paint */
+    }
+    return mapUser(sessionUser, profile);
   } catch {
     return null;
   }

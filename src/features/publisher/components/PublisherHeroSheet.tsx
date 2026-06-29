@@ -10,6 +10,23 @@ import { updatePublisherHeroCards } from "../publisher-api";
 import { contentHasPlayableMedia } from "../publisher-content-payload";
 import { isHeroEligibleContent } from "../publisher-public-content";
 import cardChurch from "@/assets/home/card-church.jpg";
+import {
+  PUBLISHER_ACCENT_ICON_SM,
+  PUBLISHER_INNER_CARD,
+  PUBLISHER_MOVE_BTN,
+  PUBLISHER_PURPLE_BTN_SOLID,
+  PUBLISHER_PURPLE_GRADIENT,
+  PUBLISHER_ROW_BTN,
+  PUBLISHER_SHEET_FOOTER_BORDER,
+  PUBLISHER_SHEET_HEADER_BORDER,
+  PUBLISHER_SHEET_OVERLAY,
+  PUBLISHER_SHEET_PANEL,
+  PUBLISHER_TEXT_ACCENT_CAPTION,
+  PUBLISHER_TEXT_FEEDBACK,
+  PUBLISHER_TEXT_MUTED,
+  PUBLISHER_TEXT_SUB,
+  PUBLISHER_TEXT_TITLE,
+} from "./publisher-glass-chrome";
 
 type Props = {
   open: boolean;
@@ -84,27 +101,27 @@ export function PublisherHeroSheet({ open, publisher, content, onClose, onSaved 
   };
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-end justify-center bg-black/55 p-3 backdrop-blur-sm sm:items-center">
+    <div className={PUBLISHER_SHEET_OVERLAY}>
       <div
-        className="flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-[22px] border border-[rgba(93,50,145,0.14)] bg-[#fbf7f0]"
+        className={PUBLISHER_SHEET_PANEL}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex shrink-0 items-center justify-between border-b border-[rgba(93,50,145,0.1)] px-4 py-3">
+        <div className={`flex shrink-0 items-center justify-between ${PUBLISHER_SHEET_HEADER_BORDER} px-4 py-3`}>
           <button type="button" onClick={onClose} className="grid h-9 w-9 place-items-center rounded-full border bg-white">
             <X className="h-4 w-4" />
           </button>
           <div className="text-right">
-            <p className="text-[13px] font-extrabold text-[#3a3258]">كروت الهيرو</p>
-            <p className="text-[10px] font-bold text-[#6b658a]">رتّب ما يظهر في أعلى صفحتك — بدون حد أقصى</p>
+            <p className={PUBLISHER_TEXT_TITLE}>كروت الهيرو</p>
+            <p className={PUBLISHER_TEXT_SUB}>رتّب ما يظهر في أعلى صفحتك — بدون حد أقصى</p>
           </div>
           <span className="w-9" />
         </div>
 
         <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4">
-          <div className="rounded-2xl border border-[rgba(93,50,145,0.12)] bg-white/90 p-3">
+          <div className={PUBLISHER_INNER_CARD}>
             <div className="mb-2 flex items-center justify-between gap-2">
-              <span className="text-[10px] font-bold text-[#8a84a8]">{selectedItems.length} كارت</span>
-              <p className="text-[11px] font-extrabold text-[#5D3291]">الترتيب الحالي</p>
+              <span className={PUBLISHER_TEXT_MUTED}>{selectedItems.length} كارت</span>
+              <p className={PUBLISHER_TEXT_ACCENT_CAPTION}>الترتيب الحالي</p>
             </div>
             {selectedItems.length ? (
               <div className="space-y-2">
@@ -122,14 +139,14 @@ export function PublisherHeroSheet({ open, publisher, content, onClose, onSaved 
                 ))}
               </div>
             ) : (
-              <p className="py-4 text-center text-[11px] font-bold text-[#6b658a]">
+              <p className={`py-4 text-center ${PUBLISHER_TEXT_SUB}`}>
                 لم تُحدَّد كروت بعد — سيتم اختيارها تلقائياً من المحتوى.
               </p>
             )}
           </div>
 
-          <div className="rounded-2xl border border-[rgba(93,50,145,0.12)] bg-white/90 p-3">
-            <p className="mb-2 text-right text-[11px] font-extrabold text-[#5D3291]">إضافة من محتواك</p>
+          <div className={PUBLISHER_INNER_CARD}>
+            <p className={`mb-2 text-right ${PUBLISHER_TEXT_ACCENT_CAPTION}`}>إضافة من محتواك</p>
             {available.length ? (
               <div className="space-y-2">
                 {available.map((item) => (
@@ -137,9 +154,9 @@ export function PublisherHeroSheet({ open, publisher, content, onClose, onSaved 
                     key={item.id}
                     type="button"
                     onClick={() => addItem(item.id)}
-                    className="flex w-full items-center gap-2 rounded-xl border border-[rgba(93,50,145,0.1)] bg-[#faf8fc] px-2.5 py-2 text-right active:scale-[0.99]"
+                    className={PUBLISHER_ROW_BTN}
                   >
-                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#5D3291]/10 text-[#5D3291]">
+                    <span className={PUBLISHER_ACCENT_ICON_SM}>
                       <Plus className="h-4 w-4" />
                     </span>
                     <HeroItemMeta item={item} content={content} />
@@ -147,22 +164,22 @@ export function PublisherHeroSheet({ open, publisher, content, onClose, onSaved 
                 ))}
               </div>
             ) : (
-              <p className="py-3 text-center text-[11px] font-bold text-[#6b658a]">
+              <p className={`py-3 text-center ${PUBLISHER_TEXT_SUB}`}>
                 {eligible.length ? "كل المحتوى المؤهل مضاف بالفعل." : "أضف ترانيم أو ألبومات بغلاف أو ملف صوتي أولاً."}
               </p>
             )}
           </div>
 
-          {feedback ? <p className="text-center text-[11px] font-bold text-[#5D3291]">{feedback}</p> : null}
+          {feedback ? <p className={PUBLISHER_TEXT_FEEDBACK}>{feedback}</p> : null}
         </div>
 
-        <div className="shrink-0 border-t border-[rgba(93,50,145,0.1)] px-4 py-3">
+        <div className={`shrink-0 ${PUBLISHER_SHEET_FOOTER_BORDER} px-4 py-3`}>
           <button
             type="button"
             disabled={saving}
             onClick={() => void save()}
-            className="inline-flex w-full items-center justify-center gap-1.5 rounded-full py-2.5 text-[12px] font-extrabold text-white disabled:opacity-60"
-            style={{ background: "linear-gradient(160deg, #7b4cb8, #5D3291)" }}
+            className={PUBLISHER_PURPLE_BTN_SOLID}
+            style={{ background: PUBLISHER_PURPLE_GRADIENT }}
           >
             {saving ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             {saving ? "جاري الحفظ…" : "حفظ كروت الهيرو"}
@@ -201,18 +218,18 @@ function HeroPickRow({
           disabled={index === 0}
           onClick={onMoveUp}
           aria-label="تحريك لأعلى"
-          className="grid h-7 w-7 place-items-center rounded-lg border border-[#5D3291]/15 bg-white disabled:opacity-30"
+          className={PUBLISHER_MOVE_BTN}
         >
-          <ArrowUp className="h-3.5 w-3.5 text-[#5D3291]" />
+          <ArrowUp className="h-3.5 w-3.5 text-[var(--alpha-publisher-purple)]" />
         </button>
         <button
           type="button"
           disabled={index >= total - 1}
           onClick={onMoveDown}
           aria-label="تحريك لأسفل"
-          className="grid h-7 w-7 place-items-center rounded-lg border border-[#5D3291]/15 bg-white disabled:opacity-30"
+          className={PUBLISHER_MOVE_BTN}
         >
-          <ArrowDown className="h-3.5 w-3.5 text-[#5D3291]" />
+          <ArrowDown className="h-3.5 w-3.5 text-[var(--alpha-publisher-purple)]" />
         </button>
       </div>
       <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl ring-1 ring-[var(--gold)]/20">
@@ -254,8 +271,8 @@ function HeroItemMeta({
   const playable = contentHasPlayableMedia(item, content);
   return (
     <>
-      <p className={`truncate font-extrabold text-[#3a3258] ${compact ? "text-[11px]" : "text-[12px]"}`}>{item.title}</p>
-      <p className={`font-bold text-[#6b658a] ${compact ? "text-[9px]" : "text-[10px]"}`}>
+      <p className={`truncate font-extrabold ${PUBLISHER_TEXT_TITLE} ${compact ? "text-[11px]" : ""}`}>{item.title}</p>
+      <p className={`${PUBLISHER_TEXT_SUB} ${compact ? "text-[9px]" : ""}`}>
         {PUBLISHER_CONTENT_KIND_LABELS[item.contentKind]}
         {" · "}
         {PUBLISHER_CONTENT_STATUS_LABELS[item.status]}

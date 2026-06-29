@@ -113,7 +113,7 @@ export function JournalReferencePicker({
         className="rounded-xl border px-3 py-3 text-right"
         style={{
           borderColor: `${JOURNAL_VAULT.gold}44`,
-          background: "rgba(0,0,0,0.35)",
+          background: "rgba(255,255,255,0.88)",
         }}
       >
         <p className="mb-2 text-[10px] font-bold" style={{ color: JOURNAL_VAULT.gold }}>
@@ -135,8 +135,8 @@ export function JournalReferencePicker({
     "flex w-full items-center justify-between gap-2 rounded-xl border px-3 py-2.5 text-[12px] font-bold transition active:scale-[0.99]";
 
   const chipBtn = (active: boolean, disabled?: boolean) => ({
-    borderColor: active ? `${JOURNAL_VAULT.noteAccent}55` : "rgba(255,255,255,0.1)",
-    background: active ? JOURNAL_VAULT.noteBg : "rgba(0,0,0,0.3)",
+    borderColor: active ? `${JOURNAL_VAULT.noteAccent}55` : "rgba(212,175,55,0.28)",
+    background: active ? JOURNAL_VAULT.noteBg : "rgba(255,255,255,0.85)",
     color: active ? JOURNAL_VAULT.text : JOURNAL_VAULT.textMuted,
     opacity: disabled ? 0.45 : 1,
   });
@@ -186,7 +186,7 @@ export function JournalReferencePicker({
           className="mt-2 flex items-center justify-between gap-2 rounded-xl border px-3 py-2"
           style={{
             borderColor: `${JOURNAL_VAULT.gold}33`,
-            background: "rgba(0,0,0,0.25)",
+            background: "rgba(255,255,255,0.88)",
           }}
         >
           <span className="text-[10px] font-bold" style={{ color: JOURNAL_VAULT.goldMuted }}>
@@ -202,12 +202,12 @@ export function JournalReferencePicker({
 
       {step ? (
         <div className="fixed inset-0 z-[90] flex flex-col justify-end" dir="rtl">
-          <button type="button" aria-label="إغلاق" className="absolute inset-0 bg-black/70" onClick={closePicker} />
+          <button type="button" aria-label="إغلاق" className="absolute inset-0 bg-black/35" onClick={closePicker} />
           <div
             className="relative z-10 flex max-h-[78vh] flex-col overflow-hidden rounded-t-[24px] border-t"
             style={{
               borderColor: `${JOURNAL_VAULT.noteAccent}44`,
-              background: "linear-gradient(180deg, #0a0818 0%, #050814 100%)",
+              background: "linear-gradient(180deg, #FAF7F2 0%, #F5EFE4 100%)",
             }}
           >
             <div
@@ -262,7 +262,7 @@ export function JournalReferencePicker({
                       className={rowBtn}
                       style={{
                         borderColor: `${JOURNAL_VAULT.gold}44`,
-                        background: "rgba(0,0,0,0.35)",
+                        background: "rgba(255,255,255,0.88)",
                         color: JOURNAL_VAULT.text,
                       }}
                     >
@@ -313,7 +313,7 @@ export function JournalReferencePicker({
                             type="button"
                             onClick={() => r.params?.book && pickBook(r.params.book)}
                             className={rowBtn}
-                            style={{ borderColor: "rgba(255,255,255,0.1)", background: "rgba(0,0,0,0.35)", color: JOURNAL_VAULT.text }}
+                            style={{ borderColor: "rgba(212,175,55,0.28)", background: "rgba(255,255,255,0.88)", color: JOURNAL_VAULT.text }}
                           >
                             <span className="flex-1 text-right">{r.title}</span>
                             <ChevronLeft className="h-4 w-4 opacity-50" />
@@ -331,7 +331,7 @@ export function JournalReferencePicker({
                           className={rowBtn}
                           style={{
                             borderColor: value.book === book ? `${JOURNAL_VAULT.noteAccent}55` : "rgba(255,255,255,0.08)",
-                            background: value.book === book ? JOURNAL_VAULT.noteBg : "rgba(0,0,0,0.3)",
+                            background: value.book === book ? JOURNAL_VAULT.noteBg : "rgba(255,255,255,0.85)",
                             color: JOURNAL_VAULT.text,
                           }}
                         >
@@ -354,7 +354,7 @@ export function JournalReferencePicker({
                       className="rounded-xl border py-2.5 text-[13px] font-bold tabular-nums transition active:scale-95"
                       style={{
                         borderColor: value.chapter === ch ? `${JOURNAL_VAULT.noteAccent}66` : "rgba(255,255,255,0.1)",
-                        background: value.chapter === ch ? JOURNAL_VAULT.noteBg : "rgba(0,0,0,0.35)",
+                        background: value.chapter === ch ? JOURNAL_VAULT.noteBg : "rgba(255,255,255,0.85)",
                         color: JOURNAL_VAULT.text,
                       }}
                     >
@@ -374,7 +374,7 @@ export function JournalReferencePicker({
                       className="rounded-xl border py-2 text-[12px] font-bold tabular-nums transition active:scale-95"
                       style={{
                         borderColor: value.verse === v ? `${JOURNAL_VAULT.noteAccent}66` : "rgba(255,255,255,0.1)",
-                        background: value.verse === v ? JOURNAL_VAULT.noteBg : "rgba(0,0,0,0.35)",
+                        background: value.verse === v ? JOURNAL_VAULT.noteBg : "rgba(255,255,255,0.85)",
                         color: JOURNAL_VAULT.text,
                       }}
                     >

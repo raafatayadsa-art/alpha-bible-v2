@@ -198,6 +198,9 @@ function pushRecent(q: string) {
     const cur = loadRecent().filter((x) => x !== t);
     const next = [t, ...cur].slice(0, 8);
     localStorage.setItem(RECENT_KEY, JSON.stringify(next));
+    void import("@/lib/user-sync-scheduler").then(({ scheduleUserDataSync }) =>
+      scheduleUserDataSync({ debounced: true, delayMs: 5000, extraKey: RECENT_KEY }),
+    );
   } catch {
     /* noop */
   }
@@ -292,7 +295,7 @@ function SearchHub() {
     <div dir="rtl" className="min-h-screen bg-alpha-base text-alpha pb-28">
       {/* Header */}
       <header
-        className="sticky top-0 z-20 backdrop-blur-xl bg-[#FAF8F3]/85 border-b border-[#ead9b1]/60"
+        className="sticky top-0 z-20 backdrop-blur-xl bg-[color-mix(in_srgb,var(--alpha-bg-base)_85%,transparent)] border-b border-alpha/60"
         style={{ paddingTop: "max(env(safe-area-inset-top), 10px)" }}
       >
         <div className="mx-auto w-full max-w-[var(--alpha-content-max-width)] px-4 pb-3">
@@ -300,7 +303,7 @@ function SearchHub() {
             <button
               type="button"
               onClick={() => navigate({ to: "/home" })}
-              className="grid h-10 w-10 place-items-center rounded-full bg-white/85 border border-[#ead9b1] shadow-[0_6px_16px_-10px_rgba(120,80,30,0.4)] active:scale-95 transition-transform"
+              className="grid h-10 w-10 place-items-center rounded-full bg-white/85 border border-alpha shadow-[var(--alpha-shadow-mini)] active:scale-95 alpha-motion-spring"
               aria-label="رجوع"
             >
               <ArrowLeft className="h-4 w-4 rotate-180" />
@@ -311,16 +314,16 @@ function SearchHub() {
 
           {/* Premium glass search field */}
           <div
-            className="flex items-center gap-2 rounded-2xl bg-white/90 backdrop-blur-xl border border-[#ead9b1] px-4 h-14 shadow-[0_14px_32px_-18px_rgba(120,80,30,0.45),inset_0_1px_0_rgba(255,255,255,0.85)] animate-fade-in"
+            className="flex items-center gap-2 rounded-[var(--alpha-radius-dock-tab)] bg-white/90 backdrop-blur-xl border border-alpha px-4 h-14 shadow-[var(--alpha-shadow-featured)] animate-fade-in"
           >
-            <Search className="h-5 w-5 text-[#8a6322] shrink-0" />
+            <Search className="h-5 w-5 text-alpha-gold-deep shrink-0" />
             <input
               ref={inputRef}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onBlur={commitRecent}
               placeholder={activeScope.placeholder}
-              className="flex-1 bg-transparent outline-none text-[15px] font-bold placeholder:font-normal placeholder:text-[#b89c70]"
+              className="alpha-type-body flex-1 bg-transparent outline-none font-bold placeholder:font-normal placeholder:text-alpha-gold-deep/60"
               dir="rtl"
             />
             {query && (
@@ -328,7 +331,7 @@ function SearchHub() {
                 type="button"
                 aria-label="مسح"
                 onClick={() => { setQuery(""); inputRef.current?.focus(); }}
-                className="grid h-7 w-7 place-items-center rounded-full bg-[#f6ecd4] text-[#5b3a18] active:scale-90 transition-transform"
+                className="grid h-7 w-7 place-items-center rounded-full bg-[color-mix(in_srgb,var(--alpha-bg-elevated)_90%,white)] text-alpha-heading active:scale-90 alpha-motion-spring"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -409,25 +412,25 @@ function BeforeSearch({
       {recent.length > 0 && (
         <section>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-[12px] font-extrabold tracking-[0.2em] text-[#8a6322]">آخر عمليات البحث</h2>
+            <h2 className="alpha-type-caption font-extrabold tracking-[0.2em] text-alpha-gold-deep">آخر عمليات البحث</h2>
             <button
               type="button"
               onClick={onClearRecent}
-              className="text-[11px] font-bold text-[#8a7558] active:scale-95 transition-transform"
+              className="alpha-type-desc font-bold text-alpha-muted active:scale-95 alpha-motion-spring"
             >
               مسح
             </button>
           </div>
-          <ul className="rounded-2xl bg-white/85 border border-[#ead9b1] overflow-hidden divide-y divide-[#ead9b1]/60">
+          <ul className="rounded-[var(--alpha-radius-dock-tab)] bg-white/85 border border-alpha overflow-hidden divide-y divide-alpha/60">
             {recent.map((t) => (
               <li key={t}>
                 <button
                   type="button"
                   onClick={() => onPickRecent(t)}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-right active:bg-[#fbf3e1] transition-colors"
+                  className="w-full flex items-center gap-3 px-4 py-3 text-right active:bg-[color-mix(in_srgb,var(--alpha-bg-elevated)_90%,transparent)] alpha-motion-standard"
                 >
-                  <Search className="h-4 w-4 text-[#8a6322]" />
-                  <span className="text-[14px] font-bold">{t}</span>
+                  <Search className="h-4 w-4 text-alpha-gold-deep" />
+                  <span className="alpha-type-body font-bold">{t}</span>
                 </button>
               </li>
             ))}
@@ -437,14 +440,14 @@ function BeforeSearch({
 
       {/* Popular */}
       <section>
-        <h2 className="text-[12px] font-extrabold tracking-[0.2em] text-[#8a6322] mb-3">الأكثر بحثاً</h2>
+        <h2 className="alpha-type-caption font-extrabold tracking-[0.2em] text-alpha-gold-deep mb-3">الأكثر بحثاً</h2>
         <div className="flex flex-wrap gap-2">
           {POPULAR.map((p) => (
             <button
               key={p}
               type="button"
               onClick={() => onPickRecent(p)}
-              className="px-4 py-2 rounded-full bg-gradient-to-br from-[#fff7e3] to-[#f6ecd4] border border-[#e6d2a6] text-[13px] font-bold text-[#5b3a18] shadow-[0_6px_14px_-10px_rgba(120,80,30,0.4),inset_0_1px_0_rgba(255,255,255,0.85)] active:scale-95 transition-transform"
+              className="alpha-type-body px-4 py-2 rounded-full bg-gradient-to-br from-[color-mix(in_srgb,var(--alpha-bg-elevated)_95%,white)] to-[color-mix(in_srgb,var(--alpha-bg-base)_90%,white)] border border-alpha font-bold text-alpha-heading shadow-[var(--alpha-shadow-mini)] active:scale-95 alpha-motion-spring"
             >
               {p}
             </button>
@@ -477,7 +480,7 @@ function ResultsView({
                   <meta.icon className="h-3.5 w-3.5" />
                 </span>
                 <h2 className="font-arabic-serif text-[15px] font-extrabold">{meta.label}</h2>
-                <span className="text-[11px] font-bold text-[#8a7558]">{list.length}</span>
+                <span className="alpha-type-desc font-bold text-alpha-muted">{list.length}</span>
               </div>
               <ul className="space-y-2">
                 {list.map((r) => (
@@ -486,11 +489,11 @@ function ResultsView({
                       to={r.to as any}
                       params={r.params as any}
                       onClick={onCommit}
-                      className="block rounded-2xl bg-white/90 border border-[#ead9b1] px-4 py-3 shadow-[0_8px_18px_-14px_rgba(120,80,30,0.4),inset_0_1px_0_rgba(255,255,255,0.85)] active:scale-[0.99] transition-transform"
+                      className="block rounded-[var(--alpha-radius-dock-tab)] bg-white/90 border border-alpha px-4 py-3 shadow-[var(--alpha-shadow-mini)] active:scale-[0.99] alpha-motion-spring"
                     >
                       <div className="flex items-start gap-3">
                         {c === "bible" && (
-                          <div className="h-11 w-11 shrink-0 rounded-xl bg-[#fbf3e1] border border-[#ead9b1] p-1">
+                          <div className="h-11 w-11 shrink-0 rounded-[var(--alpha-radius-dock-tab)] bg-[color-mix(in_srgb,var(--alpha-bg-elevated)_90%,transparent)] border border-alpha p-1">
                             <BookIcon
                               bookId={resolveBookId(r.title) ?? resolveBookId(r.params?.book ?? "")}
                               book={r.title}
@@ -499,11 +502,11 @@ function ResultsView({
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
-                          <div className="font-arabic-serif text-[15px] font-extrabold text-[#3a2a18] line-clamp-1">
+                          <div className="alpha-type-h2 font-arabic-serif text-alpha-heading line-clamp-1">
                             {r.title}
                           </div>
                           {r.subtitle && (
-                            <div className="text-[12px] text-[#7a5a35] mt-0.5 line-clamp-2 leading-relaxed">
+                            <div className="alpha-type-desc text-alpha-muted mt-0.5 line-clamp-2 leading-relaxed">
                               {r.subtitle}
                             </div>
                           )}
@@ -523,11 +526,11 @@ function ResultsView({
 function EmptyState() {
   return (
     <div className="mt-10 text-center animate-fade-in">
-      <div className="mx-auto grid h-16 w-16 place-items-center rounded-3xl bg-white/85 border border-[#ead9b1] shadow-[0_10px_24px_-16px_rgba(120,80,30,0.45)]">
-        <Search className="h-7 w-7 text-[#8a6322]" />
+      <div className="mx-auto grid h-16 w-16 place-items-center rounded-[var(--alpha-radius-card)] bg-white/85 border border-alpha shadow-[var(--alpha-shadow-featured)]">
+        <Search className="h-7 w-7 text-alpha-gold-deep" />
       </div>
-      <p className="mt-4 font-arabic-serif text-[16px] font-extrabold">لا توجد نتائج</p>
-      <p className="mt-1 text-[13px] text-[#7a5a35]">جرّب كلمة بحث أخرى.</p>
+      <p className="alpha-type-h2 mt-4 font-arabic-serif">لا توجد نتائج</p>
+      <p className="alpha-type-body mt-1 text-alpha-muted">جرّب كلمة بحث أخرى.</p>
     </div>
   );
 }

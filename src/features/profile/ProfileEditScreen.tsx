@@ -4,10 +4,9 @@ import { Check, Church, Eye, User, ChevronRight } from "lucide-react";
 import { AlphaDatePicker } from "@/components/controls/AlphaDatePicker";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { CopticWatermark } from "@/components/coptic";
-import { HeroLedgerStylesHost } from "@/components/home/hero-card-chrome";
 import { useAlphaNavigation } from "@/components/navigation/AlphaNavigationProvider";
-import { getAlphaRoleSync } from "@/features/auth";
-import { getCurrentUser } from "@/features/church/current-user";
+import { ControlCenterScreenBackground } from "@/features/settings/components/ControlCenterScreenBackground";
+import { getAlphaRoleSync, useAlphaAuth } from "@/features/auth";
 import { useMemberChurch } from "@/features/church/use-member-church";
 import { ProfileAvatarMenu, ProfileAvatarViewer, useAvatarFilePicker } from "./ProfileAvatarMenu";
 import { ProfileAvatarCropEditor } from "./ProfileAvatarCropEditor";
@@ -18,14 +17,26 @@ import {
   type ProfileVisibility,
 } from "./profile-privacy";
 import { resolveProfileAvatar, useProfileUser, type ProfileUserState } from "./profile-user-store";
+import {
+  mapProfileAvatarUploadError,
+  persistProfileAvatarUrl,
+  uploadProfileAvatarFromDataUrl,
+} from "./profile-avatar-api";
+import { refreshAuthContext } from "@/features/auth";
 import { writeSettingsState } from "@/features/settings/settings-store";
 import { usePlatformModules } from "@/lib/platform-modules";
+import { cn } from "@/lib/utils";
 
-const CARD_BG = "linear-gradient(155deg, rgba(26,16,8,0.92) 0%, rgba(30,20,12,0.88) 100%)";
-const DARK_DATE_CLS =
-  "w-full rounded-xl border border-white/12 bg-black/30 px-3.5 py-2.5 text-[13px] font-semibold text-white/85 shadow-none backdrop-blur-none outline-none focus:border-[#f0d78c]/40";
+const FIELD_INPUT_CLS =
+  "w-full rounded-xl border border-alpha/60 bg-white/55 px-3.5 py-2.5 text-[13px] font-semibold text-alpha shadow-[inset_0_1px_2px_rgba(120,80,30,0.05)] outline-none backdrop-blur-sm focus:border-alpha-gold-bright/50 focus:bg-white/72";
 
 type EditSectionId = "personal" | "privacy" | "church";
+
+const SECTION_ACCENT: Record<EditSectionId, string> = {
+  personal: "var(--alpha-accent-purple-deep)",
+  privacy: "var(--alpha-accent-green-deep)",
+  church: "var(--alpha-accent-purple-deep)",
+};
 
 function EditSection({
   sectionId,
@@ -48,42 +59,67 @@ function EditSection({
 }) {
   return (
     <section
-      className="overflow-hidden rounded-[20px] border"
-      style={{ borderColor: `${accent}33`, background: CARD_BG }}
+      className={cn(
+        "relative overflow-hidden rounded-[var(--alpha-radius-card-compact)] border backdrop-blur-xl alpha-motion-standard",
+        isOpen ? "border-alpha/95" : "border-alpha/80",
+      )}
+      style={{
+        background:
+          "linear-gradient(to bottom, color-mix(in srgb, var(--alpha-bg-elevated) 97%, transparent), color-mix(in srgb, var(--alpha-bg-base) 95%, transparent))",
+        boxShadow: isOpen
+          ? `0 22px 44px -20px rgba(120,80,30,0.38), 0 0 28px -14px color-mix(in srgb, ${accent} 28%, transparent), inset 0 1px 0 rgba(255,255,255,0.9)`
+          : "0 14px 30px -22px rgba(120,80,30,0.22), inset 0 1px 0 rgba(255,255,255,0.82)",
+      }}
     >
+      <div
+        aria-hidden
+        className={cn(
+          "pointer-events-none absolute inset-x-0 top-0 rounded-t-[var(--alpha-radius-card-compact)] bg-gradient-to-b to-transparent transition-all",
+          isOpen ? "h-[52%] from-white/55" : "h-[42%] from-white/40",
+        )}
+      />
       <button
         type="button"
         onClick={() => onToggle(sectionId)}
-        className="flex w-full items-center gap-3 px-4 py-3.5 text-right active:bg-white/5"
+        className="relative flex w-full items-center gap-3 px-4 py-3.5 text-right active:bg-white/25"
         dir="rtl"
         aria-expanded={isOpen}
       >
         <span
-          className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border"
-          style={{ borderColor: `${accent}44`, background: `${accent}18`, color: accent }}
+          className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]"
+          style={{
+            borderColor: `color-mix(in srgb, ${accent} 38%, var(--alpha-border))`,
+            background: `linear-gradient(155deg, color-mix(in srgb, ${accent} 14%, white), color-mix(in srgb, ${accent} 6%, var(--alpha-bg-elevated)))`,
+            color: accent,
+          }}
         >
           <Icon className="h-[18px] w-[18px]" strokeWidth={2.2} />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-[13.5px] font-extrabold text-white/90">{title}</p>
-          <p className="mt-0.5 text-[10px] text-white/45">{subtitle}</p>
+          <p className="text-[13.5px] font-extrabold" style={{ color: accent }}>
+            {title}
+          </p>
+          <p className="mt-0.5 text-[10px] text-alpha-field-label">{subtitle}</p>
         </div>
         <ChevronRight
-          className={`h-4 w-4 shrink-0 text-white/35 transition-transform ${isOpen ? "-rotate-90" : "rotate-90"}`}
+          className={cn(
+            "h-4 w-4 shrink-0 text-alpha-gold-deep/55 transition-transform",
+            isOpen ? "-rotate-90" : "rotate-90",
+          )}
         />
       </button>
       {isOpen ? (
-        <div className="border-t border-white/8 px-4 py-3 space-y-3">{children}</div>
+        <div className="relative border-t border-alpha/50 bg-white/12 px-4 py-3 space-y-3 backdrop-blur-sm">{children}</div>
       ) : null}
     </section>
   );
 }
 
-function DarkLabel({ children }: { children: React.ReactNode }) {
-  return <p className="text-[10px] font-bold text-white/45 mb-1">{children}</p>;
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return <p className="text-[10px] font-bold text-alpha-field-label mb-1">{children}</p>;
 }
 
-function DarkTextArea({
+function FieldTextArea({
   value,
   onChange,
   placeholder,
@@ -99,7 +135,7 @@ function DarkTextArea({
       placeholder={placeholder}
       dir="rtl"
       rows={3}
-      className="w-full resize-none rounded-xl border border-white/12 bg-black/30 px-3 py-2.5 text-right text-[13px] leading-relaxed text-white/85 placeholder:text-white/30 outline-none focus:border-[#f0d78c]/40"
+      className="w-full resize-none rounded-xl border border-alpha/60 bg-white/55 px-3 py-2.5 text-right text-[13px] leading-relaxed text-alpha placeholder:text-alpha-muted/45 outline-none backdrop-blur-sm focus:border-alpha-gold-bright/50 focus:bg-white/72 shadow-[inset_0_1px_2px_rgba(120,80,30,0.05)]"
     />
   );
 }
@@ -114,20 +150,18 @@ function PrivacyFieldRow({
   onChange: (v: ProfileVisibility) => void;
 }) {
   return (
-    <div className="rounded-xl border border-white/8 bg-black/20 px-3 py-2.5" dir="rtl">
-      <p className="mb-2 text-[12px] font-extrabold text-white/85">{label}</p>
+    <div className="rounded-xl border border-alpha/55 bg-white/42 px-3 py-2.5 backdrop-blur-sm" dir="rtl">
+      <p className="mb-2 text-[12px] font-extrabold text-alpha-section-purple">{label}</p>
       <div className="flex flex-wrap justify-end gap-1.5">
         {VISIBILITY_OPTIONS.map((o) => (
           <button
             key={o.value}
             type="button"
             onClick={() => onChange(o.value)}
-            className="rounded-full px-2.5 py-1 text-[9.5px] font-extrabold transition-all active:scale-95"
-            style={{
-              border: `1px solid ${value === o.value ? "#f0d78c" : "rgba(255,255,255,0.1)"}`,
-              background: value === o.value ? "rgba(240,215,140,0.18)" : "rgba(0,0,0,0.2)",
-              color: value === o.value ? "#f0d78c" : "rgba(255,255,255,0.5)",
-            }}
+            className={cn(
+              "rounded-full px-2.5 py-1 text-[9.5px] font-extrabold transition-all active:scale-95",
+              value === o.value ? "alpha-chip-selected-green" : "alpha-chip-unselected",
+            )}
           >
             {o.label}
           </button>
@@ -149,7 +183,7 @@ function PrivacyToggleRow({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border border-white/8 bg-black/20 px-3 py-2.5" dir="rtl">
+    <div className="flex items-center justify-between gap-3 rounded-xl border border-alpha/55 bg-white/42 px-3 py-2.5 backdrop-blur-sm" dir="rtl">
       <button
         type="button"
         role="switch"
@@ -157,17 +191,19 @@ function PrivacyToggleRow({
         onClick={() => onChange(!checked)}
         className="relative h-7 w-12 shrink-0 rounded-full transition-colors active:scale-95"
         style={{
-          background: checked ? "rgba(240,215,140,0.45)" : "rgba(255,255,255,0.12)",
+          background: checked
+            ? "linear-gradient(160deg, var(--alpha-accent-green), var(--alpha-accent-green-deep))"
+            : "color-mix(in srgb, var(--alpha-border) 65%, white)",
         }}
       >
         <span
-          className="absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-[right]"
+          className="absolute top-0.5 h-6 w-6 rounded-full bg-white shadow-[0_2px_6px_rgba(120,80,30,0.18)] transition-[right]"
           style={{ right: checked ? "2px" : "22px" }}
         />
       </button>
       <div className="min-w-0 text-right">
-        <p className="text-[12px] font-extrabold text-white/85">{label}</p>
-        {subtitle ? <p className="mt-0.5 text-[9.5px] text-white/40">{subtitle}</p> : null}
+        <p className="text-[12px] font-extrabold text-alpha-section-purple">{label}</p>
+        {subtitle ? <p className="mt-0.5 text-[9.5px] text-alpha-field-label">{subtitle}</p> : null}
       </div>
     </div>
   );
@@ -175,9 +211,9 @@ function PrivacyToggleRow({
 
 function ReadOnlyRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-white/8 bg-black/25 px-3 py-2.5 text-right" dir="rtl">
-      <p className="text-[9.5px] font-bold text-white/40">{label}</p>
-      <p className="mt-0.5 text-[13px] font-extrabold text-white/85">{value}</p>
+    <div className="rounded-xl border border-alpha/55 bg-white/45 px-3 py-2.5 text-right backdrop-blur-sm" dir="rtl">
+      <p className="text-[9.5px] font-bold text-alpha-field-label">{label}</p>
+      <p className="mt-0.5 text-[13px] font-extrabold text-alpha-field-value">{value}</p>
     </div>
   );
 }
@@ -194,9 +230,13 @@ const PRIVACY_FIELDS: { key: keyof ProfileFieldPrivacy; label: string }[] = [
 ];
 
 export function ProfileEditScreen() {
+  return <ProfileEditScreenContent />;
+}
+
+function ProfileEditScreenContent() {
   const { goBack } = useAlphaNavigation();
-  const user = getCurrentUser();
-  const displayName = user.name?.trim() || "مستخدم Alpha";
+  const { user } = useAlphaAuth();
+  const displayName = user?.displayName?.trim() || "مستخدم Alpha";
   const { church: memberChurch } = useMemberChurch();
   const { isModuleEnabled } = usePlatformModules();
   const communityOn = isModuleEnabled("community");
@@ -210,6 +250,7 @@ export function ProfileEditScreen() {
   const [avatarViewerOpen, setAvatarViewerOpen] = useState(false);
   const [cropOpen, setCropOpen] = useState(false);
   const [cropSource, setCropSource] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [openSection, setOpenSection] = useState<EditSectionId | null>("personal");
 
   const toggleSection = (id: EditSectionId) => {
@@ -222,8 +263,8 @@ export function ProfileEditScreen() {
   };
 
   const draftAvatar = useMemo(
-    () => resolveProfileAvatar(draft.customAvatarUrl, user.avatarUrl),
-    [draft.customAvatarUrl, user.avatarUrl],
+    () => resolveProfileAvatar(draft.customAvatarUrl, user?.avatarUrl ?? ""),
+    [draft.customAvatarUrl, user?.avatarUrl],
   );
 
   const { openPicker, input: avatarFileInput } = useAvatarFilePicker((dataUrl) => {
@@ -232,9 +273,10 @@ export function ProfileEditScreen() {
   });
 
   useEffect(() => {
-    setDraft(saved);
-    setDirty(false);
-  }, [saved]);
+    if (!dirty) {
+      setDraft(saved);
+    }
+  }, [saved, dirty]);
 
   const patchDraftPrivacy = <K extends keyof ProfileFieldPrivacy>(
     key: K,
@@ -247,11 +289,27 @@ export function ProfileEditScreen() {
     setDirty(true);
   };
 
-  const handleSave = () => {
-    replace(draft);
+  const handleSave = async () => {
+    setSaveError(null);
+    let nextDraft = draft;
+
+    if (draft.customAvatarUrl?.startsWith("data:") && user?.id) {
+      try {
+        const publicUrl = await uploadProfileAvatarFromDataUrl(user.id, draft.customAvatarUrl);
+        await persistProfileAvatarUrl(user.id, publicUrl);
+        nextDraft = { ...draft, customAvatarUrl: publicUrl };
+      } catch (err) {
+        setSaveError(mapProfileAvatarUploadError(err));
+        return;
+      }
+    }
+
+    replace(nextDraft);
     writeSettingsState({ hidePhone: draft.hidePhone });
     setDirty(false);
     setSavedFlash(true);
+    await refreshAuthContext();
+    void import("@/lib/user-sync-scheduler").then(({ flushUserDataSync }) => flushUserDataSync());
     setTimeout(() => setSavedFlash(false), 2000);
   };
 
@@ -268,13 +326,11 @@ export function ProfileEditScreen() {
   );
 
   return (
-    <div
-      dir="rtl"
-      className="relative min-h-screen w-full overflow-x-hidden"
-      style={{ background: "linear-gradient(180deg,#0e0a06 0%,#1a1208 55%,#120c08 100%)" }}
-    >
+    <div dir="rtl" className="relative min-h-screen w-full overflow-x-hidden bg-alpha-base">
+      <ControlCenterScreenBackground />
+      <div aria-hidden className="pointer-events-none fixed inset-0 -z-[9] bg-[var(--alpha-bg-radial)]" />
+      <div aria-hidden className="pointer-events-none fixed inset-0 -z-[8] bg-[var(--alpha-bg-bloom)]" />
       <CopticWatermark />
-      <HeroLedgerStylesHost />
       {avatarFileInput}
 
       <div className="relative mx-auto w-full max-w-[var(--alpha-content-max-width)] px-4 pb-44">
@@ -283,11 +339,11 @@ export function ProfileEditScreen() {
             type="button"
             onClick={goBack}
             aria-label="رجوع"
-            className="grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-black/35 text-white backdrop-blur-xl active:scale-95"
+            className="grid h-10 w-10 place-items-center rounded-full border border-alpha bg-alpha-surface text-alpha shadow-[var(--alpha-shadow-mini)] backdrop-blur-xl active:scale-95"
           >
             <ChevronRight className="h-5 w-5" />
           </button>
-          <h1 className="text-[16px] font-extrabold text-white/90">تحرير الملف الشخصي</h1>
+          <h1 className="font-arabic-serif text-[16px] font-extrabold text-alpha-section-purple">تحرير الملف الشخصي</h1>
           <button
             type="button"
             onClick={handleSave}
@@ -295,12 +351,13 @@ export function ProfileEditScreen() {
             className="rounded-full px-3.5 py-2 text-[11px] font-extrabold active:scale-95 transition-all disabled:opacity-40"
             style={{
               background: savedFlash
-                ? "rgba(31,170,106,0.35)"
+                ? "linear-gradient(160deg, rgba(52,211,153,0.85), rgba(16,120,80,0.75))"
                 : dirty
-                  ? "linear-gradient(135deg,rgba(240,215,140,0.28),rgba(0,0,0,0.35))"
-                  : "rgba(255,255,255,0.08)",
-              border: `1px solid ${savedFlash ? "rgba(31,170,106,0.5)" : "rgba(240,215,140,0.35)"}`,
-              color: savedFlash ? "#8fe8b8" : "#f0d78c",
+                  ? "linear-gradient(160deg, var(--alpha-gold-bright), var(--alpha-gold-deep))"
+                  : "color-mix(in srgb, var(--alpha-bg-elevated) 88%, white)",
+              border: `1px solid ${savedFlash ? "rgba(52,211,153,0.45)" : "color-mix(in srgb, var(--alpha-gold-deep) 45%, var(--alpha-border))"}`,
+              color: savedFlash ? "#fff" : dirty ? "var(--alpha-btn-primary-text)" : "var(--alpha-text-muted)",
+              boxShadow: dirty && !savedFlash ? "0 4px 14px -6px rgba(120,80,30,0.35)" : undefined,
             }}
           >
             {savedFlash ? (
@@ -314,6 +371,15 @@ export function ProfileEditScreen() {
           </button>
         </header>
 
+        {saveError ? (
+          <div
+            role="alert"
+            className="mb-3 rounded-xl border border-red-300/60 bg-red-50/90 px-3 py-2.5 text-[12px] font-semibold text-red-800"
+          >
+            {saveError}
+          </div>
+        ) : null}
+
         <div className="space-y-3">
           <EditSection
             sectionId="personal"
@@ -322,48 +388,54 @@ export function ProfileEditScreen() {
             icon={User}
             title="المعلومات الشخصية"
             subtitle="الصورة والاسم والنبذة"
-            accent="#5b9fd8"
+            accent={SECTION_ACCENT.personal}
           >
             <div className="flex items-center justify-end gap-3">
               <div className="text-right">
-                <p className="text-[12px] font-extrabold text-white/85">{displayName}</p>
-                <p className="text-[9.5px] text-white/40">اضغط على الصورة للتعديل</p>
+                <p className="text-[12px] font-extrabold text-alpha-heading">{displayName}</p>
+                <p className="text-[9.5px] text-alpha-muted">اضغط على الصورة للتعديل</p>
               </div>
               <button
                 type="button"
                 onClick={() => setAvatarMenuOpen(true)}
-                className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full border-2 border-[#f0d78c]/45 active:scale-95"
+                className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full border-2 border-alpha-gold-bright/55 shadow-[0_4px_14px_-6px_rgba(120,80,30,0.35)] active:scale-95"
               >
                 {draftAvatar ? (
                   <img src={draftAvatar} alt="" className="h-full w-full object-cover" />
                 ) : (
-                  <span className="grid h-full w-full place-items-center bg-[#2a1f45] text-lg font-extrabold text-[#f0d78c]">
+                  <span
+                    className="grid h-full w-full place-items-center text-lg font-extrabold text-alpha-gold-deep"
+                    style={{
+                      background:
+                        "linear-gradient(155deg, color-mix(in srgb, var(--alpha-gold-bright) 28%, white), color-mix(in srgb, var(--alpha-gold-deep) 12%, var(--alpha-bg-elevated)))",
+                    }}
+                  >
                     {displayName.charAt(0)}
                   </span>
                 )}
               </button>
             </div>
             <div>
-              <DarkLabel>النبذة الشخصية</DarkLabel>
-              <DarkTextArea
+              <FieldLabel>النبذة الشخصية</FieldLabel>
+              <FieldTextArea
                 value={draft.bio}
                 onChange={(v) => patchDraft({ bio: v })}
                 placeholder="اكتب نبذة قصيرة عنك..."
               />
             </div>
             <div>
-              <DarkLabel>تاريخ الميلاد (اختياري)</DarkLabel>
+              <FieldLabel>تاريخ الميلاد (اختياري)</FieldLabel>
               <AlphaDatePicker
                 value={draft.birthDate ?? ""}
                 onChange={(v) => patchDraft({ birthDate: v || null })}
                 title="تاريخ الميلاد"
                 placeholder="اختر تاريخ الميلاد"
                 maxYear={new Date().getFullYear()}
-                className={DARK_DATE_CLS}
+                className={FIELD_INPUT_CLS}
               />
             </div>
             <ReadOnlyRow label="الاسم" value={displayName} />
-            <p className="text-[9px] text-white/35 text-right">تعديل الاسم من إعدادات الحساب قريباً</p>
+            <p className="text-[9px] text-alpha-muted/70 text-right">تعديل الاسم من إعدادات الحساب قريباً</p>
           </EditSection>
 
           <EditSection
@@ -373,7 +445,7 @@ export function ProfileEditScreen() {
             icon={Eye}
             title="خصوصية الملف الشخصي"
             subtitle="من يرى كل بند على ملفك"
-            accent="#8a6ec1"
+            accent={SECTION_ACCENT.privacy}
           >
             <PrivacyToggleRow
               label="إخفاء رقم هاتفي"
@@ -399,14 +471,14 @@ export function ProfileEditScreen() {
             icon={Church}
             title="بيانات الكنيسة"
             subtitle="معلومات العضوية — للعرض"
-            accent="#c98a3c"
+            accent={SECTION_ACCENT.church}
           >
             <ReadOnlyRow label="الكنيسة الحالية" value={memberChurch?.name ?? "لم تُحدد بعد"} />
             <ReadOnlyRow label="الإيبارشية" value={memberChurch?.diocese ?? "—"} />
             <ReadOnlyRow label="الرتبة / الخدمة" value={roleLabel} />
             <Link
               to="/church/directory"
-              className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-[#f0d78c]/30 bg-[#f0d78c]/10 px-3 py-2.5 text-[11px] font-extrabold text-[#f0d78c] active:scale-[0.98]"
+              className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-alpha-gold-deep/35 bg-gradient-to-l from-[color-mix(in_srgb,var(--alpha-gold-bright)_18%,white)] to-[color-mix(in_srgb,var(--alpha-gold-deep)_8%,white)] px-3 py-2.5 text-[11px] font-extrabold text-alpha-gold-deep shadow-[0_4px_12px_-6px_rgba(120,80,30,0.25)] active:scale-[0.98]"
             >
               طلب نقل الكنيسة
             </Link>

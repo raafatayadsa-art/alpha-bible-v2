@@ -1,12 +1,21 @@
+import { useEffect, useState } from "react";
 import { Award, BookOpen } from "lucide-react";
-import { listMyCertificates } from "../trip-certificates";
-import { listPilgrimagePassport, passportStats } from "../pilgrimage-passport";
+import { listMyCertificates, syncMyCertificatesFromDb } from "../trip-certificates";
+import { listPilgrimagePassport, passportStats, syncPilgrimagePassportFromDb } from "../pilgrimage-passport";
 import { AlphaQrCode } from "@/components/identity/AlphaQrCode";
 
 const GLASS =
   "rounded-[22px] border border-[#efe2c4] bg-gradient-to-b from-[#fbf3e1]/95 to-[#f4ead8]/95 p-3.5";
 
 export function ProfileTripJourneySection() {
+  const [, setTick] = useState(0);
+
+  useEffect(() => {
+    void Promise.all([syncPilgrimagePassportFromDb(), syncMyCertificatesFromDb()]).then(() =>
+      setTick((n) => n + 1),
+    );
+  }, []);
+
   const certs = listMyCertificates();
   const passport = listPilgrimagePassport();
   const stats = passportStats();

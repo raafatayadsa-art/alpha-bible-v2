@@ -8,6 +8,16 @@ import {
   shareUrlForPublisher,
 } from "../publisher-identity";
 import type { PublisherRecord } from "../types";
+import {
+  PUBLISHER_PURPLE_BTN_OUTLINE,
+  PUBLISHER_QR_FRAME,
+  PUBLISHER_SHEET_OVERLAY_QR,
+  PUBLISHER_SHEET_PANEL_SM,
+  PUBLISHER_TEXT_ACCENT_CAPTION,
+  PUBLISHER_TEXT_MUTED,
+  PUBLISHER_TEXT_SUB,
+  PUBLISHER_TEXT_TITLE,
+} from "./publisher-glass-chrome";
 
 type Props = {
   publisher: Pick<PublisherRecord, "id" | "name"> | null;
@@ -57,11 +67,11 @@ export function PublisherQrSheet({ publisher, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-3 backdrop-blur-sm sm:items-center"
+      className={PUBLISHER_SHEET_OVERLAY_QR}
       onClick={onClose}
     >
       <div
-        className="w-full max-w-sm rounded-[22px] border border-[rgba(93,50,145,0.14)] bg-[#fbf7f0] p-4"
+        className={PUBLISHER_SHEET_PANEL_SM}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-3 flex items-center justify-between gap-2">
@@ -70,23 +80,23 @@ export function PublisherQrSheet({ publisher, onClose }: Props) {
             onClick={onClose}
             className="grid h-9 w-9 place-items-center rounded-full border bg-white/90"
           >
-            <X className="h-4 w-4 text-[#3a3258]" />
+            <X className={`h-4 w-4 ${PUBLISHER_TEXT_TITLE}`} />
           </button>
           <div className="min-w-0 flex-1 text-right">
-            <p className="text-[13px] font-extrabold text-[#3a3258]">باركود صفحة الناشر</p>
-            <p className="truncate text-[10px] font-bold text-[#6b658a]">{publisher.name}</p>
+            <p className={PUBLISHER_TEXT_TITLE}>باركود صفحة الناشر</p>
+            <p className={`truncate ${PUBLISHER_TEXT_SUB}`}>{publisher.name}</p>
           </div>
         </div>
 
-        <div className="mx-auto flex w-fit flex-col items-center rounded-[16px] border border-[#d4af37]/35 bg-white p-3">
+        <div className={PUBLISHER_QR_FRAME}>
           <AlphaQrCode value={qrValue} size={168} className="h-[168px] w-[168px] rounded-lg" />
-          <p className="mt-2 text-[10px] font-extrabold tracking-wide text-[#5D3291]" dir="ltr">
+          <p className={`mt-2 ${PUBLISHER_TEXT_ACCENT_CAPTION} tracking-wide`} dir="ltr">
             {code}
           </p>
-          <p className="mt-1 max-w-[240px] truncate text-[9px] font-bold text-[#8a84a8]" dir="ltr">
+          <p className={`mt-1 max-w-[240px] truncate ${PUBLISHER_TEXT_MUTED}`} dir="ltr">
             {url}
           </p>
-          <p className="mt-1 text-[9px] font-bold text-[#8a84a8]">امسح للفتح داخل ألفا</p>
+          <p className={`mt-1 ${PUBLISHER_TEXT_MUTED}`}>امسح للفتح داخل ألفا</p>
         </div>
 
         <div className="mt-3 space-y-2">
@@ -96,7 +106,7 @@ export function PublisherQrSheet({ publisher, onClose }: Props) {
               e.stopPropagation();
               void copy(code, "code");
             }}
-            className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[#5D3291]/25 py-2 text-[11px] font-extrabold text-[#5D3291] active:scale-[0.98]"
+            className={PUBLISHER_PURPLE_BTN_OUTLINE}
           >
             {copied === "code" ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
             {copied === "code" ? "تم نسخ الكود" : "نسخ الكود"}
@@ -107,7 +117,7 @@ export function PublisherQrSheet({ publisher, onClose }: Props) {
               e.stopPropagation();
               void copy(url, "url");
             }}
-            className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[#5D3291]/25 py-2 text-[11px] font-extrabold text-[#5D3291] active:scale-[0.98]"
+            className={PUBLISHER_PURPLE_BTN_OUTLINE}
           >
             {copied === "url" ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
             {copied === "url" ? "تم نسخ الرابط" : "نسخ رابط الصفحة"}

@@ -18,7 +18,7 @@ export type CurrentUser = {
 const EMPTY_GUEST: CurrentUser = {
   id: "",
   name: "",
-  avatarUrl: "https://i.pravatar.cc/80?u=alpha-guest",
+  avatarUrl: "",
 };
 
 function fromAuth(user: AlphaAuthUser): CurrentUser {

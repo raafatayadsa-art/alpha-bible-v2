@@ -40,6 +40,9 @@ export function readKholagyDisplayMode(): KholagyDisplayMode {
 export function saveKholagyDisplayMode(mode: KholagyDisplayMode) {
   try {
     localStorage.setItem(DISPLAY_KEY, mode);
+    void import("@/lib/user-sync-scheduler").then(({ scheduleUserDataSync }) =>
+      scheduleUserDataSync({ delayMs: 2000, extraKey: DISPLAY_KEY }),
+    );
   } catch {
     /* ignore */
   }

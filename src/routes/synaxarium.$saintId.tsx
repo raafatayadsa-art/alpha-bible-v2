@@ -114,6 +114,9 @@ function readFavorites(): string[] {
 function writeFavorites(ids: string[]) {
   try {
     localStorage.setItem(FAVORITES_KEY, JSON.stringify(ids));
+    void import("@/lib/user-sync-scheduler").then(({ scheduleUserDataSync }) =>
+      scheduleUserDataSync({ delayMs: 1500, extraKey: FAVORITES_KEY }),
+    );
   } catch {
     /* noop */
   }
@@ -192,14 +195,14 @@ function SaintDetails() {
 
   if (isPending) {
     return (
-      <div dir="rtl" className="relative min-h-dvh bg-[#faf8f3]">
+      <div dir="rtl" className="relative min-h-dvh bg-alpha-base">
         <CopticWatermark />
         <header className="relative z-10 mx-auto w-full max-w-[var(--alpha-content-narrow-width)] px-4 flex items-center justify-between" style={{ paddingTop: "max(env(safe-area-inset-top), 14px)", paddingBottom: 8 }}>
           <BackButton compact to="/synaxarium" />
-          <h1 className="font-arabic-serif text-[15px] font-extrabold text-[#3a2a18]">سيرة قديس</h1>
+          <h1 className="font-arabic-serif text-[15px] font-extrabold text-alpha-heading">سيرة قديس</h1>
           <span className="w-11" />
         </header>
-        <main className="mx-auto w-full max-w-[var(--alpha-content-narrow-width)] px-4 py-16 text-center text-[13px] text-[#6a543a]">
+        <main className="mx-auto w-full max-w-[var(--alpha-content-narrow-width)] px-4 py-16 text-center text-[13px] text-alpha-muted">
           جاري تحميل السيرة...
         </main>
         <BottomDock />
@@ -209,25 +212,25 @@ function SaintDetails() {
 
   if (isError || !saint) {
     return (
-      <div dir="rtl" className="relative min-h-dvh bg-[#faf8f3]">
+      <div dir="rtl" className="relative min-h-dvh bg-alpha-base">
         <CopticWatermark />
         <header className="relative z-10 mx-auto w-full max-w-[var(--alpha-content-narrow-width)] px-4 flex items-center justify-between" style={{ paddingTop: "max(env(safe-area-inset-top), 14px)", paddingBottom: 8 }}>
           <BackButton compact to="/synaxarium" />
-          <h1 className="font-arabic-serif text-[15px] font-extrabold text-[#3a2a18]">سيرة قديس</h1>
+          <h1 className="font-arabic-serif text-[15px] font-extrabold text-alpha-heading">سيرة قديس</h1>
           <span className="w-11" />
         </header>
         <main className="mx-auto w-full max-w-[var(--alpha-content-narrow-width)] px-4 py-10">
-          <GlassSurface className="p-8 bg-white border-[#ead9b1] text-center">
-            <CopticCross className="mx-auto text-[#b8893a]" size={28} />
-            <h2 className="font-arabic-serif text-[18px] font-extrabold text-[#3a2a18] mt-4">
+          <GlassSurface className="p-8 bg-white border-alpha text-center">
+            <CopticCross className="mx-auto text-alpha-gold-deep" size={28} />
+            <h2 className="font-arabic-serif text-[18px] font-extrabold text-alpha-heading mt-4">
               السيرة غير متوفرة
             </h2>
-            <p className="text-[12.5px] text-[#6a543a] mt-3 leading-relaxed">
+            <p className="text-[12.5px] text-alpha-muted mt-3 leading-relaxed">
               لم نجد سيرة هذا القديس في قاعدة البيانات.
             </p>
             <Link
               to="/synaxarium"
-              className="mt-5 inline-flex items-center justify-center rounded-full bg-gradient-to-l from-[#6a4ab5] to-[#8c6fd1] text-white px-5 h-10 text-[12px] font-bold"
+                className="mt-5 inline-flex items-center justify-center rounded-full bg-gradient-to-l from-[var(--alpha-purple)] to-[#8c6fd1] text-white px-5 h-10 alpha-type-body font-bold"
             >
               العودة إلى السنكسار
             </Link>
@@ -410,7 +413,7 @@ function SaintDetails() {
   return (
     <div
       dir="rtl"
-      className="relative min-h-dvh bg-[#faf8f3]"
+      className="relative min-h-dvh bg-alpha-base"
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
@@ -423,8 +426,8 @@ function SaintDetails() {
       >
         <BackButton compact to="/synaxarium" />
         <div className="flex flex-col items-center -mt-1">
-          <CopticCross className="text-[#b8893a]" size={16} />
-          <h1 className="font-arabic-serif text-[15px] font-extrabold text-[#3a2a18] leading-tight mt-0.5">
+          <CopticCross className="text-alpha-gold-deep" size={16} />
+          <h1 className="font-arabic-serif text-[15px] font-extrabold text-alpha-heading leading-tight mt-0.5">
             سيرة قديس
           </h1>
         </div>
@@ -436,8 +439,8 @@ function SaintDetails() {
             onClick={toggleSave}
             className={`grid h-9 w-9 place-items-center rounded-full border active:scale-90 transition-all duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
               saved
-                ? "bg-[#6a4ab5] border-[#6a4ab5] text-white shadow-[0_8px_18px_-10px_rgba(106,74,181,0.7)]"
-                : "bg-white/70 border-[#efe2c4] text-[#6a4ab5]"
+                ? "bg-[var(--alpha-purple)] border-[var(--alpha-purple)] text-white shadow-[var(--alpha-shadow-featured)]"
+                : "bg-white/70 border-alpha text-[var(--alpha-purple)]"
             }`}
           >
             <Bookmark className={`h-4 w-4 ${saved ? "fill-current" : ""}`} />
@@ -478,12 +481,12 @@ function SaintDetails() {
               </div>
             </div>
             <div className="px-5 pt-2 pb-5 text-center">
-              <h2 className="font-arabic-serif text-[22px] font-extrabold text-[#6a4ab5] leading-tight">
+              <h2 className="font-arabic-serif text-[22px] font-extrabold text-[var(--alpha-purple)] leading-tight">
                 {saint.name}
               </h2>
-              <p className="text-[13px] font-bold text-[#b8893a] mt-1.5">{saint.title}</p>
-              <p className="text-[11.5px] text-[#6a543a] mt-1">{saint.copticDate}</p>
-              <p className="text-[11px] text-[#6a543a]/80 mt-0.5">{saint.gregorianDate}</p>
+              <p className="text-[13px] font-bold text-alpha-gold-deep mt-1.5">{saint.title}</p>
+              <p className="text-[11.5px] text-alpha-muted mt-1">{saint.copticDate}</p>
+              <p className="text-[11px] text-alpha-muted/80 mt-0.5">{saint.gregorianDate}</p>
             </div>
           </div>
         </GlassSurface>
@@ -491,11 +494,11 @@ function SaintDetails() {
         {/* COMMUNITY GALLERY */}
         <section className="mt-4">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-[13px] font-extrabold text-[#3a2a18]">ألبوم القديس</h3>
+            <h3 className="text-[13px] font-extrabold text-alpha-heading">ألبوم القديس</h3>
             <button
               type="button"
               onClick={() => setUploadOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-l from-[#6a4ab5] to-[#8c6fd1] px-3 h-8 text-[11px] font-bold text-white active:scale-95 transition-transform"
+              className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-l from-[var(--alpha-purple)] to-[#8c6fd1] px-3 h-8 alpha-type-desc font-bold text-white active:scale-95 alpha-motion-spring"
             >
               <ImagePlus className="h-3.5 w-3.5" />
               إضافة صورة
@@ -514,16 +517,16 @@ function SaintDetails() {
 
         {/* QUOTE */}
         <GlassSurface tone="purple" className="mt-4 p-5 relative overflow-hidden">
-          <Quote className="absolute top-3 right-3 h-5 w-5 text-[#b8893a]/50" />
-          <Quote className="absolute bottom-3 left-3 h-5 w-5 text-[#b8893a]/50 rotate-180" />
+          <Quote className="absolute top-3 right-3 h-5 w-5 text-alpha-gold-deep/50" />
+          <Quote className="absolute bottom-3 left-3 h-5 w-5 text-alpha-gold-deep/50 rotate-180" />
           <div className="text-center px-3">
-            <span className="inline-block text-[10px] font-bold tracking-wider text-[#b8893a] uppercase mb-2">
+            <span className="inline-block text-[10px] font-bold tracking-wider text-alpha-gold-deep uppercase mb-2">
               Ⲁ · من أقواله · Ⲱ
             </span>
-            <p className="font-arabic-serif text-[15px] text-[#3a2a18] leading-[1.9]">
+            <p className="font-arabic-serif text-[15px] text-alpha-heading leading-[1.9]">
               {saint.quote}
             </p>
-            <p className="mt-2.5 text-[11.5px] font-bold text-[#6a4ab5]">{saint.quoteRef}</p>
+            <p className="mt-2.5 text-[11.5px] font-bold text-[var(--alpha-purple)]">{saint.quoteRef}</p>
           </div>
         </GlassSurface>
 
@@ -534,11 +537,11 @@ function SaintDetails() {
             {saint.bio.split("\n\n").map((para, i) => (
               <p
                 key={i}
-                className={`text-[13.5px] text-[#3a2a18] leading-[2] ${i > 0 ? "mt-3" : ""}`}
+                className={`text-[13.5px] text-alpha-heading leading-[2] ${i > 0 ? "mt-3" : ""}`}
               >
                 {i === 0 ? (
                   <>
-                    <span className="float-right ml-2 mt-0.5 font-arabic-serif text-[34px] leading-[0.85] font-extrabold text-[#6a4ab5]">
+                    <span className="float-right ml-2 mt-0.5 font-arabic-serif text-[34px] leading-[0.85] font-extrabold text-[var(--alpha-purple)]">
                       {para.charAt(0)}
                     </span>
                     {para.slice(1)}
@@ -576,12 +579,12 @@ function SaintDetails() {
                     >
                       {PHASE_ICONS[phase.id]}
                     </span>
-                    <span className="text-[12px] font-extrabold text-[#3a2a18]">{phase.label}</span>
+                    <span className="text-[12px] font-extrabold text-alpha-heading">{phase.label}</span>
                     {phase.year && (
-                      <span className="mr-auto text-[11px] font-bold text-[#6a543a]">{phase.year}</span>
+                      <span className="mr-auto text-[11px] font-bold text-alpha-muted">{phase.year}</span>
                     )}
                   </div>
-                  <p className="text-[12.5px] text-[#3a2a18] leading-relaxed">{phase.body}</p>
+                  <p className="text-[12.5px] text-alpha-heading leading-relaxed">{phase.body}</p>
                 </GlassSurface>
               </TimelineItem>
             ))}
@@ -597,12 +600,12 @@ function SaintDetails() {
                 type="button"
                 key={v}
                 onClick={() => scrollToBio(v)}
-                className="shrink-0 inline-flex flex-col items-center gap-1.5 rounded-2xl bg-white/85 border border-[#efe2c4] px-4 py-3 min-w-[78px] shadow-[0_6px_14px_-10px_rgba(120,80,30,0.4)] transition-transform duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-95"
+                className="shrink-0 inline-flex flex-col items-center gap-1.5 rounded-2xl bg-white/85 border border-alpha px-4 py-3 min-w-[78px] shadow-[0_6px_14px_-10px_rgba(120,80,30,0.4)] transition-transform duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-95"
               >
-                <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-[#fff1c7] to-[#e7c07a] text-[#7a4a26]">
+                <span className="grid h-9 w-9 place-items-center rounded-[var(--alpha-radius-dock-tab)] bg-gradient-to-br from-[color-mix(in_srgb,var(--alpha-gold)_22%,white)] to-[var(--alpha-gold)] text-alpha-gold-deep">
                   {VIRTUE_ICONS[v] ?? <Sparkles className="h-4 w-4" />}
                 </span>
-                <span className="text-[11.5px] font-bold text-[#3a2a18]">{v}</span>
+                <span className="text-[11.5px] font-bold text-alpha-heading">{v}</span>
               </button>
             ))}
           </div>
@@ -647,7 +650,7 @@ function SaintDetails() {
         <section className="mt-6">
           <Link
             to="/synaxarium"
-            className="h-14 w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-l from-[#6a4ab5] to-[#8c6fd1] text-white text-[14px] font-extrabold shadow-[0_14px_30px_-14px_rgba(106,74,181,0.7)] active:scale-[0.98] transition-transform"
+            className="h-14 w-full inline-flex items-center justify-center gap-2 rounded-[var(--alpha-radius-dock-tab)] bg-gradient-to-l from-[var(--alpha-purple)] to-[#8c6fd1] text-white alpha-type-h2 font-extrabold shadow-[var(--alpha-shadow-featured)] active:scale-[0.98] alpha-motion-spring"
           >
             <BookOpen className="h-4 w-4" />
             قراءة سنكسار اليوم
@@ -658,12 +661,12 @@ function SaintDetails() {
 
       {/* Share Bottom Sheet */}
       <Drawer open={shareOpen} onOpenChange={setShareOpen}>
-        <DrawerContent className="bg-[#fbf3e1] border-[#efe2c4]" dir="rtl">
+        <DrawerContent className="bg-[color-mix(in_srgb,var(--alpha-bg-elevated)_95%,transparent)] border-alpha" dir="rtl">
           <DrawerHeader className="text-right">
-            <DrawerTitle className="font-arabic-serif text-[17px] text-[#3a2a18]">
+            <DrawerTitle className="font-arabic-serif text-[17px] text-alpha-heading">
               مشاركة {saint.name}
             </DrawerTitle>
-            <DrawerDescription className="text-[12px] text-[#6a543a]">
+            <DrawerDescription className="text-[12px] text-alpha-muted">
               اختر طريقة المشاركة
             </DrawerDescription>
           </DrawerHeader>
@@ -677,7 +680,7 @@ function SaintDetails() {
             <DrawerClose asChild>
               <button
                 type="button"
-                className="h-11 w-full rounded-2xl bg-white/85 border border-[#efe2c4] text-[13px] font-bold text-[#3a2a18] active:scale-[0.98] transition-transform"
+                className="h-11 w-full rounded-2xl bg-white/85 border border-alpha text-[13px] font-bold text-alpha-heading active:scale-[0.98] transition-transform"
               >
                 إلغاء
               </button>
@@ -698,7 +701,7 @@ function SaintDetails() {
       />
 
       {uploadToast ? (
-        <p className="fixed bottom-28 inset-x-0 z-50 text-center text-[12px] font-bold text-[#6a4ab5] animate-in fade-in">
+        <p className="fixed bottom-28 inset-x-0 z-50 text-center text-[12px] font-bold text-[var(--alpha-purple)] animate-in fade-in">
           {uploadToast}
         </p>
       ) : null}
@@ -727,9 +730,9 @@ function ShareAction({
     <button
       type="button"
       onClick={onClick}
-      className="h-14 inline-flex items-center justify-center gap-2 rounded-2xl bg-white/85 border border-[#efe2c4] text-[#3a2a18] text-[13px] font-bold shadow-[0_8px_18px_-14px_rgba(120,80,30,0.45)] active:scale-[0.97] transition-transform"
+      className="h-14 inline-flex items-center justify-center gap-2 rounded-2xl bg-white/85 border border-alpha text-alpha-heading text-[13px] font-bold shadow-[0_8px_18px_-14px_rgba(120,80,30,0.45)] active:scale-[0.97] transition-transform"
     >
-      <span className="grid h-8 w-8 place-items-center rounded-xl bg-gradient-to-br from-[#fff1c7] to-[#e7c07a] text-[#7a4a26]">
+      <span className="grid h-8 w-8 place-items-center rounded-[var(--alpha-radius-dock-tab)] bg-gradient-to-br from-[color-mix(in_srgb,var(--alpha-gold)_22%,white)] to-[var(--alpha-gold)] text-alpha-gold-deep">
         {icon}
       </span>
       {label}
@@ -741,12 +744,12 @@ function SectionTitle({ title, caption }: { title: string; caption?: string }) {
   return (
     <div className="mb-2.5 px-1 flex items-end justify-between">
       <div className="inline-flex items-center gap-2">
-        <span className="h-0.5 w-6 bg-[#b8893a] rounded-full" />
-        <h3 className="font-arabic-serif text-[16px] font-extrabold text-[#3a2a18] leading-none">
+        <span className="h-0.5 w-6 bg-alpha-gold-deep rounded-full" />
+        <h3 className="font-arabic-serif text-[16px] font-extrabold text-alpha-heading leading-none">
           {title}
         </h3>
       </div>
-      {caption && <p className="text-[10.5px] text-[#6a543a]">{caption}</p>}
+      {caption && <p className="text-[10.5px] text-alpha-muted">{caption}</p>}
     </div>
   );
 }
@@ -765,10 +768,10 @@ function QuickInfoCard({
   const accent = tone === "purple" ? "#6a4ab5" : "#b8893a";
   const bg =
     tone === "purple"
-      ? "bg-gradient-to-br from-[#efe7fb] to-[#cdb8ef] text-[#4a2f8a]"
-      : "bg-gradient-to-br from-[#fff1c7] to-[#e7c07a] text-[#7a4a26]";
+      ? "bg-gradient-to-br from-[color-mix(in_srgb,var(--alpha-purple)_14%,white)] to-[#cdb8ef] text-[var(--alpha-purple)]"
+      : "bg-gradient-to-br from-[color-mix(in_srgb,var(--alpha-gold)_22%,white)] to-[var(--alpha-gold)] text-alpha-gold-deep";
   return (
-    <div className="rounded-2xl bg-white/85 border border-[#efe2c4] p-3 flex items-center gap-3 shadow-[0_8px_18px_-14px_rgba(120,80,30,0.45)] transition-transform duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.98]">
+    <div className="rounded-2xl bg-white/85 border border-alpha p-3 flex items-center gap-3 shadow-[0_8px_18px_-14px_rgba(120,80,30,0.45)] transition-transform duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.98]">
       <span className={`grid h-10 w-10 place-items-center rounded-xl border border-white/70 ${bg}`}>
         {icon}
       </span>
@@ -776,7 +779,7 @@ function QuickInfoCard({
         <div className="text-[10.5px] font-bold uppercase tracking-wider" style={{ color: accent }}>
           {label}
         </div>
-        <div className="text-[12px] font-extrabold text-[#3a2a18] leading-tight mt-0.5 truncate">
+        <div className="text-[12px] font-extrabold text-alpha-heading leading-tight mt-0.5 truncate">
           {value}
         </div>
       </div>
@@ -799,19 +802,19 @@ function RelatedTile({
 }) {
   const accentBg =
     tone === "purple"
-      ? "bg-gradient-to-br from-[#efe7fb] to-[#cdb8ef] text-[#4a2f8a]"
-      : "bg-gradient-to-br from-[#fff1c7] to-[#e7c07a] text-[#7a4a26]";
+      ? "bg-gradient-to-br from-[color-mix(in_srgb,var(--alpha-purple)_14%,white)] to-[#cdb8ef] text-[var(--alpha-purple)]"
+      : "bg-gradient-to-br from-[color-mix(in_srgb,var(--alpha-gold)_22%,white)] to-[var(--alpha-gold)] text-alpha-gold-deep";
   return (
     <button
       type="button"
       onClick={onClick}
-      className="text-right rounded-2xl bg-white/85 border border-[#efe2c4] p-3.5 shadow-[0_8px_18px_-14px_rgba(120,80,30,0.45)] hover:shadow-[0_14px_28px_-14px_rgba(120,80,30,0.5)] transition-all duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.98]"
+      className="text-right rounded-2xl bg-white/85 border border-alpha p-3.5 shadow-[0_8px_18px_-14px_rgba(120,80,30,0.45)] hover:shadow-[0_14px_28px_-14px_rgba(120,80,30,0.5)] transition-all duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.98]"
     >
       <span className={`grid h-10 w-10 place-items-center rounded-xl border border-white/70 mb-2 ${accentBg}`}>
         {icon}
       </span>
-      <div className="text-[13px] font-extrabold text-[#3a2a18] leading-tight">{title}</div>
-      <div className="text-[11px] text-[#6a543a] mt-0.5">{subtitle}</div>
+      <div className="text-[13px] font-extrabold text-alpha-heading leading-tight">{title}</div>
+      <div className="text-[11px] text-alpha-muted mt-0.5">{subtitle}</div>
     </button>
   );
 }

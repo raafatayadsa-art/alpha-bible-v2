@@ -1,8 +1,14 @@
+import { useEffect, useState } from "react";
 import { Users } from "lucide-react";
-import { autoMatchCompanions, listCompanionGroups } from "../companion-matching";
+import { autoMatchCompanions, listCompanionGroups, syncCompanionGroupsFromDb } from "../companion-matching";
 
 export function CompanionMatchingPanel({ postId }: { postId: string }) {
+  const [, setTick] = useState(0);
   const groups = listCompanionGroups(postId);
+
+  useEffect(() => {
+    void syncCompanionGroupsFromDb(postId).then(() => setTick((n) => n + 1));
+  }, [postId]);
 
   return (
     <div className="mt-2 rounded-xl border border-white/10 bg-white/5 p-2.5 text-right" dir="rtl">
@@ -20,7 +26,10 @@ export function CompanionMatchingPanel({ postId }: { postId: string }) {
       )}
       <button
         type="button"
-        onClick={() => autoMatchCompanions(postId)}
+        onClick={() => {
+          autoMatchCompanions(postId);
+          setTick((n) => n + 1);
+        }}
         className="w-full rounded-lg border border-[#e7c97a]/30 py-1 text-[9px] font-bold text-[#f0d78c]"
       >
         مطابقة تلقائية

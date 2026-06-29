@@ -40,6 +40,13 @@ function write(key: string, value: unknown) {
   try {
     window.localStorage.setItem(key, JSON.stringify(value));
     window.dispatchEvent(new CustomEvent("ab:storage", { detail: { key } }));
+    void import("@/lib/user-sync-scheduler").then(({ scheduleUserDataSync }) => {
+      if (key === KEYS.chapters || key === KEYS.streak) {
+        scheduleUserDataSync({ debounced: true, delayMs: 4000, extraKey: key });
+      } else {
+        scheduleUserDataSync({ delayMs: 1500, extraKey: key });
+      }
+    });
   } catch {
     /* ignore */
   }

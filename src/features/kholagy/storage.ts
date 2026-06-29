@@ -23,11 +23,18 @@ export function readKholagyPosition(groupKey: string): KholagyScrollPosition | n
   return readPositions()[groupKey] ?? null;
 }
 
+function scheduleKholagySync(key: string) {
+  void import("@/lib/user-sync-scheduler").then(({ scheduleUserDataSync }) =>
+    scheduleUserDataSync({ debounced: true, delayMs: 4000, extraKey: key }),
+  );
+}
+
 export function saveKholagyPosition(groupKey: string, pos: KholagyScrollPosition) {
   try {
     const all = readPositions();
     all[groupKey] = pos;
     localStorage.setItem(POS_KEY, JSON.stringify(all));
+    scheduleKholagySync(POS_KEY);
   } catch {
     /* ignore */
   }
@@ -45,6 +52,7 @@ export function readLastOpenedKholagy(): { groupKey: string; title: string } | n
 export function saveLastOpenedKholagy(groupKey: string, title: string) {
   try {
     localStorage.setItem(LAST_KEY, JSON.stringify({ groupKey, title }));
+    scheduleKholagySync(LAST_KEY);
   } catch {
     /* ignore */
   }
@@ -71,6 +79,7 @@ export function saveLastOpenedKholagyLiturgy(liturgyKey: string, sectionId: numb
       LAST_LITURGY_KEY,
       JSON.stringify({ liturgyKey, sectionId, title }),
     );
+    scheduleKholagySync(LAST_LITURGY_KEY);
   } catch {
     /* ignore */
   }
@@ -89,6 +98,7 @@ export function readKholagyTheme(): KholagyTheme {
 export function saveKholagyTheme(theme: KholagyTheme) {
   try {
     localStorage.setItem(THEME_KEY, theme);
+    scheduleKholagySync(THEME_KEY);
   } catch {
     /* ignore */
   }

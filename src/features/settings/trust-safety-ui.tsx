@@ -21,9 +21,9 @@ import type { TrustContentBlock } from "./trust-safety-types";
 import membershipShieldGreen from "@/assets/trust-safety/membership-shield-green-transparent.png";
 
 const TRUST_SECTION_TITLE =
-  "font-arabic-serif text-[15.5px] font-extrabold leading-snug text-[#1a6b50]";
+  "font-arabic-serif alpha-type-h2 font-extrabold leading-snug text-[#1a6b50]";
 const TRUST_SECTION_TITLE_SM =
-  "font-arabic-serif text-[15px] font-extrabold leading-snug text-[#1a6b50]";
+  "font-arabic-serif alpha-type-h2 font-extrabold leading-snug text-[#1a6b50]";
 
 const GUARANTEE_ICONS = {
   faith: Church,
@@ -71,7 +71,7 @@ function TrustPointList({ points }: { points: readonly string[] }) {
     <ul className="space-y-2.5">
       {points.map((point) => (
         <li key={point} className="flex items-start justify-start gap-2.5 text-start">
-          <span className="text-[10.5px] font-medium leading-[1.6] text-[#4a3a28]">{point}</span>
+          <span className="alpha-type-desc font-medium leading-[1.6] text-alpha-heading">{point}</span>
           <TrustGlassCheck />
         </li>
       ))}
@@ -84,7 +84,7 @@ function TrustContentBlocks({ blocks }: { blocks: readonly TrustContentBlock[] }
     <div className="space-y-4">
       {blocks.map((block) => (
         <div key={block.title}>
-          <p className="mb-2 text-[11px] font-extrabold text-[#1a6b50]">{block.title}</p>
+          <p className="mb-2 alpha-type-desc font-extrabold text-[#1a6b50]">{block.title}</p>
           <TrustPointList points={block.points} />
         </div>
       ))}
@@ -104,7 +104,7 @@ function TrustCard({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-[22px] border border-[#efe2c4]/90 bg-gradient-to-b from-[#fbf3e1]/97 to-[#f4ead8]/95 backdrop-blur-xl",
+        "relative overflow-hidden rounded-[var(--alpha-radius-card-compact)] border border-alpha/90 bg-gradient-to-b from-[color-mix(in_srgb,var(--alpha-bg-elevated)_97%,transparent)] to-[color-mix(in_srgb,var(--alpha-bg-base)_95%,transparent)] backdrop-blur-xl",
         className,
       )}
       style={{
@@ -113,7 +113,7 @@ function TrustCard({
     >
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-1/2 rounded-t-[22px] bg-gradient-to-b from-white/42 to-transparent"
+        className="pointer-events-none absolute inset-x-0 top-0 h-1/2 rounded-t-[var(--alpha-radius-card-compact)] bg-gradient-to-b from-white/42 to-transparent"
       />
       <div className="relative">{children}</div>
     </div>
@@ -203,7 +203,7 @@ function ProtectionRing({ value = 100 }: { value?: number }) {
           strokeDashoffset={circumference * (1 - value / 100)}
         />
       </svg>
-      <span className="absolute inset-0 grid place-items-center text-[10px] font-extrabold tabular-nums text-[#1a6b50]">
+      <span className="absolute inset-0 grid place-items-center alpha-type-caption font-extrabold tabular-nums text-[#1a6b50]">
         {value}%
       </span>
     </div>
@@ -212,7 +212,7 @@ function ProtectionRing({ value = 100 }: { value?: number }) {
 
 function TrustSectionLabel({ children }: { children: ReactNode }) {
   return (
-    <p className="px-1 text-[10px] font-extrabold tracking-[0.06em] text-[#1a6b50]">{children}</p>
+    <p className="px-1 alpha-type-caption font-extrabold tracking-[0.06em] text-[#1a6b50]">{children}</p>
   );
 }
 
@@ -223,10 +223,10 @@ export function TrustSafetyHeroCard() {
     <TrustCard accent="#3f9d6e" className="mb-3">
       <div className="flex items-center gap-3 px-4 pb-3 pt-4">
         <div className="min-w-0 flex-1 text-start">
-          <h2 className="font-arabic-serif text-[16px] font-extrabold leading-[1.45] text-[#1a6b50]">
+          <h2 className="font-arabic-serif alpha-type-h2 font-extrabold leading-[1.45] text-[#1a6b50]">
             {content.hero.title}
           </h2>
-          <p className="mt-2 text-[11.5px] font-medium leading-[1.65] text-[#6a543a]">
+          <p className="mt-2 alpha-type-desc font-medium leading-[1.65] text-alpha-muted">
             {content.hero.summary}
           </p>
         </div>
@@ -236,10 +236,10 @@ export function TrustSafetyHeroCard() {
         </div>
       </div>
 
-      <div className="mx-4 mb-4 flex items-center justify-between gap-3 rounded-[16px] border border-[#d8efe4]/90 bg-[#f4fbf7]/95 px-3.5 py-2">
+      <div className="mx-4 mb-4 flex items-center justify-between gap-3 rounded-[var(--alpha-radius-dock-tab)] border border-[#d8efe4]/90 bg-[#f4fbf7]/95 px-3.5 py-2">
         <ProtectionRing value={100} />
         <div className="flex min-w-0 flex-1 items-center justify-start gap-2">
-          <p className="text-[12px] font-extrabold text-[#1a6b50]">{content.hero.protectionLevel}</p>
+          <p className="alpha-type-body font-extrabold text-[#1a6b50]">{content.hero.protectionLevel}</p>
           <TrustGreenShield size="bar" glow />
         </div>
       </div>
@@ -257,7 +257,7 @@ export function TrustSafetyFeatureGrid() {
     <TrustCard accent={active.accent} className="mb-3">
       <div className="px-4 pb-3 pt-4">
         <TrustSectionLabel>{content.guaranteesLabel}</TrustSectionLabel>
-        <p className="mt-1 text-[11px] font-medium leading-relaxed text-[#6a543a]">
+        <p className="mt-1 alpha-type-desc font-medium leading-relaxed text-alpha-muted">
           {content.guaranteesIntro}
         </p>
       </div>
@@ -274,7 +274,7 @@ export function TrustSafetyFeatureGrid() {
                 "shrink-0 rounded-full border px-3.5 py-2 text-[11px] font-extrabold transition-all duration-300",
                 isActive
                   ? "border-[#3f9d6e]/40 bg-gradient-to-l from-[#2f9d6e] to-[#45b888] text-white shadow-[0_8px_20px_-10px_rgba(47,157,110,0.55)]"
-                  : "border-[#efe2c4]/90 bg-white/55 text-[#6a543a] hover:bg-white/80",
+                  : "border-alpha/90 bg-white/55 text-alpha-muted hover:bg-white/80",
               )}
             >
               {item.tab}
@@ -285,7 +285,7 @@ export function TrustSafetyFeatureGrid() {
 
       <div
         key={active.id}
-        className="mx-3.5 mb-4 animate-in fade-in slide-in-from-bottom-1 duration-300 rounded-[18px] border border-[#efe2c4]/75 bg-white/50 px-4 py-4 backdrop-blur-sm"
+        className="mx-3.5 mb-4 animate-in fade-in slide-in-from-bottom-1 duration-300 rounded-[var(--alpha-radius-button)] border border-alpha/75 bg-white/50 px-4 py-4 backdrop-blur-sm"
       >
         <div className="flex items-start gap-3">
           <AlphaIcon3D color={active.accent} size={52} isOpen>
@@ -295,22 +295,22 @@ export function TrustSafetyFeatureGrid() {
             <h3 className={TRUST_SECTION_TITLE_SM}>
               {active.title}
             </h3>
-            <p className="mt-1.5 text-[11px] font-medium leading-[1.65] text-[#6a543a]">{active.summary}</p>
+            <p className="mt-1.5 alpha-type-desc font-medium leading-[1.65] text-alpha-muted">{active.summary}</p>
           </div>
         </div>
 
         <ul className="mt-4 space-y-2.5">
           {active.points.map((point) => (
             <li key={point} className="flex items-start justify-start gap-2.5 text-start">
-              <span className="text-[10.5px] font-medium leading-[1.6] text-[#4a3a28]">{point}</span>
+              <span className="alpha-type-desc font-medium leading-[1.6] text-alpha-heading">{point}</span>
               <TrustGlassCheck />
             </li>
           ))}
         </ul>
 
-        <div className="mt-4 flex items-center justify-between gap-3 rounded-[14px] border border-[#d8efe4]/90 bg-[#f4fbf7]/90 px-3 py-2.5">
-          <span className="text-[13px] font-extrabold tabular-nums text-[#1a6b50]">{active.metricValue}</span>
-          <span className="text-[11px] font-bold text-[#3a2a18]">{active.metric}</span>
+        <div className="mt-4 flex items-center justify-between gap-3 rounded-[var(--alpha-radius-mini)] border border-[#d8efe4]/90 bg-[#f4fbf7]/90 px-3 py-2.5">
+          <span className="alpha-type-body font-extrabold tabular-nums text-[#1a6b50]">{active.metricValue}</span>
+          <span className="alpha-type-desc font-bold text-alpha-heading">{active.metric}</span>
         </div>
       </div>
     </TrustCard>
@@ -337,7 +337,7 @@ export function TrustDataProtectionSection() {
         />
         <div className="min-w-0 flex-1">
           <h2 className={TRUST_SECTION_TITLE}>{content.dataProtection.title}</h2>
-          <p className="mt-1 text-[11px] font-medium leading-relaxed text-[#6a543a]">
+          <p className="mt-1 alpha-type-desc font-medium leading-relaxed text-alpha-muted">
             {content.dataProtection.subtitle}
           </p>
         </div>
@@ -359,22 +359,22 @@ export function TrustDataProtectionSection() {
               return (
                 <div
                   key={item.title}
-                  className="rounded-[16px] border border-[#e2f0e9]/90 bg-white/55 px-3 py-3 text-start backdrop-blur-sm"
+                  className="rounded-[var(--alpha-radius-dock-tab)] border border-[#e2f0e9]/90 bg-white/55 px-3 py-3 text-start backdrop-blur-sm"
                 >
                   <div className="mb-2 flex justify-start">
                     <div className="grid h-9 w-9 place-items-center rounded-xl border border-[#d8efe4] bg-[#edf8f2]">
                       <Icon className="h-4 w-4 text-[#2f9d6e]" strokeWidth={2.3} />
                     </div>
                   </div>
-                  <p className="text-[11.5px] font-extrabold text-[#2a1f12]">{item.title}</p>
-                  <p className="mt-1 text-[10px] leading-relaxed text-[#6a543a]">{item.subtitle}</p>
+                  <p className="alpha-type-desc font-extrabold text-alpha-heading">{item.title}</p>
+                  <p className="mt-1 alpha-type-caption leading-relaxed text-alpha-muted">{item.subtitle}</p>
                 </div>
               );
             })}
           </div>
 
-          <div className="mx-3.5 mb-3 rounded-[16px] border border-[#e2f0e9]/90 bg-white/55 px-3.5 py-3.5 text-start backdrop-blur-sm">
-            <p className="mb-2.5 text-[11px] font-extrabold text-[#1a6b50]">{content.dataProtection.detailsTitle}</p>
+          <div className="mx-3.5 mb-3 rounded-[var(--alpha-radius-dock-tab)] border border-[#e2f0e9]/90 bg-white/55 px-3.5 py-3.5 text-start backdrop-blur-sm">
+            <p className="mb-2.5 alpha-type-desc font-extrabold text-[#1a6b50]">{content.dataProtection.detailsTitle}</p>
             <TrustPointList points={content.dataProtection.detailsPoints} />
           </div>
 
@@ -420,13 +420,13 @@ function TrustSectionCard({
       >
         <ChevronDown
           className={cn(
-            "h-5 w-5 shrink-0 text-[#c9a05a] transition-transform duration-300",
+            "h-5 w-5 shrink-0 text-alpha-gold-deep transition-transform duration-300",
             isOpen && "rotate-180",
           )}
         />
         <div className="min-w-0 flex-1">
           <h2 className={TRUST_SECTION_TITLE}>{title}</h2>
-          <p className="mt-1 text-[11px] font-medium leading-relaxed text-[#6a543a]">{description}</p>
+          <p className="mt-1 alpha-type-desc font-medium leading-relaxed text-alpha-muted">{description}</p>
         </div>
         <AlphaIcon3D color={accent} size={52} isOpen={isOpen}>
           <Icon className="h-[22px] w-[22px]" style={{ color: accent }} strokeWidth={2.4} />
@@ -440,7 +440,7 @@ function TrustSectionCard({
         )}
       >
         <div className="overflow-hidden">
-          <div className="border-t border-[#efe2c4]/70 px-4 py-3.5">
+          <div className="border-t border-alpha/70 px-4 py-3.5">
             <TrustContentBlocks blocks={blocks} />
           </div>
         </div>
@@ -457,7 +457,7 @@ export function TrustSafetySectionList() {
     <div className="mt-1">
       <div className="mb-2.5 px-1 pb-2 pt-1">
         <TrustSectionLabel>{content.detailSectionsLabel}</TrustSectionLabel>
-        <p className="mt-1 text-[11px] font-medium leading-relaxed text-[#6a543a]">
+        <p className="mt-1 alpha-type-desc font-medium leading-relaxed text-alpha-muted">
           {content.detailSectionsIntro}
         </p>
       </div>
@@ -487,22 +487,22 @@ export function TrustSafetyFooter() {
           aria-hidden
           className="pointer-events-none absolute inset-x-8 top-3 h-16 rounded-full bg-[radial-gradient(circle,rgba(47,157,110,0.12)_0%,transparent_72%)]"
         />
-        <div className="relative mx-auto mb-3 flex items-center justify-center gap-2 text-[#b8893a]">
-          <span className="text-[13px] font-bold">Ⲁ</span>
-          <CopticCross size={16} className="text-[#b8893a]" />
-          <span className="text-[13px] font-bold">Ⲱ</span>
+        <div className="relative mx-auto mb-3 flex items-center justify-center gap-2 text-alpha-gold-deep">
+          <span className="alpha-type-body font-bold">Ⲁ</span>
+          <CopticCross size={16} className="text-alpha-gold-deep" />
+          <span className="alpha-type-body font-bold">Ⲱ</span>
         </div>
         <div
           aria-hidden
           className="mx-auto mb-3 h-px w-24 bg-gradient-to-l from-transparent via-[#3f9d6e]/45 to-transparent"
         />
-        <p className="font-arabic-serif text-[13.5px] font-extrabold leading-[1.75] text-[#2a1f12]">
+        <p className="font-arabic-serif alpha-type-body font-extrabold leading-[1.75] text-alpha-heading">
           {content.footer.commitment}
         </p>
-        <p className="mt-3 font-arabic-serif text-[12px] font-semibold leading-[1.7] text-[#6a543a]">
+        <p className="mt-3 font-arabic-serif alpha-type-body font-semibold leading-[1.7] text-alpha-muted">
           {content.footer.goal}
         </p>
-        <p className="mt-3 text-[11px] font-bold tracking-wide text-[#1a6b50]">{content.footer.tagline}</p>
+        <p className="mt-3 alpha-type-desc font-bold tracking-wide text-[#1a6b50]">{content.footer.tagline}</p>
       </div>
     </TrustCard>
   );

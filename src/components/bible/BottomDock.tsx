@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { useLocale } from "@/lib/i18n/use-locale";
 import { activateBottomNavLayout } from "@/components/navigation/alpha-bottom-nav-layout";
 import { usePlatformModules } from "@/lib/platform-modules";
+import { COMMUNITY_HUB_PATH, isCommunityHubPath } from "@/features/community/community-routes";
 
 /**
  * Persistent floating Alpha Bible bottom navigation.
@@ -134,15 +135,15 @@ export function BottomDock({
         visibility: isHidden ? "hidden" : "visible",
         pointerEvents: isHidden ? "none" : "auto",
         transition: isHidden
-          ? "transform 400ms cubic-bezier(0.22,1,0.36,1), visibility 0s linear 400ms"
-          : "transform 400ms cubic-bezier(0.22,1,0.36,1), visibility 0s linear 0s",
+          ? "transform var(--alpha-duration-slow) var(--alpha-ease-standard), visibility 0s linear var(--alpha-duration-slow)"
+          : "transform var(--alpha-duration-slow) var(--alpha-ease-standard), visibility 0s linear 0s",
         willChange: "transform",
       }}
     >
 
 
       <div className="mx-auto w-full max-w-[var(--alpha-dock-max-width)] px-3 pointer-events-auto alpha-app-dock">
-        <div className="alpha-dock-bar relative rounded-[26px]">
+        <div className="alpha-dock-bar relative rounded-[var(--alpha-radius-card)]">
           <div className={cn("grid items-end px-2 py-2.5 gap-1 sm:px-2.5 sm:py-3 sm:gap-1.5", dockGridClass)}>
             <DockItem icon={House} label={t("nav.home")} to="/home" active={isActive("/home")} />
             {showAgpeya ? (
@@ -158,8 +159,8 @@ export function BottomDock({
               <DockItem
                 icon={UsersRound}
                 label={t("nav.community")}
-                to="/church"
-                active={isActive("/profile/church") || isActive("/church")}
+                to={COMMUNITY_HUB_PATH}
+                active={isCommunityHubPath(pathname)}
               />
             ) : null}
             <DockItem icon={CircleUser} label={t("nav.profile")} to="/profile" active={isActive("/profile")} />

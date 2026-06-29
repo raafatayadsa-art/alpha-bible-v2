@@ -117,7 +117,7 @@ function SettingsSelectRow<T extends string>({
         </div>
       </button>
       {open ? (
-        <div className="absolute inset-x-0 top-[calc(100%+6px)] z-20 overflow-hidden rounded-2xl border border-white/10 bg-[#0a1430]/95 shadow-xl backdrop-blur-md">
+        <div className="absolute inset-x-0 top-[calc(100%+6px)] z-20 overflow-hidden rounded-2xl border border-white/10 bg-[color-mix(in_srgb,var(--alpha-bg-cinematic)_95%,transparent)] shadow-xl backdrop-blur-md">
           {options.map((option) => (
             <button
               key={option.id}
@@ -185,7 +185,7 @@ function MemberModerationRow({
                       className="fixed inset-0 z-40 cursor-default"
                       onClick={() => setPromoteOpen(false)}
                     />
-                    <div className="absolute bottom-[calc(100%+4px)] left-0 z-50 min-w-[108px] overflow-hidden rounded-xl border border-white/10 bg-[#0a1430] shadow-[0_8px_32px_rgba(0,0,0,0.55)] backdrop-blur-md">
+                    <div className="absolute bottom-[calc(100%+4px)] left-0 z-50 min-w-[108px] overflow-hidden rounded-xl border border-white/10 bg-[var(--alpha-bg-cinematic)] shadow-[0_8px_32px_rgba(0,0,0,0.55)] backdrop-blur-md">
                       <button
                         type="button"
                         onClick={() => {
@@ -553,8 +553,8 @@ export function ConnectChannelSettings({
                 <Trash2 className="size-[18px] text-[#B91C1C]" />
               </div>
             </div>
-            <p className="mb-1 text-center text-[13px] font-bold text-[#1F2937]">حذف القناة نهائياً؟</p>
-            <p className="mb-4 text-center text-[10px] text-[#6B7280]">
+            <p className="mb-1 text-center alpha-type-body font-bold text-alpha-heading">حذف القناة نهائياً؟</p>
+            <p className="mb-4 text-center alpha-type-caption text-alpha-muted">
               سيتم مسح القناة وجميع بياناتها من النظام ولا يمكن التراجع.
             </p>
             <div className="flex gap-2.5">
@@ -562,7 +562,7 @@ export function ConnectChannelSettings({
                 type="button"
                 onClick={() => setDeleteConfirmOpen(false)}
                 variant="ghost"
-                className="h-10 flex-1 rounded-2xl border border-[#E5E7EB] bg-white/80 text-[12px] text-[#374151]"
+                className="h-10 flex-1 rounded-2xl border border-alpha bg-white/80 alpha-type-body text-alpha-heading"
               >
                 إلغاء
               </Button>
@@ -640,7 +640,7 @@ export function ConnectChannelInviteSheet({
                   trailing={
                     <span
                       className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border ${
-                        checked ? "border-neon-green bg-neon-green text-[#0a1430]" : "border-white/20"
+                        checked ? "border-neon-green bg-neon-green text-[var(--alpha-bg-cinematic)]" : "border-white/20"
                       }`}
                     >
                       {checked ? "✓" : ""}
@@ -660,7 +660,7 @@ export function ConnectChannelInviteSheet({
               setSelected([]);
               onClose();
             }}
-            className="flex w-full items-center justify-center rounded-2xl bg-neon-green py-3 text-[13px] font-bold text-[#0a1430] disabled:opacity-40"
+            className="flex w-full items-center justify-center rounded-2xl bg-neon-green py-3 alpha-type-body font-bold text-[var(--alpha-bg-cinematic)] disabled:opacity-40"
           >
             دعوة {selected.length > 0 ? `(${selected.length})` : ""}
           </button>

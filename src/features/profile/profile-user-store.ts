@@ -123,6 +123,12 @@ function write(state: ProfileUserState) {
     const payload = { ...state, version: STORAGE_VERSION };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     window.dispatchEvent(new CustomEvent("ab:profile-user", { detail: payload }));
+    const pendingCrop = state.customAvatarUrl?.startsWith("data:");
+    if (!pendingCrop) {
+      void import("@/lib/user-sync-scheduler").then(({ scheduleUserDataSync }) =>
+        scheduleUserDataSync({ delayMs: 2000, extraKey: STORAGE_KEY }),
+      );
+    }
   } catch { /* ignore */ }
 }
 
@@ -138,11 +144,66 @@ export function saveProfileUserState(state: ProfileUserState) {
   write({ ...state, version: STORAGE_VERSION });
 }
 
+const PLACEHOLDER_AVATAR_RE = /pravatar\.cc/i;
+
+export function isPlaceholderAvatarUrl(url: string | null | undefined): boolean {
+  if (!url?.trim()) return true;
+  return PLACEHOLDER_AVATAR_RE.test(url);
+}
+
+/** After login — replace device-only avatar blob with cloud URL when available. */
+export function syncLocalProfileAvatarFromCloud(cloudAvatarUrl: string | null | undefined) {
+  const url = cloudAvatarUrl?.trim();
+  if (!url || isPlaceholderAvatarUrl(url)) return;
+  const state = read();
+  const custom = state.customAvatarUrl?.trim();
+  // Never clobber an in-progress crop (data URL) waiting for save/upload.
+  if (custom?.startsWith("data:")) return;
+  if (!custom || isPlaceholderAvatarUrl(custom)) {
+    if (custom !== url) write({ ...state, customAvatarUrl: url });
+  }
+}
+
 export function resolveProfileAvatar(
   customAvatarUrl: string | null,
   fallbackUrl: string,
 ): string {
   return customAvatarUrl?.trim() || fallbackUrl;
+}
+
+/** Real user photo — cloud/OAuth first; ignore stale device-only base64 when logged in. */
+export function resolveProfileDisplayAvatar(
+  customAvatarUrl: string | null,
+  authAvatarUrl: string | null | undefined,
+): string | null {
+  const auth = authAvatarUrl?.trim();
+  const authReal = auth && !isPlaceholderAvatarUrl(auth) ? auth : null;
+  const custom = customAvatarUrl?.trim();
+  const customIsDeviceOnly = custom?.startsWith("data:") ?? false;
+
+  if (authReal && (!custom || customIsDeviceOnly)) return authReal;
+  if (custom) return custom;
+  if (authReal) return authReal;
+  return null;
+}
+
+/** Unified avatar for profile surfaces (header + profile page). */
+export function resolveAccountAvatar(
+  customAvatarUrl: string | null,
+  authAvatarUrl: string | null | undefined,
+): string {
+  return (
+    resolveProfileDisplayAvatar(customAvatarUrl, authAvatarUrl) ??
+    authAvatarUrl?.trim() ??
+    ""
+  );
+}
+
+export function profileAvatarInitials(displayName: string): string {
+  const parts = displayName.trim().split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+  const single = parts[0] ?? "A";
+  return single.slice(0, 2).toUpperCase();
 }
 
 export function useProfileUser() {

@@ -10,6 +10,7 @@ import {
   Send,
   MessageCircle,
 } from "lucide-react";
+import { CommunityShareButton } from "@/features/community";
 import { AutoScrollControls, ReaderArticleProgress } from "@/components/bible";
 import {
   PresentationMode,
@@ -212,7 +213,7 @@ function buildInfoFallback(p: AgpeyaPrayer) {
 function SectionShell({
   id, label, dark, children,
 }: { id: string; label: string; dark: boolean; children: React.ReactNode }) {
-  const gold = dark ? "text-[#f0d78c]/70" : "text-[#b8893a]/70";
+  const gold = dark ? "text-alpha-gold-bright/70" : "text-alpha-gold-deep/70";
   return (
     <section
       id={`section-${id}`}
@@ -224,7 +225,7 @@ function SectionShell({
           dir="ltr"
           className={cn(
             "font-arabic-serif flex items-center justify-center gap-2 text-[15px] font-extrabold tracking-tight text-center",
-            dark ? "text-[#f0d78c]" : "text-[#5b3a18]",
+            dark ? "text-alpha-gold-bright" : "text-alpha-heading",
           )}
         >
           <span className={cn("text-[14px] font-bold leading-none", gold)} aria-hidden>Ⲁ</span>
@@ -243,10 +244,10 @@ function GlassCard({
   return (
     <div
       className={cn(
-        "rounded-2xl border p-5 backdrop-blur-xl transition-colors",
+        "rounded-[var(--alpha-radius-dock-tab)] border p-5 backdrop-blur-xl alpha-motion-standard",
         dark
           ? "border-white/10 bg-white/[0.04] shadow-[0_10px_30px_-20px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.04)]"
-          : "border-[#c79356]/25 bg-white/70 shadow-[0_10px_28px_-18px_rgba(120,80,30,0.35),inset_0_1px_0_rgba(255,255,255,0.85)]",
+          : "border-alpha-gold-deep/25 bg-white/70 shadow-[var(--alpha-shadow-featured),inset_0_1px_0_rgba(255,255,255,0.85)]",
         className,
       )}
     >
@@ -263,7 +264,7 @@ function ProseCard({ dark, paragraphs }: { dark: boolean; paragraphs: string[] }
           key={i}
           className={cn(
             i < paragraphs.length - 1 && "mb-4",
-            dark ? "text-[#e8e2cf]" : "text-[#2a1a08]",
+            dark ? "text-[var(--alpha-reader-text-soft)]" : "text-[var(--alpha-reader-text)]",
           )}
         >
           {p}
@@ -282,17 +283,17 @@ function PsalmCard({
         <span className={cn(
           "grid h-9 w-9 place-items-center rounded-full text-[12px] font-extrabold tabular-nums",
           dark
-            ? "bg-[#f0d78c] text-[#1a1208]"
-            : "bg-gradient-to-br from-[#e7b35a] to-[#b87a22] text-white",
+            ? "bg-alpha-gold-bright text-[var(--alpha-bg-cinematic)]"
+            : "bg-gradient-to-br from-[var(--alpha-gold)] to-[var(--alpha-gold-deep)] text-white",
         )}>
           {psalm.number}
         </span>
         <div>
-          <div className={cn("font-arabic-serif text-[14px] font-bold", dark ? "text-[#f0d78c]" : "text-[#5b3a18]")}>
+          <div className={cn("font-arabic-serif text-[14px] font-bold", dark ? "text-alpha-gold-bright" : "text-alpha-heading")}>
             مزمور {psalm.number}
           </div>
           {psalm.title && (
-            <div className={cn("text-[11px]", dark ? "text-white/55" : "text-[#8a5a1f]")}>
+            <div className={cn("text-[11px]", dark ? "text-white/55" : "text-alpha-gold-deep")}>
               {psalm.title}
             </div>
           )}
@@ -303,11 +304,11 @@ function PsalmCard({
           <li key={vi} className="flex gap-2">
             <span className={cn(
               "shrink-0 select-none text-[11px] font-bold tabular-nums leading-relaxed",
-              dark ? "text-[#f0d78c]/70" : "text-[#c79356]",
+              dark ? "text-alpha-gold-bright/70" : "text-alpha-gold-deep",
             )}>
               {vi + 1}
             </span>
-            <span className={cn(dark ? "text-[#e8e2cf]" : "text-[#2a1a08]")}>{v}</span>
+            <span className={cn(dark ? "text-[var(--alpha-reader-text-soft)]" : "text-[var(--alpha-reader-text)]")}>{v}</span>
           </li>
         ))}
       </ol>
@@ -322,22 +323,22 @@ function GospelCard({
     <GlassCard dark={dark}>
       <div className={cn(
         "mb-3 inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold",
-        dark ? "bg-[#f0d78c]/15 text-[#f0d78c]" : "bg-[#5a3d92]/10 text-[#5a3d92]",
+        dark ? "bg-alpha-gold-bright/15 text-alpha-gold-bright" : "bg-[color-mix(in_srgb,var(--alpha-purple)_10%,transparent)] text-[var(--alpha-purple)]",
       )}>
         {g.reference}
       </div>
       {g.intro && (
-        <p className={cn("mb-4 text-[13.5px] italic", dark ? "text-white/65" : "text-[#7a5a32]")}>
+        <p className={cn("mb-4 text-[13.5px] italic", dark ? "text-white/65" : "text-alpha-muted")}>
           {g.intro}
         </p>
       )}
       {paragraphs(g.passage).map((para, pi) => (
-        <p key={pi} className={cn("mb-3 last:mb-0", dark ? "text-[#e8e2cf]" : "text-[#2a1a08]")}>
+        <p key={pi} className={cn("mb-3 last:mb-0", dark ? "text-[var(--alpha-reader-text-soft)]" : "text-[var(--alpha-reader-text)]")}>
           {para}
         </p>
       ))}
       {g.conclusion && (
-        <p className={cn("mt-3 text-center text-[12.5px] font-bold", dark ? "text-[#f0d78c]" : "text-[#5a3d92]")}>
+        <p className={cn("mt-3 text-center text-[12.5px] font-bold", dark ? "text-alpha-gold-bright" : "text-[var(--alpha-purple)]")}>
           {g.conclusion}
         </p>
       )}
@@ -350,12 +351,12 @@ function FragmentCard({ dark, f }: { dark: boolean; f: { title: string; body: st
     <GlassCard dark={dark}>
       <h3 className={cn(
         "mb-2 font-arabic-serif text-[14px] font-bold",
-        dark ? "text-[#f0d78c]" : "text-[#5b3a18]",
+        dark ? "text-alpha-gold-bright" : "text-alpha-heading",
       )}>
         {f.title}
       </h3>
       {f.body.split(/\n+/).map((line, li) => (
-        <p key={li} className={cn("mb-2 last:mb-0", dark ? "text-[#e8e2cf]" : "text-[#2a1a08]")}>
+        <p key={li} className={cn("mb-2 last:mb-0", dark ? "text-[var(--alpha-reader-text-soft)]" : "text-[var(--alpha-reader-text)]")}>
           {line}
         </p>
       ))}
@@ -371,10 +372,10 @@ function InfoCard({
       <dl className={cn("divide-y", dark ? "divide-white/10" : "divide-[#c79356]/20")}>
         {entries.map((e, i) => (
           <div key={i} className="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-baseline sm:gap-4">
-            <dt className={cn("shrink-0 text-[12px] font-bold", dark ? "text-[#f0d78c]/85" : "text-[#8a5a1f]")}>
+            <dt className={cn("shrink-0 text-[12px] font-bold", dark ? "text-alpha-gold-bright/85" : "text-alpha-gold-deep")}>
               {e.label}
             </dt>
-            <dd className={cn("text-[13.5px] flex-1", dark ? "text-[#e8e2cf]" : "text-[#2a1a08]")}>
+            <dd className={cn("text-[13.5px] flex-1", dark ? "text-[var(--alpha-reader-text-soft)]" : "text-[var(--alpha-reader-text)]")}>
               {e.value}
             </dd>
           </div>
@@ -514,10 +515,12 @@ function PrayerReader() {
   const [notice, setNotice] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string>("");
   const { isSaved, toggle } = useSavedAgpeya();
+  const agpeyaProgressRef = useRef(0);
 
   useEffect(() => {
     setActiveId("");
     setSectionFills([]);
+    agpeyaProgressRef.current = 0;
   }, [prayerId]);
 
   const [shareOpen, setShareOpen] = useState(false);
@@ -709,6 +712,17 @@ function PrayerReader() {
           updatedAt: now,
         });
       }
+
+      const prevAgpeyaProgress = agpeyaProgressRef.current;
+      void import("@/features/community/community-auto-activity").then((m) =>
+        m.maybeEmitAgpeyaActivity({
+          prayerId,
+          title: prayer.title,
+          progress: state.progress,
+          prevProgress: prevAgpeyaProgress,
+        }),
+      );
+      agpeyaProgressRef.current = state.progress;
     };
 
     const onScroll = () => {
@@ -734,7 +748,7 @@ function PrayerReader() {
       window.removeEventListener("resize", onScroll);
       ro.disconnect();
     };
-  }, [sections, prayerId]);
+  }, [sections, prayerId, prayer.title]);
 
   // Auto-center active chip in the rail
   useEffect(() => {
@@ -827,8 +841,8 @@ function PrayerReader() {
       className={cn(
         "relative flex h-dvh flex-col overflow-hidden transition-colors",
         dark
-          ? "bg-[#08131f] text-[#e8e2cf]"
-          : "bg-[#f4ead8] text-[#3a2410]",
+          ? "bg-[var(--alpha-bg-base)] text-[var(--alpha-reader-text-soft)]"
+          : "bg-[var(--alpha-bg-base)] text-[var(--alpha-reader-text)]",
       )}
     >
       <CopticWatermark tone={dark ? "dark" : "light"} />
@@ -836,7 +850,7 @@ function PrayerReader() {
       <header
         className={cn(
           "sticky top-0 z-30 backdrop-blur-xl border-b",
-          dark ? "bg-[#0b1a2c]/80 border-white/10" : "bg-[#fbf3e1]/85 border-[#c79356]/25",
+          dark ? "bg-[color-mix(in_srgb,var(--alpha-bg-elevated)_80%,transparent)] border-white/10" : "bg-[color-mix(in_srgb,var(--alpha-bg-elevated)_85%,transparent)] border-alpha-gold-deep/25",
         )}
         style={{ paddingTop: "max(env(safe-area-inset-top), 0px)" }}
       >
@@ -846,7 +860,7 @@ function PrayerReader() {
             aria-label="رجوع للأجبية"
             className={cn(
               "relative z-10 grid h-10 w-10 place-items-center rounded-full border active:scale-95",
-              dark ? "bg-white/5 border-white/15 text-[#f0d78c]" : "bg-white/60 border-[#c79356]/35 text-[#8a5a1f]",
+              dark ? "bg-white/5 border-white/15 text-alpha-gold-bright" : "bg-white/60 border-alpha-gold-deep/35 text-alpha-gold-deep",
             )}
           >
             <ChevronLeft className="h-4 w-4 -scale-x-100" />
@@ -856,17 +870,17 @@ function PrayerReader() {
               dir="ltr"
               className="font-arabic-serif flex items-center justify-center gap-2 text-[17px] font-bold leading-tight"
             >
-              <span className={cn("text-[15px] font-bold leading-none", dark ? "text-[#f0d78c]/75" : "text-[#b8893a]/75")} aria-hidden>Ⲁ</span>
+              <span className={cn("alpha-type-body font-bold leading-none", dark ? "text-alpha-gold-bright/75" : "text-alpha-gold-deep/75")} aria-hidden>Ⲁ</span>
               <span dir="rtl" className="truncate">{prayer.title}</span>
-              <span className={cn("text-[15px] font-bold leading-none", dark ? "text-[#f0d78c]/75" : "text-[#b8893a]/75")} aria-hidden>Ⲱ</span>
+              <span className={cn("alpha-type-body font-bold leading-none", dark ? "text-alpha-gold-bright/75" : "text-alpha-gold-deep/75")} aria-hidden>Ⲱ</span>
             </h1>
             {(prayer.subtitle || isSaved(prayerId)) && (
-              <p className={cn("mt-0.5 flex items-center justify-center gap-1.5 truncate text-[11px]", dark ? "text-white/55" : "text-[#7a5a32]")}>
+              <p className={cn("alpha-type-desc mt-0.5 flex items-center justify-center gap-1.5 truncate", dark ? "text-white/55" : "text-alpha-muted")}>
                 {prayer.subtitle}
                 {isSaved(prayerId) && (
                   <span className={cn(
                     "rounded-full px-1.5 py-0.5 text-[9px] font-bold",
-                    dark ? "bg-[#f0d78c]/20 text-[#f0d78c]" : "bg-[#5a3d92]/10 text-[#5a3d92]",
+                    dark ? "bg-alpha-gold-bright/20 text-alpha-gold-bright" : "bg-[color-mix(in_srgb,var(--alpha-purple)_10%,transparent)] text-[var(--alpha-purple)]",
                   )}>
                     محفوظة
                   </span>
@@ -927,7 +941,7 @@ function PrayerReader() {
                             : "border-[#8a6bbf]/30 bg-[#7a5cb0]/12 text-[#5a3d92]"
                           : dark
                             ? "border-white/10 bg-white/5 text-white/75"
-                            : "border-[#c79356]/30 bg-white/55 text-[#5b3a18]",
+                            : "border-alpha-gold-deep/30 bg-white/55 text-alpha-heading",
                   )}
                 >
                   {s.label}
@@ -962,7 +976,7 @@ function PrayerReader() {
           {/* Draft notice */}
           <div className={cn(
             "mb-5 rounded-xl border px-3 py-2 text-center text-[11.5px] font-semibold",
-            dark ? "border-[#f0d78c]/25 bg-[#f0d78c]/5 text-[#f0d78c]" : "border-[#c79356]/40 bg-[#fff7e0] text-[#8a5a1f]",
+            dark ? "border-alpha-gold-bright/25 bg-alpha-gold-bright/5 text-alpha-gold-bright" : "border-alpha-gold-deep/40 bg-[color-mix(in_srgb,var(--alpha-gold)_8%,white)] text-alpha-gold-deep",
           )}>
             {AGPEYA_DRAFT_NOTICE}
           </div>
@@ -974,7 +988,7 @@ function PrayerReader() {
                   key={i}
                   className={cn(
                     "h-32 animate-pulse rounded-2xl border",
-                    dark ? "border-white/10 bg-white/5" : "border-[#c79356]/20 bg-white/40",
+                    dark ? "border-white/10 bg-white/5" : "border-alpha-gold-deep/20 bg-white/40",
                   )}
                 />
               ))}
@@ -1002,7 +1016,7 @@ function PrayerReader() {
           <CopticDivider tone={dark ? "dark" : "light"} className="mt-10" />
           <div className={cn(
             "flex flex-col items-center gap-2 pb-2 text-center text-[12px]",
-            dark ? "text-white/55" : "text-[#8a5a1f]",
+            dark ? "text-white/55" : "text-alpha-gold-deep",
           )}>
             نهاية الصلاة — بركة الرب تشملكم
           </div>
@@ -1016,7 +1030,7 @@ function PrayerReader() {
                 onClick={(e) => handleAdjacentPrayerPress(prev.id, e)}
                 className={cn(
                   "flex flex-1 items-center gap-2 rounded-2xl border px-4 py-3 text-right transition-transform active:scale-[0.98]",
-                  dark ? "border-white/10 bg-white/5 text-[#f0d78c]" : "border-[#c79356]/35 bg-white/70 text-[#5b3a18]",
+                  dark ? "border-white/10 bg-white/5 text-alpha-gold-bright" : "border-alpha-gold-deep/35 bg-white/70 text-alpha-heading",
                 )}
               >
                 <ChevronRight className="h-4 w-4 -scale-x-100" />
@@ -1033,7 +1047,7 @@ function PrayerReader() {
                 onClick={(e) => handleAdjacentPrayerPress(next.id, e)}
                 className={cn(
                   "flex flex-1 items-center gap-2 rounded-2xl border px-4 py-3 text-left transition-transform active:scale-[0.98]",
-                  dark ? "border-white/10 bg-white/5 text-[#f0d78c]" : "border-[#c79356]/35 bg-white/70 text-[#5b3a18]",
+                  dark ? "border-white/10 bg-white/5 text-alpha-gold-bright" : "border-alpha-gold-deep/35 bg-white/70 text-alpha-heading",
                 )}
               >
                 <div className="min-w-0 flex-1">
@@ -1078,7 +1092,7 @@ function PrayerReader() {
             onClick={(e) => e.stopPropagation()}
             className={cn(
               "w-full max-w-[var(--alpha-dock-max-width)] rounded-3xl border p-5 shadow-2xl",
-              dark ? "border-white/10 bg-[#0b1a2c] text-[#e8e2cf]" : "border-[#c79356]/35 bg-white text-[#3a2410]",
+              dark ? "border-white/10 bg-[color-mix(in_srgb,var(--alpha-bg-elevated)_95%,transparent)] text-[var(--alpha-reader-text-soft)]" : "border-alpha-gold-deep/35 bg-white text-[var(--alpha-reader-text)]",
             )}
           >
             <div className="mb-4 flex items-center justify-between">
@@ -1087,12 +1101,12 @@ function PrayerReader() {
                 type="button"
                 aria-label="إغلاق"
                 onClick={() => setShareOpen(false)}
-                className={cn("grid h-8 w-8 place-items-center rounded-full", dark ? "bg-white/5 text-[#f0d78c]" : "bg-[#fbf3e1] text-[#5b3a18]")}
+                className={cn("grid h-8 w-8 place-items-center rounded-full", dark ? "bg-white/5 text-alpha-gold-bright" : "bg-[color-mix(in_srgb,var(--alpha-bg-elevated)_90%,transparent)] text-alpha-heading")}
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <p className={cn("mb-4 text-[12.5px]", dark ? "text-white/65" : "text-[#7a5a32]")}>
+            <p className={cn("mb-4 text-[12.5px]", dark ? "text-white/65" : "text-alpha-muted")}>
               {prayer.title} — الأجبية
             </p>
             <div className="grid grid-cols-3 gap-2">
@@ -1109,6 +1123,20 @@ function PrayerReader() {
                 onClick={() => {
                   window.open(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`, "_blank");
                   setShareOpen(false);
+                }}
+              />
+            </div>
+            <div className="mt-3">
+              <CommunityShareButton
+                className="w-full"
+                label="شارك مع المجتمع الكنسي"
+                input={{
+                  kind: "agpeya",
+                  agpeya: {
+                    prayerId,
+                    title: prayer.title,
+                    excerpt: prayer.subtitle ?? undefined,
+                  },
                 }}
               />
             </div>
@@ -1138,7 +1166,7 @@ function EmptyTab({ dark, message = "لا يوجد محتوى لهذا القس�
   return (
     <div className={cn(
       "flex flex-col items-center gap-2 rounded-2xl border px-5 py-10 text-center text-[13px]",
-      dark ? "border-white/10 bg-white/5 text-white/65" : "border-[#c79356]/30 bg-white/55 text-[#7a5a32]",
+      dark ? "border-white/10 bg-white/5 text-white/65" : "border-alpha-gold-deep/30 bg-white/55 text-alpha-muted",
     )}>
       {message}
     </div>
@@ -1158,8 +1186,8 @@ function IconButton({
       className={cn(
         "grid h-10 w-10 place-items-center rounded-full border transition-all active:scale-95",
         dark
-          ? active ? "border-[#f0d78c] bg-[#f0d78c] text-[#1a1208]" : "border-white/15 bg-white/5 text-[#f0d78c]"
-          : active ? "border-[#5a3d92] bg-gradient-to-br from-[#7a5cb0] to-[#5a3d92] text-white" : "border-[#c79356]/35 bg-white/60 text-[#8a5a1f]",
+          ? active ? "border-alpha-gold-bright bg-alpha-gold-bright text-[var(--alpha-bg-cinematic)]" : "border-white/15 bg-white/5 text-alpha-gold-bright"
+          : active ? "border-[var(--alpha-purple)] bg-gradient-to-br from-[#7a5cb0] to-[var(--alpha-purple)] text-white" : "border-alpha-gold-deep/35 bg-white/60 text-alpha-gold-deep",
       )}
     >
       {children}
@@ -1177,7 +1205,7 @@ function ShareBtn({
       onClick={onClick}
       className={cn(
         "flex flex-col items-center gap-1.5 rounded-2xl border px-3 py-3 text-[11.5px] font-bold transition-transform active:scale-95",
-        dark ? "border-white/10 bg-white/5 text-[#f0d78c]" : "border-[#c79356]/30 bg-[#fbf3e1] text-[#5b3a18]",
+        dark ? "border-white/10 bg-white/5 text-alpha-gold-bright" : "border-alpha-gold-deep/30 bg-[color-mix(in_srgb,var(--alpha-bg-elevated)_90%,transparent)] text-alpha-heading",
       )}
     >
       <Icon className="h-4 w-4" />

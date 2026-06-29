@@ -11,6 +11,7 @@ import {
 
 import appCss from "../styles.css?url";
 import "@/lib/alpha-theme/alpha-theme.css";
+import "@/lib/alpha-design-tokens/alpha-polish-tokens.css";
 import "@/lib/i18n";
 import "@/components/alpha/styles.css";
 import "@/components/alpha/alpha-responsive.css";
@@ -28,9 +29,14 @@ import { AlphaTopDebugSafeArea } from "@/components/alpha/AlphaTopDebugSafeArea"
 import { AlphaNavigationProvider } from "@/components/navigation/AlphaNavigationProvider";
 import { BibleSearchProvider } from "@/features/bible-search";
 import { AuthBootstrap } from "@/features/auth";
+import { AlphaUserSyncBootstrap } from "@/lib/alpha-user-sync-bootstrap";
+import { AlphaUserSyncStatus } from "@/components/alpha/AlphaUserSyncStatus";
+import { ProfileCompletionGate } from "@/features/auth/profile-completion-gate";
+import { isPremiumAuthExperience } from "@/features/auth/profile-completion-api";
 import { I18nBootstrap } from "@/lib/i18n/use-locale";
 import { useTranslation } from "react-i18next";
 import { PlatformModuleGate, PlatformModulesBootstrap } from "@/lib/platform-modules";
+import { ProfileRegistryBootstrap } from "@/features/profile/ProfileRegistryBootstrap";
 import { AlphaThemeBootstrap } from "@/lib/alpha-theme";
 import { AlphaShareSheetHost } from "@/lib/alpha-share-sheet";
 
@@ -147,14 +153,26 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
-  // Onboarding routes render outside the app shell — no navigation providers,
-  // no global buttons, no overlays, no layout constraints of any kind.
-  const isOnboarding = pathname === "/intro";
+  // Intro + premium auth render outside the main app shell (no dock).
+  const isIntro = pathname === "/intro";
+  const isPremiumAuth = isPremiumAuthExperience(pathname);
 
-  if (isOnboarding) {
+  if (isIntro) {
     return (
       <QueryClientProvider client={queryClient}>
         <Outlet />
+      </QueryClientProvider>
+    );
+  }
+
+  if (isPremiumAuth) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <AlphaThemeBootstrap />
+        <AuthBootstrap />
+        <ProfileCompletionGate>
+          <Outlet />
+        </ProfileCompletionGate>
       </QueryClientProvider>
     );
   }
@@ -166,6 +184,8 @@ function RootComponent() {
       <AlphaThemeBootstrap />
       <I18nBootstrap />
       <AuthBootstrap />
+      <AlphaUserSyncBootstrap />
+      <ProfileRegistryBootstrap />
       <PlatformModulesBootstrap />
       <AlphaNavigationProvider>
         <BibleSearchProvider>
@@ -174,16 +194,21 @@ function RootComponent() {
             {useScreenFrame ? (
               <AlphaScreenFrame mode="flow">
                 <PlatformModuleGate>
-                  <Outlet />
+                  <ProfileCompletionGate>
+                    <Outlet />
+                  </ProfileCompletionGate>
                 </PlatformModuleGate>
               </AlphaScreenFrame>
             ) : (
               <PlatformModuleGate>
-                <Outlet />
+                <ProfileCompletionGate>
+                  <Outlet />
+                </ProfileCompletionGate>
               </PlatformModuleGate>
             )}
             <GlobalBackButton />
             <AlphaShareSheetHost />
+            <AlphaUserSyncStatus />
             <Toaster />
             <AlphaTopDebugSafeArea />
             <AlphaTopDebugLabel />
