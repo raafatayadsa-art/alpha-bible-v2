@@ -113,7 +113,7 @@ export function WorldMap({
                 style={{
                   width: size,
                   height: size,
-                  background: `radial-gradient(circle at 35% 30%, #fff8e7, ${PP_GOLD} 45%, #c4841a 100%)`,
+                  background: `radial-gradient(circle at 35% 30%, #e8fff0, ${PP_GOLD} 45%, ${MC.greenBright} 100%)`,
                   boxShadow: `0 0 0 2px rgba(6,10,20,0.9), 0 0 22px ${PP_GOLD}cc, 0 0 44px ${PP_GOLD}55`,
                 }}
               />

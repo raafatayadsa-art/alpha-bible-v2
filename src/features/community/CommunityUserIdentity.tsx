@@ -28,7 +28,6 @@ export function CommunityUserIdentity(props: Props) {
   } = rest;
 
   const shieldRole = resolveCommunityShieldRole(userId);
-  const avatar = userAvatarUrl ?? `https://i.pravatar.cc/96?u=${encodeURIComponent(userId || userName)}`;
 
   const cluster = (
     <div className={cn("min-w-0", className)}>
@@ -42,7 +41,7 @@ export function CommunityUserIdentity(props: Props) {
         <span className={cn("truncate text-[13px] font-extrabold leading-tight text-[#f0d78c]", nameClassName)}>
           {userName}
         </span>
-        <AlphaShield role={shieldRole} size="sm" userName={userName} userAvatar={avatar} />
+        <AlphaShield role={shieldRole} size="sm" userName={userName} userAvatar={userAvatarUrl} />
       </div>
       {meta ? <div className="mt-0.5 text-right">{meta}</div> : null}
     </div>

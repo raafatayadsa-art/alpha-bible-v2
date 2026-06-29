@@ -7,9 +7,12 @@ export type CommunityPersonSuggestion = {
   id: string;
   name: string;
   role: string;
+  roleType?: string;
   avatarUrl?: string;
   initials: string;
 };
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function initialsFrom(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -27,17 +30,19 @@ export function useCommunityPeopleSuggestions(limit = 10): CommunityPersonSugges
     const byId = new Map<string, CommunityPersonSuggestion>();
 
     for (const c of dashboard?.contacts ?? []) {
-      if (byId.has(c.id)) continue;
-      byId.set(c.id, {
-        id: c.id,
+      const id = c.userId?.trim() ?? "";
+      if (!id || !UUID_RE.test(id) || id === uid || byId.has(id)) continue;
+      byId.set(id, {
+        id,
         name: c.name,
         role: c.role,
+        roleType: c.roleType,
         initials: c.initials || initialsFrom(c.name),
       });
     }
 
     for (const p of connect) {
-      if (p.id === uid || byId.has(p.id)) continue;
+      if (!p.id || p.id === uid || !UUID_RE.test(p.id) || byId.has(p.id)) continue;
       byId.set(p.id, {
         id: p.id,
         name: p.name,

@@ -155,6 +155,8 @@ export function CommunityPeopleSuggestions({ friends, people, onAddPress, onMemb
                       userName: person.name,
                       userAvatarUrl: person.avatarUrl,
                       churchName: person.role,
+                      role: person.role,
+                      roleType: person.roleType,
                     }),
                   )
                 }

@@ -21,6 +21,7 @@ function toPreview(member: DiscoverMember): CommunityMemberPreview {
     alphaId: member.alphaId,
     role: member.serviceLabel ?? "عضو",
     shieldRole: "member",
+    verified: true,
   };
 }
 

@@ -203,7 +203,6 @@ export function mergeDemoCommunityPreview(payload: DemoPreviewPayload): void {
 export function bootstrapCommunityFeed() {
   if (syncStarted || typeof window === "undefined") return;
   syncStarted = true;
-  void import("./community-demo-seed").then((m) => m.seedDemoCommunityPreview());
   void import("./community-realtime").then((m) => m.bootstrapCommunityRealtime());
   void import("./spiritual-record-store").then((m) => m.backfillSpiritualRecordFromMoments());
   void syncCommunityFeed();
