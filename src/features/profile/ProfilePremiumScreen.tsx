@@ -13,6 +13,7 @@ import { ProfileSimpleHeader } from "./ProfileSimpleHeader";
 import { ProfileMyActivityCard } from "./ProfileMyActivityCard";
 import { ProfileSectionList } from "./ProfileSectionList";
 import { ProfileMembershipEntryCard } from "./ProfileMembershipEntryCard";
+import { ProfileSuggestedFriendsSection } from "./ProfileSuggestedFriendsSection";
 import { AddProfilePersonSheet } from "./AddProfilePersonSheet";
 import { resolveProfileAvatar, useProfileUser } from "./profile-user-store";
 import { isFieldVisibleOnProfile } from "./profile-privacy";
@@ -122,6 +123,10 @@ export function ProfilePremiumScreen() {
 
         {isFieldVisibleOnProfile(profileUser.privacy.spiritualStats) ? (
           <ProfileMyActivityCard summary={activitySummary} />
+        ) : null}
+
+        {communityOn && isFieldVisibleOnProfile(profileUser.privacy.peopleConnect) ? (
+          <ProfileSuggestedFriendsSection />
         ) : null}
 
         <ProfileSectionList title="حياتي الكنسية" items={churchLifeItems} />

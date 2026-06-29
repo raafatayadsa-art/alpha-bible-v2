@@ -1,4 +1,5 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { getCurrentUser } from "@/features/church/current-user";
 import { useChurchDashboard } from "@/features/church/use-church-dashboard";
 import { useProfilePeopleLinks } from "@/features/profile/profile-people-store";
@@ -25,8 +26,9 @@ export function useCommunityPeopleSuggestions(limit = 10): CommunityPersonSugges
   const { data: dashboard } = useChurchDashboard();
   const { connect } = useProfilePeopleLinks();
   const uid = getCurrentUser().id;
+  const [avatarMap, setAvatarMap] = useState<Record<string, string>>({});
 
-  return useMemo(() => {
+  const base = useMemo(() => {
     const byId = new Map<string, CommunityPersonSuggestion>();
 
     for (const c of dashboard?.contacts ?? []) {
@@ -54,4 +56,43 @@ export function useCommunityPeopleSuggestions(limit = 10): CommunityPersonSugges
 
     return [...byId.values()].slice(0, limit);
   }, [connect, dashboard?.contacts, limit, uid]);
+
+  const idsKey = useMemo(() => base.map((p) => p.id).join(","), [base]);
+
+  useEffect(() => {
+    const ids = base.map((p) => p.id).filter((id) => !base.find((p) => p.id === id && p.avatarUrl));
+    const missing = base.filter((p) => !p.avatarUrl).map((p) => p.id);
+    if (!missing.length) {
+      setAvatarMap({});
+      return;
+    }
+
+    let cancelled = false;
+    void supabase
+      .from("user_profiles")
+      .select("user_id, avatar_url")
+      .in("user_id", missing)
+      .then(({ data }) => {
+        if (cancelled) return;
+        const next: Record<string, string> = {};
+        for (const row of data ?? []) {
+          const url = row.avatar_url ? String(row.avatar_url).trim() : "";
+          if (url) next[String(row.user_id)] = url;
+        }
+        setAvatarMap(next);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [idsKey, base]);
+
+  return useMemo(
+    () =>
+      base.map((p) => ({
+        ...p,
+        avatarUrl: p.avatarUrl ?? avatarMap[p.id],
+      })),
+    [avatarMap, base],
+  );
 }

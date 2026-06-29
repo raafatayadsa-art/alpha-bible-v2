@@ -11,8 +11,8 @@ export function ProfileMembershipEntryCard() {
       >
         <ProfileAccentIcon icon={IdCard} accent="#8a6ec1" size="md" />
         <div className="min-w-0 flex-1 text-right">
-          <p className="text-[17px] font-extrabold text-alpha-heading">بطاقة العضوية</p>
-          <p className="mt-0.5 text-[13px] font-medium text-alpha-muted">عرض بطاقة العضوية الكاملة</p>
+          <p className="text-[18px] font-extrabold text-alpha-heading">بطاقة العضوية</p>
+          <p className="mt-0.5 text-[14px] font-medium text-alpha-muted">عرض بطاقة العضوية الكاملة</p>
         </div>
         <ChevronLeft className="h-5 w-5 shrink-0 text-alpha-gold-deep/70" />
       </Link>

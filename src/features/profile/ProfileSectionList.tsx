@@ -26,20 +26,20 @@ export function ProfileSectionList({
 
   return (
     <section className="mb-6">
-      <h2 className="mb-3 px-0.5 text-right text-[18px] font-extrabold text-alpha-heading">{title}</h2>
+      <h2 className="mb-3 px-0.5 text-right text-[19px] font-extrabold text-alpha-heading">{title}</h2>
       <div className="overflow-hidden rounded-[20px] border border-alpha bg-alpha-surface shadow-[var(--alpha-shadow-mini)]">
         {items.map((item, index) => {
           const inner = (
             <>
-              <ProfileAccentIcon icon={item.icon} accent={item.accent} size="sm" />
+              <ProfileAccentIcon icon={item.icon} accent={item.accent} size="md" />
               <div className="min-w-0 flex-1 text-right">
-                <p className="text-[16px] font-extrabold text-alpha-heading">{item.label}</p>
+                <p className="text-[17px] font-extrabold text-alpha-heading">{item.label}</p>
                 {item.subtitle ? (
-                  <p className="mt-0.5 text-[13px] font-medium text-alpha-muted">{item.subtitle}</p>
+                  <p className="mt-0.5 text-[14px] font-medium text-alpha-muted">{item.subtitle}</p>
                 ) : null}
               </div>
               {item.badge ? (
-                <span className="shrink-0 rounded-full bg-alpha-gold-bright/15 px-2.5 py-0.5 text-[12px] font-extrabold text-alpha-gold-deep">
+                <span className="shrink-0 rounded-full bg-alpha-gold-bright/15 px-2.5 py-0.5 text-[13px] font-extrabold text-alpha-gold-deep">
                   {item.badge}
                 </span>
               ) : null}
@@ -48,7 +48,7 @@ export function ProfileSectionList({
           );
 
           const className = cn(
-            "flex w-full items-center gap-3 px-4 py-4 text-right transition active:bg-alpha-base/50",
+            "flex w-full items-center gap-3.5 px-4 py-4 text-right transition active:bg-alpha-base/50",
             index < items.length - 1 && "border-b border-alpha/70",
           );
 

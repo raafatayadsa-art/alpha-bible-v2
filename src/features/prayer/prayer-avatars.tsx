@@ -28,12 +28,13 @@ export function initialsFrom(name: string) {
   return chars.slice(0, 2).join("");
 }
 
-type Size = "xs" | "sm" | "md";
+type Size = "xs" | "sm" | "md" | "lg";
 
 const SIZE_CLASS: Record<Size, string> = {
   xs: "h-5 w-5 text-[8px] border",
   sm: "h-7 w-7 text-[10px] border-2",
   md: "h-9 w-9 text-[11px] border-2",
+  lg: "h-[62px] w-[62px] text-[15px] border-2",
 };
 
 /** Circular user avatar — photo or Alpha-style initials fallback. */

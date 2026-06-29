@@ -99,9 +99,9 @@ export function ProfileSimpleHeader({
         )}
       </div>
 
-      <h1 className="text-[26px] font-extrabold leading-tight text-alpha-heading">{name}</h1>
-      <p className="mt-1 font-mono text-[14px] font-bold tracking-wide text-alpha-muted">{alphaId}</p>
-      <p className="mt-2 text-[16px] font-bold text-alpha-heading-muted">{churchName}</p>
+      <h1 className="text-[28px] font-extrabold leading-tight text-alpha-heading">{name}</h1>
+      <p className="mt-1 font-mono text-[15px] font-bold tracking-wide text-alpha-muted">{alphaId}</p>
+      <p className="mt-2 text-[17px] font-bold text-alpha-heading-muted">{churchName}</p>
 
       <div className="mt-3 flex justify-center">
         <AffiliationBadge status={affiliation} loading={affiliationLoading} />
@@ -109,7 +109,7 @@ export function ProfileSimpleHeader({
 
       <Link
         to="/profile/edit"
-        className="mx-auto mt-5 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full border border-alpha-gold-bright/40 bg-alpha-surface px-8 text-[15px] font-extrabold text-alpha-gold-deep shadow-[var(--alpha-shadow-mini)] active:scale-[0.98]"
+        className="mx-auto mt-5 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full border border-alpha-gold-bright/40 bg-alpha-surface px-8 text-[16px] font-extrabold text-alpha-gold-deep shadow-[var(--alpha-shadow-mini)] active:scale-[0.98]"
       >
         <UserPen className="h-4 w-4" strokeWidth={2.2} />
         تعديل الملف الشخصي
