@@ -1,6 +1,7 @@
 import { BottomDock } from "@/components/bible/BottomDock";
 import { CopticWatermark } from "@/components/coptic";
 import { AlphaHeader, AlphaHeaderShell } from "@/components/navigation/AlphaHeader";
+import { PROFILE_BUILD_STEP } from "../profile-build-step";
 import { ProfileCollection } from "./ProfileCollection";
 import { ProfileFriends } from "./ProfileFriends";
 import { ProfileHeroV3 } from "./ProfileHeroV3";
@@ -12,6 +13,8 @@ import { ProfilePrayerSection } from "./ProfilePrayerSection";
 import { ProfileSection } from "./shared";
 
 export function ProfileV3Screen() {
+  const step = PROFILE_BUILD_STEP;
+
   return (
     <div dir="rtl" className="relative min-h-screen w-full overflow-x-hidden bg-[#f4ead8]">
       <CopticWatermark tone="light" />
@@ -30,36 +33,58 @@ export function ProfileV3Screen() {
       </AlphaHeaderShell>
 
       <div className="relative mx-auto w-full max-w-[var(--alpha-content-max-width)] px-4 pb-36">
+        {/* §1 Hero */}
         <ProfileHeroV3 />
-        <ProfileMembershipCardV3 />
 
-        <ProfileSection title="كنيستي">
-          <ProfileMyChurch />
-        </ProfileSection>
+        {step >= 2 && <ProfileMembershipCardV3 />}
 
-        <ProfileSection title="الأصدقاء">
-          <ProfileFriends />
-        </ProfileSection>
+        {step >= 3 && (
+          <ProfileSection title="كنيستي">
+            <ProfileMyChurch />
+          </ProfileSection>
+        )}
 
-        <ProfileSection title="طلبات الصلاة">
-          <ProfilePrayerSection />
-        </ProfileSection>
+        {step >= 4 && (
+          <ProfileSection title="الأصدقاء">
+            <ProfileFriends />
+          </ProfileSection>
+        )}
 
-        <ProfileSection title="مجموعتي">
-          <ProfileCollection />
-        </ProfileSection>
+        {step >= 5 && (
+          <ProfileSection title="طلبات الصلاة">
+            <ProfilePrayerSection />
+          </ProfileSection>
+        )}
 
-        <ProfileSection title="رحلتي">
-          <ProfileJourney />
-        </ProfileSection>
+        {step >= 6 && (
+          <ProfileSection title="مجموعتي">
+            <ProfileCollection />
+          </ProfileSection>
+        )}
 
-        <ProfileSection title="المزيد">
-          <ProfileMore />
-        </ProfileSection>
+        {step >= 7 && (
+          <ProfileSection title="رحلتي">
+            <ProfileJourney />
+          </ProfileSection>
+        )}
 
-        <p className="mt-8 text-center text-[10px] text-[#9a7e5a]">
-          ⲁⲗⲫⲁ · Alpha Coptic · هويتك الروحية
-        </p>
+        {step >= 8 && (
+          <ProfileSection title="المزيد">
+            <ProfileMore />
+          </ProfileSection>
+        )}
+
+        {step < 8 && (
+          <p className="mt-10 text-center text-[10px] text-[#b8893a]/80 font-semibold">
+            مراجعة القسم {step} من 8
+          </p>
+        )}
+
+        {step >= 8 && (
+          <p className="mt-8 text-center text-[10px] text-[#9a7e5a]">
+            ⲁⲗⲫⲁ · Alpha Coptic · هويتك الروحية
+          </p>
+        )}
       </div>
 
       <BottomDock />
