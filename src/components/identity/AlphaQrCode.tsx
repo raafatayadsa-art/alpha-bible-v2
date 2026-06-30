@@ -1,4 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
+import { toast } from "sonner";
+import { copyTextToClipboard } from "@/lib/copy-to-clipboard";
 
 type AlphaQrCodeProps = {
   value: string;
@@ -8,6 +10,8 @@ type AlphaQrCodeProps = {
   className?: string;
   alt?: string;
   margin?: number;
+  /** When set, tapping the QR copies this ID (not the encoded payload). */
+  copyIdOnTap?: string;
 };
 
 function withHash(color: string): string {
@@ -23,8 +27,10 @@ export function AlphaQrCode({
   className,
   alt = "Alpha QR",
   margin = 2,
+  copyIdOnTap,
 }: AlphaQrCodeProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -50,14 +56,41 @@ export function AlphaQrCode({
     };
   }, [value, size, fgColor, bgColor, margin]);
 
-  return (
+  const handleTap = async (e: MouseEvent) => {
+    if (!copyIdOnTap?.trim()) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const ok = await copyTextToClipboard(copyIdOnTap.trim());
+    if (ok) {
+      setCopied(true);
+      toast.success("تم نسخ رقم العضوية");
+      window.setTimeout(() => setCopied(false), 1400);
+    } else {
+      toast.error("تعذّر النسخ");
+    }
+  };
+
+  const canvas = (
     <canvas
       ref={canvasRef}
       className={className}
       width={size}
       height={size}
-      aria-label={alt}
+      aria-label={copied ? `تم نسخ ${copyIdOnTap}` : alt}
       role="img"
     />
+  );
+
+  if (!copyIdOnTap?.trim()) return canvas;
+
+  return (
+    <button
+      type="button"
+      onClick={(e) => void handleTap(e)}
+      className="touch-manipulation border-0 bg-transparent p-0 active:scale-[0.98]"
+      aria-label={`نسخ ${copyIdOnTap}`}
+    >
+      {canvas}
+    </button>
   );
 }

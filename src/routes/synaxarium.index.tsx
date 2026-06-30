@@ -72,13 +72,18 @@ function SynaxariumStatusPanel({
   );
 }
 
+const SAINTS_PAGE_SIZE = 10;
+
 function SynaxariumHome() {
   const [active, setActive] = useState<SaintCategory>("all");
+  const [visibleCount, setVisibleCount] = useState(SAINTS_PAGE_SIZE);
   const { data: saints = [], isPending, isError } = useQuery(synaxariumSaintsQueryOptions());
   const { data: today } = useQuery(todaySynaxariumSaintQueryOptions());
   const list: Saint[] =
     active === "all" ? saints : saints.filter((s) => saintCategoryId(s) === active);
   const upcoming = today ? list.filter((s) => s.id !== today.id) : list;
+  const visibleSaints = upcoming.slice(0, visibleCount);
+  const hasMoreSaints = visibleCount < upcoming.length;
   const navigate = useNavigate();
   const [searchOpen, setSearchOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -88,6 +93,10 @@ function SynaxariumHome() {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [albumOpen, setAlbumOpen] = useState(false);
   const { data: todayGallery = [] } = useApprovedSaintGallery(today?.id);
+
+  useEffect(() => {
+    setVisibleCount(SAINTS_PAGE_SIZE);
+  }, [active]);
 
   useEffect(() => {
     if (!today) {
@@ -252,7 +261,7 @@ function SynaxariumHome() {
                 : "لا توجد سير ضمن هذا التصنيف بعد."}
             </div>
           ) : null}
-          {upcoming.map((s, idx) => {
+          {visibleSaints.map((s, idx) => {
             const accent = ACCENTS[idx % ACCENTS.length];
             return (
               <Link
@@ -334,6 +343,16 @@ function SynaxariumHome() {
             );
           })}
         </div>
+
+        {hasMoreSaints ? (
+          <button
+            type="button"
+            onClick={() => setVisibleCount((n) => n + SAINTS_PAGE_SIZE)}
+            className="mt-4 w-full rounded-2xl border border-alpha bg-white py-3.5 text-[14px] font-extrabold text-alpha-gold-deep shadow-[var(--alpha-shadow-mini)] active:scale-[0.98]"
+          >
+            تحميل {Math.min(SAINTS_PAGE_SIZE, upcoming.length - visibleCount)} قديسين آخرين
+          </button>
+        ) : null}
 
         <CopticDivider />
 

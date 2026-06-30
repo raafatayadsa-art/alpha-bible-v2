@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import {
-  MapPin, Navigation, Phone, MessageCircle, ShieldCheck, Share2,
+  MapPin, Navigation, ShieldCheck, Share2,
 } from "lucide-react";
 import type { ChurchDirectoryFullDetails } from "../types";
 import { CHURCH_DIR } from "../tokens";
@@ -13,6 +13,7 @@ import {
 } from "@/features/church-page";
 import { ChurchPublicFeedSection } from "@/features/church-mixed-feed";
 import { ChurchDirectoryInfoTabs } from "./ChurchDirectoryInfoTabs";
+import { ChurchDirectoryConnectActions } from "./ChurchDirectoryConnectActions";
 import cardChurch from "@/assets/home/card-church.jpg";
 
 type Props = {
@@ -112,23 +113,14 @@ export function ChurchDirectoryFullDetailView({ church }: Props) {
           className="grid grid-cols-4 gap-1 border-t p-2"
           style={{ borderColor: CHURCH_DIR.border, background: CHURCH_DIR.beige }}
         >
-          {church.phone ? (
-            <a href={`tel:${church.phone}`} className="action-tile">
-              <Phone className="h-4 w-4" />
-              <span>اتصال</span>
-            </a>
-          ) : null}
-          {church.whatsapp ? (
-            <a
-              href={`https://wa.me/${church.whatsapp.replace(/\D/g, "")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="action-tile"
-            >
-              <MessageCircle className="h-4 w-4" />
-              <span>واتساب</span>
-            </a>
-          ) : null}
+          <ChurchDirectoryConnectActions
+            church={{
+              id: church.id,
+              name: church.name,
+              phone: church.phone,
+              whatsapp: church.whatsapp,
+            }}
+          />
           <a href={directionsUrl} target="_blank" rel="noopener noreferrer" className="action-tile">
             <Navigation className="h-4 w-4" />
             <span>الاتجاهات</span>

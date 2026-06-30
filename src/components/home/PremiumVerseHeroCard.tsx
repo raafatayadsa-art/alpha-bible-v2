@@ -260,10 +260,10 @@ export function PremiumVerseHeroCard({
           onToggleSave={onToggleSaved}
         />
 
-        {!isPeek && personalOn && (katameros.data?.copticDate || katameros.data?.gregorianDate) ? (
+        {!isPeek && personalOn && katameros.data?.gregorianDate ? (
           <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-center px-4 pt-3">
             <KatamerosDateStrip
-              copticDate={katameros.data.copticDate}
+              copticDate=""
               gregorianDate={katameros.data.gregorianDate}
               variant="image-hero"
               align="center"
@@ -296,6 +296,7 @@ export function PremiumVerseHeroCard({
             meditations={meditations}
             broadcasts={broadcasts}
             meditated={meditated}
+            meditateActivePulse={meditated}
             onMeditate={onToggleMeditation}
             onBroadcast={() => void onShare()}
           />

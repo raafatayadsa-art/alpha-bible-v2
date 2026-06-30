@@ -13,7 +13,7 @@ function ActiveStatusPill() {
   );
 }
 
-function MembershipQrFrame({ value }: { value: string }) {
+function MembershipQrFrame({ value, alphaId }: { value: string; alphaId: string }) {
   return (
     <div className="flex shrink-0 flex-col items-center">
       <div
@@ -27,6 +27,7 @@ function MembershipQrFrame({ value }: { value: string }) {
         <div className="rounded-[6px] bg-white p-[2px] shadow-[inset_0_1px_2px_rgba(120,80,30,0.06)]">
           <AlphaQrCode
             value={value}
+            copyIdOnTap={alphaId}
             size={96}
             className="block h-[34px] w-[34px] rounded-[4px]"
             fgColor="3a2a18"
@@ -126,7 +127,7 @@ export function MembershipBarcodeCard({
             <ActiveStatusPill />
           </div>
 
-          <MembershipQrFrame value={qrPayload} />
+          <MembershipQrFrame value={qrPayload} alphaId={alphaId} />
         </div>
 
         <div

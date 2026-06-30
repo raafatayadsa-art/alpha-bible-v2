@@ -1,6 +1,6 @@
 import { createPortal } from "react-dom";
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
-import { Bookmark, BookmarkCheck, FilePen, Highlighter, Layers, Sparkles, Users, X } from "lucide-react";
+import { Bookmark, BookmarkCheck, FilePen, Highlighter, Layers, Share2, Sparkles, Users, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { displayName } from "@/lib/bible-books";
 import {
@@ -25,6 +25,7 @@ type Props = {
   highlightColor?: VerseHighlightColor | null;
   onClose: () => void;
   onShareCommunity: () => void;
+  onShareGeneral?: () => void;
   onMeditate: () => void;
   onAddNote: () => void;
   onToggleSave: () => void;
@@ -39,6 +40,7 @@ export function VerseActionSheet({
   highlightColor = null,
   onClose,
   onShareCommunity,
+  onShareGeneral,
   onMeditate,
   onAddNote,
   onToggleSave,
@@ -210,6 +212,18 @@ export function VerseActionSheet({
                     setOpenPanel("none");
                     onToggleSave();
                   }}
+                  onShareCommunity={() => {
+                    setOpenPanel("none");
+                    onShareCommunity();
+                  }}
+                  onShareGeneral={
+                    onShareGeneral
+                      ? () => {
+                          setOpenPanel("none");
+                          onShareGeneral();
+                        }
+                      : undefined
+                  }
                 />
               ) : null}
 
@@ -224,33 +238,34 @@ export function VerseActionSheet({
               </CircleTrigger>
             </div>
 
-            {/* Community share — standalone */}
-            <div className="flex flex-1 flex-col items-center">
-              <button
-                type="button"
-                onClick={onShareCommunity}
-                className={cn(
-                  "flex w-full max-w-[118px] flex-col items-center gap-2 rounded-[20px] border px-2 py-3 backdrop-blur-xl transition active:scale-[0.97]",
-                  spiritualMode
-                    ? "border-[#7af0b8]/28 bg-gradient-to-b from-[#1f8a5a]/18 to-[#1f8a5a]/08 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_8px_24px_-12px_rgba(31,138,90,0.45)]"
-                    : "border-[#1f8a5a]/30 bg-gradient-to-b from-white/78 to-[#e8f8ef]/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.92),0_8px_22px_-12px_rgba(31,138,90,0.35)]",
-                )}
-              >
-                <span
+            {onShareGeneral ? (
+              <div className="flex flex-1 flex-col items-center">
+                <button
+                  type="button"
+                  onClick={onShareGeneral}
                   className={cn(
-                    "grid h-11 w-11 place-items-center rounded-full border backdrop-blur-md",
+                    "flex w-full max-w-[118px] flex-col items-center gap-2 rounded-[20px] border px-2 py-3 backdrop-blur-xl transition active:scale-[0.97]",
                     spiritualMode
-                      ? "border-[#7af0b8]/30 bg-gradient-to-br from-[#7af0b8]/20 to-[#1f8a5a]/15 text-[#8ef0b8]"
-                      : "border-[#1f8a5a]/28 bg-gradient-to-br from-[#bbf7d0]/85 to-[#1f8a5a]/18 text-[#1f8a5a]",
+                      ? "border-[#f0d78c]/28 bg-gradient-to-b from-[#f0d78c]/12 to-[#f0d78c]/06 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_8px_24px_-12px_rgba(240,215,140,0.35)]"
+                      : "border-[#c79356]/30 bg-gradient-to-b from-white/78 to-[#f0d78c]/22 shadow-[inset_0_1px_0_rgba(255,255,255,0.92),0_8px_22px_-12px_rgba(184,137,58,0.28)]",
                   )}
                 >
-                  <Users className="h-5 w-5" strokeWidth={2.1} />
-                </span>
-                <span className={cn("text-[9px] font-extrabold leading-tight", spiritualMode ? "text-[#8ef0b8]" : "text-[#1f6a48]")}>
-                  مجتمعي
-                </span>
-              </button>
-            </div>
+                  <span
+                    className={cn(
+                      "grid h-11 w-11 place-items-center rounded-full border backdrop-blur-md",
+                      spiritualMode
+                        ? "border-[#f0d78c]/30 bg-gradient-to-br from-[#f0d78c]/20 to-[#c79356]/12 text-[#f0d78c]"
+                        : "border-[#c79356]/28 bg-gradient-to-br from-[#f0d78c]/75 to-[#c79356]/18 text-[#7a5a18]",
+                    )}
+                  >
+                    <Share2 className="h-5 w-5" strokeWidth={2.1} />
+                  </span>
+                  <span className={cn("text-[9px] font-extrabold leading-tight", spiritualMode ? "text-[#f0d78c]" : "text-[#7a5a18]")}>
+                    مشاركة
+                  </span>
+                </button>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
@@ -377,8 +392,8 @@ function ColorPopover({
   onPick: (color: VerseHighlightColor | null) => void;
 }) {
   return (
-    <PopoverShell spiritualMode={spiritualMode} className="max-w-[calc(100vw-2rem)]">
-      <div className="flex max-w-[240px] items-center gap-2.5 overflow-x-auto px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <PopoverShell spiritualMode={spiritualMode} className="left-0 right-auto max-w-[calc(100vw-2rem)] translate-x-0">
+      <div className="grid grid-cols-5 gap-2 px-0.5">
         {VERSE_HIGHLIGHT_COLORS.map((c) => {
           const selected = highlightColor === c.id;
           return (
@@ -416,12 +431,16 @@ function ToolsPopover({
   onMeditate,
   onAddNote,
   onToggleSave,
+  onShareCommunity,
+  onShareGeneral,
 }: {
   spiritualMode: boolean;
   saved: boolean;
   onMeditate: () => void;
   onAddNote: () => void;
   onToggleSave: () => void;
+  onShareCommunity: () => void;
+  onShareGeneral?: () => void;
 }) {
   const items: {
     id: string;
@@ -431,6 +450,26 @@ function ToolsPopover({
     shell: string;
     onClick: () => void;
   }[] = [
+    {
+      id: "community",
+      label: "مجتمعي",
+      Icon: Users,
+      tone: spiritualMode ? "text-[#8ef0b8]" : "text-[#1f6a48]",
+      shell: spiritualMode ? "border-[#7af0b8]/25 bg-[#1f8a5a]/10" : "border-[#1f8a5a]/25 bg-[#1f8a5a]/08",
+      onClick: onShareCommunity,
+    },
+    ...(onShareGeneral
+      ? [
+          {
+            id: "share",
+            label: "مشاركة",
+            Icon: Share2,
+            tone: spiritualMode ? "text-[#f0d78c]" : "text-[#7a5a18]",
+            shell: spiritualMode ? "border-[#f0d78c]/25 bg-[#f0d78c]/10" : "border-[#c79356]/28 bg-[#f0d78c]/12",
+            onClick: onShareGeneral,
+          },
+        ]
+      : []),
     {
       id: "meditate",
       label: "تأمل",

@@ -3,6 +3,7 @@ export {
   searchChurchDirectoryPage,
   fetchChurchDirectoryFacets,
   fetchChurchDirectoryFullDetails,
+  fetchChurchDirectoryAll,
   pushRecentChurchId,
 } from "./api";
 export {

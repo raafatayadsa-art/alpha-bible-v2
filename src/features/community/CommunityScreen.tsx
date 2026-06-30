@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { BookOpen, RefreshCw, Sparkles } from "lucide-react";
+import { toast } from "sonner";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { CopticWatermark } from "@/components/coptic";
 import { useChurchPosts } from "@/features/church/use-church-posts";
@@ -26,9 +27,12 @@ import { CommunityHomeHeader } from "./CommunityHomeHeader";
 import { CommunityPendingRequests } from "./CommunityPendingRequests";
 import { CommunityPeopleSuggestions } from "./CommunityPeopleSuggestions";
 import { CommunityPrayerPreview } from "./CommunityPrayerPreview";
-import { useCommunityFriends } from "./community-friends-store";
+import { removeCommunityContactRemote } from "./community-friends-api";
+import { removeCommunityFriend, useCommunityFriends } from "./community-friends-store";
 import { syncCommunityFeed, useCommunityFriendFeed, bootstrapCommunityFeed } from "./community-store";
 import { useCommunityPeopleSuggestions } from "./use-community-people-suggestions";
+import { useDismissedFriendSuggestions } from "./use-dismissed-friend-suggestions";
+import { sendFriendRequestFromUserId } from "./community-friends-api";
 import { usePullToRefresh } from "./use-pull-to-refresh";
 
 export function CommunityScreen() {
@@ -45,15 +49,19 @@ export function CommunityScreen() {
   );
   const feedItems = useMemo(() => buildCommunityFeedItems(feedMoments), [feedMoments]);
   const people = useCommunityPeopleSuggestions(12);
+  const { dismiss, isDismissed } = useDismissedFriendSuggestions();
   const peopleFiltered = useMemo(() => {
     const friendNames = new Set(friends.map((f) => f.name.trim()));
     const friendIds = new Set(friends.map((f) => f.linkedUserId).filter(Boolean));
-    return people.filter((p) => !friendNames.has(p.name.trim()) && !friendIds.has(p.id));
-  }, [friends, people]);
+    return people.filter(
+      (p) => !friendNames.has(p.name.trim()) && !friendIds.has(p.id) && !isDismissed(p.id),
+    );
+  }, [friends, people, isDismissed]);
   const { church } = useMemberChurch();
   const { posts } = useChurchPosts(church?.id ?? "");
 
   const [refreshing, setRefreshing] = useState(false);
+  const [busyId, setBusyId] = useState<string | null>(null);
   const [addFriendOpen, setAddFriendOpen] = useState(false);
   const [memberPreview, setMemberPreview] = useState<CommunityMemberPreview | null>(null);
   const [memberOpen, setMemberOpen] = useState(false);
@@ -62,6 +70,47 @@ export function CommunityScreen() {
     setMemberPreview(member);
     setMemberOpen(true);
   }, []);
+
+  const sendPersonRequest = useCallback(
+    async (userId: string, name: string) => {
+      setBusyId(userId);
+      try {
+        const outcome = await sendFriendRequestFromUserId(userId, "طلب صداقة من مجتمعي");
+        if (outcome === "sent") {
+          toast.success(`تم إرسال طلب إلى ${name}`);
+          refreshFriends();
+          return;
+        }
+        if (outcome === "invalid") {
+          toast.error("معرّف العضو غير صالح");
+          return;
+        }
+        toast.error("تعذّر إرسال الطلب");
+      } finally {
+        setBusyId(null);
+      }
+    },
+    [refreshFriends],
+  );
+
+  const removeFriend = useCallback(
+    (friend: { id: string; linkedUserId?: string; name: string }) => {
+      void (async () => {
+        if (friend.linkedUserId) {
+          const ok = await removeCommunityContactRemote(friend.linkedUserId);
+          if (!ok) {
+            toast.error("تعذّرت إزالة الصديق");
+            return;
+          }
+        } else {
+          removeCommunityFriend(friend.id);
+        }
+        refreshFriends();
+        toast.success(`تمت إزالة ${friend.name.split(" ")[0]} من القائمة`);
+      })();
+    },
+    [refreshFriends],
+  );
 
   const refreshFeed = useCallback(async () => {
     setRefreshing(true);
@@ -115,6 +164,10 @@ export function CommunityScreen() {
           people={peopleFiltered}
           onAddPress={() => setAddFriendOpen(true)}
           onMemberPress={openMember}
+          onPersonAdd={(id, name) => void sendPersonRequest(id, name)}
+          onPersonDismiss={dismiss}
+          onFriendRemove={removeFriend}
+          busyId={busyId}
         />
 
         <CommunityHubLinks />

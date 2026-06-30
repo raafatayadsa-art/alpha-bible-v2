@@ -1190,7 +1190,7 @@ function ChurchEmptyState() {
           اختيار كنيسة والانضمام
         </Link>
         <Link
-          to="/profile/church"
+          to="/profile/church/setup"
           className="inline-flex h-12 w-full items-center justify-center rounded-2xl border border-alpha bg-white/75 px-6 text-[14px] font-extrabold text-alpha-heading shadow-[0_8px_18px_-14px_rgba(120,80,30,0.35)] active:scale-[0.98] transition-transform"
         >
           طلب تأسيس كنيسة

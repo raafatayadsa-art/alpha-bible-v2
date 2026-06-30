@@ -11,10 +11,12 @@ import {
   EMPTY_DIRECTORY_FILTERS,
   useChurchDirectoryFacets,
   useChurchDirectorySearch,
+  useCitiesForGovernorate,
   useUserGeoLocation,
 } from "./useChurchDirectorySearch";
 import { mapPinToDirectoryRow, useChurchDirectoryMapPins } from "./useChurchDirectoryMapPins";
 import { ChurchDirectoryMapLegend } from "./components/ChurchDirectoryMapLegend";
+import { filterChurchDirectoryByFilters } from "./directory-search";
 import type { ChurchDirectoryFilterState, ChurchDirectoryMapPin, ChurchDirectoryRow, DirectoryViewMode } from "./types";
 import { CHURCH_DIR } from "./tokens";
 
@@ -34,6 +36,7 @@ export function ChurchDirectoryScreen() {
 
   const { coords, denied, refresh: refreshLocation } = useUserGeoLocation();
   const { data: facets } = useChurchDirectoryFacets();
+  const { data: scopedCities = [] } = useCitiesForGovernorate(filters.governorate);
 
   useEffect(() => {
     const t = window.setTimeout(() => {
@@ -92,7 +95,22 @@ export function ChurchDirectoryScreen() {
   }, []);
 
   const governorateOptions = facets?.governorates ?? [];
-  const cityOptions = facets?.cities ?? [];
+  const cityOptions = filters.governorate.trim() ? scopedCities : (facets?.cities ?? []);
+
+  const displayRows = rows;
+
+  const filteredMapPins = useMemo(() => {
+    return mapPins.filter((pin) => {
+      const row = mapPinToDirectoryRow(pin);
+      return filterChurchDirectoryByFilters([row], {
+        query: filters.query,
+        governorate: filters.governorate,
+        city: filters.city,
+        patronSaint: filters.patronSaint,
+        verifiedOnly: filters.verifiedOnly,
+      }).length > 0;
+    });
+  }, [mapPins, filters]);
 
   return (
     <div dir="rtl" className="relative h-[100dvh] overflow-hidden" style={{ background: CHURCH_DIR.beigeDeep }}>
@@ -102,7 +120,7 @@ export function ChurchDirectoryScreen() {
           <ChurchDirectoryMapGate
             key={mapTheme}
             className="h-full w-full"
-            churches={mapPins}
+            churches={filteredMapPins}
             selectedId={selected?.id ?? null}
             userLat={userLat}
             userLng={userLng}
@@ -122,9 +140,9 @@ export function ChurchDirectoryScreen() {
         style={{ background: CHURCH_DIR.beigeDeep }}
       >
         <ChurchDirectoryListView
-          rows={rows}
+          rows={displayRows}
           selectedId={selected?.id ?? null}
-          totalCount={totalCount}
+          totalCount={draftQuery.trim() ? displayRows.length : totalCount}
           loading={isLoading}
           hasMore={Boolean(hasNextPage)}
           loadingMore={isFetchingNextPage}
@@ -176,9 +194,7 @@ export function ChurchDirectoryScreen() {
         </div>
 
         <div
-          className={`pointer-events-auto overflow-hidden transition-all duration-300 ease-in-out ${
-            viewMode === "list" ? "max-h-[200px] opacity-100" : "max-h-0 opacity-0"
-          }`}
+          className="pointer-events-auto overflow-hidden transition-all duration-300 ease-in-out max-h-[200px] opacity-100"
         >
           <div
             className="rounded-[22px] border backdrop-blur-2xl px-3 py-2.5"
@@ -262,7 +278,7 @@ export function ChurchDirectoryScreen() {
       )}
 
       {viewMode === "map" && !mapFailed ? (
-        <ChurchDirectoryMapLegend pinCount={mapPins.length} />
+        <ChurchDirectoryMapLegend pinCount={filteredMapPins.length} />
       ) : null}
 
       {/* Floating card on map */}
@@ -287,7 +303,7 @@ export function ChurchDirectoryScreen() {
         </div>
         <p className="mt-1.5 text-center text-[10px] font-bold" style={{ color: CHURCH_DIR.sub }}>
           {viewMode === "map"
-            ? `${mapPins.length.toLocaleString("ar-EG")} كنيسة موثّقة على الخريطة · Alpha Control`
+            ? `${filteredMapPins.length.toLocaleString("ar-EG")} كنيسة على الخريطة · Alpha Control`
             : `${totalCount.toLocaleString("ar-EG")} كنيسة · ${rows.length.toLocaleString("ar-EG")} محمّلة`}
         </p>
       </div>

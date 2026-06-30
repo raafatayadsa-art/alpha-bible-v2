@@ -28,7 +28,7 @@ export function parseLocationDisplay(label: string): { city: string; governorate
 export function hasChurchLocation(
   form: Pick<ChurchSetupFormData, "latitude" | "longitude">,
 ): boolean {
-  return typeof form.latitude === "number" && typeof form.longitude === "number";
+  return Number.isFinite(form.latitude) && Number.isFinite(form.longitude);
 }
 
 export function formatCoord(value: number): string {

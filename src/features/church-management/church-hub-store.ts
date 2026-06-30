@@ -92,16 +92,18 @@ export function useChurchHub() {
   }, []);
 
   const submitSetupRequest = useCallback(
-    async (formData: ChurchSetupFormData): Promise<boolean> => {
+    async (
+      formData: ChurchSetupFormData,
+    ): Promise<{ ok: true; churchCreated: boolean } | { ok: false; message: string }> => {
       setSubmitting(true);
       try {
         const result = await insertChurchSetupRequest(formData);
-        if (!result) return false;
+        if (!result.ok) return { ok: false, message: result.message };
 
-        const request = buildLocalRequest(formData, result);
+        const request = buildLocalRequest(formData, result.data);
         persist({ status: "pending", request });
         writeSetupDraft(formData);
-        return true;
+        return { ok: true, churchCreated: false };
       } finally {
         setSubmitting(false);
       }
@@ -110,7 +112,9 @@ export function useChurchHub() {
   );
 
   const resubmitRequest = useCallback(
-    async (formData: ChurchSetupFormData): Promise<boolean> => {
+    async (
+      formData: ChurchSetupFormData,
+    ): Promise<{ ok: true; churchCreated: boolean } | { ok: false; message: string }> => {
       setSubmitting(true);
       try {
         const existing = read();
@@ -126,12 +130,24 @@ export function useChurchHub() {
           result = await insertChurchSetupRequest(formData);
         }
 
-        if (!result) return false;
+        if (!result.ok) return { ok: false, message: result.message };
 
-        const request = buildLocalRequest(formData, result, existing.request);
-        persist({ status: "pending", request });
+        const request = buildLocalRequest(formData, result.data, existing.request);
+        const churchCreated = result.data.churchCreated === true;
+        persist({
+          status: churchCreated ? "approved" : "pending",
+          request,
+          church: churchCreated
+            ? {
+                name: formData.churchName.trim(),
+                diocese: formData.diocese.trim(),
+                membersCount: 1,
+                servantsCount: formData.servants.filter((s) => s.name.trim()).length,
+              }
+            : undefined,
+        });
         writeSetupDraft(formData);
-        return true;
+        return { ok: true, churchCreated: false };
       } finally {
         setSubmitting(false);
       }

@@ -1,6 +1,6 @@
 import { type ReactNode, useEffect, useRef } from "react";
 import { Church } from "lucide-react";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { CopticCross } from "@/components/coptic";
 import { canManageChurchPosts, useAlphaAuth } from "@/features/auth";
 import { useChurchHubDashboardAccess, useChurchProfile } from "@/features/church/use-church-dashboard";
@@ -44,19 +44,18 @@ function HubButton({
   variant = "primary",
 }: {
   children: ReactNode;
-  to: string;
+  to: "/profile/church/setup" | "/church" | "/church/directory";
   variant?: "primary" | "secondary";
 }) {
-  const navigate = useNavigate();
   const cls =
     variant === "primary"
       ? setupGreenButton
       : "flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-[#efe2c4] bg-white/75 backdrop-blur-sm text-[14px] font-extrabold text-[#3a2a18] shadow-[0_8px_18px_-14px_rgba(120,80,30,0.35)] active:scale-[0.98] transition-transform";
 
   return (
-    <button type="button" className={cls} onClick={() => navigate({ to: to as "/" })}>
+    <Link to={to} className={cls}>
       {children}
-    </button>
+    </Link>
   );
 }
 
@@ -91,7 +90,7 @@ function StateOpeningChurch() {
   );
 }
 
-function StateEmpty({ canManage }: { canManage: boolean }) {
+function StateEmpty() {
   return (
     <HubCard accent="#c98a3c" className="animate-in fade-in duration-300">
       <div className="text-center">
@@ -100,7 +99,7 @@ function StateEmpty({ canManage }: { canManage: boolean }) {
           لا توجد كنيسة مرتبطة بحسابك
         </h2>
         <p className="mt-2 text-[13px] leading-relaxed text-[#6a543a]">
-          يمكنك اختيار كنيسة من الدليل أو إرسال طلب انضمام. {canManage ? "وبصفتك خادماً أو كاهناً يمكنك أيضاً طلب تأسيس كنيسة." : ""}
+          يمكنك اختيار كنيسة من الدليل أو إرسال طلب انضمام، أو تقديم طلب تأسيس كنيسة جديدة.
         </p>
       </div>
       <div className="mt-5 space-y-2.5">
@@ -108,11 +107,9 @@ function StateEmpty({ canManage }: { canManage: boolean }) {
         <HubButton to="/church/directory" variant="secondary">
           طلب الانضمام لكنيسة
         </HubButton>
-        {canManage ? (
-          <HubButton to="/profile/church/setup" variant="secondary">
-            طلب تأسيس كنيسة
-          </HubButton>
-        ) : null}
+        <HubButton to="/profile/church/setup" variant="secondary">
+          طلب تأسيس كنيسة
+        </HubButton>
       </div>
     </HubCard>
   );
@@ -251,5 +248,5 @@ export function ChurchManagementHub() {
     return <StateNeedsInfo adminNotes={profile.adminNotes} />;
   }
 
-  return <StateEmpty canManage={canManage} />;
+  return <StateEmpty />;
 }

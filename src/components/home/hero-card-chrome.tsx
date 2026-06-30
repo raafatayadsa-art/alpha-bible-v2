@@ -501,7 +501,11 @@ export function HeroSpiritLedgerCell({
                     : surface === "publisher"
                       ? PUBLISHER_LEDGER_CELL_IDLE
                       : "linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.12) 100%)",
-            boxShadow: active ? `0 0 16px ${accent}38` : "none",
+            boxShadow: active
+              ? isMeditate
+                ? `0 0 22px ${accent}55, 0 0 8px rgba(240,215,140,0.45), inset 0 0 12px ${accent}22`
+                : `0 0 16px ${accent}38`
+              : "none",
           }}
         >
           {isMeditate && pulseTick > 0 ? (

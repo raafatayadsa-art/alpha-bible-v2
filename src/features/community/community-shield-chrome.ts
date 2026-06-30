@@ -8,5 +8,8 @@ export const COMMUNITY_SHIELD_INNER =
 export const COMMUNITY_SHIELD_ROW =
   "rounded-xl border border-white/40 bg-white/65 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]";
 
+/** Standard full-height shield / member preview sheet. */
+export const COMMUNITY_SHIELD_SHEET_MAX_HEIGHT = "min(72dvh,520px)";
+
 export const COMMUNITY_SHIELD_TEXT = "#1F2937";
 export const COMMUNITY_SHIELD_MUTED = "#6B7280";

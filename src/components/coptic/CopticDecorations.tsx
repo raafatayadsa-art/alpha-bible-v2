@@ -51,6 +51,48 @@ export function CopticCross({
 }
 
 /* ------------------------------------------------------------
+   CopticCrownCross — ornate flared-arm cross for profile crown
+   ------------------------------------------------------------ */
+export function CopticCrownCross({
+  className = "",
+  size = 28,
+}: {
+  className?: string;
+  size?: number;
+}) {
+  return (
+    <svg
+      viewBox="0 0 32 32"
+      width={size}
+      height={size}
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.35}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <line x1="16" y1="3" x2="16" y2="29" />
+      <line x1="3" y1="16" x2="29" y2="16" />
+      <line x1="12" y1="3" x2="20" y2="3" />
+      <line x1="12" y1="29" x2="20" y2="29" />
+      <line x1="3" y1="12" x2="3" y2="20" />
+      <line x1="29" y1="12" x2="29" y2="20" />
+      <line x1="11.5" y1="6.5" x2="20.5" y2="6.5" />
+      <line x1="11.5" y1="25.5" x2="20.5" y2="25.5" />
+      <line x1="6.5" y1="11.5" x2="6.5" y2="20.5" />
+      <line x1="25.5" y1="11.5" x2="25.5" y2="20.5" />
+      <circle cx="16" cy="16" r="2.6" fill="currentColor" stroke="none" />
+      <circle cx="16" cy="3" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="16" cy="29" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="3" cy="16" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="29" cy="16" r="1.1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+/* ------------------------------------------------------------
    CopticMiniCross — small flared-arm Coptic cross for dividers
    ------------------------------------------------------------ */
 export function CopticMiniCross({

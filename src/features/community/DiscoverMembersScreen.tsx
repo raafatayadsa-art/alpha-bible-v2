@@ -9,6 +9,7 @@ import { DiscoverNewMembersCarousel } from "./DiscoverNewMembersCarousel";
 import { CommunityMemberQuickSheet } from "./CommunityMemberQuickSheet";
 import { resolveCommunityMemberPreview, type CommunityMemberPreview } from "./community-user-trust";
 import { useDiscoverMembers } from "./useDiscoverMembers";
+import { useDismissedFriendSuggestions } from "./use-dismissed-friend-suggestions";
 import type { DiscoverMember } from "./discover-members-api";
 import { cn } from "@/lib/utils";
 
@@ -30,6 +31,7 @@ export function DiscoverMembersScreen() {
   const [preview, setPreview] = useState<CommunityMemberPreview | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const { dismiss } = useDismissedFriendSuggestions();
 
   const openMember = (member: DiscoverMember) => {
     setPreview(toPreview(member));
@@ -111,6 +113,7 @@ export function DiscoverMembersScreen() {
                 members={newMembersCarousel}
                 onOpen={openMember}
                 onAdd={(member) => void onAdd(member)}
+                onDismiss={(member) => dismiss(member.userId)}
                 busyId={busyId}
               />
             ) : null}

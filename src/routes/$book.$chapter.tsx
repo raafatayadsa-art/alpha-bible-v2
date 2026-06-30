@@ -6,8 +6,6 @@ import {
   ChevronLeft,
   Headphones,
   History,
-  Share2,
-  Users,
 } from "lucide-react";
 import { shareSpiritualMomentToCommunity } from "@/features/community";
 import { CopticWatermark } from "@/components/coptic";
@@ -29,6 +27,7 @@ import {
   DictionaryLookupSheet,
   DictionaryResultsSheet,
   ReaderArticleProgress,
+  BibleReaderBackground,
   type MeaningSheetData,
   VerseActionSheet,
   type VerseActionTarget,
@@ -37,6 +36,7 @@ import { chapterKey, updateSession, useSavedChapters, useSavedVerses, useTypogra
 import { stashJournalVersePrefill } from "@/lib/bible-journal-prefill";
 import { VERSE_PULSE_DURATION_MS } from "@/lib/chapter-verse-highlight";
 import { articleScrollProgress, bindScroll, resolveScrollRoot, scrollMetrics, scrollToBottom, scrollToTop, scrollToY } from "@/lib/chapter-scroll";
+import { useReadingChromeVisibility } from "@/components/controls/useReadingChromeVisibility";
 import { cn } from "@/lib/utils";
 import { openAlphaShareSheet } from "@/lib/alpha-share-sheet";
 import cardBibleShare from "@/assets/home/card-bible.jpg";
@@ -529,24 +529,6 @@ function ScriptureReader() {
     });
   }, [bookName, book, ch, spiritualMode]);
 
-  const handleShareChapterToCommunity = useCallback(() => {
-    const ref = chapterWithNumber(book, ch);
-    const sample = verses.data?.[0];
-    const sampleText =
-      (sample as { verse_text?: string } | undefined)?.verse_text?.trim() ||
-      `${ref} — الكتاب المقدس`;
-    shareSpiritualMomentToCommunity({
-      kind: "reading",
-      reading: {
-        reference: ref,
-        text: sampleText,
-        bookRoute: book,
-        chapter: ch,
-        verse: (sample as { verse_number?: number } | undefined)?.verse_number ?? 1,
-      },
-    });
-  }, [book, ch, verses.data]);
-
   const handleToggleChapterSave = useCallback(() => {
     const added = toggleChapter({ book, bookName, chapter: ch });
     setToast(added ? "تم حفظ الإصحاح" : "تمت إزالة الحفظ");
@@ -947,43 +929,7 @@ function ScriptureReader() {
 
   const totalVerses = verses.data?.length ?? 0;
 
-  // Synchronized chrome (scroll rail + auto-scroll pill + bottom dock)
-  const [chromeVisible, setChromeVisible] = useState(true);
-  const chromeTimer = useRef<number | null>(null);
-  useEffect(() => {
-    const show = () => {
-      setChromeVisible(true);
-      if (chromeTimer.current) window.clearTimeout(chromeTimer.current);
-      chromeTimer.current = window.setTimeout(() => setChromeVisible(false), 5000);
-    };
-    show();
-    window.addEventListener("pointerdown", show, { passive: true });
-    window.addEventListener("touchstart", show, { passive: true });
-    window.addEventListener("keydown", show);
-    window.addEventListener("wheel", show, { passive: true });
-    return () => {
-      window.removeEventListener("pointerdown", show);
-      window.removeEventListener("touchstart", show);
-      window.removeEventListener("keydown", show);
-      window.removeEventListener("wheel", show);
-      if (chromeTimer.current) window.clearTimeout(chromeTimer.current);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!scrollRoot) return;
-    const show = () => {
-      setChromeVisible(true);
-      if (chromeTimer.current) window.clearTimeout(chromeTimer.current);
-      chromeTimer.current = window.setTimeout(() => setChromeVisible(false), 5000);
-    };
-    const unbind = bindScroll(scrollRoot, show);
-    return () => {
-      unbind();
-      if (chromeTimer.current) window.clearTimeout(chromeTimer.current);
-    };
-  }, [scrollRoot]);
-  const chromeHidden = !chromeVisible;
+  const { chromeHidden } = useReadingChromeVisibility(scrollRoot);
 
   useEffect(() => {
     const root = resolveScrollRoot(mainRef.current);
@@ -1022,6 +968,7 @@ function ScriptureReader() {
       )}
 
       <CopticWatermark tone={spiritualMode ? "dark" : "light"} />
+      {!spiritualMode ? <BibleReaderBackground /> : null}
 
       <div
         ref={contentColumnRef}
@@ -1041,19 +988,11 @@ function ScriptureReader() {
             <div className="alpha-toolbar-row__leading">
               <button
                 type="button"
-                aria-label="مشاركة مع المجتمع الكنسي"
-                onClick={handleShareChapterToCommunity}
+                aria-label="سجل التاريخ"
+                onClick={() => void navigate({ to: "/bible/history" })}
                 className={chapterHeaderBtnClass(spiritualMode)}
               >
-                <Users className="h-5 w-5" strokeWidth={2} />
-              </button>
-              <button
-                type="button"
-                aria-label="مشاركة"
-                onClick={() => void handleShareChapter()}
-                className={chapterHeaderBtnClass(spiritualMode)}
-              >
-                <Share2 className="h-5 w-5" strokeWidth={2} />
+                <History className="h-5 w-5" strokeWidth={2} />
               </button>
               <button
                 type="button"
@@ -1106,14 +1045,6 @@ function ScriptureReader() {
             <div className="alpha-toolbar-row__trailing">
               <button
                 type="button"
-                aria-label="سجل التاريخ"
-                onClick={() => void navigate({ to: "/bible/history" })}
-                className={chapterHeaderBtnClass(spiritualMode)}
-              >
-                <History className="h-5 w-5" strokeWidth={2} />
-              </button>
-              <button
-                type="button"
                 aria-label="استماع"
                 onClick={handleListen}
                 className={chapterHeaderBtnClass(spiritualMode)}
@@ -1135,6 +1066,7 @@ function ScriptureReader() {
             spiritualMode={spiritualMode}
             scrollRoot={scrollRoot}
             articleRef={articleRef}
+            resetKey={`${book}-${chapter}`}
             positionLabel={`الآية ${Math.min(Math.max(1, readingVerse), totalVerses)} من ${totalVerses}`}
             enabled={totalVerses > 0}
           />
@@ -1242,6 +1174,7 @@ function ScriptureReader() {
         contentRef={contentColumnRef}
         articleRef={articleRef}
         spiritualMode={spiritualMode}
+        hidden={chromeHidden}
       />
 
       {/* Persistent global navigation */}
@@ -1254,6 +1187,7 @@ function ScriptureReader() {
         highlightColor={verseActionSheet ? getVerseHighlight(verseActionSheet.verseId) : null}
         onClose={closeVerseActionSheet}
         onShareCommunity={handleVerseShareCommunity}
+        onShareGeneral={() => void handleShareChapter()}
         onMeditate={handleVerseMeditate}
         onAddNote={handleVerseNote}
         onToggleSave={handleVerseToggleSave}

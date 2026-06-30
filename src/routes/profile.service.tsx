@@ -15,8 +15,6 @@ import {
 } from "lucide-react";
 import { ProfileSubShell } from "@/components/profile/Shell";
 import { CopticCross, CopticSeparator } from "@/components/coptic";
-import { AlphaOfficialLogo } from "@/components/brand";
-
 /* ---------- Types ---------- */
 type UserRole = "member" | "servant" | "leader" | "priest";
 
@@ -165,7 +163,7 @@ function ServiceCard({ service, role }: { service: Service; role: UserRole }) {
             "0 0 22px rgba(231,201,122,0.7), inset 0 1px 0 rgba(255,255,255,0.85), 0 10px 22px -10px rgba(201,138,60,0.55)",
         }}
       >
-        <AlphaOfficialLogo size="sm" className="scale-[0.85]" />
+        <CopticCross className="text-[#b8893a]" size={22} />
       </div>
 
       {/* Header: name + role badge */}

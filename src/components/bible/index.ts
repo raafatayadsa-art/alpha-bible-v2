@@ -1,3 +1,4 @@
+export * from "./BibleReaderBackground";
 export * from "./primitives";
 export * from "./TestamentCard";
 export * from "./QuickAccessCard";

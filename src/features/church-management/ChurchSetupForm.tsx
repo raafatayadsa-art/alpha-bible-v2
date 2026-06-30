@@ -244,7 +244,13 @@ function DevSetupResetButton({ onReset }: { onReset: () => void }) {
   );
 }
 
-function SetupSuccess({ onDevReset }: { onDevReset: () => void }) {
+function SetupSuccess({
+  onDevReset,
+  churchCreated,
+}: {
+  onDevReset: () => void;
+  churchCreated: boolean;
+}) {
   return (
     <div
       className={cn(setupSectionCard, "p-6 text-center animate-in fade-in zoom-in-95 duration-400")}
@@ -255,10 +261,17 @@ function SetupSuccess({ onDevReset }: { onDevReset: () => void }) {
       </div>
       <CopticCross className="mx-auto mt-4 text-[#b8893a]" size={18} />
       <h2 className="mt-3 font-arabic-serif text-[18px] font-bold text-[#3a2a18]">
-        تم إرسال طلب تأسيس الكنيسة للمراجعة
+        {churchCreated
+          ? "تم إنشاء الكنيسة بنجاح"
+          : "تم إرسال طلب تأسيس الكنيسة للمراجعة"}
       </h2>
-      <Link to="/profile/church" className={cn(setupGreenButton, "mt-6")}>
-        العودة إلى إدارة الكنيسة
+      <p className="mt-2 text-[12.5px] leading-relaxed text-[#5a4a38]">
+        {churchCreated
+          ? "يمكنك الآن فتح لوحة الكنيسة وإدارة المحتوى."
+          : "سنراجع الطلب ونبلغك عند الاعتماد."}
+      </p>
+      <Link to={churchCreated ? "/church" : "/profile/church"} className={cn(setupGreenButton, "mt-6")}>
+        {churchCreated ? "فتح لوحة الكنيسة" : "العودة إلى إدارة الكنيسة"}
       </Link>
       <DevSetupResetButton onReset={onDevReset} />
       <AlphaBrandFooter className="mt-8" />
@@ -313,6 +326,7 @@ export function ChurchSetupForm() {
   const isViewOnly = state.status === "pending";
 
   const [submitted, setSubmitted] = useState(false);
+  const [churchCreated, setChurchCreated] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [step, setStep] = useState(0);
   const [slideDir, setSlideDir] = useState<"forward" | "backward">("forward");
@@ -341,9 +355,22 @@ export function ChurchSetupForm() {
       longitude: number;
       locationLabel: string;
       mapLocation: string;
+      churchName?: string;
+      city?: string;
+      governorate?: string;
     }) => {
+      const { city: parsedCity, governorate: parsedGov } = parseLocationDisplay(value.locationLabel);
       setForm((prev) => {
-        const next = { ...prev, ...value };
+        const next = {
+          ...prev,
+          latitude: value.latitude,
+          longitude: value.longitude,
+          locationLabel: value.locationLabel,
+          mapLocation: value.mapLocation,
+          churchName: value.churchName?.trim() || prev.churchName,
+          city: value.city?.trim() || parsedCity || prev.city,
+          governorate: value.governorate?.trim() || parsedGov || prev.governorate,
+        };
         if (!isViewOnly) writeSetupDraft(next);
         return next;
       });
@@ -402,17 +429,19 @@ export function ChurchSetupForm() {
     if (!canSubmit || isViewOnly || submitting) return;
     if (validateStep(5, form)) return;
     setSubmitError(null);
-    const ok = isResubmit ? await resubmitRequest(form) : await submitSetupRequest(form);
-    if (!ok) {
-      setSubmitError("تعذر إرسال الطلب. تحقق من الاتصال وحاول مرة أخرى.");
+    const result = isResubmit ? await resubmitRequest(form) : await submitSetupRequest(form);
+    if (!result.ok) {
+      setSubmitError(result.message);
       return;
     }
+    setChurchCreated(result.churchCreated);
     setSubmitted(true);
   };
 
   const handleDevReset = () => {
     devResetChurchSetup();
     setSubmitted(false);
+    setChurchCreated(false);
     setStep(0);
     setSlideDir("forward");
     setFieldErrors({});
@@ -710,7 +739,7 @@ export function ChurchSetupForm() {
     }
   };
 
-  if (submitted) return <SetupSuccess onDevReset={handleDevReset} />;
+  if (submitted) return <SetupSuccess onDevReset={handleDevReset} churchCreated={churchCreated} />;
 
   const isLastStep = step === TOTAL_STEPS - 1;
   const isFirstStep = step === 0;

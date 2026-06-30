@@ -650,11 +650,13 @@ export function RefDetailsFooter({
   onApprove,
   onChanges,
   onReject,
+  onRequestDocuments,
   disabled,
 }: {
   onApprove: () => void;
   onChanges: () => void;
   onReject: () => void;
+  onRequestDocuments?: () => void;
   disabled?: boolean;
 }) {
   return (
@@ -664,8 +666,17 @@ export function RefDetailsFooter({
     >
       <div className="mx-auto max-w-lg space-y-2">
         <RefActionBtn label="قبول الطلب" sub="اعتماد نهائي" variant="approve" onClick={onApprove} disabled={disabled} />
-        <div className="grid grid-cols-2 gap-2">
+        <div className={`grid gap-2 ${onRequestDocuments ? "grid-cols-3" : "grid-cols-2"}`}>
           <RefActionBtn label="طلب معلومات" sub="بيانات مطلوبة" variant="changes" onClick={onChanges} disabled={disabled} />
+          {onRequestDocuments ? (
+            <RefActionBtn
+              label="طلب مستندات"
+              sub="وثائق مطلوبة"
+              variant="changes"
+              onClick={onRequestDocuments}
+              disabled={disabled}
+            />
+          ) : null}
           <RefActionBtn label="رفض الطلب" sub="سبب إجباري" variant="reject" onClick={onReject} disabled={disabled} />
         </div>
       </div>

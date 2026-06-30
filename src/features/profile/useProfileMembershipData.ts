@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { getAlphaRoleContextSync, getAlphaRoleSync, useAlphaAuth } from "@/features/auth";
 import { useMemberChurch } from "@/features/church/use-member-church";
-import { useAlphaIdentity } from "@/features/identity/useAlphaIdentity";
+import { buildIdentityCard, deriveAlphaId } from "@/features/identity/alpha-identity";
 import type { ShieldRole } from "@/components/alpha/AlphaShield";
 import { formatBirthDateDisplay } from "./profile-privacy";
 import { alphaRoleToShieldRole, resolveProfileRoleLabel } from "./profile-role";
@@ -17,6 +17,8 @@ export type ProfileMembershipData = {
   identityLabel: string | null;
   shieldRole: ShieldRole | null;
   alphaId: string;
+  alphaIdFull: string;
+  userId: string;
   qrPayload: string;
   memberSince: string | null;
   birthDate: string | null;
@@ -39,13 +41,19 @@ export function useProfileMembershipData(): ProfileMembershipData {
   const shieldRole = alphaRoleToShieldRole(getAlphaRoleSync());
   const memberSince = memberChurch?.joinLabel ?? null;
   const birthDate = formatBirthDateDisplay(profileUser.birthDate);
+  const userId = user?.id?.trim() ?? "";
 
-  const identity = useAlphaIdentity({
-    displayName,
-    avatarUrl,
-    churchName,
-    verified: shieldRole != null,
-  });
+  const identity = useMemo(() => {
+    return buildIdentityCard({
+      userId,
+      displayName,
+      avatarUrl,
+      churchName,
+      verified: shieldRole != null,
+    });
+  }, [userId, displayName, avatarUrl, churchName, shieldRole]);
+
+  const alphaIdFull = userId ? deriveAlphaId(userId) : "ALPHA-GUEST";
 
   return useMemo(
     () => ({
@@ -58,6 +66,8 @@ export function useProfileMembershipData(): ProfileMembershipData {
       identityLabel,
       shieldRole,
       alphaId: identity.alphaIdShort,
+      alphaIdFull,
+      userId,
       qrPayload: identity.qrPayload,
       memberSince,
       birthDate,
@@ -74,6 +84,8 @@ export function useProfileMembershipData(): ProfileMembershipData {
       shieldRole,
       identity.alphaIdShort,
       identity.qrPayload,
+      alphaIdFull,
+      userId,
       memberSince,
       birthDate,
     ],

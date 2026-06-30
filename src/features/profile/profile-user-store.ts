@@ -7,7 +7,7 @@ import {
 } from "./profile-privacy";
 
 const STORAGE_KEY = "ab:profile-user";
-const STORAGE_VERSION = 3;
+const STORAGE_VERSION = 4;
 
 export type { ProfileVisibility, ProfileFieldPrivacy };
 
@@ -16,6 +16,7 @@ export type ProfileUserState = {
   bio: string;
   birthDate: string | null;
   customAvatarUrl: string | null;
+  customCoverUrl: string | null;
   hidePhone: boolean;
   privacy: ProfileFieldPrivacy;
 };
@@ -25,6 +26,7 @@ export const DEFAULT_PROFILE_USER: ProfileUserState = {
   bio: "",
   birthDate: null,
   customAvatarUrl: null,
+  customCoverUrl: null,
   hidePhone: false,
   privacy: { ...DEFAULT_FIELD_PRIVACY },
 };
@@ -100,6 +102,9 @@ function migrateRaw(parsed: Record<string, unknown>): ProfileUserState {
   }
   if (typeof parsed.customAvatarUrl === "string") {
     base.customAvatarUrl = parsed.customAvatarUrl;
+  }
+  if (typeof parsed.customCoverUrl === "string") {
+    base.customCoverUrl = parsed.customCoverUrl;
   }
 
   base.version = STORAGE_VERSION;
@@ -199,7 +204,27 @@ export function resolveAccountAvatar(
   );
 }
 
-export function profileAvatarInitials(displayName: string): string {
+export const GUEST_AVATAR_INITIALS = "AC";
+
+const PLACEHOLDER_DISPLAY_NAMES = new Set([
+  "alpha",
+  "guest",
+  "ضيف",
+  "مستخدم alpha",
+]);
+
+export function isGuestOrPlaceholderDisplayName(displayName: string | null | undefined): boolean {
+  if (!displayName?.trim()) return true;
+  return PLACEHOLDER_DISPLAY_NAMES.has(displayName.trim().toLowerCase());
+}
+
+export function profileAvatarInitials(
+  displayName: string,
+  options?: { guest?: boolean },
+): string {
+  if (options?.guest || isGuestOrPlaceholderDisplayName(displayName)) {
+    return GUEST_AVATAR_INITIALS;
+  }
   const parts = displayName.trim().split(/\s+/).filter(Boolean);
   if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
   const single = parts[0] ?? "A";

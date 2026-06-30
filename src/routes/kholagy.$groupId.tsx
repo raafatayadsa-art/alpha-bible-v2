@@ -8,7 +8,7 @@ import {
   ReaderArticleProgress,
 } from "@/components/bible";
 import { CopticDivider, CopticWatermark } from "@/components/coptic";
-import { bindScroll } from "@/lib/chapter-scroll";
+import { useReadingChromeVisibility } from "@/components/controls/useReadingChromeVisibility";
 import { useTypographyPrefs } from "@/lib/reading-state";
 import { cn } from "@/lib/utils";
 import {
@@ -90,7 +90,6 @@ function KholagyReader() {
   const [displayPickerOpen, setDisplayPickerOpen] = useState(false);
   const [activeId, setActiveId] = useState("");
   const [sectionFills, setSectionFills] = useState<number[]>([]);
-  const [chromeVisible, setChromeVisible] = useState(true);
   const [notice, setNotice] = useState<string | null>(null);
 
   const scrollerRef = useRef<HTMLDivElement>(null);
@@ -99,8 +98,8 @@ function KholagyReader() {
   const chipsRef = useRef<HTMLDivElement>(null);
   const lockUntilRef = useRef(0);
   const freshStartRef = useRef<string | null>(null);
-  const chromeTimer = useRef<number | null>(null);
   const [scrollRoot, setScrollRoot] = useState<HTMLElement | null>(null);
+  const { chromeHidden } = useReadingChromeVisibility(scrollRoot);
 
   useEffect(() => {
     setScrollRoot(scrollerRef.current);
@@ -114,32 +113,6 @@ function KholagyReader() {
     setActiveId(sections[0]?.id ?? "");
     setSectionFills(sections.map(() => 0));
   }, [groupId, sections]);
-
-  const showChrome = useCallback(() => {
-    setChromeVisible(true);
-    if (chromeTimer.current) window.clearTimeout(chromeTimer.current);
-    chromeTimer.current = window.setTimeout(() => setChromeVisible(false), 5000);
-  }, []);
-
-  useEffect(() => {
-    showChrome();
-    window.addEventListener("pointerdown", showChrome, { passive: true });
-    window.addEventListener("touchstart", showChrome, { passive: true });
-    window.addEventListener("keydown", showChrome);
-    window.addEventListener("wheel", showChrome, { passive: true });
-    return () => {
-      window.removeEventListener("pointerdown", showChrome);
-      window.removeEventListener("touchstart", showChrome);
-      window.removeEventListener("keydown", showChrome);
-      window.removeEventListener("wheel", showChrome);
-      if (chromeTimer.current) window.clearTimeout(chromeTimer.current);
-    };
-  }, [showChrome]);
-
-  useEffect(() => {
-    if (!scrollRoot) return;
-    return bindScroll(scrollRoot, showChrome);
-  }, [scrollRoot, showChrome]);
 
   const openAdjacent = useCallback(
     (targetKey: string) => {
@@ -256,7 +229,6 @@ function KholagyReader() {
   };
 
   const activeIndex = Math.max(1, sections.findIndex((s) => s.id === activeId) + 1);
-  const chromeHidden = !chromeVisible;
 
   const handleShare = async () => {
     const url = typeof window !== "undefined" ? window.location.href : "";
@@ -387,6 +359,7 @@ function KholagyReader() {
           spiritualMode={dark}
           scrollRoot={scrollRoot}
           articleRef={articleRef}
+          resetKey={groupId}
           positionLabel={`${activeIndex} من ${sections.length}`}
           enabled={sections.length > 0}
         />

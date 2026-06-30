@@ -215,6 +215,7 @@ export function CommunityAddFriendMethodsPanel({
               <div className="rounded-[12px] bg-white p-1.5">
                 <AlphaQrCode
                   value={m.qrPayload}
+                  copyIdOnTap={m.alphaId}
                   size={compact ? 120 : 160}
                   className={compact ? "h-[100px] w-[100px]" : "h-[132px] w-[132px]"}
                   fgColor="3a2a18"

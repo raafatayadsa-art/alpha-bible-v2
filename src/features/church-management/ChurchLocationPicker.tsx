@@ -1,4 +1,5 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   CheckCircle2,
   Loader2,
@@ -15,6 +16,7 @@ import {
   parseLocationDisplay,
   resolveLocationLabel,
 } from "./church-location";
+import { ChurchDirectoryPickSheet } from "./ChurchDirectoryPickSheet";
 import { setupGreenButtonSm, setupInput, setupSectionCard } from "./church-setup-styles";
 
 export type LocationValue = {
@@ -153,9 +155,19 @@ function MapModal({
   onZoomIn: () => void;
   onZoomOut: () => void;
 }) {
-  return (
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <div
-      className="fixed inset-0 z-[200] flex items-end justify-center bg-[#3a2a18]/45 p-4 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-[10080] flex items-end justify-center bg-[#3a2a18]/45 p-4 backdrop-blur-sm animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div
@@ -170,7 +182,10 @@ function MapModal({
           </div>
           <button
             type="button"
-            onClick={onClose}
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
             aria-label="إغلاق"
             className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[#efe2c4] bg-white/80 text-[#3a2a18] active:scale-95"
           >
@@ -188,7 +203,8 @@ function MapModal({
           <ZoomControls zoom={zoom} onZoomIn={onZoomIn} onZoomOut={onZoomOut} />
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -251,6 +267,7 @@ export function ChurchLocationPicker({
   const [loading, setLoading] = useState(false);
   const [geoError, setGeoError] = useState<string | null>(null);
   const [mapModalOpen, setMapModalOpen] = useState(false);
+  const [directoryOpen, setDirectoryOpen] = useState(false);
   const [modalZoom, setModalZoom] = useState(DEFAULT_ZOOM);
 
   const hasSelection = latitude != null && longitude != null;
@@ -329,6 +346,16 @@ export function ChurchLocationPicker({
         {!disabled && (
           <button
             type="button"
+            onClick={() => setDirectoryOpen(true)}
+            className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-xl border border-[#efe2c4] bg-white/70 text-[#c98a3c] active:scale-95 transition"
+            aria-label="اختيار من دليل الكنائس"
+          >
+            <Navigation className="h-4 w-4" />
+          </button>
+        )}
+        {!disabled && (
+          <button
+            type="button"
             onClick={openPicker}
             className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-xl border border-[#efe2c4] bg-white/70 text-[#7C3AED] active:scale-95 transition"
             aria-label="تحديد الموقع على الخريطة"
@@ -397,26 +424,37 @@ export function ChurchLocationPicker({
           style={{ boxShadow: "0 10px 24px -18px rgba(120,80,30,0.35), inset 0 1px 0 rgba(255,255,255,0.85)" }}
         >
           <p className="text-[12px] font-bold text-[#6a543a]">
-            حدّد موقع الكنيسة لإرفاقه بطلب التأسيس.
+            حدّد موقع الكنيسة لإرفاقه بطلب التأسيس — من الدليل أو موقعك الحالي.
           </p>
-          <button
-            type="button"
-            onClick={useCurrentLocation}
-            disabled={loading}
-            className={cn(setupGreenButtonSm, "mt-3 w-full", loading && "opacity-70")}
-          >
-            {loading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                جاري تحديد الموقع...
-              </>
-            ) : (
-              <>
-                <MapPin className="h-4 w-4" />
-                استخدام موقعي الحالي
-              </>
-            )}
-          </button>
+          <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => setDirectoryOpen(true)}
+              disabled={loading}
+              className={cn(setupGreenButtonSm, "w-full", loading && "opacity-70")}
+            >
+              <Navigation className="h-4 w-4" />
+              دليل الكنائس
+            </button>
+            <button
+              type="button"
+              onClick={useCurrentLocation}
+              disabled={loading}
+              className={cn(setupGreenButtonSm, "w-full", loading && "opacity-70")}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  جاري تحديد الموقع...
+                </>
+              ) : (
+                <>
+                  <MapPin className="h-4 w-4" />
+                  استخدام موقعي الحالي
+                </>
+              )}
+            </button>
+          </div>
           {geoError && (
             <p className="mt-2.5 rounded-xl border border-[#cdb8ef]/50 bg-[#efe7fb]/70 px-3 py-2.5 text-[11.5px] leading-relaxed font-bold text-[#4a2f8a]">
               {geoError}
@@ -437,6 +475,16 @@ export function ChurchLocationPicker({
           onZoomOut={() => setModalZoom((z) => Math.max(z - 1, MIN_ZOOM))}
         />
       )}
+
+      <ChurchDirectoryPickSheet
+        open={directoryOpen}
+        onClose={() => setDirectoryOpen(false)}
+        onSelect={(value) => {
+          onSelect(value);
+          setOpen(false);
+          setGeoError(null);
+        }}
+      />
     </div>
   );
 }

@@ -300,13 +300,69 @@ async function insertServantRoles(
   }
 }
 
-async function findChurchBySetupRequestId(setupRequestId: string) {
-  const { data } = await supabase
+function setupRequestDescriptionMarker(setupRequestId: string): string {
+  return JSON.stringify({ alphaSetupRequestId: setupRequestId, alphaSource: "church_setup" });
+}
+
+function buildProductionChurchInsert(
+  setupRequestId: string,
+  row: SetupRequestRow,
+  payload: Record<string, unknown>,
+  memberUserId: string | null,
+) {
+  const churchPhone = String(payload.churchPhone ?? row.priest_phone ?? "");
+  const whatsapp = String(payload.whatsapp ?? churchPhone);
+  const servants = Array.isArray(payload.servants) ? (payload.servants as ServantPayload[]) : [];
+  const facebook = String(payload.facebook ?? "").trim();
+  const youtube = String(payload.youtube ?? "").trim();
+  const website = String(payload.website ?? "").trim();
+
+  const insertRow: Record<string, unknown> = {
+    church_name: row.church_name,
+    parish: row.diocese,
+    governorate: row.governorate,
+    city: row.city,
+    formatted_address: row.address,
+    latitude: row.location_lat,
+    longitude: row.location_lng,
+    phone: churchPhone || null,
+    whatsapp: whatsapp || null,
+    email: row.priest_email,
+    priests: row.priest_name,
+    facebook_url: facebook || null,
+    youtube_url: youtube || null,
+    website_url: website || null,
+    members_count: memberUserId ? 1 : 0,
+    servants_count: servants.length,
+    is_active: true,
+    status: "approved",
+    country: "مصر",
+    location_verified: row.location_lat != null && row.location_lng != null,
+    description: setupRequestDescriptionMarker(setupRequestId),
+    claimed_by: memberUserId,
+  };
+
+  return { insertRow, servants };
+}
+
+async function findChurchBySetupRequestId(setupRequestId: string): Promise<string | number | null> {
+  const { data: bySetup, error: setupColError } = await supabase
     .from("churches")
     .select("id")
-    .eq("setup_request_id", setupRequestId)
+    .eq("setup_request_id" as "id", setupRequestId)
     .maybeSingle();
-  return data?.id != null ? data.id : null;
+
+  if (!setupColError && bySetup?.id != null) return bySetup.id;
+
+  const { data: byDesc } = await supabase
+    .from("churches")
+    .select("id")
+    .ilike("description", `%${setupRequestId}%`)
+    .eq("is_active", true)
+    .limit(1)
+    .maybeSingle();
+
+  return byDesc?.id != null ? byDesc.id : null;
 }
 
 /** Create church + roles + membership when a setup request is approved. Idempotent. */
@@ -327,9 +383,6 @@ export async function provisionChurchFromSetupRequest(
 
   const row = setup as SetupRequestRow;
   const payload = (row.payload ?? {}) as Record<string, unknown>;
-  const churchPhone = String(payload.churchPhone ?? row.priest_phone ?? "");
-  const whatsapp = String(payload.whatsapp ?? churchPhone);
-  const servants = Array.isArray(payload.servants) ? (payload.servants as ServantPayload[]) : [];
   const memberUserId = await resolveSubmitterUserId(row, fallbackUserId);
 
   if (memberUserId && row.submitted_by !== memberUserId) {
@@ -339,26 +392,30 @@ export async function provisionChurchFromSetupRequest(
   let churchId: string | number | null = await findChurchBySetupRequestId(setupRequestId);
 
   if (churchId == null) {
-    const { data: church, error: churchError } = await supabase
+    const { insertRow, servants: servantRows } = buildProductionChurchInsert(
+      setupRequestId,
+      row,
+      payload,
+      memberUserId,
+    );
+
+    let church: { id: string | number } | null = null;
+    let churchError: { message?: string; code?: string; details?: string } | null = null;
+
+    const withSetupLink = { ...insertRow, setup_request_id: setupRequestId };
+    ({ data: church, error: churchError } = await supabase
       .from("churches")
-      .insert({
-        setup_request_id: setupRequestId,
-        name: row.church_name,
-        diocese: row.diocese,
-        governorate: row.governorate,
-        city: row.city,
-        address: row.address,
-        location_lat: row.location_lat,
-        location_lng: row.location_lng,
-        phone: churchPhone || null,
-        whatsapp: whatsapp || null,
-        status: "approved",
-        member_count: memberUserId ? 1 : 0,
-        servant_count: servants.length,
-        is_active: true,
-      })
+      .insert(withSetupLink as never)
       .select("id")
-      .single();
+      .single());
+
+    if (churchError && (churchError.code === "PGRST204" || churchError.message?.includes("setup_request_id"))) {
+      ({ data: church, error: churchError } = await supabase
+        .from("churches")
+        .insert(insertRow as never)
+        .select("id")
+        .single());
+    }
 
     if (churchError || !church) {
       console.error("provisionChurchFromSetupRequest: church insert failed", churchError);
@@ -367,7 +424,7 @@ export async function provisionChurchFromSetupRequest(
 
     churchId = church.id;
     console.log("[church_setup approve] created church id", churchId);
-    await insertServantRoles(church.id, servants);
+    await insertServantRoles(church.id, servantRows);
   } else {
     console.log("[church_setup approve] created church id", churchId);
   }

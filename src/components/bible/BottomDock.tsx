@@ -58,7 +58,7 @@ export function BottomDock({
   const lastYRef = useRef<number>(typeof window !== "undefined" ? window.scrollY : 0);
 
   useEffect(() => {
-    const IDLE_MS = 3000;
+    const IDLE_MS = 5000;
 
     const armTimer = () => {
       if (timerRef.current) clearTimeout(timerRef.current);

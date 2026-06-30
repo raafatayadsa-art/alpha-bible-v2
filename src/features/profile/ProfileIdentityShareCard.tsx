@@ -80,6 +80,7 @@ export function ProfileIdentityShareCard({
       >
         <AlphaQrCode
           value={qrPayload}
+          copyIdOnTap={alphaId}
           size={qrSize}
           className={`rounded-lg ${compact ? "h-[120px] w-[120px]" : "h-[168px] w-[168px]"}`}
         />

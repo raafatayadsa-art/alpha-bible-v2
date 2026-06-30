@@ -16,7 +16,7 @@ import {
   Scale,
   LifeBuoy,
 } from "lucide-react";
-import { ALPHA_OFFICIAL_SLOGAN } from "@/components/brand";
+import { AlphaOfficialSlogan } from "@/components/brand";
 import { AlphaHeader, AlphaHeaderShell } from "@/components/navigation";
 import { ControlCenterScreenBackground } from "./components/ControlCenterScreenBackground";
 import { BottomDock } from "@/components/bible/BottomDock";
@@ -41,7 +41,6 @@ import {
 import { OwnerAccessPinSheet } from "@/features/platform-admin/OwnerAccessPinSheet";
 import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { useLocale } from "@/lib/i18n/use-locale";
-import { usePlatformModules } from "@/lib/platform-modules";
 import { useResolvedTheme } from "@/lib/alpha-theme";
 import { signOutAllDevices, signOutCurrentDevice } from "@/features/auth";
 
@@ -65,9 +64,6 @@ export function AlphaControlCenter() {
   const score = computeSecurityScore(state);
   const scoreLabelKey = securityLabelKey(score);
   const isDark = useResolvedTheme() === "dark";
-  const { isModuleEnabled } = usePlatformModules();
-  const communityOn = isModuleEnabled("community");
-  const messagingOn = isModuleEnabled("messaging");
 
   const syncLabel = useMemo(
     () =>
@@ -93,33 +89,6 @@ export function AlphaControlCenter() {
       { value: "1h", label: t("options.oneHour") },
       { value: "1d", label: t("options.oneDay") },
       { value: "1w", label: t("options.oneWeek") },
-    ],
-    [t],
-  );
-
-  const fontSizeOptions = useMemo(
-    () => [
-      { value: "14", label: t("options.fontSmall") },
-      { value: "16", label: t("options.fontMedium") },
-      { value: "18", label: t("options.fontLarge") },
-      { value: "20", label: t("options.fontXLarge") },
-    ],
-    [t],
-  );
-
-  const fontFamilyOptions = useMemo(
-    () => [
-      { value: "serif", label: t("options.serif") },
-      { value: "sans", label: t("options.sans") },
-    ],
-    [t],
-  );
-
-  const scrollSpeedOptions = useMemo(
-    () => [
-      { value: "1", label: t("options.scrollSlow") },
-      { value: "2", label: t("options.scrollMedium") },
-      { value: "3", label: t("options.scrollFast") },
     ],
     [t],
   );
@@ -247,31 +216,17 @@ export function AlphaControlCenter() {
               <ToggleRow label={t("rows.notifySaint.label")} subtitle={t("rows.notifySaint.subtitle")} checked={state.notifySaint} onChange={p("notifySaint")} />
               <ToggleRow label={t("rows.notifyKatameros.label")} subtitle={t("rows.notifyKatameros.subtitle")} checked={state.notifyKatameros} onChange={p("notifyKatameros")} />
 
-              {communityOn ? (
-                <>
               <SectionLabel>{t("labels.church")}</SectionLabel>
               <ToggleRow label={t("rows.notifyMeetings.label")} subtitle={t("rows.notifyMeetings.subtitle")} checked={state.notifyMeetings} onChange={p("notifyMeetings")} />
               <ToggleRow label={t("rows.notifyEvents.label")} subtitle={t("rows.notifyEvents.subtitle")} checked={state.notifyTrips} onChange={p("notifyTrips")} />
               <ToggleRow label={t("rows.notifyServices.label")} subtitle={t("rows.notifyServices.subtitle")} checked={state.notifyPrayerRequests} onChange={p("notifyPrayerRequests")} />
               <ToggleRow label={t("rows.notifyDonations.label")} subtitle={t("rows.notifyDonations.subtitle")} checked={state.notifyComments} onChange={p("notifyComments")} />
-                </>
-              ) : null}
 
-              {communityOn || messagingOn ? (
-                <>
               <SectionLabel>{t("labels.community")}</SectionLabel>
-              {messagingOn ? (
-                <ToggleRow label={t("rows.notifyMessages.label")} subtitle={t("rows.notifyMessages.subtitle")} checked={state.notifyReplies} onChange={p("notifyReplies")} />
-              ) : null}
-              {communityOn ? (
-                <>
+              <ToggleRow label={t("rows.notifyMessages.label")} subtitle={t("rows.notifyMessages.subtitle")} checked={state.notifyReplies} onChange={p("notifyReplies")} />
               <ToggleRow label={t("rows.notifyPrayerRequests.label")} subtitle={t("rows.notifyPrayerRequests.subtitle")} checked={state.notifyMentions} onChange={p("notifyMentions")} />
               <ToggleRow label={t("rows.notifyCommunity.label")} subtitle={t("rows.notifyCommunity.subtitle")} checked={state.notifyMentions} onChange={p("notifyMentions")} />
               <ToggleRow label={t("rows.notifyInteractions.label")} subtitle={t("rows.notifyInteractions.subtitle")} checked={state.notifyMentions} onChange={p("notifyMentions")} />
-                </>
-              ) : null}
-                </>
-              ) : null}
             </PremiumSectionCard>
           )}
 
@@ -364,21 +319,19 @@ export function AlphaControlCenter() {
               onToggle={handleToggle}
             >
               <SectionLabel>{t("labels.bible")}</SectionLabel>
-              <SelectRow label={t("rows.bibleFontSize.label")} value={String(state.bibleFontSize)} options={fontSizeOptions} onChange={(v) => p("bibleFontSize")(Number(v))} />
-              <SelectRow label={t("rows.bibleFontFamily.label")} value={state.bibleFontFamily} options={fontFamilyOptions} onChange={(v) => p("bibleFontFamily")(v as SettingsState["bibleFontFamily"])} />
-              <SelectRow label={t("rows.bibleAutoscrollSpeed.label")} value={String(state.bibleAutoscrollSpeed)} options={scrollSpeedOptions} onChange={(v) => p("bibleAutoscrollSpeed")(Number(v))} />
+              <ActionRow
+                label="إعدادات القراءة"
+                subtitle="خط · حواشي · حفظ آخر قراءة · شريط الصوت"
+                onClick={() => void navigate({ to: "/settings/reading" })}
+              />
               <ToggleRow label={t("rows.smartReadingMode.label")} subtitle={t("rows.smartReadingMode.subtitle")} checked={state.highContrast} onChange={p("highContrast")} />
               <ToggleRow label={t("rows.reduceMotion.label")} subtitle={t("rows.reduceMotion.subtitle")} checked={!state.haptics} onChange={(v) => p("haptics")(!v)} />
-
-              <SectionLabel>{t("labels.spiritualPrefs")}</SectionLabel>
-              <ActionRow label={t("rows.biblePreferredTranslation.label")} subtitle={t("rows.biblePreferredTranslation.subtitle")} />
-              <ToggleRow label={t("rows.showDiacritics.label")} subtitle={t("rows.showDiacritics.subtitle")} checked={state.bibleShowVerseNumbers} onChange={p("bibleShowVerseNumbers")} />
               <ToggleRow label={t("rows.bibleSaveLastRead.label")} subtitle={t("rows.bibleSaveLastRead.subtitle")} checked={state.bibleSaveLastRead} onChange={p("bibleSaveLastRead")} />
             </PremiumSectionCard>
           )}
 
           {/* 7. كنيستي */}
-          {communityOn && sectionVisible(search, t("sections.myChurch.keywords", { returnObjects: true }) as string[]) && (
+          {sectionVisible(search, t("sections.myChurch.keywords", { returnObjects: true }) as string[]) && (
             <PremiumSectionCard
               id="myChurch"
               title={t("sections.myChurch.title")}
@@ -531,19 +484,7 @@ export function AlphaControlCenter() {
         </div>
 
         <div className="mt-10 mb-8 flex flex-col items-center justify-center text-center">
-          <p
-            className="text-[10px] font-bold uppercase tracking-[0.15em] leading-none"
-            style={{
-              background: "linear-gradient(90deg, #9a7a42 0%, #d4a857 38%, #e8c878 62%, #9a7a42 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-              filter: "drop-shadow(0 0 6px rgba(212,168,87,0.28))",
-            }}
-            aria-label={ALPHA_OFFICIAL_SLOGAN}
-          >
-            {ALPHA_OFFICIAL_SLOGAN}
-          </p>
+          <AlphaOfficialSlogan prominent className="w-full" />
           <p className="mt-2.5 alpha-type-desc font-semibold text-alpha-gold-deep">
             Alpha Coptic
           </p>

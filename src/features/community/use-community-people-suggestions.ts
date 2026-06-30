@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getCurrentUser } from "@/features/church/current-user";
+import { getActiveMembershipChurchIds } from "@/features/church/church-membership-api";
 import { useChurchDashboard } from "@/features/church/use-church-dashboard";
 import { useProfilePeopleLinks } from "@/features/profile/profile-people-store";
 
@@ -22,14 +23,71 @@ function initialsFrom(name: string): string {
   return `${parts[0][0] ?? ""}${parts[1][0] ?? ""}`;
 }
 
+async function fetchChurchMemberIds(churchIds: string[], uid: string): Promise<string[]> {
+  if (!churchIds.length) return [];
+  const { data } = await supabase
+    .from("church_memberships")
+    .select("user_id")
+    .in("church_id", churchIds)
+    .eq("status", "active")
+    .neq("user_id", uid)
+    .limit(24);
+  return [...new Set((data ?? []).map((r) => String(r.user_id)).filter((id) => UUID_RE.test(id)))];
+}
+
 export function useCommunityPeopleSuggestions(limit = 10): CommunityPersonSuggestion[] {
   const { data: dashboard } = useChurchDashboard();
   const { connect } = useProfilePeopleLinks();
   const uid = getCurrentUser().id;
   const [avatarMap, setAvatarMap] = useState<Record<string, string>>({});
+  const [memberIds, setMemberIds] = useState<string[]>([]);
+  const [memberNames, setMemberNames] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const churchIds = await getActiveMembershipChurchIds();
+      const ids = await fetchChurchMemberIds(churchIds, uid);
+      if (cancelled) return;
+      setMemberIds(ids);
+      if (!ids.length) {
+        setMemberNames({});
+        return;
+      }
+      const { data } = await supabase
+        .from("user_profiles")
+        .select("user_id, display_name, avatar_url")
+        .in("user_id", ids);
+      if (cancelled) return;
+      const names: Record<string, string> = {};
+      const avatars: Record<string, string> = {};
+      for (const row of data ?? []) {
+        const id = String(row.user_id);
+        names[id] = row.display_name?.trim() || "عضو الكنيسة";
+        const url = row.avatar_url?.trim();
+        if (url) avatars[id] = url;
+      }
+      setMemberNames(names);
+      setAvatarMap((prev) => ({ ...prev, ...avatars }));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [uid]);
 
   const base = useMemo(() => {
     const byId = new Map<string, CommunityPersonSuggestion>();
+
+    for (const memberId of memberIds) {
+      if (!memberId || memberId === uid || byId.has(memberId)) continue;
+      byId.set(memberId, {
+        id: memberId,
+        name: memberNames[memberId] ?? "عضو الكنيسة",
+        role: "من كنيستك",
+        roleType: "member",
+        initials: initialsFrom(memberNames[memberId] ?? "عضو"),
+      });
+    }
 
     for (const c of dashboard?.contacts ?? []) {
       const id = c.userId?.trim() ?? "";
@@ -55,17 +113,13 @@ export function useCommunityPeopleSuggestions(limit = 10): CommunityPersonSugges
     }
 
     return [...byId.values()].slice(0, limit);
-  }, [connect, dashboard?.contacts, limit, uid]);
+  }, [connect, dashboard?.contacts, limit, memberIds, memberNames, uid]);
 
   const idsKey = useMemo(() => base.map((p) => p.id).join(","), [base]);
 
   useEffect(() => {
-    const ids = base.map((p) => p.id).filter((id) => !base.find((p) => p.id === id && p.avatarUrl));
     const missing = base.filter((p) => !p.avatarUrl).map((p) => p.id);
-    if (!missing.length) {
-      setAvatarMap({});
-      return;
-    }
+    if (!missing.length) return;
 
     let cancelled = false;
     void supabase
@@ -79,7 +133,7 @@ export function useCommunityPeopleSuggestions(limit = 10): CommunityPersonSugges
           const url = row.avatar_url ? String(row.avatar_url).trim() : "";
           if (url) next[String(row.user_id)] = url;
         }
-        setAvatarMap(next);
+        setAvatarMap((prev) => ({ ...prev, ...next }));
       });
 
     return () => {

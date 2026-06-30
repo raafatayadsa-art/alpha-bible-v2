@@ -129,11 +129,12 @@ function FeedSectionHeader({
         {canGrant ? (
           <button
             type="button"
-            title="منح صلاحية منظم رحلات"
+            title="صلاحيات الخدام"
             onClick={onGrant}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/12 bg-white/6 text-white/50 active:scale-95"
+            className="inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-white/6 px-3 py-1.5 text-[10.5px] font-extrabold text-white/70 active:scale-95 transition-transform"
           >
-            <UserCog className="h-3.5 w-3.5" strokeWidth={2.2} />
+            <UserCog className="h-3 w-3" strokeWidth={2.2} />
+            صلاحيات الخدام
           </button>
         ) : null}
 
@@ -218,6 +219,20 @@ export function ChurchMixedFeedSection({ posts, loading, onRefresh }: Props) {
 
   return (
     <section>
+      <FeedSectionHeader
+        churchName={church.name}
+        postCount={posts.length}
+        canManage={canManage}
+        canCreateTrip={canCreateTrip}
+        tripOnlyBuilder={tripOnlyBuilder}
+        pendingCount={pendingCount}
+        canReview={canReview}
+        canGrant={canGrant}
+        onNew={() => setBuilderOpen(true)}
+        onApproval={() => setApprovalOpen(true)}
+        onGrant={() => setGrantOpen(true)}
+      />
+
       {/* Fixed FAB — always visible for testing */}
       <PostFAB tripOnly={tripOnlyBuilder} onOpen={() => setBuilderOpen(true)} />
 

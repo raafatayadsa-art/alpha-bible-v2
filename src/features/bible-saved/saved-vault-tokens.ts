@@ -1,15 +1,15 @@
-/** Premium saved-verses vault — dark glass + glowing Coptic DNA. */
+/** Premium saved-verses vault — light ivory theme. */
 
 export const SAVED_VAULT = {
-  bg: "#050814",
-  bgDeep: "#030208",
-  gold: "#e7c97a",
-  goldBright: "#f0d78c",
-  goldMuted: "#b8893a",
-  text: "rgba(255,255,255,0.92)",
-  textMuted: "rgba(255,255,255,0.58)",
-  border: "rgba(231,201,122,0.32)",
-  cardBg: "#07040f",
+  bg: "#FAF7F2",
+  bgDeep: "#F5EFE6",
+  gold: "#D4AF37",
+  goldBright: "#E7C97A",
+  goldMuted: "#B8893A",
+  text: "#2A1F12",
+  textMuted: "#8A7355",
+  border: "rgba(212, 175, 55, 0.32)",
+  cardBg: "#FFFCF7",
 } as const;
 
 /** Light ivory theme for the highlighted-verses tab. */

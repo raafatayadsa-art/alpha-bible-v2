@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { CommunityShareButton } from "@/features/community";
 import { AutoScrollControls, ReaderArticleProgress } from "@/components/bible";
+import { ChapterReadingScrollRail } from "@/components/bible/ChapterReadingScrollRail";
+import { useReadingChromeVisibility } from "@/components/controls/useReadingChromeVisibility";
 import {
   PresentationMode,
   DisplayButton,
@@ -37,7 +39,6 @@ import {
   type MidnightDisplayGroup,
 } from "@/features/agpeya";
 import { useTypographyPrefs } from "@/lib/reading-state";
-import { bindScroll } from "@/lib/chapter-scroll";
 import type { AgpeyaPrayer } from "@/features/agpeya";
 import { CopticDivider, CopticWatermark } from "@/components/coptic";
 import { cn } from "@/lib/utils";
@@ -563,6 +564,7 @@ function PrayerReader() {
 
   const scrollerRef = useRef<HTMLDivElement>(null);
   const articleRef = useRef<HTMLElement>(null);
+  const contentColumnRef = articleRef;
   const chipsRef = useRef<HTMLDivElement>(null);
   // Lock active chip during programmatic smooth scroll (prevents flicker on iPhone)
   const lockUntilRef = useRef<number>(0);
@@ -580,38 +582,7 @@ function PrayerReader() {
     return idx >= 0 ? idx + 1 : 1;
   }, [sections, activeId]);
 
-  const [chromeVisible, setChromeVisible] = useState(true);
-  const chromeTimer = useRef<number | null>(null);
-  useEffect(() => {
-    const show = () => {
-      setChromeVisible(true);
-      if (chromeTimer.current) window.clearTimeout(chromeTimer.current);
-      chromeTimer.current = window.setTimeout(() => setChromeVisible(false), 5000);
-    };
-    show();
-    window.addEventListener("pointerdown", show, { passive: true });
-    window.addEventListener("touchstart", show, { passive: true });
-    window.addEventListener("keydown", show);
-    window.addEventListener("wheel", show, { passive: true });
-    return () => {
-      window.removeEventListener("pointerdown", show);
-      window.removeEventListener("touchstart", show);
-      window.removeEventListener("keydown", show);
-      window.removeEventListener("wheel", show);
-      if (chromeTimer.current) window.clearTimeout(chromeTimer.current);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!scrollRoot) return;
-    const show = () => {
-      setChromeVisible(true);
-      if (chromeTimer.current) window.clearTimeout(chromeTimer.current);
-      chromeTimer.current = window.setTimeout(() => setChromeVisible(false), 5000);
-    };
-    return bindScroll(scrollRoot, show);
-  }, [scrollRoot]);
-  const chromeHidden = !chromeVisible;
+  const { chromeHidden } = useReadingChromeVisibility(scrollRoot);
 
   const openAdjacentPrayer = useCallback((targetPrayerId: string) => {
     freshStartPrayerRef.current = targetPrayerId;
@@ -955,6 +926,7 @@ function PrayerReader() {
           spiritualMode={dark}
           scrollRoot={scrollRoot}
           articleRef={articleRef}
+          resetKey={prayerId}
           positionLabel={`القسم ${activeSectionIndex} من ${sections.length}`}
           enabled={sections.length > 0}
         />
@@ -965,8 +937,8 @@ function PrayerReader() {
         ref={scrollerRef}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
-        className="relative min-h-0 flex-1 overflow-y-auto"
-        style={{ scrollBehavior: "smooth" }}
+        className="relative min-h-0 flex-1 overflow-y-auto overscroll-y-contain"
+        style={{ scrollBehavior: "smooth", WebkitOverflowScrolling: "touch" }}
       >
         <article
           ref={articleRef}
@@ -1078,6 +1050,13 @@ function PrayerReader() {
         setLineHeight={setLineHeight}
       />
 
+      <ChapterReadingScrollRail
+        scrollRoot={scrollRoot}
+        contentRef={contentColumnRef}
+        articleRef={articleRef}
+        spiritualMode={dark}
+        hidden={chromeHidden}
+      />
 
       {/* Share fallback dialog */}
       {shareOpen && (

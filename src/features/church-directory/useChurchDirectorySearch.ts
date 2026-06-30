@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { searchChurchDirectoryPage, fetchChurchDirectoryFacets } from "./api";
+import { searchChurchDirectoryPage, fetchChurchDirectoryFacets, fetchCitiesForGovernorate } from "./api";
 import type { ChurchDirectoryFilterState, ChurchDirectoryRow } from "./types";
 import { CHURCH_DIR_PAGE_SIZE } from "./tokens";
 
@@ -49,6 +49,15 @@ export function useChurchDirectoryFacets() {
   return useQuery({
     queryKey: ["church-directory-facets"],
     queryFn: fetchChurchDirectoryFacets,
+    staleTime: 1000 * 60 * 10,
+  });
+}
+
+export function useCitiesForGovernorate(governorate: string) {
+  return useQuery({
+    queryKey: ["church-directory-cities", governorate],
+    queryFn: () => fetchCitiesForGovernorate(governorate),
+    enabled: Boolean(governorate.trim()),
     staleTime: 1000 * 60 * 10,
   });
 }

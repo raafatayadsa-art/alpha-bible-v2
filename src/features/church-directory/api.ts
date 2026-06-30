@@ -56,8 +56,9 @@ export async function searchChurchDirectoryPage(
   page: number,
   userLat: number | null,
   userLng: number | null,
+  pageSize = CHURCH_DIR_PAGE_SIZE,
 ): Promise<ChurchDirectorySearchResult> {
-  const offset = page * CHURCH_DIR_PAGE_SIZE;
+  const offset = page * pageSize;
   const { data, error } = await supabase.rpc("search_church_directory", {
     p_query: filters.query.trim() || null,
     p_governorate: filters.governorate.trim() || null,
@@ -68,7 +69,7 @@ export async function searchChurchDirectoryPage(
     p_user_lat: userLat,
     p_user_lng: userLng,
     p_nearby_km: NEARBY_RADIUS_KM,
-    p_limit: CHURCH_DIR_PAGE_SIZE,
+    p_limit: pageSize,
     p_offset: offset,
   });
 
@@ -83,6 +84,68 @@ export async function searchChurchDirectoryPage(
     rows: rows.map(mapRpcRow),
     totalCount,
   };
+}
+
+const DIRECTORY_FETCH_PAGE_SIZE = 100;
+const DIRECTORY_FETCH_MAX_PAGES = 50;
+
+/** Load every matching directory row (paginated server-side). */
+export async function fetchChurchDirectoryAll(
+  filters: ChurchDirectoryFilterState = {
+    query: "",
+    governorate: "",
+    city: "",
+    patronSaint: "",
+    verifiedOnly: false,
+    nearbyOnly: false,
+  },
+  options?: { requireCoords?: boolean },
+): Promise<ChurchDirectoryRow[]> {
+  const all: ChurchDirectoryRow[] = [];
+  let totalCount = 0;
+
+  for (let page = 0; page < DIRECTORY_FETCH_MAX_PAGES; page += 1) {
+    const batch = await searchChurchDirectoryPage(
+      filters,
+      page,
+      null,
+      null,
+      DIRECTORY_FETCH_PAGE_SIZE,
+    );
+    if (page === 0) totalCount = batch.totalCount;
+    if (batch.rows.length === 0) break;
+    all.push(...batch.rows);
+    if (all.length >= totalCount || batch.rows.length < DIRECTORY_FETCH_PAGE_SIZE) break;
+  }
+
+  const withCoords = options?.requireCoords
+    ? all.filter((row) => row.lat != null && row.lng != null)
+    : all;
+
+  return withCoords;
+}
+
+export async function fetchCitiesForGovernorate(governorate: string): Promise<string[]> {
+  const gov = governorate.trim();
+  if (!gov) return [];
+
+  const { data, error } = await supabase
+    .from("church_directory")
+    .select("city")
+    .eq("governorate", gov)
+    .not("city", "is", null);
+
+  if (error) {
+    console.error("[fetchCitiesForGovernorate]", error);
+    return [];
+  }
+
+  const cities = new Set<string>();
+  for (const row of data ?? []) {
+    const city = row.city?.trim();
+    if (city) cities.add(city);
+  }
+  return [...cities].sort((a, b) => a.localeCompare(b, "ar"));
 }
 
 export async function fetchChurchDirectoryFacets(): Promise<ChurchDirectoryFacets> {

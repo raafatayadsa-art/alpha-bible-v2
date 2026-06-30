@@ -37,30 +37,41 @@ export function clearPendingChurchJoin() {
   }
 }
 
-export async function getActiveMembershipChurchId(): Promise<string | null> {
+export async function getActiveMembershipChurchIds(): Promise<string[]> {
   const { waitForAuthUserId } = await import("@/features/auth");
   const userId = await waitForAuthUserId();
-  if (!userId) return null;
+  if (!userId) return [];
 
-  const { data: membership, error } = await supabase
+  const { data: memberships, error } = await supabase
     .from("church_memberships")
     .select("church_id")
     .eq("user_id", userId)
-    .eq("status", "active")
-    .limit(1)
-    .maybeSingle();
+    .eq("status", "active");
 
-  if (error || !membership?.church_id) return null;
+  if (error || !memberships?.length) return [];
 
-  const churchId = String(membership.church_id);
-  const { data: church } = await supabase
+  const ids = [...new Set(memberships.map((m) => String(m.church_id)).filter(Boolean))];
+  if (!ids.length) return [];
+
+  const { data: churches } = await supabase
     .from("churches")
     .select("id")
-    .eq("id", churchId)
-    .eq("is_active", true)
-    .maybeSingle();
+    .in("id", ids)
+    .eq("is_active", true);
 
-  return church?.id != null ? churchId : null;
+  const active = new Set((churches ?? []).map((c) => String(c.id)));
+  return ids.filter((id) => active.has(id));
+}
+
+/** Primary church — first active membership (backward compatible). */
+export async function getActiveMembershipChurchId(): Promise<string | null> {
+  const ids = await getActiveMembershipChurchIds();
+  return ids[0] ?? null;
+}
+
+export async function isMemberOfChurch(churchId: string): Promise<boolean> {
+  const ids = await getActiveMembershipChurchIds();
+  return ids.includes(churchId);
 }
 
 export async function joinChurch(churchId: string): Promise<JoinChurchResult> {
@@ -96,7 +107,7 @@ export async function joinChurch(churchId: string): Promise<JoinChurchResult> {
     .from("church_memberships")
     .select("id, church_id, status")
     .eq("user_id", userId)
-    .limit(1)
+    .eq("church_id", resolvedId)
     .maybeSingle();
 
   if (existingError) {
@@ -108,16 +119,9 @@ export async function joinChurch(churchId: string): Promise<JoinChurchResult> {
     };
   }
 
-  if (existing?.status === "active" && existing.church_id != null) {
-    if (String(existing.church_id) === resolvedId) {
-      clearPendingChurchJoin();
-      return { ok: true, churchId: resolvedId };
-    }
-    return {
-      ok: false,
-      reason: "already_member",
-      message: "أنت مرتبط بكنيسة أخرى بالفعل. افتح كنيستك من الشاشة الرئيسية.",
-    };
+  if (existing?.status === "active") {
+    clearPendingChurchJoin();
+    return { ok: true, churchId: resolvedId };
   }
 
   const membershipRow = {

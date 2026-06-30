@@ -1,6 +1,7 @@
 /**
  * ChurchMixedPostCard — church name header + image-left + commenter avatars + engagement bar
  */
+import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import {
   Bus, CalendarDays, CheckCircle2, Clock, Cross,
@@ -17,6 +18,7 @@ import {
 import { PostImage } from "@/features/church/PostImage";
 import { isLivePost, postCardStyle } from "./post-card-styles";
 import { AlphaChurchEngagementBar } from "./AlphaChurchEngagementBar";
+import { ChurchPostInlineComments } from "./ChurchPostInlineComments";
 import { getPostImages } from "./post-media";
 import type { ChurchFeedNavContext } from "./nav-context";
 import { MEMBER_NAV } from "./nav-context";
@@ -144,6 +146,7 @@ function CommenterAvatarRow({ postId, tone }: { postId: string; tone: string }) 
 
 export function ChurchMixedPostCard({ post, typeCount, mode, navContext = MEMBER_NAV, churchName }: Props) {
   const navigate = useNavigate();
+  const [commentsOpen, setCommentsOpen] = useState(false);
   const style = postCardStyle(post.type);
   const comments = useComments(post.id);
   const r = useReactions(post.id);
@@ -168,6 +171,10 @@ export function ChurchMixedPostCard({ post, typeCount, mode, navContext = MEMBER
   };
 
   const handleComment = () => {
+    if (mode === "hub-preview") {
+      setCommentsOpen((v) => !v);
+      return;
+    }
     void navigate({ to: "/church/post/$id", params: { id: post.id }, hash: "comments" });
   };
 
@@ -291,6 +298,9 @@ export function ChurchMixedPostCard({ post, typeCount, mode, navContext = MEMBER
       {/* ── Commenter avatars row ── */}
       <div onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
         <CommenterAvatarRow postId={post.id} tone={style.tone} />
+        {mode === "hub-preview" ? (
+          <ChurchPostInlineComments postId={post.id} open={commentsOpen} tone={style.tone} />
+        ) : null}
       </div>
 
       {/* ── Engagement bar — full width at very bottom ── */}

@@ -1,18 +1,20 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "@tanstack/react-router";
-import { Settings, User, UserPen, UserRound, LayoutGrid } from "lucide-react";
+import { Settings, User, UserPen, UserRound } from "lucide-react";
 import { AvatarWithDisplayShield } from "@/components/alpha/AvatarWithDisplayShield";
 import { getDisplayShieldRoleSync, subscribeAuthContext, useAlphaAuth } from "@/features/auth";
+import { isGuestModeActive } from "@/features/auth/guest-mode";
 import { cn } from "@/lib/utils";
 import { useResolvedTheme } from "@/lib/alpha-theme";
 import {
+  GUEST_AVATAR_INITIALS,
   profileAvatarInitials,
   resolveProfileDisplayAvatar,
   useProfileUser,
 } from "./profile-user-store";
 
-type MenuRoute = "/profile" | "/profile/edit" | "/profile/personal" | "/more" | "/settings" | "/login";
+type MenuRoute = "/profile" | "/profile/edit" | "/profile/personal" | "/settings" | "/login";
 
 const MENU_WIDTH = 228;
 const VIEWPORT_PAD = 10;
@@ -39,7 +41,7 @@ export function ProfileSettingsMenu({
   variant?: "light" | "dark";
   trigger?: "settings" | "avatar";
   avatarSize?: "md" | "lg";
-  avatarVariant?: "default" | "home-premium";
+  avatarVariant?: "default" | "home-premium" | "community-hub";
   showSettingsMenuItem?: boolean;
 }) {
   const resolvedDark = useResolvedTheme() === "dark";
@@ -64,9 +66,11 @@ export function ProfileSettingsMenu({
 
   useEffect(() => subscribeAuthContext(() => setShieldTick((n) => n + 1)), []);
 
+  const isGuest = !isAuthenticated && isGuestModeActive();
+
   const initials = useMemo(
-    () => profileAvatarInitials(user?.displayName ?? "Alpha"),
-    [user?.displayName],
+    () => profileAvatarInitials(user?.displayName ?? "", { guest: isGuest }),
+    [user?.displayName, isGuest],
   );
 
   const avatarDim = avatarSize === "lg" ? "h-14 w-14" : "h-11 w-11";
@@ -130,12 +134,14 @@ export function ProfileSettingsMenu({
     "relative z-[1] shrink-0 touch-manipulation overflow-visible rounded-full active:scale-95 transition-transform",
     avatarDim,
     avatarVariant === "home-premium"
-      ? "border-[2.5px] border-[var(--alpha-gold-bright)] bg-white/90 shadow-[0_0_18px_rgba(231,201,122,0.35),0_8px_20px_-10px_rgba(120,80,30,0.4)] backdrop-blur-xl"
-      : cn(
-          "relative z-[60] border-[2.5px]",
+      ? "border-0 bg-white/90 shadow-[0_8px_20px_-12px_rgba(120,80,30,0.28)] backdrop-blur-xl"
+      : avatarVariant === "community-hub"
+        ? "border-0 bg-white/88 shadow-[0_8px_20px_-12px_rgba(120,80,30,0.28)] backdrop-blur-xl"
+        : cn(
+          "relative z-[60] border-0",
           tone === "dark"
-            ? "border-[#f0d78c]/60 bg-black/35 shadow-md backdrop-blur-xl"
-            : "border-[#e7c97a]/90 bg-white/85 shadow-[0_8px_18px_-10px_rgba(120,80,30,0.45)] backdrop-blur-xl",
+            ? "bg-black/35 shadow-md backdrop-blur-xl"
+            : "bg-white/85 shadow-[0_8px_18px_-10px_rgba(120,80,30,0.35)] backdrop-blur-xl",
         ),
   );
 
@@ -193,11 +199,6 @@ export function ProfileSettingsMenu({
           <div className={cn("h-px", tone === "dark" ? "bg-white/10" : "bg-[#f0d78c]/18")} />
         </>
       ) : null}
-      <button type="button" role="menuitem" onClick={() => goTo("/more")} className={menuItemClass()}>
-        <LayoutGrid className={menuIconClass("gold")} strokeWidth={2.2} />
-        <span className={menuLabelClass}>المزيد</span>
-      </button>
-      <div className={cn("h-px", tone === "dark" ? "bg-white/10" : "bg-[#f0d78c]/18")} />
       {showSettingsMenuItem ? (
         <button type="button" role="menuitem" onClick={() => goTo("/settings")} className={menuItemClass()}>
           <Settings className={menuIconClass("green")} strokeWidth={2.2} />
@@ -247,6 +248,20 @@ export function ProfileSettingsMenu({
             </span>
           )}
         </AvatarWithDisplayShield>
+      ) : isGuest ? (
+        <span
+          className={cn(
+            "grid h-full w-full place-items-center font-extrabold",
+            avatarTextSize,
+            avatarVariant === "home-premium"
+              ? "bg-gradient-to-br from-[#fdfbf7] via-[#f4ead8] to-[#e7c97a]/40 text-[var(--alpha-gold-deep)]"
+              : tone === "dark"
+                ? "bg-gradient-to-br from-[#5a3d92]/80 to-[#3a2560] text-[#f0d78c]"
+                : "bg-gradient-to-br from-[#f4ead8] to-[#e7c97a]/35 text-[#5a1f2a]",
+          )}
+        >
+          {GUEST_AVATAR_INITIALS}
+        </span>
       ) : loading ? (
         <span className="h-6 w-6 animate-pulse rounded-full bg-[#e7c97a]/35" aria-hidden />
       ) : (

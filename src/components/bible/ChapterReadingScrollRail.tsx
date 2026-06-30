@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { articleScrollProgress, bindScroll, scrollMetrics, scrollToY } from "@/lib/chapter-scroll";
+import { dispatchReadingUserScroll } from "@/components/controls/reading-user-scroll";
 import { cn } from "@/lib/utils";
 
 type RailLayout = {
@@ -20,12 +21,14 @@ export function ChapterReadingScrollRail({
   articleRef,
   spiritualMode,
   tone = "default",
+  hidden = false,
 }: {
   scrollRoot: HTMLElement | null;
   contentRef: React.RefObject<HTMLElement | null>;
   articleRef?: React.RefObject<HTMLElement | null>;
   spiritualMode: boolean;
   tone?: "default" | "kholagy";
+  hidden?: boolean;
 }) {
   const dragRef = useRef(false);
   const [layout, setLayout] = useState<RailLayout | null>(null);
@@ -99,12 +102,14 @@ export function ChapterReadingScrollRail({
   const onPointerDown = (e: React.PointerEvent) => {
     dragRef.current = true;
     setActive(true);
+    dispatchReadingUserScroll();
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     scrollFromPointer(e.clientY);
   };
 
   const onPointerMove = (e: React.PointerEvent) => {
     if (!dragRef.current) return;
+    dispatchReadingUserScroll();
     scrollFromPointer(e.clientY);
   };
 
@@ -151,8 +156,9 @@ export function ChapterReadingScrollRail({
       aria-valuenow={Math.round(layout.pct)}
       aria-label="مؤشر التمرير"
       className={cn(
-        "pointer-events-auto fixed z-[45] touch-none transition-opacity duration-300",
-        isKholagyDark || active ? "opacity-100" : "opacity-90",
+        "pointer-events-auto fixed z-[45] touch-none transition-opacity duration-500 ease-out",
+        hidden && !active ? "pointer-events-none opacity-0" : "opacity-100",
+        isKholagyDark || active ? "opacity-100" : !hidden && "opacity-90",
       )}
       style={{
         left: layout.left,

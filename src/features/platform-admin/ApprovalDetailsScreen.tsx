@@ -39,7 +39,7 @@ export function ApprovalDetailsScreen() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [tab, setTab] = useState<DetailTab>("details");
-  const [sheet, setSheet] = useState<"reject" | "info" | null>(null);
+  const [sheet, setSheet] = useState<"reject" | "info" | "documents" | null>(null);
   const [success, setSuccess] = useState(false);
   const [previewDoc, setPreviewDoc] = useState<ApprovalDocument | null>(null);
   const [reviewerNotes, setReviewerNotes] = useState("");
@@ -177,6 +177,7 @@ export function ApprovalDetailsScreen() {
           onApprove={() => void handleApprove()}
           onReject={() => setSheet("reject")}
           onChanges={() => setSheet("info")}
+          onRequestDocuments={enriched?.kind === "church_setup" ? () => setSheet("documents") : undefined}
         />
       )}
 
@@ -207,6 +208,21 @@ export function ApprovalDetailsScreen() {
         onConfirm={(notes) => {
           setActing(true);
           void requestInfo(approvalId, notes).then((ok) => {
+            setActing(false);
+            if (ok) navigate({ to: "/platform/approvals" });
+          });
+        }}
+      />
+      <RefReasonModal
+        open={sheet === "documents"}
+        title="طلب مستندات"
+        placeholder="اذكر المستندات المطلوبة (ترخيص الكنيسة، بطاقة الكاهن، صور…)"
+        confirmLabel="إرسال طلب المستندات"
+        variant="changes"
+        onClose={() => setSheet(null)}
+        onConfirm={(notes) => {
+          setActing(true);
+          void requestInfo(approvalId, `[مستندات مطلوبة]\n${notes.trim()}`).then((ok) => {
             setActing(false);
             if (ok) navigate({ to: "/platform/approvals" });
           });

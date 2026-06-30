@@ -4,8 +4,7 @@ import {
   ChevronRight, Share2, Download, Copy, Check, ScanLine, ShieldCheck,
   Church, Cross, ChevronLeft, MapPin, Calendar, Shield,
 } from "lucide-react";
-import { AlphaOfficialLogo } from "@/components/brand";
-import { ALPHA_OFFICIAL_SLOGAN } from "@/components/brand/alpha-brand";
+import { AlphaOfficialSlogan } from "@/components/brand/AlphaOfficialSlogan";
 import { AlphaQrCode } from "@/components/identity/AlphaQrCode";
 import { ShieldImage } from "@/components/alpha/AlphaShield";
 import { useProfileMembershipData } from "@/features/profile/useProfileMembershipData";
@@ -143,7 +142,7 @@ function MembershipScreen() {
               </div>
             </div>
 
-            <CompactQrBadge payload={m.qrPayload} />
+            <CompactQrBadge payload={m.qrPayload} alphaId={m.alphaId} />
           </div>
         </article>
 
@@ -242,12 +241,7 @@ function MembershipScreen() {
           >
             ⲁⲗⲫⲁ
           </p>
-          <p
-            className="alpha-type-caption mt-3 max-w-[320px] font-bold uppercase leading-relaxed tracking-[0.12em] text-alpha-muted"
-            aria-label={ALPHA_OFFICIAL_SLOGAN}
-          >
-            {ALPHA_OFFICIAL_SLOGAN}
-          </p>
+          <AlphaOfficialSlogan prominent className="mt-3 w-full max-w-none" />
         </footer>
       </div>
 
@@ -260,7 +254,7 @@ function MembershipScreen() {
   );
 }
 
-function CompactQrBadge({ payload }: { payload: string }) {
+function CompactQrBadge({ payload, alphaId }: { payload: string; alphaId: string }) {
   return (
     <div className="flex shrink-0 flex-col items-center">
       <div
@@ -273,6 +267,7 @@ function CompactQrBadge({ payload }: { payload: string }) {
         <div className="rounded-[11px] bg-white p-1.5 shadow-[inset_0_1px_2px_rgba(120,80,30,0.06)]">
           <AlphaQrCode
             value={payload}
+            copyIdOnTap={alphaId}
             size={160}
             fgColor="3a2a18"
             bgColor="ffffff"
@@ -282,10 +277,10 @@ function CompactQrBadge({ payload }: { payload: string }) {
         </div>
         <span
           aria-hidden
-          className="absolute inset-0 m-auto grid h-[22px] w-[22px] place-items-center rounded-md bg-white shadow-sm"
+          className="absolute inset-0 m-auto grid h-[22px] w-[22px] place-items-center rounded-md bg-white text-[9px] font-extrabold text-[#b8893a] shadow-sm"
           style={{ boxShadow: "0 0 0 2px #fff, 0 0 0 3px var(--alpha-gold-deep)" }}
         >
-          <AlphaOfficialLogo size="sm" className="scale-[0.55]" />
+          Ⲁ
         </span>
       </div>
       <p className="alpha-type-caption mt-1 font-bold text-alpha-gold-deep/70">امسح للتحقق</p>

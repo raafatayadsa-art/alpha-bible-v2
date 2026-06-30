@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Shield, X } from "lucide-react";
-import alphaLogo from "@/assets/alpha-logo.png";
 import { cn } from "@/lib/utils";
 import { MC } from "./platform-store";
 import { useOwnerAccess } from "./owner-access-store";
@@ -103,7 +102,7 @@ export function OwnerAccessPinSheet({
             >
               <X className="h-4 w-4 text-cyan-400" />
             </button>
-            <img src={alphaLogo} alt="" className="h-8 w-8 object-contain" />
+            <Shield className="h-8 w-8 text-cyan-400" strokeWidth={1.8} />
             <span className="w-10" />
           </div>
 

@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { BookOpen, Church, HandHeart, Pin, Send, Trash2 } from "lucide-react";
 import { PrayerUserAvatar } from "@/features/prayer/prayer-avatars";
 import { getCurrentUser, isAuthenticated } from "@/features/church/current-user";
@@ -28,6 +28,7 @@ import { CommunityCardBadges } from "./CommunityCardBadges";
 import { COMMUNITY_GLASS_MOMENT } from "./community-glass-chrome";
 import type { CommunityMemberPreview } from "./community-user-trust";
 import { resolveCommunityMemberPreview } from "./community-user-trust";
+import { resolveCommunityMomentSourceRoute } from "./community-moment-source";
 
 function momentBody(moment: CommunityMoment): { title: string; body: string; meta?: string } {
   if (moment.kind === "reading" && moment.payload.reading) {
@@ -63,6 +64,7 @@ type Props = {
 };
 
 export function CommunityMomentCard({ moment, className, isPinned = false, onMemberPress }: Props) {
+  const navigate = useNavigate();
   const meta = COMMUNITY_KIND_META[moment.kind];
   const content = momentBody(moment);
   const reactions = useCommunityReactions(moment.id, moment.kind);
@@ -130,6 +132,12 @@ export function CommunityMomentCard({ moment, className, isPinned = false, onMem
     );
   }, [moment, onMemberPress]);
 
+  const openSource = useCallback(() => {
+    const route = resolveCommunityMomentSourceRoute(moment);
+    if (!route) return;
+    void navigate({ to: route.to, params: route.params as Record<string, string> });
+  }, [moment, navigate]);
+
   return (
     <article className={cn(COMMUNITY_GLASS_MOMENT, "relative", className)}>
       <CommunityMomentCardArt kind={moment.kind} seed={moment.id} />
@@ -141,7 +149,6 @@ export function CommunityMomentCard({ moment, className, isPinned = false, onMem
             userName={moment.userName}
             userAvatarUrl={moment.userAvatarUrl}
             avatarSize="md"
-            hideVerified
             className="flex-1"
             onPress={onMemberPress ? openAuthor : undefined}
             meta={
@@ -163,7 +170,12 @@ export function CommunityMomentCard({ moment, className, isPinned = false, onMem
         </div>
       </div>
 
-      <div className="relative z-[1] px-4 pb-3 pt-3 text-right">
+      <button
+        type="button"
+        onClick={openSource}
+        className="relative z-[1] w-full px-4 pb-3 pt-3 text-right active:bg-white/5"
+        aria-label="فتح مصدر المشاركة في الكنيسة"
+      >
         <p className="text-[13px] font-extrabold text-white/90">{content.title}</p>
         <p className="mt-2 font-arabic-serif text-[15px] font-bold leading-[1.75] text-white line-clamp-5">
           {content.body}
@@ -173,28 +185,8 @@ export function CommunityMomentCard({ moment, className, isPinned = false, onMem
             {content.meta}
           </p>
         ) : null}
-        {moment.kind === "reading" && moment.payload.reading?.bookRoute ? (
-          <Link
-            to="/$book/$chapter"
-            params={{
-              book: moment.payload.reading.bookRoute,
-              chapter: String(moment.payload.reading.chapter ?? 1),
-            }}
-            className="mt-2 inline-flex text-[11px] font-bold text-[#9fd4ff] underline-offset-2 hover:underline"
-          >
-            افتح في الكتاب المقدس
-          </Link>
-        ) : null}
-        {moment.kind === "agpeya" && moment.payload.agpeya?.prayerId ? (
-          <Link
-            to="/agpeya/$prayerId"
-            params={{ prayerId: moment.payload.agpeya.prayerId }}
-            className="mt-2 inline-flex text-[11px] font-bold text-[#9fd4ff] underline-offset-2 hover:underline"
-          >
-            افتح في الأجبية
-          </Link>
-        ) : null}
-      </div>
+        <p className="mt-2 text-[10px] font-bold text-[#9fd4ff]/80">اضغط لفتح المصدر في الكنيسة ←</p>
+      </button>
 
       <div className="relative z-[1]">
         <CommunityCommentAvatarStack comments={comments} />

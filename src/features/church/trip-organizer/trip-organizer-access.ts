@@ -14,10 +14,10 @@ export function canReviewTripPosts(userId = getCurrentUser().id, churchId?: stri
   return false;
 }
 
-/** Priest / owner publish trips without approval queue. */
+/** Priest / owner / servant publish trips without approval queue. */
 export function canPublishTripDirectly(userId = getCurrentUser().id): boolean {
   const role = getAlphaRoleSync();
-  return role === "owner" || role === "priest";
+  return role === "owner" || role === "priest" || role === "servant";
 }
 
 /** Create trips, conferences, monastery visits — not broad church admin. */
@@ -28,7 +28,7 @@ export function canCreateTripContent(churchId: string, userId = getCurrentUser()
 
 export function canGrantTripOrganizerRole(): boolean {
   const role = getAlphaRoleSync();
-  return role === "owner" || role === "priest" || role === "servant";
+  return role === "owner" || role === "priest";
 }
 
 /** Trip organizers must not access broad church management surfaces. */

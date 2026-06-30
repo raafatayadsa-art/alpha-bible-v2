@@ -8,14 +8,14 @@ export function CommunityHomeHeader() {
         menuAlign="start"
         trigger="avatar"
         avatarSize="lg"
-        avatarVariant="home-premium"
+        avatarVariant="community-hub"
       />
 
       <div className="flex min-w-0 flex-1 items-center justify-center">
-        <h1 className="text-[17px] font-extrabold tracking-tight text-alpha-heading">مجتمعي</h1>
+        <h1 className="text-[17px] font-extrabold tracking-tight text-alpha-heading-muted">مجتمعي</h1>
       </div>
 
-      <AlphaNotificationButton className="relative z-[60] shrink-0 border-[var(--alpha-gold-bright)]/45 text-[var(--alpha-gold-deep)] shadow-[0_0_14px_rgba(231,201,122,0.22)]" />
+      <AlphaNotificationButton className="relative z-[60] shrink-0 border-transparent text-alpha-heading-muted shadow-none" />
     </header>
   );
 }

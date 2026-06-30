@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { BottomDock } from "@/components/bible/BottomDock";
 import { CopticWatermark } from "@/components/coptic";
-import { CalendarDays, Church, Luggage, Users, UserRound } from "lucide-react";
+import { CalendarDays, Church, Luggage, Sparkles, Users, UserRound } from "lucide-react";
 import { usePlatformModules } from "@/lib/platform-modules";
 import { listPilgrimagePassport } from "@/features/church/trip-reservations/pilgrimage-passport";
 import { useCommunityFriends } from "@/features/community/community-friends-store";
@@ -14,24 +15,57 @@ import { ProfileMyActivityCard } from "./ProfileMyActivityCard";
 import { ProfileSectionList } from "./ProfileSectionList";
 import { ProfileMembershipEntryCard } from "./ProfileMembershipEntryCard";
 import { ProfileSuggestedFriendsSection } from "./ProfileSuggestedFriendsSection";
+import { ProfileServicesSection } from "./ProfileServicesSection";
 import { AddProfilePersonSheet } from "./AddProfilePersonSheet";
 import { resolveProfileAvatar, useProfileUser } from "./profile-user-store";
+import { fetchProfileCoverUrl, persistProfileCoverUrl, uploadProfileCoverFromDataUrl } from "./profile-cover-api";
+import { useAlphaAuth } from "@/features/auth";
 import { isFieldVisibleOnProfile } from "./profile-privacy";
 import { getChurchShieldRoleSync } from "@/features/auth";
 import { COMMUNITY_ROUTES } from "@/features/community/community-routes";
 
 export function ProfilePremiumScreen() {
   const m = useProfileMembershipData();
+  const { user } = useAlphaAuth();
   const { status, loading: affiliationLoading, isApproved } = useProfileAffiliationStatus();
   const activitySummary = useProfileActivitySummary();
   const { isModuleEnabled } = usePlatformModules();
   const communityOn = isModuleEnabled("community");
   const tripsOn = isModuleEnabled("trips");
   const reservationsOn = isModuleEnabled("reservations");
-  const { state: profileUser } = useProfileUser();
+  const { state: profileUser, patch: patchProfileUser } = useProfileUser();
   const { family: familyLinks } = useProfilePeopleLinks();
   const { friends: communityFriends } = useCommunityFriends();
   const [familySheetOpen, setFamilySheetOpen] = useState(false);
+
+  useEffect(() => {
+    const uid = user?.id?.trim();
+    if (!uid) return;
+    let cancelled = false;
+    void fetchProfileCoverUrl(uid).then((url) => {
+      if (cancelled || !url) return;
+      if (!profileUser.customCoverUrl?.trim() || profileUser.customCoverUrl.startsWith("data:")) {
+        patchProfileUser("customCoverUrl", url);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, profileUser.customCoverUrl, patchProfileUser]);
+
+  const handleCoverChange = async (dataUrl: string) => {
+    patchProfileUser("customCoverUrl", dataUrl);
+    const uid = user?.id?.trim();
+    if (!uid) return;
+    try {
+      const url = await uploadProfileCoverFromDataUrl(uid, dataUrl);
+      await persistProfileCoverUrl(uid, url);
+      patchProfileUser("customCoverUrl", url);
+      toast.success("تم تحديث صورة الغلاف");
+    } catch {
+      toast.error("تعذّر رفع الغلاف — محفوظ محلياً فقط");
+    }
+  };
 
   const displayAvatar = isFieldVisibleOnProfile(profileUser.privacy.avatar)
     ? resolveProfileAvatar(profileUser.customAvatarUrl, m.avatarUrl)
@@ -81,6 +115,16 @@ export function ProfilePremiumScreen() {
 
   const activityItems = useMemo(() => {
     const items = [];
+    if (communityOn) {
+      items.push({
+        id: "spiritual-record",
+        label: "السجل الروحي",
+        subtitle: "قراءاتك وصلواتك ونشاطك",
+        to: COMMUNITY_ROUTES.spiritualRecord,
+        icon: Sparkles,
+        accent: "#c98a3c",
+      });
+    }
     if (tripsOn) {
       items.push({
         id: "trips",
@@ -102,7 +146,7 @@ export function ProfilePremiumScreen() {
       });
     }
     return items;
-  }, [tripsOn, reservationsOn, trips.length]);
+  }, [communityOn, tripsOn, reservationsOn, trips.length]);
 
   return (
     <div dir="rtl" className="relative min-h-screen w-full overflow-x-hidden bg-alpha-base">
@@ -112,12 +156,20 @@ export function ProfilePremiumScreen() {
         <ProfileSimpleHeader
           name={m.displayName}
           avatarUrl={displayAvatar}
+          coverUrl={profileUser.customCoverUrl}
+          onCoverChange={(dataUrl) => void handleCoverChange(dataUrl)}
           alphaId={m.alphaId}
+          alphaIdFull={m.alphaIdFull}
+          userId={m.userId}
           churchName={m.churchName}
+          bio={profileUser.bio}
+          birthDate={m.birthDate}
+          roleLabel={m.roleLabel}
           affiliation={status}
           affiliationLoading={affiliationLoading}
           shieldRole={shieldRole}
           showShield={isApproved && Boolean(shieldRole)}
+          privacy={profileUser.privacy}
         />
 
         {isFieldVisibleOnProfile(profileUser.privacy.spiritualStats) ? (
@@ -130,6 +182,8 @@ export function ProfilePremiumScreen() {
 
         <ProfileSectionList title="حياتي الكنسية" items={churchLifeItems} />
         <ProfileSectionList title="أنشطتي" items={activityItems} />
+
+        <ProfileServicesSection />
 
         {isApproved ? <ProfileMembershipEntryCard /> : null}
 

@@ -4,6 +4,7 @@ import { Church, MapPin, Navigation, ShieldCheck } from "lucide-react";
 import type { ChurchDirectoryRow } from "../types";
 import { CHURCH_DIR } from "../tokens";
 import { directoryLocationLine, formatDistanceKm, directionsUrlForRow } from "../normalize";
+import { JoinChurchButton } from "@/features/church/JoinChurchButton";
 
 type Props = {
   rows: ChurchDirectoryRow[];
@@ -132,6 +133,9 @@ export function ChurchDirectoryListView({
                 </div>
 
                 <div className="flex shrink-0 flex-col gap-1.5">
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <JoinChurchButton churchId={church.id} mini className="min-w-[32px]" />
+                  </div>
                   <a
                     href={directionsUrlForRow(church)}
                     target="_blank"

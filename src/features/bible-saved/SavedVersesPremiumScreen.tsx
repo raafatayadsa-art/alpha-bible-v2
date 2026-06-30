@@ -2,7 +2,6 @@ import { Link } from "@tanstack/react-router";
 import { Bookmark, ChevronLeft, Highlighter, Share2 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import artVerse from "@/assets/home/art-verse.jpg";
-import controlCenterBg from "@/assets/control-center-bg.png";
 import { BackButton } from "@/components/bible";
 import { CopticCross, CopticMiniCross } from "@/components/coptic";
 import { HeroBadgeEmblem, HeroLedgerStylesHost } from "@/components/home/hero-card-chrome";
@@ -83,79 +82,22 @@ function HighlightVaultBackdrop() {
 }
 
 function SavedVaultBackdrop() {
-  const smallGlyphs: Array<{ g: string; top: string; delay: string; left?: string; right?: string }> = [
-    { g: "Ⲁ", top: "8%", right: "6%", delay: "0s" },
-    { g: "Ⲱ", top: "14%", left: "8%", delay: "1.1s" },
-    { g: "ϯ", top: "22%", right: "22%", delay: "0.6s" },
-    { g: "Ⲃ", top: "32%", left: "18%", delay: "1.8s" },
-    { g: "Ⲅ", top: "42%", right: "10%", delay: "2.4s" },
-    { g: "Ⲉ", top: "52%", left: "6%", delay: "0.3s" },
-    { g: "Ⲁ", top: "58%", right: "28%", delay: "1.5s" },
-    { g: "Ⲱ", top: "68%", left: "24%", delay: "2s" },
-    { g: "ϯ", top: "74%", right: "14%", delay: "0.9s" },
-    { g: "Ⲃ", top: "84%", left: "12%", delay: "1.3s" },
-    { g: "Ⲅ", top: "88%", right: "32%", delay: "2.7s" },
-    { g: "Ⲉ", top: "18%", left: "38%", delay: "1.9s" },
-  ];
-
   return (
     <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden>
-      <img
-        src={controlCenterBg}
-        alt=""
-        draggable={false}
-        className="absolute inset-0 h-full w-full object-cover object-center"
-        style={{
-          opacity: 0.88,
-          filter: "brightness(1.35) contrast(1.05) saturate(0.85)",
-        }}
-      />
       <div
         className="absolute inset-0"
         style={{
-          background:
-            "linear-gradient(180deg, rgba(5,8,20,0.55) 0%, rgba(3,2,8,0.82) 42%, rgba(3,2,8,0.96) 100%)",
+          background: "linear-gradient(180deg, #FFFDF9 0%, #FAF7F2 38%, #F5EFE6 100%)",
         }}
       />
       <div
-        className="absolute inset-0 mix-blend-screen opacity-[0.16]"
+        className="absolute inset-0 opacity-80"
         style={{
           background:
-            "radial-gradient(ellipse 90% 55% at 50% 18%, rgba(231,201,122,0.5) 0%, transparent 62%)",
+            "radial-gradient(ellipse 90% 50% at 50% 0%, rgba(231,201,122,0.12) 0%, transparent 55%), radial-gradient(ellipse 70% 40% at 20% 80%, rgba(184,137,58,0.06) 0%, transparent 50%)",
         }}
       />
-      <SavedVaultStars />
-      {smallGlyphs.map(({ g, top, left, right, delay }, i) => (
-        <span
-          key={`${g}-${i}`}
-          className="saved-vault-glyph hero-ledger-glyph-gold absolute select-none font-black leading-none"
-          style={{
-            top,
-            left,
-            right,
-            fontSize: "clamp(18px, 4.5vw, 32px)",
-            animationDelay: delay,
-          }}
-        >
-          {g}
-        </span>
-      ))}
     </div>
-  );
-}
-
-function SavedVaultStars() {
-  return (
-    <>
-      <span aria-hidden className="saved-vault-star pointer-events-none absolute left-[12%] top-[22%] h-1 w-1 rounded-full bg-[#f0d78c]" />
-      <span aria-hidden className="saved-vault-star saved-vault-star--delay pointer-events-none absolute right-[18%] top-[28%] h-1.5 w-1.5 rounded-full bg-[#8fd4ff]" />
-      <span aria-hidden className="saved-vault-star saved-vault-star--delay2 pointer-events-none absolute left-[28%] top-[55%] h-1 w-1 rounded-full bg-[#f0d78c]" />
-      <span
-        aria-hidden
-        className="saved-vault-star pointer-events-none absolute right-[10%] top-[72%] h-1 w-1 rounded-full bg-[#e7c97a]/80"
-        style={{ animationDelay: "0.8s" }}
-      />
-    </>
   );
 }
 
@@ -936,23 +878,15 @@ export function SavedVersesPremiumScreen({
         <header
           className="sticky top-0 z-30 -mx-1 mb-2 flex items-center justify-between gap-2 rounded-2xl border px-1 py-2 backdrop-blur-xl transition-colors duration-300"
           style={{
-            borderColor: isHighlightsTab ? HIGHLIGHT_VAULT.border : "rgba(231,201,122,0.18)",
-            background: isHighlightsTab ? "rgba(250,247,242,0.92)" : "rgba(5,8,20,0.72)",
+            borderColor: HIGHLIGHT_VAULT.border,
+            background: "rgba(250,247,242,0.92)",
             top: "max(env(safe-area-inset-top), 8px)",
           }}
         >
-          <BackButton to={backTo} compact tone={isHighlightsTab ? "light" : "dark"} />
+          <BackButton to={backTo} compact tone="light" />
           <div className="text-center">
-            <p
-              className="text-[10px] font-bold tracking-wide"
-              style={{ color: isHighlightsTab ? HIGHLIGHT_VAULT.gold : SAVED_VAULT.goldMuted }}
-            >
-              ✦ ALPHA BIBLE ✦
-            </p>
-            <h1
-              className="font-arabic-serif text-[17px] font-extrabold"
-              style={{ color: isHighlightsTab ? HIGHLIGHT_VAULT.text : SAVED_VAULT.text }}
-            >
+            <p className="text-[10px] font-bold tracking-wide text-[#B8893A]">✦ ALPHA BIBLE ✦</p>
+            <h1 className="font-arabic-serif text-[17px] font-extrabold text-[#2A1F12]">
               {isHighlightsTab ? "الآيات الملوّنة" : "المحفوظات"}
             </h1>
           </div>

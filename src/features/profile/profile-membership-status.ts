@@ -7,7 +7,7 @@ import { useMemberChurch } from "@/features/church/use-member-church";
 export type ProfileAffiliationStatus = "approved" | "pending" | "none";
 
 export const AFFILIATION_LABEL: Record<ProfileAffiliationStatus, string> = {
-  approved: "عضو منتسب",
+  approved: "عضو كنيسة",
   pending: "طلب قيد المراجعة",
   none: "غير منتسب",
 };

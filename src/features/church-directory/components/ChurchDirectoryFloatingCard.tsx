@@ -7,6 +7,8 @@ import type { ChurchDirectoryRow } from "../types";
 import { CHURCH_DIR } from "../tokens";
 import { directoryLocationLine, formatDistanceKm, directionsUrlForRow, shareUrlForChurch } from "../normalize";
 import { isFavoriteChurch, toggleFavoriteChurch } from "../favorites";
+import { JoinChurchButton } from "@/features/church/JoinChurchButton";
+import { ChurchDirectoryConnectActions } from "./ChurchDirectoryConnectActions";
 import { useState } from "react";
 
 type Props = {
@@ -118,7 +120,19 @@ export function ChurchDirectoryFloatingCard({ church, onClose }: Props) {
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-1.5 border-t px-2 py-2" style={{ borderColor: CHURCH_DIR.border }}>
+        <div className="px-3 pb-2">
+          <JoinChurchButton churchId={church.id} compact />
+        </div>
+
+        <div className="grid grid-cols-4 gap-1.5 border-t px-2 py-2 church-dir-action-grid" style={{ borderColor: CHURCH_DIR.border }}>
+          <ChurchDirectoryConnectActions
+            church={{
+              id: church.id,
+              name: church.name,
+              phone: church.phone,
+              whatsapp: church.whatsapp,
+            }}
+          />
           <Link
             to="/church/directory/$placeId"
             params={{ placeId: church.id }}
@@ -145,6 +159,22 @@ export function ChurchDirectoryFloatingCard({ church, onClose }: Props) {
             <span className="text-[9.5px] font-extrabold" style={{ color: CHURCH_DIR.text }}>مشاركة</span>
           </button>
         </div>
+        <style>{`
+          .church-dir-action-grid .action-tile {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            border-radius: 16px;
+            padding: 0.65rem 0.25rem;
+            font-size: 9.5px;
+            font-weight: 800;
+            color: #5D3291;
+            background: rgba(255,255,255,0.72);
+            border: 1px solid rgba(93,50,145,0.12);
+          }
+        `}</style>
       </motion.div>
     </AnimatePresence>
   );

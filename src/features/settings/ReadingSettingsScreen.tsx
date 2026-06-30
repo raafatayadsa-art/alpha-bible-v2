@@ -25,7 +25,7 @@ export function ReadingSettingsScreen() {
 
       <div className="relative mx-auto w-full max-w-[var(--alpha-content-max-width)] px-4 pb-36">
         <header className="flex items-center justify-between gap-2 py-3">
-          <BackButton to="/more" compact tone="light" />
+          <BackButton to="/profile" compact tone="light" />
           <h1 className="font-arabic-serif text-[18px] font-extrabold text-alpha-heading">إعدادات القراءة</h1>
           <span className="h-9 w-9 shrink-0" aria-hidden />
         </header>

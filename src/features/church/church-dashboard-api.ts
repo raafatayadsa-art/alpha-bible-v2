@@ -176,13 +176,22 @@ function mapPrayer(row: PrayerRow & { request?: string }): ChurchDashboardPrayer
 }
 
 async function churchIdBySetupRequest(setupRequestId: string): Promise<string | null> {
-  const { data: bySetup } = await supabase
+  const { data: bySetup, error: setupColError } = await supabase
     .from("churches")
     .select("id")
-    .eq("setup_request_id", setupRequestId)
+    .eq("setup_request_id" as "id", setupRequestId)
     .eq("is_active", true)
     .maybeSingle();
-  return bySetup?.id != null ? String(bySetup.id) : null;
+  if (!setupColError && bySetup?.id != null) return String(bySetup.id);
+
+  const { data: byDesc } = await supabase
+    .from("churches")
+    .select("id")
+    .ilike("description", `%${setupRequestId}%`)
+    .eq("is_active", true)
+    .limit(1)
+    .maybeSingle();
+  return byDesc?.id != null ? String(byDesc.id) : null;
 }
 
 async function findSingletonApprovedChurchId(): Promise<string | null> {
@@ -467,6 +476,21 @@ export async function fetchChurchDashboard(): Promise<ChurchDashboardData | null
     contacts: roles.map(mapContact),
     prayers: ((prayersRes.data ?? []) as PrayerRow[]).map(mapPrayer),
   };
+}
+
+export async function fetchChurchContactsByChurchId(churchId: string): Promise<ChurchDashboardContact[]> {
+  const { data, error } = await supabase
+    .from("church_roles")
+    .select("*")
+    .eq("church_id", churchId)
+    .eq("visible_to_members", true)
+    .order("sort_order");
+
+  if (error) {
+    console.error("fetchChurchContactsByChurchId", error);
+    return [];
+  }
+  return ((data ?? []) as RoleRow[]).map(mapContact);
 }
 
 export async function fetchChurchRoleById(roleId: string): Promise<ChurchDashboardContact | null> {

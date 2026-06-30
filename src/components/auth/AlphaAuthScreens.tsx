@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { signInWithOAuthProvider } from "@/lib/auth/oauth";
 import { mapLoginError } from "@/lib/auth/sign-up";
-import { AlphaOfficialLogo } from "@/components/brand/AlphaOfficialLogo";
+import { AlphaOfficialSlogan } from "@/components/brand/AlphaOfficialSlogan";
 import { clearGuestMode, continueAsGuest } from "@/features/auth/guest-mode";
 
 function arabicAuthError(message: string, context?: { afterRegistration?: boolean }) {
@@ -44,12 +44,9 @@ export function AuthShell({
             </Button>
           ) : null}
           
-          <AlphaOfficialLogo size="lg" />
           <div className="mt-2 text-[15px] font-bold tracking-[0.2em] text-alpha-gold-dark leading-none">ALPHA</div>
           <div className="mt-1.5 font-coptic text-[14px] tracking-[0.1em] text-alpha-gold-dark leading-none">ⲁⲗⲫⲁ</div>
-          <div className="mt-3 whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.15em] text-alpha-muted">
-            Ⲁ —THE COPTIC ORTHODOX DIGITAL HOME —Ⲱ
-          </div>
+          <AlphaOfficialSlogan prominent className="mt-3 w-full" />
         </header>
 
         <section className="mt-6 text-center">

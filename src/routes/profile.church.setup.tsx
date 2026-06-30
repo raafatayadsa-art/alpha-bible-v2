@@ -15,7 +15,7 @@ export const Route = createFileRoute("/profile/church/setup")({
 
 function ChurchSetupPage() {
   return (
-    <ProfileSubShell title="طلب تأسيس كنيسة" brand="logo-only" subtleWatermark>
+    <ProfileSubShell title="طلب تأسيس كنيسة" subtleWatermark>
       <ChurchSetupForm />
     </ProfileSubShell>
   );
